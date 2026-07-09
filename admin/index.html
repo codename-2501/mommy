@@ -172,7 +172,10 @@
         <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:14px">
           <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">위 문구 (번호)</label>
             <input id="ed-top" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
-          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">아래 문구 (분류·월)</label>
+          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">카테고리 (뱃지)</label>
+            <input id="ed-category" placeholder="예: Inspire / Showcase / Educate" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+            <div style="font-size:11px;color:var(--mut);margin-top:4px">상세·홈의 보라색 뱃지로 표시됩니다. 비우면 아래 문구의 괄호 앞부분을 사용.</div></div>
+          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">아래 문구 (홈 라벨)</label>
             <input id="ed-bottom" placeholder="예: Inspire (March)" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
           <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">날짜 (타임라인 연·월)</label>
             <input type="month" id="ed-date" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;color-scheme:dark">
@@ -418,6 +421,7 @@ function openEditModal(i){
   editTarget=i; mediaTarget=i; const s=cfg.slides[i];
   $('#editSub').textContent='#'+(i+1);
   $('#ed-top').value=s.top||''; $('#ed-bottom').value=s.bottom||'';
+  $('#ed-category').value=s.category||'';
   $('#ed-title').value=s.title||''; $('#ed-desc').value=s.desc||'';
   $('#ed-date').value=(s.date||'').slice(0,7);
   $('#editThumbImg').src=s.image||'';
@@ -431,7 +435,7 @@ $('#ed-date').addEventListener('input',e=>{
 function closeEditModal(){ $('#editModal').classList.remove('open'); renderSlides(); }
 $('#editClose').onclick=closeEditModal;
 $('#editModal').addEventListener('click',e=>{ if(e.target.id==='editModal')closeEditModal(); });
-[['ed-top','top'],['ed-bottom','bottom'],['ed-title','title'],['ed-desc','desc']].forEach(([id,key])=>{
+[['ed-top','top'],['ed-bottom','bottom'],['ed-category','category'],['ed-title','title'],['ed-desc','desc']].forEach(([id,key])=>{
   $('#'+id).addEventListener('input',e=>{ if(editTarget!=null){ cfg.slides[editTarget][key]=e.target.value; dirty(); } });
 });
 $('#editPickImg').onclick=$('#editThumb').onclick=()=>showEditPicker('thumb');
