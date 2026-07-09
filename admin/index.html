@@ -174,6 +174,9 @@
             <input id="ed-top" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
           <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">아래 문구 (분류·월)</label>
             <input id="ed-bottom" placeholder="예: Inspire (March)" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
+          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">날짜 (타임라인 연·월)</label>
+            <input type="month" id="ed-date" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;color-scheme:dark">
+            <div style="font-size:11px;color:var(--mut);margin-top:4px">하단 타임라인·좌우 순서가 이 날짜(연·월) 기준으로 정렬됩니다. 비우면 자동 순서.</div></div>
           <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">상세 제목 (클릭 시)</label>
             <input id="ed-title" placeholder="작품 제목" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
           <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">상세 설명 (클릭 시)</label>
@@ -383,10 +386,15 @@ function openEditModal(i){
   $('#editSub').textContent='#'+(i+1);
   $('#ed-top').value=s.top||''; $('#ed-bottom').value=s.bottom||'';
   $('#ed-title').value=s.title||''; $('#ed-desc').value=s.desc||'';
+  $('#ed-date').value=(s.date||'').slice(0,7);
   $('#editThumbImg').src=s.image||'';
   renderMediaList();
   $('#editModal').classList.add('open');
 }
+$('#ed-date').addEventListener('input',e=>{
+  if(editTarget==null)return;
+  const v=e.target.value; cfg.slides[editTarget].date = v ? v+'-01' : ''; dirty();
+});
 function closeEditModal(){ $('#editModal').classList.remove('open'); renderSlides(); }
 $('#editClose').onclick=closeEditModal;
 $('#editModal').addEventListener('click',e=>{ if(e.target.id==='editModal')closeEditModal(); });
