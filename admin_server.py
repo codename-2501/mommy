@@ -211,7 +211,8 @@ def gql_response(slug):
     page["slug"] = slug
     if s:
         mm = re.match(r"^(.*?)\s*(\([^)]*\))?\s*$", str(s.get("bottom") or ""))
-        cat = (mm.group(1).strip() if mm else "") or (s.get("bottom") or "")
+        # badge/category: dedicated field if set, else derived from the bottom label
+        cat = str(s.get("category") or "").strip() or (mm.group(1).strip() if mm else "") or (s.get("bottom") or "")
         page["title"] = s.get("title") or s.get("bottom") or page.get("title")
         if isinstance(page.get("tag"), dict) and cat:
             page["tag"]["title"] = cat
