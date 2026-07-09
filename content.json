@@ -1,0 +1,1381 @@
+{
+ "meta": {
+  "brand": "Seung Eun",
+  "title": "THE LOOKBACK",
+  "note": "Edit images and labels below."
+ },
+ "slides": [
+  {
+   "id": "s0",
+   "image": "/images/09ec9c9cf4ce0.png",
+   "top": "1",
+   "bottom": "Inspire (March)",
+   "desc": "",
+   "title": "",
+   "url": "/articles/defective-units-vol-1"
+  },
+  {
+   "id": "s1",
+   "image": "/images/0b77ebf1938e1.jpg",
+   "top": "2",
+   "bottom": "Inspire (March)",
+   "desc": "sadfsadf",
+   "title": "asdfsad",
+   "url": "/articles/defective-units-vol-1"
+  },
+  {
+   "id": "s2",
+   "image": "/images/102b79c0173a5.webp",
+   "top": "3",
+   "bottom": "Inspire (March)",
+   "title": "",
+   "desc": "sdfasafd333",
+   "url": "/articles/defective-units-vol-1"
+  },
+  {
+   "id": "s3",
+   "image": "/images/1aff2f008ad96.jpg",
+   "top": "4",
+   "bottom": "Inspire (March)",
+   "url": "/articles/99-cents-only-store-gallery-exhibition"
+  },
+  {
+   "id": "s4",
+   "image": "/images/1c91f200eb441.png",
+   "top": "5",
+   "bottom": "Inspire (March)",
+   "url": "/articles/99-cents-only-store-gallery-exhibition"
+  },
+  {
+   "id": "s5",
+   "image": "/images/1f7ffa08880a9.jpg",
+   "top": "6",
+   "bottom": "Inspire (March)",
+   "url": "/articles/99-cents-only-store-gallery-exhibition"
+  },
+  {
+   "id": "s6",
+   "image": "/images/242f1689deb00.png",
+   "top": "7",
+   "bottom": "Inspire (February)",
+   "url": "/articles/the-legend-of-phil-shao"
+  },
+  {
+   "id": "s7",
+   "image": "/images/2fdbe4301b34e.png",
+   "top": "8",
+   "bottom": "Inspire (February)",
+   "url": "/articles/the-legend-of-phil-shao"
+  },
+  {
+   "id": "s8",
+   "image": "/images/3a1a7d3b70473.png",
+   "top": "9",
+   "bottom": "Inspire (February)",
+   "url": "/articles/jellyfish-by-pharrell-from-virginia"
+  },
+  {
+   "id": "s9",
+   "image": "/images/486624d093849.png",
+   "top": "10",
+   "bottom": "Inspire (February)",
+   "url": "/articles/jellyfish-by-pharrell-from-virginia"
+  },
+  {
+   "id": "s10",
+   "image": "/images/5fe11bac36895.jpg",
+   "top": "11",
+   "bottom": "Inspire (February)",
+   "url": "/articles/jellyfish-by-pharrell-from-virginia"
+  },
+  {
+   "id": "s11",
+   "image": "/images/62ae5300bda35.png",
+   "top": "12",
+   "bottom": "Inspire (February)",
+   "url": "/articles/adollarap-rocky-punk-rocky"
+  },
+  {
+   "id": "s12",
+   "image": "/images/6d8c9cf7b9618.png",
+   "top": "13",
+   "bottom": "Inspire (February)",
+   "url": "/articles/adollarap-rocky-punk-rocky"
+  },
+  {
+   "id": "s13",
+   "image": "/images/6e53b3796caa6.jpg",
+   "top": "14",
+   "bottom": "Inspire (February)",
+   "url": "/articles/adollarap-rocky-punk-rocky"
+  },
+  {
+   "id": "s14",
+   "image": "/images/8708eb5c27359.jpg",
+   "top": "15",
+   "bottom": "Showcase (January)",
+   "url": "/articles/get-happly"
+  },
+  {
+   "id": "s15",
+   "image": "/images/88d6731cc43a6.jpg",
+   "top": "16",
+   "bottom": "Showcase (January)",
+   "url": "/articles/get-happly"
+  },
+  {
+   "id": "s16",
+   "image": "/images/8f0c56e5291b1.png",
+   "top": "17",
+   "bottom": "Showcase (January)",
+   "url": "/articles/get-happly"
+  },
+  {
+   "id": "s17",
+   "image": "/images/92b84f6dc2382.webp",
+   "top": "18",
+   "bottom": "Inspire (January)",
+   "url": "/articles/winter-x-games-2026"
+  },
+  {
+   "id": "s18",
+   "image": "/images/9532d3c7d5d9c.jpg",
+   "top": "19",
+   "bottom": "Inspire (January)",
+   "url": "/articles/winter-x-games-2026"
+  },
+  {
+   "id": "s19",
+   "image": "/images/5fe11bac36895.jpg",
+   "top": "20",
+   "bottom": "Showcase (January)",
+   "url": "/articles/bo-reset-the-standard"
+  },
+  {
+   "id": "s20",
+   "image": "/images/97703af9e4c8f.webp",
+   "top": "21",
+   "bottom": "Showcase (January)",
+   "url": "/articles/bo-reset-the-standard"
+  },
+  {
+   "id": "s21",
+   "image": "/images/9b7b474e4a5e2.jpg",
+   "top": "22",
+   "bottom": "Showcase (January)",
+   "url": "/articles/bo-reset-the-standard"
+  },
+  {
+   "id": "s22",
+   "image": "/images/a306ef91fe377.png",
+   "top": "23",
+   "bottom": "Inspire (December)",
+   "url": "/articles/andrew-dutton-sneaker-shots"
+  },
+  {
+   "id": "s23",
+   "image": "/images/a6ab44b7575c8.png",
+   "top": "24",
+   "bottom": "Inspire (December)",
+   "url": "/articles/andrew-dutton-sneaker-shots"
+  },
+  {
+   "id": "s24",
+   "image": "/images/a709fc3de67fa.webp",
+   "top": "25",
+   "bottom": "Inspire (December)",
+   "url": "/articles/photography-by-estevan-oriol"
+  },
+  {
+   "id": "s25",
+   "image": "/images/a8ef59966e56a.png",
+   "top": "26",
+   "bottom": "Inspire (December)",
+   "url": "/articles/photography-by-estevan-oriol"
+  },
+  {
+   "id": "s26",
+   "image": "/images/a92fb706592cb.png",
+   "top": "27",
+   "bottom": "Inspire (December)",
+   "url": "/articles/photography-by-estevan-oriol"
+  },
+  {
+   "id": "s27",
+   "image": "/images/b78e801844263.jpg",
+   "top": "28",
+   "bottom": "Inspire (December)",
+   "url": "/articles/skateboard-culture-book-finally-out"
+  },
+  {
+   "id": "s28",
+   "image": "/images/b996087ba4b81.png",
+   "top": "29",
+   "bottom": "Inspire (December)",
+   "url": "/articles/skateboard-culture-book-finally-out"
+  },
+  {
+   "id": "s29",
+   "image": "/images/c3149ecb4e4fd.jpg",
+   "top": "30",
+   "bottom": "Inspire (December)",
+   "url": "/articles/skateboard-culture-book-finally-out"
+  },
+  {
+   "id": "s30",
+   "image": "/images/ca2b4eb75a03f.png",
+   "top": "31",
+   "bottom": "Inspire (November)",
+   "url": "/articles/wu-nopoly-is-officially-out"
+  },
+  {
+   "id": "s31",
+   "image": "/images/ca673fec5b6b7.webp",
+   "top": "32",
+   "bottom": "Inspire (November)",
+   "url": "/articles/wu-nopoly-is-officially-out"
+  },
+  {
+   "id": "s32",
+   "image": "/images/cf616f78edd58.png",
+   "top": "33",
+   "bottom": "Inspire (November)",
+   "url": "/articles/twojeys-headwear-by-new-era"
+  },
+  {
+   "id": "s33",
+   "image": "/images/d58c784d25981.png",
+   "top": "34",
+   "bottom": "Inspire (November)",
+   "url": "/articles/twojeys-headwear-by-new-era"
+  },
+  {
+   "id": "s34",
+   "image": "/images/e1bc8b97eaea9.png",
+   "top": "35",
+   "bottom": "Inspire (November)",
+   "url": "/articles/twojeys-headwear-by-new-era"
+  },
+  {
+   "id": "s35",
+   "image": "/images/e23e1375aacf9.png",
+   "top": "36",
+   "bottom": "Inspire (November)",
+   "url": "/articles/works-by-oezase"
+  },
+  {
+   "id": "s36",
+   "image": "/images/02ece5a890247.png",
+   "top": "37",
+   "bottom": "Inspire (November)",
+   "url": "/articles/works-by-oezase"
+  },
+  {
+   "id": "s37",
+   "image": "/images/069af310e5866.png",
+   "top": "38",
+   "bottom": "Inspire (November)",
+   "url": "/articles/works-by-oezase"
+  },
+  {
+   "id": "s38",
+   "image": "/images/09ec9c9cf4ce0.png",
+   "top": "39",
+   "bottom": "Inspire (October)",
+   "url": "/articles/erl-drops-new-vamp-boot"
+  },
+  {
+   "id": "s39",
+   "image": "/images/0b77ebf1938e1.jpg",
+   "top": "40",
+   "bottom": "Inspire (October)",
+   "url": "/articles/erl-drops-new-vamp-boot"
+  },
+  {
+   "id": "s40",
+   "image": "/images/102b79c0173a5.webp",
+   "top": "41",
+   "bottom": "Inspire (October)",
+   "url": "/articles/erl-drops-new-vamp-boot"
+  },
+  {
+   "id": "s41",
+   "image": "/images/1aff2f008ad96.jpg",
+   "top": "42",
+   "bottom": "Inspire (October)",
+   "url": "/articles/they-said-no-drum-machines"
+  },
+  {
+   "id": "s42",
+   "image": "/images/1c91f200eb441.png",
+   "top": "43",
+   "bottom": "Inspire (October)",
+   "url": "/articles/they-said-no-drum-machines"
+  },
+  {
+   "id": "s43",
+   "image": "/images/1f7ffa08880a9.jpg",
+   "top": "44",
+   "bottom": "Inspire (October)",
+   "url": "/articles/adidas-and-brain-dead-present-the-barricade-13"
+  },
+  {
+   "id": "s44",
+   "image": "/images/242f1689deb00.png",
+   "top": "45",
+   "bottom": "Inspire (October)",
+   "url": "/articles/adidas-and-brain-dead-present-the-barricade-13"
+  },
+  {
+   "id": "s45",
+   "image": "/images/2fdbe4301b34e.png",
+   "top": "46",
+   "bottom": "Inspire (October)",
+   "url": "/articles/adidas-and-brain-dead-present-the-barricade-13"
+  },
+  {
+   "id": "s46",
+   "image": "/images/3a1a7d3b70473.png",
+   "top": "47",
+   "bottom": "Inspire (September)",
+   "url": "/articles/streetplaza-sokolov"
+  },
+  {
+   "id": "s47",
+   "image": "/images/486624d093849.png",
+   "top": "48",
+   "bottom": "Inspire (September)",
+   "url": "/articles/streetplaza-sokolov"
+  },
+  {
+   "id": "s48",
+   "image": "/images/5fe11bac36895.jpg",
+   "top": "49",
+   "bottom": "Inspire (September)",
+   "url": "/articles/streetplaza-sokolov"
+  },
+  {
+   "id": "s49",
+   "image": "/images/62ae5300bda35.png",
+   "top": "50",
+   "bottom": "Inspire (September)",
+   "url": "/articles/carharttwip-skate-jam-in-milan"
+  },
+  {
+   "id": "s50",
+   "image": "/images/6d8c9cf7b9618.png",
+   "top": "51",
+   "bottom": "Inspire (September)",
+   "url": "/articles/carharttwip-skate-jam-in-milan"
+  },
+  {
+   "id": "s51",
+   "image": "/images/6e53b3796caa6.jpg",
+   "top": "52",
+   "bottom": "Inspire (September)",
+   "url": "/articles/carharttwip-skate-jam-in-milan"
+  },
+  {
+   "id": "s52",
+   "image": "/images/8708eb5c27359.jpg",
+   "top": "53",
+   "bottom": "Inspire (September)",
+   "url": "/articles/carpet-company-for-living-proof-magazine-issue-11"
+  },
+  {
+   "id": "s53",
+   "image": "/images/88d6731cc43a6.jpg",
+   "top": "54",
+   "bottom": "Inspire (September)",
+   "url": "/articles/carpet-company-for-living-proof-magazine-issue-11"
+  },
+  {
+   "id": "s54",
+   "image": "/images/8f0c56e5291b1.png",
+   "top": "55",
+   "bottom": "Inspire (August)",
+   "url": "/articles/pharrell-launches-virginia"
+  },
+  {
+   "id": "s55",
+   "image": "/images/92b84f6dc2382.webp",
+   "top": "56",
+   "bottom": "Inspire (August)",
+   "url": "/articles/pharrell-launches-virginia"
+  },
+  {
+   "id": "s56",
+   "image": "/images/9532d3c7d5d9c.jpg",
+   "top": "57",
+   "bottom": "Inspire (August)",
+   "url": "/articles/pharrell-launches-virginia"
+  },
+  {
+   "id": "s57",
+   "image": "/images/97703af9e4c8f.webp",
+   "top": "58",
+   "bottom": "Inspire (August)",
+   "url": "/articles/new-balance-933-andrew-reynolds"
+  },
+  {
+   "id": "s58",
+   "image": "/images/9b7b474e4a5e2.jpg",
+   "top": "59",
+   "bottom": "Inspire (August)",
+   "url": "/articles/new-balance-933-andrew-reynolds"
+  },
+  {
+   "id": "s59",
+   "image": "/images/a306ef91fe377.png",
+   "top": "60",
+   "bottom": "Inspire (August)",
+   "url": "/articles/new-balance-933-andrew-reynolds"
+  },
+  {
+   "id": "s60",
+   "image": "/images/a6ab44b7575c8.png",
+   "top": "61",
+   "bottom": "Inspire (August)",
+   "url": "/articles/rick-rubin-and-the-art-of-being"
+  },
+  {
+   "id": "s61",
+   "image": "/images/a709fc3de67fa.webp",
+   "top": "62",
+   "bottom": "Inspire (August)",
+   "url": "/articles/rick-rubin-and-the-art-of-being"
+  },
+  {
+   "id": "s62",
+   "image": "/images/a8ef59966e56a.png",
+   "top": "63",
+   "bottom": "Inspire (August)",
+   "url": "/articles/rick-rubin-and-the-art-of-being"
+  },
+  {
+   "id": "s63",
+   "image": "/images/a92fb706592cb.png",
+   "top": "64",
+   "bottom": "Inspire (July)",
+   "url": "/articles/let-god-sort-em-out-album-from-clipse"
+  },
+  {
+   "id": "s64",
+   "image": "/images/b78e801844263.jpg",
+   "top": "65",
+   "bottom": "Inspire (July)",
+   "url": "/articles/let-god-sort-em-out-album-from-clipse"
+  },
+  {
+   "id": "s65",
+   "image": "/images/b996087ba4b81.png",
+   "top": "66",
+   "bottom": "Inspire (July)",
+   "url": "/articles/let-god-sort-em-out-album-from-clipse"
+  },
+  {
+   "id": "s66",
+   "image": "/images/62ae5300bda35.png",
+   "top": "67",
+   "bottom": "Showcase (July)",
+   "url": "/articles/welcome-to-the-team"
+  },
+  {
+   "id": "s67",
+   "image": "/images/c3149ecb4e4fd.jpg",
+   "top": "68",
+   "bottom": "Showcase (July)",
+   "url": "/articles/welcome-to-the-team"
+  },
+  {
+   "id": "s68",
+   "image": "/images/ca2b4eb75a03f.png",
+   "top": "69",
+   "bottom": "Showcase (July)",
+   "url": "/articles/welcome-to-the-team"
+  },
+  {
+   "id": "s69",
+   "image": "/images/ca673fec5b6b7.webp",
+   "top": "70",
+   "bottom": "Inspire (June)",
+   "url": "/articles/turnstile-never-enough"
+  },
+  {
+   "id": "s70",
+   "image": "/images/cf616f78edd58.png",
+   "top": "71",
+   "bottom": "Inspire (June)",
+   "url": "/articles/turnstile-never-enough"
+  },
+  {
+   "id": "s71",
+   "image": "/images/d58c784d25981.png",
+   "top": "72",
+   "bottom": "Inspire (June)",
+   "url": "/articles/turnstile-never-enough"
+  },
+  {
+   "id": "s72",
+   "image": "/images/e1bc8b97eaea9.png",
+   "top": "73",
+   "bottom": "Inspire (June)",
+   "url": "/articles/ch-11-shit-waves-hawaii"
+  },
+  {
+   "id": "s73",
+   "image": "/images/e23e1375aacf9.png",
+   "top": "74",
+   "bottom": "Inspire (June)",
+   "url": "/articles/ch-11-shit-waves-hawaii"
+  },
+  {
+   "id": "s74",
+   "image": "/images/02ece5a890247.png",
+   "top": "75",
+   "bottom": "Inspire (June)",
+   "url": "/articles/ch-11-shit-waves-hawaii"
+  },
+  {
+   "id": "s75",
+   "image": "/images/069af310e5866.png",
+   "top": "76",
+   "bottom": "Inspire (May)",
+   "url": "/articles/stab-high-japan-may"
+  },
+  {
+   "id": "s76",
+   "image": "/images/09ec9c9cf4ce0.png",
+   "top": "77",
+   "bottom": "Inspire (May)",
+   "url": "/articles/stab-high-japan-may"
+  },
+  {
+   "id": "s77",
+   "image": "/images/0b77ebf1938e1.jpg",
+   "top": "78",
+   "bottom": "Inspire (May)",
+   "url": "/articles/fugazi-photo-shooting"
+  },
+  {
+   "id": "s78",
+   "image": "/images/102b79c0173a5.webp",
+   "top": "79",
+   "bottom": "Inspire (May)",
+   "url": "/articles/fugazi-photo-shooting"
+  },
+  {
+   "id": "s79",
+   "image": "/images/1aff2f008ad96.jpg",
+   "top": "80",
+   "bottom": "Inspire (May)",
+   "url": "/articles/fugazi-photo-shooting"
+  },
+  {
+   "id": "s80",
+   "image": "/images/1c91f200eb441.png",
+   "top": "81",
+   "bottom": "Inspire (May)",
+   "url": "/articles/devin-bookers-nike-x-chevrolet-collection"
+  },
+  {
+   "id": "s81",
+   "image": "/images/1f7ffa08880a9.jpg",
+   "top": "82",
+   "bottom": "Inspire (May)",
+   "url": "/articles/devin-bookers-nike-x-chevrolet-collection"
+  },
+  {
+   "id": "s82",
+   "image": "/images/242f1689deb00.png",
+   "top": "83",
+   "bottom": "Inspire (May)",
+   "url": "/articles/devin-bookers-nike-x-chevrolet-collection"
+  },
+  {
+   "id": "s83",
+   "image": "/images/2fdbe4301b34e.png",
+   "top": "84",
+   "bottom": "Inspire (May)",
+   "url": "/articles/supreme-x-margiela-wallet"
+  },
+  {
+   "id": "s84",
+   "image": "/images/3a1a7d3b70473.png",
+   "top": "85",
+   "bottom": "Inspire (April)",
+   "url": "/articles/asap-x-rayban"
+  },
+  {
+   "id": "s85",
+   "image": "/images/486624d093849.png",
+   "top": "86",
+   "bottom": "Inspire (April)",
+   "url": "/articles/asap-x-rayban"
+  },
+  {
+   "id": "s86",
+   "image": "/images/5fe11bac36895.jpg",
+   "top": "87",
+   "bottom": "Inspire (April)",
+   "url": "/articles/converse-shoe-drop-by-works-studio"
+  },
+  {
+   "id": "s87",
+   "image": "/images/62ae5300bda35.png",
+   "top": "88",
+   "bottom": "Inspire (April)",
+   "url": "/articles/converse-shoe-drop-by-works-studio"
+  },
+  {
+   "id": "s88",
+   "image": "/images/6d8c9cf7b9618.png",
+   "top": "89",
+   "bottom": "Inspire (April)",
+   "url": "/articles/the-sprawl"
+  },
+  {
+   "id": "s89",
+   "image": "/images/6e53b3796caa6.jpg",
+   "top": "90",
+   "bottom": "Inspire (April)",
+   "url": "/articles/the-sprawl"
+  },
+  {
+   "id": "s90",
+   "image": "/images/8708eb5c27359.jpg",
+   "top": "91",
+   "bottom": "Inspire (April)",
+   "url": "/articles/north-face-in-early-days"
+  },
+  {
+   "id": "s91",
+   "image": "/images/88d6731cc43a6.jpg",
+   "top": "92",
+   "bottom": "Inspire (April)",
+   "url": "/articles/north-face-in-early-days"
+  },
+  {
+   "id": "s92",
+   "image": "/images/8f0c56e5291b1.png",
+   "top": "93",
+   "bottom": "Inspire (April)",
+   "url": "/articles/north-face-in-early-days"
+  },
+  {
+   "id": "s93",
+   "image": "/images/92b84f6dc2382.webp",
+   "top": "94",
+   "bottom": "Inspire (March)",
+   "url": "/articles/redman-muddy-water-too-album-drop"
+  },
+  {
+   "id": "s94",
+   "image": "/images/9532d3c7d5d9c.jpg",
+   "top": "95",
+   "bottom": "Educate (March)",
+   "url": "/articles/mascot-book"
+  },
+  {
+   "id": "s95",
+   "image": "/images/97703af9e4c8f.webp",
+   "top": "96",
+   "bottom": "Inspire (March)",
+   "url": "/articles/helge-tscharn-capsule"
+  },
+  {
+   "id": "s96",
+   "image": "/images/9b7b474e4a5e2.jpg",
+   "top": "97",
+   "bottom": "Inspire (March)",
+   "url": "/articles/helge-tscharn-capsule"
+  },
+  {
+   "id": "s97",
+   "image": "/images/a306ef91fe377.png",
+   "top": "98",
+   "bottom": "Inspire (March)",
+   "url": "/articles/helge-tscharn-capsule"
+  },
+  {
+   "id": "s98",
+   "image": "/images/a6ab44b7575c8.png",
+   "top": "99",
+   "bottom": "Inspire (March)",
+   "url": "/articles/off-white-state-of-resistance"
+  },
+  {
+   "id": "s99",
+   "image": "/images/a709fc3de67fa.webp",
+   "top": "100",
+   "bottom": "Inspire (March)",
+   "url": "/articles/off-white-state-of-resistance"
+  },
+  {
+   "id": "s100",
+   "image": "/images/a8ef59966e56a.png",
+   "top": "101",
+   "bottom": "Inspire (March)",
+   "url": "/articles/off-white-state-of-resistance"
+  },
+  {
+   "id": "s101",
+   "image": "/images/a92fb706592cb.png",
+   "top": "102",
+   "bottom": "Inspire (February)",
+   "url": "/articles/surfer-aloslebir-108-foot-monster-wave"
+  },
+  {
+   "id": "s102",
+   "image": "/images/b78e801844263.jpg",
+   "top": "103",
+   "bottom": "Inspire (February)",
+   "url": "/articles/surfer-aloslebir-108-foot-monster-wave"
+  },
+  {
+   "id": "s103",
+   "image": "/images/b996087ba4b81.png",
+   "top": "104",
+   "bottom": "Inspire (February)",
+   "url": "/articles/nigo-and-pharrell-williams-appointed-as-creative-advisors-for-not-a-hotel"
+  },
+  {
+   "id": "s104",
+   "image": "/images/c3149ecb4e4fd.jpg",
+   "top": "105",
+   "bottom": "Inspire (February)",
+   "url": "/articles/nigo-and-pharrell-williams-appointed-as-creative-advisors-for-not-a-hotel"
+  },
+  {
+   "id": "s105",
+   "image": "/images/ca2b4eb75a03f.png",
+   "top": "106",
+   "bottom": "Inspire (February)",
+   "url": "/articles/nigo-and-pharrell-williams-appointed-as-creative-advisors-for-not-a-hotel"
+  },
+  {
+   "id": "s106",
+   "image": "/images/ca673fec5b6b7.webp",
+   "top": "107",
+   "bottom": "Inspire (February)",
+   "url": "/articles/the-kate-bellm-interview"
+  },
+  {
+   "id": "s107",
+   "image": "/images/cf616f78edd58.png",
+   "top": "108",
+   "bottom": "Inspire (February)",
+   "url": "/articles/the-kate-bellm-interview"
+  },
+  {
+   "id": "s108",
+   "image": "/images/d58c784d25981.png",
+   "top": "109",
+   "bottom": "Inspire (January)",
+   "url": "/articles/pocket-vol-12"
+  },
+  {
+   "id": "s109",
+   "image": "/images/e1bc8b97eaea9.png",
+   "top": "110",
+   "bottom": "Inspire (January)",
+   "url": "/articles/pocket-vol-12"
+  },
+  {
+   "id": "s110",
+   "image": "/images/e23e1375aacf9.png",
+   "top": "111",
+   "bottom": "Inspire (January)",
+   "url": "/articles/pocket-vol-12"
+  },
+  {
+   "id": "s111",
+   "image": "/images/02ece5a890247.png",
+   "top": "112",
+   "bottom": "Inspire (January)",
+   "url": "/articles/kendrick-lamar-taps-willy-chavarria-for-super-bowl-halftime-collection"
+  },
+  {
+   "id": "s112",
+   "image": "/images/069af310e5866.png",
+   "top": "113",
+   "bottom": "Inspire (January)",
+   "url": "/articles/post-malone-at-wild-horses-festival-in-san-diego"
+  },
+  {
+   "id": "s113",
+   "image": "/images/09ec9c9cf4ce0.png",
+   "top": "114",
+   "bottom": "Inspire (January)",
+   "url": "/articles/post-malone-at-wild-horses-festival-in-san-diego"
+  },
+  {
+   "id": "s114",
+   "image": "/images/0b77ebf1938e1.jpg",
+   "top": "115",
+   "bottom": "Showcase (December)",
+   "url": "/articles/motive-energy-case"
+  },
+  {
+   "id": "s115",
+   "image": "/images/102b79c0173a5.webp",
+   "top": "116",
+   "bottom": "Showcase (December)",
+   "url": "/articles/motive-energy-case"
+  },
+  {
+   "id": "s116",
+   "image": "/images/1aff2f008ad96.jpg",
+   "top": "117",
+   "bottom": "Showcase (December)",
+   "url": "/articles/motive-energy-case"
+  },
+  {
+   "id": "s117",
+   "image": "/images/1c91f200eb441.png",
+   "top": "118",
+   "bottom": "Inspire (December)",
+   "url": "/articles/meat-head"
+  },
+  {
+   "id": "s118",
+   "image": "/images/1f7ffa08880a9.jpg",
+   "top": "119",
+   "bottom": "Inspire (December)",
+   "url": "/articles/meat-head"
+  },
+  {
+   "id": "s119",
+   "image": "/images/242f1689deb00.png",
+   "top": "120",
+   "bottom": "Educate (December)",
+   "url": "/articles/vans-otw-pushes-into-premium-to-spark-turnaround"
+  },
+  {
+   "id": "s120",
+   "image": "/images/2fdbe4301b34e.png",
+   "top": "121",
+   "bottom": "Educate (December)",
+   "url": "/articles/vans-otw-pushes-into-premium-to-spark-turnaround"
+  },
+  {
+   "id": "s121",
+   "image": "/images/3a1a7d3b70473.png",
+   "top": "122",
+   "bottom": "Inspire (November)",
+   "url": "/articles/revival-surf-park"
+  },
+  {
+   "id": "s122",
+   "image": "/images/486624d093849.png",
+   "top": "123",
+   "bottom": "Inspire (November)",
+   "url": "/articles/revival-surf-park"
+  },
+  {
+   "id": "s123",
+   "image": "/images/5fe11bac36895.jpg",
+   "top": "124",
+   "bottom": "Inspire (November)",
+   "url": "/articles/revival-surf-park"
+  },
+  {
+   "id": "s124",
+   "image": "/images/62ae5300bda35.png",
+   "top": "125",
+   "bottom": "Inspire (November)",
+   "url": "/articles/stab-electric-acid"
+  },
+  {
+   "id": "s125",
+   "image": "/images/6d8c9cf7b9618.png",
+   "top": "126",
+   "bottom": "Inspire (November)",
+   "url": "/articles/stab-electric-acid"
+  },
+  {
+   "id": "s126",
+   "image": "/images/6e53b3796caa6.jpg",
+   "top": "127",
+   "bottom": "Inspire (November)",
+   "url": "/articles/stab-electric-acid"
+  },
+  {
+   "id": "s127",
+   "image": "/images/8708eb5c27359.jpg",
+   "top": "128",
+   "bottom": "Educate (November)",
+   "url": "/articles/this-color-story-stays-quiet"
+  },
+  {
+   "id": "s128",
+   "image": "/images/88d6731cc43a6.jpg",
+   "top": "129",
+   "bottom": "Inspire (October)",
+   "url": "/articles/atiba-jefferson-profile"
+  },
+  {
+   "id": "s129",
+   "image": "/images/8f0c56e5291b1.png",
+   "top": "130",
+   "bottom": "Inspire (October)",
+   "url": "/articles/atiba-jefferson-profile"
+  },
+  {
+   "id": "s130",
+   "image": "/images/92b84f6dc2382.webp",
+   "top": "131",
+   "bottom": "Inspire (October)",
+   "url": "/articles/swatch-the-nines"
+  },
+  {
+   "id": "s131",
+   "image": "/images/9532d3c7d5d9c.jpg",
+   "top": "132",
+   "bottom": "Inspire (October)",
+   "url": "/articles/swatch-the-nines"
+  },
+  {
+   "id": "s132",
+   "image": "/images/97703af9e4c8f.webp",
+   "top": "133",
+   "bottom": "Inspire (October)",
+   "url": "/articles/swatch-the-nines"
+  },
+  {
+   "id": "s133",
+   "image": "/images/9b7b474e4a5e2.jpg",
+   "top": "134",
+   "bottom": "Inspire (October)",
+   "url": "/articles/atiba-jefferson-epicly-later-d"
+  },
+  {
+   "id": "s134",
+   "image": "/images/a306ef91fe377.png",
+   "top": "135",
+   "bottom": "Inspire (October)",
+   "url": "/articles/atiba-jefferson-epicly-later-d"
+  },
+  {
+   "id": "s135",
+   "image": "/images/a6ab44b7575c8.png",
+   "top": "136",
+   "bottom": "Inspire (September)",
+   "url": "/articles/wsl-world-champs-2024"
+  },
+  {
+   "id": "s136",
+   "image": "/images/a709fc3de67fa.webp",
+   "top": "137",
+   "bottom": "Inspire (September)",
+   "url": "/articles/wsl-world-champs-2024"
+  },
+  {
+   "id": "s137",
+   "image": "/images/a8ef59966e56a.png",
+   "top": "138",
+   "bottom": "Inspire (September)",
+   "url": "/articles/wsl-world-champs-2024"
+  },
+  {
+   "id": "s138",
+   "image": "/images/a92fb706592cb.png",
+   "top": "139",
+   "bottom": "Educate (September)",
+   "url": "/articles/offshore-talent-on-budget-creative"
+  },
+  {
+   "id": "s139",
+   "image": "/images/b78e801844263.jpg",
+   "top": "140",
+   "bottom": "Educate (September)",
+   "url": "/articles/offshore-talent-on-budget-creative"
+  },
+  {
+   "id": "s140",
+   "image": "/images/b996087ba4b81.png",
+   "top": "141",
+   "bottom": "Inspire (September)",
+   "url": "/articles/epicly-later-book-drop"
+  },
+  {
+   "id": "s141",
+   "image": "/images/c3149ecb4e4fd.jpg",
+   "top": "142",
+   "bottom": "Inspire (September)",
+   "url": "/articles/epicly-later-book-drop"
+  },
+  {
+   "id": "s142",
+   "image": "/images/ca2b4eb75a03f.png",
+   "top": "143",
+   "bottom": "Educate (August)",
+   "url": "/articles/how-awards-impact-brand-trust"
+  },
+  {
+   "id": "s143",
+   "image": "/images/ca673fec5b6b7.webp",
+   "top": "144",
+   "bottom": "Educate (August)",
+   "url": "/articles/how-awards-impact-brand-trust"
+  },
+  {
+   "id": "s144",
+   "image": "/images/cf616f78edd58.png",
+   "top": "145",
+   "bottom": "Showcase (August)",
+   "url": "/articles/better-off-studio-website-awards"
+  },
+  {
+   "id": "s145",
+   "image": "/images/d58c784d25981.png",
+   "top": "146",
+   "bottom": "Showcase (August)",
+   "url": "/articles/better-off-studio-website-awards"
+  },
+  {
+   "id": "s146",
+   "image": "/images/e1bc8b97eaea9.png",
+   "top": "147",
+   "bottom": "Showcase (August)",
+   "url": "/articles/better-off-studio-website-awards"
+  },
+  {
+   "id": "s147",
+   "image": "/images/e23e1375aacf9.png",
+   "top": "148",
+   "bottom": "Inspire (August)",
+   "url": "/articles/post-malone-f1-trillion"
+  },
+  {
+   "id": "s148",
+   "image": "/images/02ece5a890247.png",
+   "top": "149",
+   "bottom": "Showcase (July)",
+   "url": "/articles/tripleswitch-partnership"
+  },
+  {
+   "id": "s149",
+   "image": "/images/069af310e5866.png",
+   "top": "150",
+   "bottom": "Showcase (July)",
+   "url": "/articles/tripleswitch-partnership"
+  },
+  {
+   "id": "s150",
+   "image": "/images/09ec9c9cf4ce0.png",
+   "top": "151",
+   "bottom": "Showcase (July)",
+   "url": "/articles/tripleswitch-partnership"
+  },
+  {
+   "id": "s151",
+   "image": "/images/0b77ebf1938e1.jpg",
+   "top": "152",
+   "bottom": "Showcase (July)",
+   "url": "/articles/better-off-studio-submission"
+  },
+  {
+   "id": "s152",
+   "image": "/images/102b79c0173a5.webp",
+   "top": "153",
+   "bottom": "Showcase (July)",
+   "url": "/articles/better-off-studio-submission"
+  },
+  {
+   "id": "s153",
+   "image": "/images/1aff2f008ad96.jpg",
+   "top": "154",
+   "bottom": "Inspire (July)",
+   "url": "/articles/vans-always-pushing"
+  },
+  {
+   "id": "s154",
+   "image": "/images/1c91f200eb441.png",
+   "top": "155",
+   "bottom": "Inspire (July)",
+   "url": "/articles/vans-always-pushing"
+  },
+  {
+   "id": "s155",
+   "image": "/images/1f7ffa08880a9.jpg",
+   "top": "156",
+   "bottom": "Inspire (July)",
+   "url": "/articles/vans-always-pushing"
+  },
+  {
+   "id": "s156",
+   "image": "/images/242f1689deb00.png",
+   "top": "157",
+   "bottom": "Showcase (June)",
+   "url": "/articles/how-storytelling-strengthens-brand-campaigns"
+  },
+  {
+   "id": "s157",
+   "image": "/images/2fdbe4301b34e.png",
+   "top": "158",
+   "bottom": "Showcase (June)",
+   "url": "/articles/how-storytelling-strengthens-brand-campaigns"
+  },
+  {
+   "id": "s158",
+   "image": "/images/3a1a7d3b70473.png",
+   "top": "159",
+   "bottom": "Inspire (June)",
+   "url": "/articles/gabriel-medina-olympics"
+  },
+  {
+   "id": "s159",
+   "image": "/images/486624d093849.png",
+   "top": "160",
+   "bottom": "Inspire (June)",
+   "url": "/articles/gabriel-medina-olympics"
+  },
+  {
+   "id": "s160",
+   "image": "/images/5fe11bac36895.jpg",
+   "top": "161",
+   "bottom": "Inspire (June)",
+   "url": "/articles/stab-high-japan"
+  },
+  {
+   "id": "s161",
+   "image": "/images/62ae5300bda35.png",
+   "top": "162",
+   "bottom": "Inspire (June)",
+   "url": "/articles/stab-high-japan"
+  },
+  {
+   "id": "s162",
+   "image": "/images/6d8c9cf7b9618.png",
+   "top": "163",
+   "bottom": "Inspire (June)",
+   "url": "/articles/stab-high-japan"
+  },
+  {
+   "id": "s163",
+   "image": "/images/6e53b3796caa6.jpg",
+   "top": "164",
+   "bottom": "Showcase (May)",
+   "url": "/articles/american-gun-owners"
+  },
+  {
+   "id": "s164",
+   "image": "/images/8708eb5c27359.jpg",
+   "top": "165",
+   "bottom": "Showcase (May)",
+   "url": "/articles/american-gun-owners"
+  },
+  {
+   "id": "s165",
+   "image": "/images/88d6731cc43a6.jpg",
+   "top": "166",
+   "bottom": "Showcase (May)",
+   "url": "/articles/american-gun-owners"
+  },
+  {
+   "id": "s166",
+   "image": "/images/8f0c56e5291b1.png",
+   "top": "167",
+   "bottom": "Inspire (May)",
+   "url": "/articles/neon-pill"
+  },
+  {
+   "id": "s167",
+   "image": "/images/92b84f6dc2382.webp",
+   "top": "168",
+   "bottom": "Educate (May)",
+   "url": "/articles/will-ai-kill-the-creative-business-or-save-it"
+  },
+  {
+   "id": "s168",
+   "image": "/images/9532d3c7d5d9c.jpg",
+   "top": "169",
+   "bottom": "Educate (May)",
+   "url": "/articles/will-ai-kill-the-creative-business-or-save-it"
+  },
+  {
+   "id": "s169",
+   "image": "/images/97703af9e4c8f.webp",
+   "top": "170",
+   "bottom": "Showcase (April)",
+   "url": "/articles/built-things-rebrand"
+  },
+  {
+   "id": "s170",
+   "image": "/images/9b7b474e4a5e2.jpg",
+   "top": "171",
+   "bottom": "Showcase (April)",
+   "url": "/articles/built-things-rebrand"
+  },
+  {
+   "id": "s171",
+   "image": "/images/a306ef91fe377.png",
+   "top": "172",
+   "bottom": "Showcase (April)",
+   "url": "/articles/built-things-rebrand"
+  },
+  {
+   "id": "s172",
+   "image": "/images/a6ab44b7575c8.png",
+   "top": "173",
+   "bottom": "Inspire (April)",
+   "url": "/articles/zipper-surf-film"
+  },
+  {
+   "id": "s173",
+   "image": "/images/a709fc3de67fa.webp",
+   "top": "174",
+   "bottom": "Inspire (April)",
+   "url": "/articles/zipper-surf-film"
+  },
+  {
+   "id": "s174",
+   "image": "/images/a8ef59966e56a.png",
+   "top": "175",
+   "bottom": "Educate (April)",
+   "url": "/articles/kelly-slater-retires"
+  },
+  {
+   "id": "s175",
+   "image": "/images/a92fb706592cb.png",
+   "top": "176",
+   "bottom": "Educate (April)",
+   "url": "/articles/kelly-slater-retires"
+  },
+  {
+   "id": "s176",
+   "image": "/images/b78e801844263.jpg",
+   "top": "177",
+   "bottom": "Showcase (March)",
+   "url": "/articles/olipop-case-study"
+  },
+  {
+   "id": "s177",
+   "image": "/images/b996087ba4b81.png",
+   "top": "178",
+   "bottom": "Showcase (March)",
+   "url": "/articles/olipop-case-study"
+  },
+  {
+   "id": "s178",
+   "image": "/images/c3149ecb4e4fd.jpg",
+   "top": "179",
+   "bottom": "Showcase (March)",
+   "url": "/articles/olipop-case-study"
+  },
+  {
+   "id": "s179",
+   "image": "/images/ca2b4eb75a03f.png",
+   "top": "180",
+   "bottom": "Inspire (March)",
+   "url": "/articles/stussy-autumn-drop"
+  },
+  {
+   "id": "s180",
+   "image": "/images/ca673fec5b6b7.webp",
+   "top": "181",
+   "bottom": "Inspire (March)",
+   "url": "/articles/stussy-autumn-drop"
+  },
+  {
+   "id": "s181",
+   "image": "/images/cf616f78edd58.png",
+   "top": "182",
+   "bottom": "Inspire (March)",
+   "url": "/articles/stussy-autumn-drop"
+  },
+  {
+   "id": "s182",
+   "image": "/images/d58c784d25981.png",
+   "top": "183",
+   "bottom": "Educate (March)",
+   "url": "/articles/how-subscriptions-end-agency-excess"
+  },
+  {
+   "id": "s183",
+   "image": "/images/e1bc8b97eaea9.png",
+   "top": "184",
+   "bottom": "Showcase (February)",
+   "url": "/articles/viamundi-spirits"
+  },
+  {
+   "id": "s184",
+   "image": "/images/e23e1375aacf9.png",
+   "top": "185",
+   "bottom": "Showcase (February)",
+   "url": "/articles/viamundi-spirits"
+  },
+  {
+   "id": "s185",
+   "image": "/images/02ece5a890247.png",
+   "top": "186",
+   "bottom": "Showcase (February)",
+   "url": "/articles/viamundi-spirits"
+  },
+  {
+   "id": "s186",
+   "image": "/images/069af310e5866.png",
+   "top": "187",
+   "bottom": "Inspire (February)",
+   "url": "/articles/broncho-jams"
+  },
+  {
+   "id": "s187",
+   "image": "/images/09ec9c9cf4ce0.png",
+   "top": "188",
+   "bottom": "Inspire (February)",
+   "url": "/articles/better-off-culture"
+  },
+  {
+   "id": "s188",
+   "image": "/images/0b77ebf1938e1.jpg",
+   "top": "189",
+   "bottom": "Educate (February)",
+   "url": "/articles/sora-launches"
+  },
+  {
+   "id": "s189",
+   "image": "/images/102b79c0173a5.webp",
+   "top": "190",
+   "bottom": "Educate (February)",
+   "url": "/articles/sora-launches"
+  },
+  {
+   "id": "s190",
+   "image": "/images/1aff2f008ad96.jpg",
+   "top": "191",
+   "bottom": "Inspire (January)",
+   "url": "/articles/fashion"
+  },
+  {
+   "id": "s191",
+   "image": "/images/1c91f200eb441.png",
+   "top": "192",
+   "bottom": "Inspire (January)",
+   "url": "/articles/fashion"
+  },
+  {
+   "id": "s192",
+   "image": "/images/1f7ffa08880a9.jpg",
+   "top": "193",
+   "bottom": "Showcase (January)",
+   "url": "/articles/better-off-studio-launches"
+  },
+  {
+   "id": "s193",
+   "image": "/images/242f1689deb00.png",
+   "top": "194",
+   "bottom": "Showcase (January)",
+   "url": "/articles/better-off-studio-launches"
+  },
+  {
+   "id": "s194",
+   "image": "/images/2fdbe4301b34e.png",
+   "top": "195",
+   "bottom": "Showcase (January)",
+   "url": "/articles/better-off-studio-launches"
+  }
+ ],
+ "texts": {}
+}
