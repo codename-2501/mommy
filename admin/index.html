@@ -192,7 +192,14 @@
           <button class="btn ghost sm" id="editAddVid">+ 영상(유튜브)</button>
         </div>
         <div id="editMediaList" style="display:flex;flex-direction:column;gap:10px;margin-top:12px"></div>
-        <div class="hint" style="margin-top:10px">상세 클릭 시 이 순서대로 이미지·영상이 원본 양식으로 표시됩니다. 비워두면 대표 이미지 1장만 나옵니다.</div>
+        <div id="editPickerWrap" style="display:none;margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--panel2)">
+          <div style="display:flex;align-items:center;margin-bottom:8px"><strong id="editPickerTitle" style="font-size:12px">이미지 선택</strong>
+            <div class="sp" style="flex:1"></div>
+            <label class="btn ghost sm" style="position:relative;overflow:hidden">업로드<input type="file" id="editPickUpload" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
+            <button class="btn ghost sm" id="editPickerCancel">취소</button></div>
+          <div id="editPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;max-height:260px;overflow:auto"></div>
+        </div>
+        <div class="hint" style="margin-top:10px">상세 클릭 시 이 순서대로 이미지·영상이 <b>세로로</b> 표시됩니다(원본 양식). 순서(위치)는 각 항목의 ↑ ↓ 로 조정합니다. 비우면 대표 이미지 1장만 나옵니다.</div>
       </div>
     </div>
   </div>
@@ -360,7 +367,33 @@ function renderMediaList(){
   });
 }
 function addMediaImage(src){ slideMedia(mediaTarget).push({type:'image',src:src,caption:''}); renderMediaList(); dirty(); }
-$('#editAddImg').onclick=()=>{ pickMode='media'; openPicker(); };
+
+/* inline image picker (inside the edit modal — no separate layer) */
+let editPickMode='media';
+function showEditPicker(mode){
+  editPickMode=mode;
+  $('#editPickerTitle').textContent = mode==='thumb'?'대표 이미지 선택':'추가할 이미지 선택';
+  const g=$('#editPickerGrid'); g.innerHTML='';
+  images.forEach(name=>{
+    const d=document.createElement('div');
+    d.style.cssText='aspect-ratio:1;background:#000;border-radius:6px;overflow:hidden;cursor:pointer;border:2px solid transparent';
+    d.innerHTML=`<img loading="lazy" src="/images/${name}" style="width:100%;height:100%;object-fit:cover">`;
+    d.onmouseenter=()=>d.style.borderColor='#4a4d57'; d.onmouseleave=()=>d.style.borderColor='transparent';
+    d.onclick=()=>{
+      const src='/images/'+name;
+      if(editPickMode==='thumb'){ cfg.slides[editTarget].image=src; $('#editThumbImg').src=src; }
+      else { addMediaImage(src); }
+      dirty(); hideEditPicker();
+    };
+    g.appendChild(d);
+  });
+  $('#editPickerWrap').style.display='block';
+  $('#editPickerWrap').scrollIntoView({block:'nearest'});
+}
+function hideEditPicker(){ $('#editPickerWrap').style.display='none'; }
+$('#editPickerCancel').onclick=hideEditPicker;
+$('#editPickUpload').onchange=e=>doUpload(e,()=>showEditPicker(editPickMode));
+$('#editAddImg').onclick=()=>showEditPicker('media');
 $('#editAddVid').onclick=()=>{
   const url=prompt('유튜브 URL 또는 영상 ID를 붙여넣으세요:'); if(!url)return;
   const id=ytId(url.trim()); if(!id){ alert('유튜브 ID를 인식하지 못했습니다.'); return; }
@@ -388,7 +421,7 @@ function openEditModal(i){
   $('#ed-title').value=s.title||''; $('#ed-desc').value=s.desc||'';
   $('#ed-date').value=(s.date||'').slice(0,7);
   $('#editThumbImg').src=s.image||'';
-  renderMediaList();
+  renderMediaList(); hideEditPicker();
   $('#editModal').classList.add('open');
 }
 $('#ed-date').addEventListener('input',e=>{
@@ -401,7 +434,7 @@ $('#editModal').addEventListener('click',e=>{ if(e.target.id==='editModal')close
 [['ed-top','top'],['ed-bottom','bottom'],['ed-title','title'],['ed-desc','desc']].forEach(([id,key])=>{
   $('#'+id).addEventListener('input',e=>{ if(editTarget!=null){ cfg.slides[editTarget][key]=e.target.value; dirty(); } });
 });
-$('#editPickImg').onclick=$('#editThumb').onclick=()=>{ pickTarget=editTarget; pickMode='thumb'; openPicker(); };
+$('#editPickImg').onclick=$('#editThumb').onclick=()=>showEditPicker('thumb');
 
 /* ---------- images CRUD ---------- */
 function renderImages(){
