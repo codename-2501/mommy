@@ -156,6 +156,45 @@
   </div>
 </div>
 
+<!-- slide edit modal (roomy) -->
+<div class="modal" id="editModal">
+  <div class="sheet">
+    <div class="shead"><strong>슬라이드 편집</strong><span id="editSub" style="color:var(--mut);font-size:12px;margin-left:8px"></span><div class="sp"></div>
+      <button class="btn ghost sm" id="editClose">닫기</button></div>
+    <div class="sbody" style="max-height:78vh;overflow:auto">
+      <div style="display:flex;gap:20px;flex-wrap:wrap">
+        <div style="flex:0 0 240px">
+          <div id="editThumb" style="aspect-ratio:4/3;background:#000;border-radius:8px;overflow:hidden;cursor:pointer;position:relative">
+            <img id="editThumbImg" style="width:100%;height:100%;object-fit:cover">
+          </div>
+          <button class="btn sm" id="editPickImg" style="width:100%;margin-top:8px">대표 이미지 변경</button>
+        </div>
+        <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:14px">
+          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">위 문구 (번호)</label>
+            <input id="ed-top" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
+          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">아래 문구 (분류·월)</label>
+            <input id="ed-bottom" placeholder="예: Inspire (March)" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
+          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">상세 제목 (클릭 시)</label>
+            <input id="ed-title" placeholder="작품 제목" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
+          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">상세 설명 (클릭 시)</label>
+            <textarea id="ed-desc" placeholder="작품 설명…" style="width:100%;margin-top:4px;min-height:100px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:inherit;resize:vertical"></textarea></div>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--line);margin-top:18px;padding-top:16px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <strong style="font-size:14px">🎞 미디어 (상세 본문)</strong>
+          <span id="editMediaSub" style="color:var(--mut);font-size:12px"></span>
+          <div class="sp" style="flex:1"></div>
+          <button class="btn ghost sm" id="editAddImg">+ 이미지</button>
+          <button class="btn ghost sm" id="editAddVid">+ 영상(유튜브)</button>
+        </div>
+        <div id="editMediaList" style="display:flex;flex-direction:column;gap:10px;margin-top:12px"></div>
+        <div class="hint" style="margin-top:10px">상세 클릭 시 이 순서대로 이미지·영상이 원본 양식으로 표시됩니다. 비워두면 대표 이미지 1장만 나옵니다.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 let cfg=null, images=[], pickTarget=null, curPage='/', textScan=[], nid=0;
@@ -198,12 +237,11 @@ function renderSlides(){
         <span class="change">이미지 변경</span>
       </div>
       <div class="fields">
-        <div><label>위 문구 (번호)</label><input data-i="${i}" data-k="top" value="${esc(s.top)}"></div>
-        <div><label>아래 문구 (분류·월)</label><input data-i="${i}" data-k="bottom" value="${esc(s.bottom)}"></div>
-        <div><label>상세 제목 (클릭 시)</label><input data-i="${i}" data-k="title" value="${esc(s.title)}" placeholder="작품 제목"></div>
-        <div><label>상세 설명 (클릭 시)</label><textarea data-i="${i}" data-k="desc" placeholder="작품 설명…" style="width:100%;min-height:52px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 8px;font-size:13px;font-family:inherit;resize:vertical">${escHtml(s.desc)}</textarea></div>
-        <div class="rowbtns">
-          <button class="btn sm" data-act="media" data-i="${i}">🎞 미디어 (${(s.media&&s.media.length)||1})</button>
+        <div style="font-size:13px;font-weight:600;line-height:1.3;min-height:18px">${esc(s.title)||'<span style="color:var(--mut);font-weight:400">제목 없음</span>'}</div>
+        <div style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em">${esc(s.bottom)||'—'} · 🎞 ${(s.media&&s.media.length)||1}</div>
+        <div class="rowbtns" style="margin-top:6px">
+          <button class="btn sm primary" data-act="edit" data-i="${i}" style="flex:1">편집</button>
+          <button class="btn sm" data-act="media" data-i="${i}">🎞</button>
         </div>
         <div class="rowbtns">
           <button class="btn sm" data-act="up" data-i="${i}">↑</button>
@@ -228,6 +266,7 @@ $('#slideGrid').addEventListener('click',e=>{
   if(pk){pickTarget=+pk.dataset.pick; openPicker(); return;}
   const b=e.target.closest('button[data-act]'); if(!b)return;
   const i=+b.dataset.i, S=cfg.slides;
+  if(b.dataset.act==='edit'){openEditModal(i);return;}
   if(b.dataset.act==='media'){openMediaModal(i);return;}
   if(b.dataset.act==='up'&&i>0){[S[i-1],S[i]]=[S[i],S[i-1]];}
   if(b.dataset.act==='down'&&i<S.length-1){[S[i+1],S[i]]=[S[i],S[i+1]];}
@@ -262,7 +301,11 @@ function openPicker(){
     d.innerHTML=`<img loading="lazy" src="/images/${name}">`;
     d.onclick=()=>{
       if(pickMode==='media'){ closePicker(); addMediaImage('/images/'+name); }
-      else { cfg.slides[pickTarget].image='/images/'+name; renderSlides(); closePicker(); dirty(); }
+      else {
+        cfg.slides[pickTarget].image='/images/'+name; dirty(); closePicker();
+        if($('#editModal').classList.contains('open')){ $('#editThumbImg').src='/images/'+name; }
+        else renderSlides();
+      }
     };
     g.appendChild(d);
   });
@@ -285,17 +328,17 @@ function ytId(url){
   const m=String(url).match(/(?:v=|\/embed\/|youtu\.be\/|\/shorts\/)([A-Za-z0-9_-]{6,})/);
   return m?m[1]:(/^[A-Za-z0-9_-]{6,}$/.test(url)?url:'');
 }
-function openMediaModal(i){ mediaTarget=i; renderMediaList(); $('#mediaModal').classList.add('open'); }
-function closeMediaModal(){ $('#mediaModal').classList.remove('open'); renderSlides(); }
+/* media lives inside the edit modal (mediaTarget === editTarget) */
+function openMediaModal(i){ openEditModal(i); }   // card 🎞 shortcut → edit modal
 function renderMediaList(){
   const i=mediaTarget, media=slideMedia(i);
-  $('#mediaSub').textContent='#'+(i+1)+' · '+media.length+'개';
-  const L=$('#mediaList'); L.innerHTML='';
+  $('#editMediaSub').textContent=media.length+'개';
+  const L=$('#editMediaList'); L.innerHTML='';
   media.forEach((m,k)=>{
     const isVid=m.type==='video';
     const thumb=isVid ? `https://i.ytimg.com/vi/${ytId(m.videoId||m.url)}/hqdefault.jpg` : (m.src||m.image||'');
     const row=document.createElement('div');
-    row.style.cssText='display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px';
+    row.style.cssText='display:flex;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px';
     row.innerHTML=`
       <div style="width:90px;height:64px;flex:0 0 auto;background:#000;border-radius:6px;overflow:hidden;position:relative">
         <img src="${thumb}" style="width:100%;height:100%;object-fit:cover">
@@ -314,19 +357,17 @@ function renderMediaList(){
   });
 }
 function addMediaImage(src){ slideMedia(mediaTarget).push({type:'image',src:src,caption:''}); renderMediaList(); dirty(); }
-$('#mAddImg').onclick=()=>{ pickMode='media'; openPicker(); };
-$('#mAddVid').onclick=()=>{
+$('#editAddImg').onclick=()=>{ pickMode='media'; openPicker(); };
+$('#editAddVid').onclick=()=>{
   const url=prompt('유튜브 URL 또는 영상 ID를 붙여넣으세요:'); if(!url)return;
   const id=ytId(url.trim()); if(!id){ alert('유튜브 ID를 인식하지 못했습니다.'); return; }
   slideMedia(mediaTarget).push({type:'video',videoId:id,caption:''}); renderMediaList(); dirty();
 };
-$('#mediaClose').onclick=closeMediaModal;
-$('#mediaModal').addEventListener('click',e=>{ if(e.target.id==='mediaModal')closeMediaModal(); });
-$('#mediaList').addEventListener('input',e=>{
+$('#editMediaList').addEventListener('input',e=>{
   const t=e.target; if(t.dataset.mk==null)return;
   slideMedia(mediaTarget)[+t.dataset.mk][t.dataset.mf]=t.value; dirty();
 });
-$('#mediaList').addEventListener('click',e=>{
+$('#editMediaList').addEventListener('click',e=>{
   const b=e.target.closest('button[data-mact]'); if(!b)return;
   const k=+b.dataset.mk, M=slideMedia(mediaTarget);
   if(b.dataset.mact==='up'&&k>0){[M[k-1],M[k]]=[M[k],M[k-1]];}
@@ -334,6 +375,25 @@ $('#mediaList').addEventListener('click',e=>{
   if(b.dataset.mact==='del'){M.splice(k,1);}
   renderMediaList(); dirty();
 });
+
+/* ---------- slide edit modal (roomy) ---------- */
+let editTarget=null;
+function openEditModal(i){
+  editTarget=i; mediaTarget=i; const s=cfg.slides[i];
+  $('#editSub').textContent='#'+(i+1);
+  $('#ed-top').value=s.top||''; $('#ed-bottom').value=s.bottom||'';
+  $('#ed-title').value=s.title||''; $('#ed-desc').value=s.desc||'';
+  $('#editThumbImg').src=s.image||'';
+  renderMediaList();
+  $('#editModal').classList.add('open');
+}
+function closeEditModal(){ $('#editModal').classList.remove('open'); renderSlides(); }
+$('#editClose').onclick=closeEditModal;
+$('#editModal').addEventListener('click',e=>{ if(e.target.id==='editModal')closeEditModal(); });
+[['ed-top','top'],['ed-bottom','bottom'],['ed-title','title'],['ed-desc','desc']].forEach(([id,key])=>{
+  $('#'+id).addEventListener('input',e=>{ if(editTarget!=null){ cfg.slides[editTarget][key]=e.target.value; dirty(); } });
+});
+$('#editPickImg').onclick=$('#editThumb').onclick=()=>{ pickTarget=editTarget; pickMode='thumb'; openPicker(); };
 
 /* ---------- images CRUD ---------- */
 function renderImages(){

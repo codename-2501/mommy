@@ -84,6 +84,28 @@ def _slide_by_id(sid):
     return None
 
 
+_ASPECTS = None
+
+
+def image_aspects():
+    """{filename: width/height} for every image, so thumbnails keep their ratio."""
+    global _ASPECTS
+    if _ASPECTS is None:
+        _ASPECTS = {}
+        try:
+            from PIL import Image
+            for f in os.listdir(IMAGES_DIR):
+                if f.lower().endswith(ALLOWED_IMG):
+                    try:
+                        w, h = Image.open(os.path.join(IMAGES_DIR, f)).size
+                        _ASPECTS[f] = round(w / h, 4) if h else 1
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+    return _ASPECTS
+
+
 _DATO_URL = re.compile(r"https://www\.datocms-assets\.com/[^\"\\]*")
 
 
@@ -447,6 +469,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(js)
                 return
 
+        if path == "/api/aspects":
+            return self._send_json({"aspects": image_aspects()})
+
         if path == "/api/pages":
             return self._send_json({"pages": ROUTES})
 
@@ -530,6 +555,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     i += 1
                 with open(dest, "wb") as fh:
                     fh.write(body)
+                globals()["_ASPECTS"] = None   # new image → recompute aspects
                 return self._send_json({"ok": True, "image": "/images/" + name, "name": name})
             except Exception as e:
                 return self._send_json({"error": str(e)}, 400)

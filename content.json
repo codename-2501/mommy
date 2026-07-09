@@ -19,7 +19,7 @@
    "image": "/images/0b77ebf1938e1.jpg",
    "top": "2",
    "bottom": "Inspire (March)",
-   "desc": "sadfsadf",
+   "desc": "sadfsadfrose",
    "title": "asdfsad",
    "url": "/articles/defective-units-vol-1"
   },
@@ -29,7 +29,7 @@
    "top": "3",
    "bottom": "Inspire (March)",
    "title": "",
-   "desc": "sdfasafd333",
+   "desc": "",
    "url": "/articles/defective-units-vol-1"
   },
   {
@@ -37,14 +37,18 @@
    "image": "/images/1aff2f008ad96.jpg",
    "top": "4",
    "bottom": "Inspire (March)",
-   "url": "/articles/99-cents-only-store-gallery-exhibition"
+   "url": "/articles/99-cents-only-store-gallery-exhibition",
+   "title": "",
+   "desc": ""
   },
   {
    "id": "s4",
    "image": "/images/1c91f200eb441.png",
    "top": "5",
    "bottom": "Inspire (March)",
-   "url": "/articles/99-cents-only-store-gallery-exhibition"
+   "url": "/articles/99-cents-only-store-gallery-exhibition",
+   "title": "",
+   "desc": ""
   },
   {
    "id": "s5",
