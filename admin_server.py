@@ -8,7 +8,7 @@ Usage:  python admin_server.py [port]     (default 8082)
 Site:   http://localhost:8082/
 Admin:  http://localhost:8082/admin/
 """
-import sys, os, json, re, urllib.parse, http.server, socketserver
+import sys, os, json, re, copy, urllib.parse, http.server, socketserver
 from html.parser import HTMLParser
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -44,6 +44,227 @@ ROUTES = [
     "/articles/surfer-aloslebir-108-foot-monster-wave", "/articles/stussy-autumn-drop",
     "/articles/post-malone-f1-trillion", "/articles/sora-launches", "/articles/defective-units-vol-1",
 ]
+
+
+TEMPLATE_SLUG = "defective-units-vol-1"
+_TPL_PAYLOAD = None
+
+
+def _template_payload():
+    global _TPL_PAYLOAD
+    if _TPL_PAYLOAD is None:
+        with open(os.path.join(ROOT, "articles", TEMPLATE_SLUG, "_payload.json"), encoding="utf-8") as fh:
+            _TPL_PAYLOAD = json.load(fh)
+    return list(_TPL_PAYLOAD)
+
+
+def _tpl_grid_item():
+    o = json.loads(_gql_template())
+    for bl in o["data"]["page"]["content"].get("blocks", []):
+        if bl.get("type") == "media_grid_block" and bl.get("items"):
+            return bl["items"][0]
+    return None
+
+
+def _tpl_embed():
+    o = json.loads(_gql_template())
+    for bl in o["data"]["page"]["content"].get("blocks", []):
+        if bl.get("type") == "embed":
+            return bl
+    return None
+
+
+def _slide_by_id(sid):
+    try:
+        for s in read_content().get("slides", []):
+            if s.get("id") == sid:
+                return s
+    except Exception:
+        pass
+    return None
+
+
+_DATO_URL = re.compile(r"https://www\.datocms-assets\.com/[^\"\\]*")
+
+
+def _image_block(bid, src, caption):
+    """A media_grid_block holding one image of `src` with `caption`."""
+    item = copy.deepcopy(_tpl_grid_item()) or {"id": bid + "-i", "caption": "", "media": {}}
+    item = json.loads(_DATO_URL.sub(src, json.dumps(item)))   # point every asset URL at our image
+    item["caption"] = caption or ""
+    if isinstance(item.get("media"), dict):
+        item["media"]["video"] = None
+        item["media"]["alt"] = None
+        item["media"]["title"] = None
+    return {"id": bid, "type": "media_grid_block", "items": [item]}
+
+
+def _video_block(bid, video_id, caption):
+    """An embed block for a YouTube video id."""
+    emb = copy.deepcopy(_tpl_embed())
+    if not emb:
+        return None
+    emb["id"] = bid
+    e = emb.setdefault("embed", {})
+    e["provider"] = "youtube"
+    e["providerUid"] = video_id
+    e["url"] = "https://www.youtube.com/watch?v=" + video_id
+    e["thumbnailUrl"] = "https://i.ytimg.com/vi/%s/hqdefault.jpg" % video_id
+    e["title"] = caption or ""
+    return emb
+
+
+def _slide_media(s):
+    """Normalize a slide's media list; fall back to its single image."""
+    media = s.get("media")
+    if isinstance(media, list) and media:
+        return media
+    if s.get("image"):
+        return [{"type": "image", "src": s["image"], "caption": ""}]
+    return []
+
+
+def virtual_payload(slug):
+    """Build a Nuxt payload for a virtual /articles/tlb-<id> route from a slide."""
+    sid = slug[4:] if slug.startswith("tlb-") else slug
+    s = _slide_by_id(sid)
+    arr = _template_payload()
+    if not s:
+        return json.dumps(arr, ensure_ascii=False)
+    img = s.get("image") or ""
+    title = s.get("title") or s.get("bottom") or ""
+    desc = s.get("desc") or ""
+    slug_idx = -1
+    for i, v in enumerate(arr):
+        if not isinstance(v, str):
+            continue
+        if img and re.match(r"^/images/[A-Za-z0-9._-]+\.(?:jpe?g|png|webp|gif)$", v, re.I):
+            arr[i] = img
+            continue
+        if v == TEMPLATE_SLUG:
+            arr[i] = slug
+            slug_idx = i
+    if title and slug_idx >= 0 and isinstance(arr[slug_idx + 1], str):
+        arr[slug_idx + 1] = title
+    if desc:
+        first = True
+        for i, v in enumerate(arr):
+            if isinstance(v, str) and len(v) > 40 and not re.match(r"^https?:|^data:", v) and "/images/" not in v:
+                arr[i] = desc if first else ""
+                first = False
+    return json.dumps(arr, ensure_ascii=False)
+
+
+_GQL_TPL = None
+
+
+def _gql_template():
+    global _GQL_TPL
+    if _GQL_TPL is None:
+        with open(os.path.join(ROOT, "gql_template.json"), encoding="utf-8") as fh:
+            _GQL_TPL = fh.read()
+    return _GQL_TPL
+
+
+def _slide_for_slug(slug):
+    """slug 'tlb-<id>' -> that slide; a real article slug -> its first slide."""
+    if slug and slug.startswith("tlb-"):
+        return _slide_by_id(slug[4:])
+    try:
+        for s in read_content().get("slides", []):
+            if (s.get("url") or "") == "/articles/" + (slug or ""):
+                return s
+    except Exception:
+        pass
+    return None
+
+
+def gql_response(slug):
+    """Build a DatoCMS-shaped GraphQL response for a slug, filled with our slide."""
+    obj = json.loads(_gql_template())
+    page = obj.get("data", {}).get("page")
+    if not page:
+        return json.dumps(obj, ensure_ascii=False)
+    s = _slide_for_slug(slug)
+    page["slug"] = slug
+    if s:
+        mm = re.match(r"^(.*?)\s*(\([^)]*\))?\s*$", str(s.get("bottom") or ""))
+        cat = (mm.group(1).strip() if mm else "") or (s.get("bottom") or "")
+        page["title"] = s.get("title") or s.get("bottom") or page.get("title")
+        if isinstance(page.get("tag"), dict) and cat:
+            page["tag"]["title"] = cat
+        # month (shown next to the category) comes from the date — align it
+        mon = (re.search(r"\(([^)]*)\)", str(s.get("bottom") or "")) or [None, ""])[1].strip()
+        months = ["january", "february", "march", "april", "may", "june",
+                  "july", "august", "september", "october", "november", "december"]
+        if mon.lower() in months and isinstance(page.get("date"), str):
+            page["date"] = "2026-%02d-09" % (months.index(mon.lower()) + 1)
+        # rebuild the article body from the slide's media list (images + videos),
+        # in order, in the ORIGINAL format (media_grid + embed blocks)
+        desc = s.get("desc") or ""
+        first_img = None
+        try:
+            content = page["content"]
+            doc = content["value"]["document"]
+            children, blocks = [], []
+            if desc:
+                children.append({"type": "paragraph", "children": [{"type": "span", "value": desc, "marks": []}]})
+            for i, m in enumerate(_slide_media(s)):
+                bid = "tlbblk%d" % i
+                if (m.get("type") == "video") and (m.get("videoId") or m.get("url")):
+                    vid = m.get("videoId") or _yt_id(m.get("url"))
+                    bl = _video_block(bid, vid, m.get("caption")) if vid else None
+                    if bl:
+                        blocks.append(bl)
+                        children.append({"type": "block", "item": bid})
+                else:
+                    src = m.get("src") or m.get("image") or ""
+                    if src:
+                        first_img = first_img or src
+                        blocks.append(_image_block(bid, src, m.get("caption")))
+                        children.append({"type": "block", "item": bid})
+            doc["children"] = children
+            content["blocks"] = blocks
+        except Exception:
+            pass
+        # keep one page image for meta/og; clear video/alt
+        if page.get("images"):
+            page["images"] = page["images"][:1]
+        for im in page.get("images", []) or []:
+            if isinstance(im, dict):
+                im["video"] = None
+                im["alt"] = None
+                im["title"] = None
+    out = json.dumps(obj, ensure_ascii=False)
+    # clean up any leftover template asset URLs (meta/og/thumbnails) -> our first image
+    if s:
+        fallback = first_img or s.get("image")
+        if fallback:
+            out = _DATO_URL.sub(fallback, out)
+    return out
+
+
+def _yt_id(url):
+    if not url:
+        return ""
+    m = re.search(r"(?:v=|/embed/|youtu\.be/|/shorts/)([A-Za-z0-9_-]{6,})", url)
+    return m.group(1) if m else (url if re.match(r"^[A-Za-z0-9_-]{6,}$", url) else "")
+
+
+_JS_CACHE = {}
+
+
+def rewritten_js(name):
+    """Serve app JS with the DatoCMS endpoint pointed at our local server."""
+    if name in _JS_CACHE:
+        return _JS_CACHE[name]
+    with open(os.path.join(ROOT, "_nuxt", name), "r", encoding="utf-8") as fh:
+        js = fh.read()
+    base = "http://localhost:%d" % PORT     # absolute URL (datocms client does new URL(endpoint))
+    js = js.replace("https://graphql.datocms.com", base + "/gql")
+    js = js.replace("https://graphql-listen.datocms.com", base + "/gql-listen")
+    _JS_CACHE[name] = js
+    return js
 
 
 class _TextExtractor(HTMLParser):
@@ -153,6 +374,66 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 return self._send_json({"error": str(e)}, 500)
 
+        # virtual per-slide article payload: /articles/tlb-<id>/_payload.json
+        mvp = re.match(r"^/articles/(tlb-[^/]+)/_payload\.json$", path)
+        if mvp:
+            try:
+                body = virtual_payload(mvp.group(1)).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(body)
+                return
+            except Exception as e:
+                return self._send_json({"error": str(e)}, 500)
+
+        # virtual per-slide article page (direct load / refresh) -> template HTML shell
+        mvh = re.match(r"^/articles/(tlb-[^/]+)/?$", path)
+        if mvh:
+            tpl = os.path.join(ROOT, "articles", TEMPLATE_SLUG, "index.html")
+            if os.path.isfile(tpl):
+                with open(tpl, "rb") as fh:
+                    html = fh.read()
+                if INJECT.encode() not in html and b"</body>" in html:
+                    html = html.replace(b"</body>", INJECT.encode() + b"</body>", 1)
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(html)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(html)
+                return
+
+        # app JS with the DatoCMS endpoint redirected to our local /gql
+        mjs = re.match(r"^/_nuxt/(BGLHITTy\.js|NgnKf_Q9\.js)$", path)
+        if mjs:
+            try:
+                body = rewritten_js(mjs.group(1)).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/javascript; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(body)
+                return
+            except Exception as e:
+                return self._send_json({"error": str(e)}, 500)
+
+        # DatoCMS real-time subscription (SSE) — not needed; keep it quiet
+        if path.startswith("/gql-listen"):
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            try:
+                self.wfile.write(b": ok\n\n")
+            except Exception:
+                pass
+            return
+
         if path == "/tlb-admin.js":
             fs = os.path.join(ROOT, "tlb-admin.js")
             if os.path.isfile(fs):
@@ -204,6 +485,22 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         path = urllib.parse.urlparse(self.path).path
         length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(length) if length else b""
+
+        # local GraphQL endpoint standing in for DatoCMS — returns our slide data
+        if path.startswith("/gql"):
+            try:
+                q = json.loads(body.decode("utf-8")) if body else {}
+                slug = (q.get("variables") or {}).get("slug") or ""
+                out = gql_response(slug).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(out)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(out)
+                return
+            except Exception as e:
+                return self._send_json({"error": str(e)}, 500)
 
         if path == "/api/content":
             try:
