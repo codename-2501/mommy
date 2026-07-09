@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>THE LOOKBACK — 관리자</title>
+<style>
+  :root{--bg:#0f0f11;--panel:#17181c;--panel2:#1d1f24;--line:#2a2c33;--ink:#eceae4;--mut:#8a8c94;--acc:#e85c4a;--ok:#3fb56b;--blue:#4a90d9}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:14px/1.5 "Helvetica Neue",Arial,sans-serif}
+  header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:12px 20px;
+    background:rgba(15,15,17,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  header h1{font-size:13px;letter-spacing:.18em;text-transform:uppercase;font-weight:700}
+  .tabs{display:flex;gap:4px;margin-left:8px}
+  .tab{padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--mut);border:1px solid transparent}
+  .tab.active{background:var(--panel2);color:var(--ink);border-color:var(--line)}
+  .sp{flex:1}
+  .btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 13px;border-radius:8px;
+    font-size:13px;cursor:pointer;transition:.15s;white-space:nowrap}
+  .btn:hover{border-color:#4a4d57}
+  .btn.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+  .btn.ghost{background:transparent}
+  .btn.sm{padding:4px 9px;font-size:12px}
+  .btn.danger{color:#ff9a8f;border-color:#5a2c28}
+  .status{font-size:12px;color:var(--mut);min-width:150px;text-align:right}
+  .status.ok{color:var(--ok)} .status.err{color:var(--acc)}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid var(--line)}
+  .toolbar input[type=search],.toolbar select{background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:8px 12px}
+  .toolbar input[type=search]{flex:1;min-width:180px}
+  .count{font-size:12px;color:var(--mut)}
+  main{padding:18px 20px 90px}
+  .view{display:none} .view.active{display:block}
+
+  /* slides / images grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+  .card.drag{opacity:.4} .card.over{outline:2px dashed var(--blue)}
+  .thumb{position:relative;aspect-ratio:4/3;background:#000;cursor:pointer;overflow:hidden}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .badge{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.72);color:#fff;font-size:11px;padding:2px 7px;border-radius:6px}
+  .grip{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.72);color:#fff;font-size:11px;padding:2px 7px;border-radius:6px;cursor:grab}
+  .change{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);
+    color:#fff;font-size:12px;opacity:0;transition:.15s}
+  .thumb:hover .change{opacity:1}
+  .fields{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px}
+  .fields label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+  .fields input{width:100%;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 8px;font-size:13px}
+  .fields input:focus{outline:none;border-color:#4a4d57}
+  .rowbtns{display:flex;gap:6px;margin-top:2px;flex-wrap:wrap}
+
+  /* image library */
+  .imgcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .imgcard .ph{aspect-ratio:1;background:#000}
+  .imgcard img{width:100%;height:100%;object-fit:cover;display:block}
+  .imgcard .meta{padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+  .imgcard .nm{font-size:11px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .use{font-size:10px;color:var(--mut)}
+
+  /* text editor */
+  .textlist{display:flex;flex-direction:column;gap:10px;max-width:900px}
+  .titem{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;
+    grid-template-columns:1fr 1fr;gap:10px;align-items:center}
+  .titem .orig{font-size:12px;color:var(--mut);white-space:pre-wrap;word-break:break-word}
+  .titem textarea{width:100%;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;
+    padding:7px 9px;font-size:13px;resize:vertical;min-height:38px;font-family:inherit}
+  .titem.changed{border-color:#4a5a3a}
+  .hint{font-size:12px;color:var(--mut);margin-bottom:12px}
+
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:24px}
+  .modal.open{display:flex}
+  .sheet{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(900px,96vw);max-height:86vh;display:flex;flex-direction:column}
+  .sheet .shead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .sheet .sbody{padding:16px;overflow:auto}
+  .picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+  .pick{border:2px solid transparent;border-radius:8px;overflow:hidden;cursor:pointer;background:#000;aspect-ratio:1}
+  .pick img{width:100%;height:100%;object-fit:cover;display:block}
+  .pick:hover{border-color:#4a4d57}
+</style>
+</head>
+<body>
+<header>
+  <h1>THE LOOKBACK · 관리자</h1>
+  <div class="tabs">
+    <div class="tab active" data-view="slides">슬라이드</div>
+    <div class="tab" data-view="images">이미지</div>
+    <div class="tab" data-view="text">텍스트</div>
+  </div>
+  <div class="sp"></div>
+  <button class="btn ghost" id="openSite">사이트 열기 ↗</button>
+  <button class="btn primary" id="save">저장</button>
+  <div class="status" id="status">불러오는 중…</div>
+</header>
+
+<!-- ===== SLIDES ===== -->
+<section class="view active" id="view-slides">
+  <div class="toolbar">
+    <button class="btn" id="addSlide">+ 슬라이드 추가</button>
+    <input type="search" id="qSlide" placeholder="번호·문구로 검색">
+    <span class="count" id="countSlide"></span>
+    <span class="sp"></span>
+    <button class="btn ghost" id="bulkBottom">표시분 아래문구 일괄변경…</button>
+  </div>
+  <main><div class="grid" id="slideGrid"></div></main>
+</section>
+
+<!-- ===== IMAGES ===== -->
+<section class="view" id="view-images">
+  <div class="toolbar">
+    <label class="btn" style="position:relative;overflow:hidden">
+      + 이미지 업로드
+      <input type="file" id="uploader" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer">
+    </label>
+    <span class="count" id="countImg"></span>
+    <span class="hint" style="margin:0">사용 중인 이미지는 삭제 시 확인합니다.</span>
+  </div>
+  <main><div class="grid" id="imgGrid"></div></main>
+</section>
+
+<!-- ===== TEXT ===== -->
+<section class="view" id="view-text">
+  <div class="toolbar">
+    <label>페이지</label>
+    <select id="pageSel"></select>
+    <span class="count" id="countText"></span>
+    <span class="sp"></span>
+    <button class="btn ghost" id="reloadText">다시 스캔</button>
+  </div>
+  <main>
+    <div class="hint">원본 텍스트(왼쪽)를 오른쪽에서 수정하세요. 같은 문구가 여러 곳에 있으면 모두 바뀝니다. 저장 후 사이트 새로고침 시 반영됩니다.</div>
+    <div class="textlist" id="textList"></div>
+  </main>
+</section>
+
+<!-- image picker modal -->
+<div class="modal" id="picker">
+  <div class="sheet">
+    <div class="shead"><strong>이미지 선택</strong><div class="sp"></div>
+      <label class="btn ghost sm" style="position:relative;overflow:hidden">업로드
+        <input type="file" id="pickUpload" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
+      <button class="btn ghost sm" id="pickClose">닫기</button></div>
+    <div class="sbody"><div class="picker" id="pickGrid"></div></div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let cfg=null, images=[], pickTarget=null, curPage='/', textScan=[], nid=0;
+function setStatus(m,c=''){const e=$('#status');e.textContent=m;e.className='status '+c;}
+function dirty(){setStatus('저장되지 않은 변경 있음','err');}
+
+async function load(){
+  const [c,im,pg]=await Promise.all([
+    fetch('/api/content?t='+Date.now()).then(r=>r.json()),
+    fetch('/api/images?t='+Date.now()).then(r=>r.json()),
+    fetch('/api/pages?t='+Date.now()).then(r=>r.json())
+  ]);
+  cfg=c; if(!cfg.texts)cfg.texts={}; images=im.images||[];
+  const sel=$('#pageSel'); sel.innerHTML=(pg.pages||['/']).map(p=>`<option value="${p}">${p}</option>`).join('');
+  renderSlides(); renderImages();
+  setStatus(cfg.slides.length+'개 슬라이드 · '+images.length+'개 이미지','ok');
+}
+
+/* ---------- tabs ---------- */
+$$('.tab').forEach(t=>t.onclick=()=>{
+  $$('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active');
+  $$('.view').forEach(v=>v.classList.remove('active'));
+  $('#view-'+t.dataset.view).classList.add('active');
+  if(t.dataset.view==='text') loadText();
+});
+
+/* ---------- slides CRUD ---------- */
+function usageCount(name){return cfg.slides.filter(s=>(s.image||'').endsWith('/'+name)).length;}
+function renderSlides(){
+  const q=($('#qSlide').value||'').toLowerCase().trim();
+  const g=$('#slideGrid'); g.innerHTML=''; let shown=0;
+  cfg.slides.forEach((s,i)=>{
+    const hay=(i+1)+' '+(s.top||'')+' '+(s.bottom||'');
+    if(q && !hay.toLowerCase().includes(q)) return; shown++;
+    const c=document.createElement('div'); c.className='card'; c.draggable=true; c.dataset.i=i;
+    c.innerHTML=`
+      <div class="thumb" data-pick="${i}">
+        <img loading="lazy" src="${s.image||''}" alt="">
+        <span class="badge">#${i+1}</span><span class="grip" title="드래그로 순서변경">⠿</span>
+        <span class="change">이미지 변경</span>
+      </div>
+      <div class="fields">
+        <div><label>위 문구 (번호)</label><input data-i="${i}" data-k="top" value="${esc(s.top)}"></div>
+        <div><label>아래 문구 (분류·월)</label><input data-i="${i}" data-k="bottom" value="${esc(s.bottom)}"></div>
+        <div><label>상세 제목 (클릭 시)</label><input data-i="${i}" data-k="title" value="${esc(s.title)}" placeholder="작품 제목"></div>
+        <div><label>상세 설명 (클릭 시)</label><textarea data-i="${i}" data-k="desc" placeholder="작품 설명…" style="width:100%;min-height:52px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 8px;font-size:13px;font-family:inherit;resize:vertical">${escHtml(s.desc)}</textarea></div>
+        <div class="rowbtns">
+          <button class="btn sm" data-act="up" data-i="${i}">↑</button>
+          <button class="btn sm" data-act="down" data-i="${i}">↓</button>
+          <button class="btn sm" data-act="dup" data-i="${i}">복제</button>
+          <button class="btn sm danger" data-act="del" data-i="${i}">삭제</button>
+        </div>
+      </div>`;
+    g.appendChild(c);
+  });
+  $('#countSlide').textContent=shown+' / '+cfg.slides.length;
+}
+function esc(v){return (v==null?'':String(v)).replace(/"/g,'&quot;');}
+
+$('#slideGrid').addEventListener('input',e=>{
+  const t=e.target; if(t.tagName!=='INPUT'&&t.tagName!=='TEXTAREA')return;
+  if(t.dataset.i==null||t.dataset.k==null)return;
+  cfg.slides[+t.dataset.i][t.dataset.k]=t.value; dirty();
+});
+$('#slideGrid').addEventListener('click',e=>{
+  const pk=e.target.closest('[data-pick]');
+  if(pk){pickTarget=+pk.dataset.pick; openPicker(); return;}
+  const b=e.target.closest('button[data-act]'); if(!b)return;
+  const i=+b.dataset.i, S=cfg.slides;
+  if(b.dataset.act==='up'&&i>0){[S[i-1],S[i]]=[S[i],S[i-1]];}
+  if(b.dataset.act==='down'&&i<S.length-1){[S[i+1],S[i]]=[S[i],S[i+1]];}
+  if(b.dataset.act==='dup'){const n={...S[i],id:'n'+Date.now()+'_'+(nid++)};S.splice(i+1,0,n);}
+  if(b.dataset.act==='del'){if(!confirm('#'+(i+1)+' 슬라이드를 삭제할까요?'))return;S.splice(i,1);}
+  renderSlides(); dirty();
+});
+$('#addSlide').onclick=()=>{
+  const last=cfg.slides[cfg.slides.length-1]||{};
+  cfg.slides.push({id:'n'+Date.now()+'_'+(nid++),image:last.image||(images[0]?'/images/'+images[0]:''),top:String(cfg.slides.length+1),bottom:'Inspire'});
+  renderSlides(); dirty(); window.scrollTo(0,document.body.scrollHeight);
+};
+$('#qSlide').addEventListener('input',renderSlides);
+$('#bulkBottom').onclick=()=>{
+  const q=($('#qSlide').value||'').toLowerCase().trim();
+  const v=prompt('표시된 슬라이드들의 "아래 문구"를 일괄 변경:'); if(v==null)return;
+  cfg.slides.forEach((s,i)=>{const hay=((i+1)+' '+(s.top||'')+' '+(s.bottom||'')).toLowerCase();if(!q||hay.includes(q))s.bottom=v;});
+  renderSlides(); dirty();
+};
+/* drag reorder */
+let dragI=null;
+$('#slideGrid').addEventListener('dragstart',e=>{const c=e.target.closest('.card');if(!c)return;dragI=+c.dataset.i;c.classList.add('drag');});
+$('#slideGrid').addEventListener('dragend',e=>{const c=e.target.closest('.card');if(c)c.classList.remove('drag');$$('.card.over').forEach(x=>x.classList.remove('over'));});
+$('#slideGrid').addEventListener('dragover',e=>{e.preventDefault();const c=e.target.closest('.card');if(!c)return;$$('.card.over').forEach(x=>x.classList.remove('over'));c.classList.add('over');});
+$('#slideGrid').addEventListener('drop',e=>{e.preventDefault();const c=e.target.closest('.card');if(!c||dragI==null)return;const to=+c.dataset.i;const S=cfg.slides;const[m]=S.splice(dragI,1);S.splice(to,0,m);dragI=null;renderSlides();dirty();});
+
+/* ---------- image picker ---------- */
+function openPicker(){
+  const g=$('#pickGrid'); g.innerHTML='';
+  images.forEach(name=>{
+    const d=document.createElement('div'); d.className='pick';
+    d.innerHTML=`<img loading="lazy" src="/images/${name}">`;
+    d.onclick=()=>{cfg.slides[pickTarget].image='/images/'+name;renderSlides();closePicker();dirty();};
+    g.appendChild(d);
+  });
+  $('#picker').classList.add('open');
+}
+function closePicker(){$('#picker').classList.remove('open');}
+$('#pickClose').onclick=closePicker;
+$('#picker').addEventListener('click',e=>{if(e.target.id==='picker')closePicker();});
+$('#pickUpload').onchange=e=>doUpload(e,()=>openPicker());
+
+/* ---------- images CRUD ---------- */
+function renderImages(){
+  const g=$('#imgGrid'); g.innerHTML='';
+  images.forEach(name=>{
+    const u=usageCount(name);
+    const c=document.createElement('div'); c.className='imgcard';
+    c.innerHTML=`<div class="ph"><img loading="lazy" src="/images/${name}"></div>
+      <div class="meta"><div><div class="nm" title="${name}">${name}</div><div class="use">${u}개 슬라이드 사용</div></div>
+      <button class="btn sm danger" data-del="${name}">삭제</button></div>`;
+    g.appendChild(c);
+  });
+  $('#countImg').textContent=images.length+'개 이미지';
+}
+$('#imgGrid').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-del]'); if(!b)return;
+  const name=b.dataset.del, u=usageCount(name);
+  if(u>0 && !confirm(name+' 은(는) '+u+'개 슬라이드에서 사용 중입니다. 그래도 삭제할까요? (해당 슬라이드 이미지는 비게 됩니다)'))return;
+  if(u===0 && !confirm(name+' 을(를) 삭제할까요?'))return;
+  const r=await fetch('/api/images?name='+encodeURIComponent(name)+(u>0?'&force=1':''),{method:'DELETE'}).then(r=>r.json());
+  if(r.error){setStatus('삭제 실패: '+r.error,'err');return;}
+  images=images.filter(n=>n!==name);
+  if(u>0){cfg.slides.forEach(s=>{if((s.image||'').endsWith('/'+name))s.image='';});}
+  renderImages(); renderSlides(); setStatus(name+' 삭제됨','ok');
+});
+$('#uploader').onchange=e=>doUpload(e);
+async function doUpload(e,after){
+  const files=[...e.target.files]; if(!files.length)return; let done=0;
+  setStatus('업로드 중… (0/'+files.length+')');
+  for(const f of files){
+    try{const buf=await f.arrayBuffer();
+      const r=await fetch('/api/upload?name='+encodeURIComponent(f.name),{method:'POST',body:buf}).then(r=>r.json());
+      if(r.error)throw new Error(r.error);
+    }catch(err){setStatus('업로드 실패: '+err.message,'err');}
+    done++; setStatus('업로드 중… ('+done+'/'+files.length+')');
+  }
+  const im=await fetch('/api/images?t='+Date.now()).then(r=>r.json()); images=im.images||[];
+  renderImages(); setStatus(files.length+'개 업로드 완료','ok'); e.target.value=''; if(after)after();
+}
+
+/* ---------- text editor ---------- */
+async function loadText(){
+  curPage=$('#pageSel').value||'/';
+  const r=await fetch('/api/textscan?path='+encodeURIComponent(curPage)+'&t='+Date.now()).then(r=>r.json());
+  textScan=r.texts||[]; renderText();
+}
+function renderText(){
+  const ov=(cfg.texts&&cfg.texts[curPage])||{};
+  const L=$('#textList'); L.innerHTML='';
+  textScan.forEach((orig,i)=>{
+    const val=ov.hasOwnProperty(orig)?ov[orig]:orig;
+    const it=document.createElement('div'); it.className='titem'+(val!==orig?' changed':'');
+    it.innerHTML=`<div class="orig">${escHtml(orig)}</div>
+      <textarea data-orig="${escAttr(orig)}">${escHtml(val)}</textarea>`;
+    L.appendChild(it);
+  });
+  $('#countText').textContent=textScan.length+'개 문구';
+}
+function escHtml(v){return (v==null?'':String(v)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escAttr(v){return escHtml(v).replace(/"/g,'&quot;');}
+$('#textList').addEventListener('input',e=>{
+  const t=e.target; if(t.tagName!=='TEXTAREA')return;
+  const orig=t.dataset.orig, val=t.value;
+  if(!cfg.texts[curPage])cfg.texts[curPage]={};
+  if(val===orig)delete cfg.texts[curPage][orig]; else cfg.texts[curPage][orig]=val;
+  t.closest('.titem').classList.toggle('changed',val!==orig);
+  dirty();
+});
+$('#pageSel').addEventListener('change',loadText);
+$('#reloadText').onclick=loadText;
+
+/* ---------- save ---------- */
+$('#save').onclick=async()=>{
+  setStatus('저장 중…');
+  try{
+    // prune empty text pages
+    Object.keys(cfg.texts).forEach(p=>{if(!Object.keys(cfg.texts[p]).length)delete cfg.texts[p];});
+    const r=await fetch('/api/content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)}).then(r=>r.json());
+    if(r.error)throw new Error(r.error);
+    setStatus('저장 완료 · 사이트 새로고침 시 반영','ok');
+  }catch(err){setStatus('저장 실패: '+err.message,'err');}
+};
+$('#openSite').onclick=()=>window.open('/','_blank');
+window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();$('#save').click();}if(e.key==='Escape')closePicker();});
+
+load().catch(e=>setStatus('불러오기 실패: '+e.message,'err'));
+</script>
+</body>
+</html>
