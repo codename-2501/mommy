@@ -160,14 +160,29 @@ function mountSurf(view, slides, aspects, onOpen) {
     if (t < 1) requestAnimationFrame(unfreeze);
   })();
 
+  function destroy() {
+    cancelAnimationFrame(raf);
+    removeEventListener('pointermove', onMove);
+    removeEventListener('pointerup', onUp);
+    removeEventListener('wheel', onWheel);
+    removeEventListener('keydown', onKey);
+    removeEventListener('resize', measure);
+  }
+
   return {
-    destroy() {
-      cancelAnimationFrame(raf);
-      removeEventListener('pointermove', onMove);
-      removeEventListener('pointerup', onUp);
-      removeEventListener('wheel', onWheel);
-      removeEventListener('keydown', onKey);
-      removeEventListener('resize', measure);
+    destroy,
+    /* original V(): visible cards fly up — y to above viewport, power2.in .5s, stagger .025 */
+    exit(done) {
+      destroy();
+      let k = 0;
+      for (const it of items) {
+        const r = it.el.getBoundingClientRect();
+        if (r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight) continue;
+        it.el.style.transition = 'transform .5s cubic-bezier(.55,.085,.68,.53) ' + (k * 0.025) + 's';
+        it.el.style.transform += ' translateY(' + (-(r.bottom + innerHeight * 0.5)) + 'px)';
+        k += 1;
+      }
+      setTimeout(done, 500 + k * 25);
     },
   };
 }
