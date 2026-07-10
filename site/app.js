@@ -12,6 +12,8 @@ let entered = false;          // intro gate passed this page-load
 let carousel = null;          // active carousel instance
 let pendingFlip = null;       // clicked painting rect/src for the detail FLIP
 let flipSources = [];         // home media hidden while their ghosts are in the detail
+let activeView = null;        // surf/index/about instance (destroy on route change)
+let lastViewPath = '/';       // where the detail Close returns to
 
 /* audio flags — "Enter with sound" turns on tick/click sounds (original) */
 window.TLB_AUDIO = { on: false };
@@ -366,6 +368,27 @@ function renderStub(name) {
   return frag;
 }
 
+/* surf/index/about — persistent wordmark + menu around the mounted view */
+function renderView(name, mount) {
+  const frag = document.createDocumentFragment();
+  const wm = buildWordmark(0);
+  wm.classList.add('is-ready');
+  frag.appendChild(wm);
+  const view = el('main', 'view view--' + name);
+  frag.appendChild(view);
+  const menu = buildMenu();
+  menu.classList.add('is-in');
+  frag.appendChild(menu);
+  const openFrom = (s, box) => {
+    const img = box && box.querySelector('img');
+    pendingFlip = { cur: img ? { el: box, src: img.currentSrc || img.src } : null, prev: null, next: null };
+    flipSources = img ? [{ box, src: img.currentSrc || img.src }] : [];
+    navigate('/p/' + (s.id || ''));
+  };
+  activeView = mount(view, openFrom);
+  return frag;
+}
+
 /* ---------- router ---------- */
 
 /* detail close: the home re-enters with its full entrance (original Y() replays) */
@@ -396,7 +419,7 @@ function render() {
 
   /* detail = overlay above the (kept) home — no home teardown, no flash */
   if (path.startsWith('/p/')) {
-    if (!document.querySelector('.view--home')) {
+    if (!document.querySelector('.view')) {   // deep link only — keep a live view
       entered = true;                        // deep link: skip the gate
       if (carousel) { carousel.destroy(); carousel = null; }
       document.body.classList.add('lock');
@@ -407,6 +430,7 @@ function render() {
     pendingFlip = null;
     window.TLBDetail.open(app, {
       content, aspects,
+      closePath: lastViewPath,
       onSync: (i) => { if (carousel) carousel.goTo(i); },
       onClose: replayHomeEnter,
       /* reverse-flip target: matching carousel slot skips the rise and receives the ghost */
@@ -421,22 +445,32 @@ function render() {
     }, path.slice(3), flip);
     return;
   }
-  if (path === '/' && window.TLBDetail.isOpen && document.querySelector('.view--home')) {
-    window.TLBDetail.close();                // back from detail: animate out, keep home
+  if (window.TLBDetail.isOpen && path === lastViewPath) {
+    window.TLBDetail.close();                // back from detail: animate out, keep the view
     return;
   }
 
   if (carousel) { carousel.destroy(); carousel = null; }
-  document.body.classList.toggle('lock', path === '/');
+  if (activeView) { activeView.destroy(); activeView = null; }
+  lastViewPath = path;
+  document.body.classList.add('lock');       // every view manages its own scroll
   app.replaceChildren();
+  const slides = content.slides || [];
   if (path === '/') {
     app.appendChild(renderHome());
   } else if (path === '/surf') {
-    app.appendChild(renderStub('surf'));
+    app.appendChild(renderView('surf', (v, open) =>
+      window.TLBViews.mountSurf(v, slides, aspects, open)));
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const v = document.querySelector('.view--surf');
+      if (v) v.classList.add('is-in');
+    }));
   } else if (path === '/articles') {
-    app.appendChild(renderStub('index'));
+    app.appendChild(renderView('articles', (v, open) =>
+      window.TLBViews.mountIndex(v, slides, aspects, open)));
   } else if (path === '/about') {
-    app.appendChild(renderStub('about'));
+    app.appendChild(renderView('about', (v) =>
+      window.TLBViews.mountAbout(v, content)));
   } else {
     app.appendChild(renderStub('not found'));
   }

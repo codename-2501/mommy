@@ -429,7 +429,8 @@ function open(parent, opts, id, flip) {
 function close() {
   if (!root || closing) return;
   closing = true;
-  if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') history.pushState(null, '', '/');
+  const cp = (root._opts && root._opts.closePath) || '/';
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== cp) history.pushState(null, '', cp);
   const opts = root._opts || {};
   cancelFlights();                               // settle any in-progress item flights
   /* NOW move the hidden carousel to the current painting (original body.dataset.index)

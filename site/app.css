@@ -421,6 +421,105 @@ img{max-width:100%;display:block}
 .dt-strip--out *{pointer-events:none !important}
 .dt-strip--out .dt-media{transition:transform 1s var(--ease-snappy)}
 
+/* ---------- SURF: floating card deck (original .surf-carousel) ---------- */
+.surf{position:fixed;inset:0;z-index:1;overflow:hidden;user-select:none;cursor:grab}
+.surf:active{cursor:grabbing}
+.surf__inner{position:relative;display:flex;align-items:center;height:100%}
+.surf__deck{
+  display:grid;place-items:end;min-width:20rem;max-width:20rem;
+  perspective:1000px;transform-style:preserve-3d;   /* original .surf-carousel */
+}
+.surf__deck>*{grid-area:1/1}
+.surf-item{position:relative;cursor:pointer;will-change:transform}
+.surf-item__media{position:relative}
+@media (hover:hover) and (pointer:fine){
+  .surf-item__media{transition:transform .75s var(--ease-out-expo)}
+  .surf-item:hover .surf-item__media{transform:translate(75%) rotate(10deg)}
+}
+.surf-item__box{width:20rem;overflow:hidden;background:#f2f2f2}
+.surf-item__box img{width:100%;height:100%;object-fit:cover;pointer-events:none}
+.surf__label{
+  position:fixed;right:2rem;bottom:1.8rem;z-index:3;text-align:right;
+  opacity:0;transition:opacity .25s ease;
+}
+.surf__label.is-on{opacity:1}
+/* entrance: cards rise like the home slides */
+.view--surf{opacity:0;transition:opacity .5s ease}
+.view--surf.is-in{opacity:1}
+
+/* ---------- INDEX: 12-per-row collage grid (original articles-grid) ---------- */
+.agrid{position:fixed;inset:0;z-index:1;overflow:hidden}
+.agrid__in{
+  display:flex;flex-direction:column;gap:11.5rem;
+  padding:40rem 2rem 2rem;will-change:transform;
+}
+.agrid__row{
+  display:grid;grid-template-columns:repeat(12,1fr);gap:2rem;
+  align-items:start;transform-origin:top center;
+}
+@media (max-width:699px){
+  .agrid__in{gap:7rem;padding-top:20rem}
+  .agrid__row{grid-template-columns:repeat(4,1fr);gap:1rem}
+}
+.agrid__cell{position:relative;cursor:pointer}
+.agrid__media{width:100%;overflow:hidden;background:#f2f2f2}
+.agrid__media img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.agrid__cell:hover .agrid__media{opacity:.75;transition:opacity .25s ease}
+.agrid__month{position:absolute;bottom:calc(100% + 1rem);left:0;text-transform:uppercase;white-space:nowrap}
+.view--articles{opacity:0;transition:opacity .5s ease}
+.view--articles.is-in{opacity:1}
+
+/* ---------- ABOUT: black page (original wyNRnxoT) ---------- */
+.about{position:fixed;inset:0;z-index:4}
+.about__mask{
+  position:absolute;inset:0;overflow:hidden;
+  transform:translateY(100%);transition:transform 1s var(--ease-snappy);
+}
+.about__mask-in{
+  position:absolute;inset:0;background:#000;color:#fff;overflow:hidden;
+  transform:translateY(-100%);transition:transform 1s var(--ease-snappy);
+}
+.view--about.is-in .about__mask,.view--about.is-in .about__mask-in{transform:translateY(0)}
+.about__scroll{padding:0 2rem;will-change:transform}
+.about__head{
+  height:100svh;display:flex;align-items:center;justify-content:space-between;
+}
+.about__title{
+  font-size:min(11.7rem,117px);font-weight:700;line-height:.875;
+  text-transform:uppercase;text-align:center;margin:-10rem 0 22.5rem;
+}
+@media (max-width:699px){.about__title{font-size:3.6rem;margin:-2.5rem 0 15rem}}
+.about__line{overflow:hidden}
+.about__line-in{
+  display:block;transform:translateY(105%);
+  transition:transform 1.15s var(--ease-out-expo);
+}
+.view--about.is-in .about__line-in{transform:translateY(0)}
+.about__line:nth-child(1) .about__line-in{transition-delay:.5s}
+.about__line:nth-child(2) .about__line-in{transition-delay:.6s}
+.about__line:nth-child(3) .about__line-in{transition-delay:.7s}
+.about__line:nth-child(4) .about__line-in{transition-delay:.8s}
+.about__line:nth-child(5) .about__line-in{transition-delay:.9s}
+.about__intro{
+  font-size:min(4rem,40px);font-weight:700;line-height:1;text-transform:uppercase;
+  max-width:110rem;margin:0 auto 28.5rem;display:flex;flex-direction:column;gap:6rem;
+}
+@media (max-width:699px){.about__intro{font-size:2.8rem;margin-bottom:15rem}}
+.about__fade{
+  opacity:0;transform:translateY(5rem);
+  transition:opacity 1.15s var(--ease-out-expo) 1s,transform 1.15s var(--ease-out-expo) 1s;
+}
+.view--about.is-in .about__fade{opacity:1;transform:translateY(0)}
+/* month labels on the grid use the shared reveal mask */
+.view--articles.is-in .dt-reveal>*{transform:translateY(0)}
+.about__thanks{
+  font-size:min(11.7rem,117px);font-weight:700;line-height:.875;text-transform:uppercase;
+  margin-bottom:5rem;
+}
+@media (max-width:699px){.about__thanks{font-size:3.6rem}}
+.about__thanks div:nth-child(even){text-align:right}
+.about__credits{opacity:.5;padding-bottom:6rem;display:flex;flex-direction:column;gap:.6rem}
+
 /* ---------- film-grain noise overlay (original: noise.png, 1s steps(2)) ---------- */
 .noise{position:fixed;inset:0;pointer-events:none;will-change:transform;z-index:9999;overflow:hidden}
 .noise::before{
