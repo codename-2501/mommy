@@ -176,7 +176,7 @@ function buildControls(nextId, onNext, onClose) {
 
 /* FLIP: fly a clone into a slot. The ghost lives INSIDE the overlay at z5 so the
    flight passes UNDER the right panel, like the original's reparented figures. */
-function flipInto(fromRect, imgSrc, targetBox, host) {
+function flipInto(fromRect, imgSrc, targetBox, host, srcEl) {
   const t = targetBox.getBoundingClientRect();
   if (!fromRect || !t.width) return;
   const ghost = el('div', 'dt-ghost');
@@ -193,6 +193,7 @@ function flipInto(fromRect, imgSrc, targetBox, host) {
   (host || document.body).appendChild(ghost);
   targetBox.style.visibility = 'hidden';
   requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (srcEl) srcEl.style.visibility = 'hidden';   // only once the ghost is painted
     ghost.style.transform = 'translate(0,0) scale(1)';
   }));
   setTimeout(() => {
@@ -281,8 +282,8 @@ function render(container, opts, id, flip, dir) {
       if (!fb || !tb) continue;
       const r = fb.getBoundingClientRect();
       const img = fb.querySelector('img');
-      fb.style.visibility = 'hidden';
-      setTimeout(() => flipInto(r, img ? (img.currentSrc || img.src) : '', tb, container), delay);
+      tb.style.visibility = 'hidden';    // before first paint
+      setTimeout(() => flipInto(r, img ? (img.currentSrc || img.src) : '', tb, container, fb), delay);
     }
     const out = os && os.querySelector(fwd ? '.dt-side--prev .dt-media' : '.dt-side--next .dt-media');
     if (out) out.style.transform = 'translateX(' + (fwd ? -110 : 110) + '%)';
@@ -302,9 +303,14 @@ function render(container, opts, id, flip, dir) {
     for (const [src, sel, delay] of slots) {
       if (!src) continue;
       const box = strip.querySelector(sel);
-      if (box) setTimeout(() => flipInto(src.rect, src.src, box, container), delay);
+      if (!box) continue;
+      box.style.visibility = 'hidden';   // before first paint — no pop-in flash
+      setTimeout(() => flipInto(src.rect, src.src, box, container), delay);
     }
   }
+
+  /* keyboard prev/next (original slug page keydown) */
+  container._nav = (delta) => go(slides[(i + delta + slides.length) % slides.length].id);
 
   function go(nid) {
     history.pushState(null, '', '/p/' + nid);
@@ -363,8 +369,8 @@ function close() {
       if (t.right < 0 || t.left > innerWidth) continue;   // fly only into view
       const r = box.getBoundingClientRect();
       const img = box.querySelector('img');
-      box.style.visibility = 'hidden';                    // the ghost takes over
-      setTimeout(() => flipInto(r, img ? (img.currentSrc || img.src) : '', target, root), delay);
+      target.style.visibility = 'hidden';                 // before the home is unveiled
+      setTimeout(() => flipInto(r, img ? (img.currentSrc || img.src) : '', target, root, box), delay);
     }
   }
 
@@ -377,7 +383,10 @@ function close() {
 }
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && root) close();
+  if (!root || closing) return;
+  if (e.key === 'Escape') close();
+  else if (e.key === 'ArrowRight' && root._nav) { e.preventDefault(); root._nav(1); }
+  else if (e.key === 'ArrowLeft' && root._nav) { e.preventDefault(); root._nav(-1); }
 });
 
 window.TLBDetail = {
