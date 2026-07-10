@@ -79,8 +79,11 @@ img{max-width:100%;display:block}
   display:grid;grid-template-columns:auto auto;gap:.6rem 4rem;
   text-align:left;z-index:11;
 }
-.intro-months .col{display:flex;flex-direction:column;gap:.6rem}
+.intro-months .col{display:flex;flex-direction:column;gap:1.2rem}
+.intro-months .mo{display:flex;flex-direction:column;gap:.2rem}
 .intro-months .row{white-space:nowrap;overflow:hidden}
+.intro-months .row.pl{padding-left:1.6rem}
+.intro-months .in.m{font-weight:500}
 .intro-months .row .in{
   display:block;min-height:1.5em;
   transition:transform .7s var(--ease-out-expo);
