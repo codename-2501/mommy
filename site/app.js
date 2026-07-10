@@ -171,9 +171,9 @@ function renderIntro() {
   intro.appendChild(months);
 
   /* enter gate */
-  const gate = el('div', 'intro-gate label');
-  const withSound = el('button', null, 'Enter with sound →');
-  const noSound = el('button', null, '…or without');
+  const gate = el('div', 'intro-gate');
+  const withSound = el('button', 'btn', 'Enter with sound →');
+  const noSound = el('button', 'alt', '…or without');
   withSound.addEventListener('click', () => enterSite(intro, true));
   noSound.addEventListener('click', () => enterSite(intro, false));
   gate.appendChild(withSound);
