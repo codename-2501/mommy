@@ -320,6 +320,7 @@ function renderHome() {
   carousel = window.TLBCarousel.mount(
     view, content.slides || [], aspects, yearsByName(),
     (s, item) => {
+      carousel.freeze();   // stop the lerp drift so the flip source stays put
       const grab = (it) => {
         const img = it && it.querySelector('.car-media img');
         if (!img) return null;

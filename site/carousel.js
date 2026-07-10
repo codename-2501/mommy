@@ -345,6 +345,10 @@ function mount(view, slides, aspects, years, onOpen) {
 
   return {
     goTo(i) { target = i * step; cur = target; },   // instant jump (detail close sync)
+    freeze() {                                      // halt drift + clear skew (flip measure)
+      target = cur;
+      for (let k = 0; k < contents.length; k++) contents[k].style.transform = '';
+    },
     itemAt(i) { return items[i] || null; },
     destroy() {
       cancelAnimationFrame(raf);
