@@ -57,6 +57,17 @@ function monthStats(slides) {
   return stats.filter((s) => s.count > 0);
 }
 
+/* month (1-12) -> year from slide dates; months without a dated work fall back to 2026 */
+function yearByMonth(slides) {
+  const map = {};
+  for (const s of slides || []) {
+    const d = String(s.date || '');
+    const m = /^(\d{4})-(\d{2})/.exec(d);
+    if (m) map[+m[2]] = m[1];
+  }
+  return map;
+}
+
 /* scramble-text reveal (original uses GSAP ScrambleText — same feel, vanilla) */
 const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -122,12 +133,17 @@ function renderIntro() {
   const months = el('div', 'intro-months label');
   const colA = el('div', 'col');
   const colB = el('div', 'col');
+  const years = yearByMonth(content.slides);
   const scrambles = [];
   stats.forEach((s, i) => {
-    /* original structure: month name, then indented category (count) line */
+    /* original structure: month name (+year), then indented category (count) line */
     const block = el('div', 'mo');
     const monthRow = el('div', 'row');
     const monthIn = el('span', 'in m');
+    const monthName = el('span', null, '');
+    const yearEl = el('span', 'n', '');
+    monthIn.appendChild(monthName);
+    monthIn.appendChild(yearEl);
     monthRow.appendChild(monthIn);
     const catRow = el('div', 'row pl');
     const catIn = el('span', 'in');
@@ -141,9 +157,11 @@ function renderIntro() {
     monthIn.style.setProperty('--dx', (i * 0.02).toFixed(3) + 's');
     catIn.style.setProperty('--dx', (i * 0.02 + 0.01).toFixed(3) + 's');
     (MONTHS.indexOf(s.month) < 7 ? colA : colB).appendChild(block);
+    const year = years[MONTHS.indexOf(s.month) + 1] || '2026';
     const delay = 700 + i * 70;
     scrambles.push(() => {
-      scrambleIn(monthIn, s.month.toUpperCase(), delay, 800);
+      scrambleIn(monthName, s.month.toUpperCase(), delay, 800);
+      scrambleIn(yearEl, year, delay + 80, 800);
       scrambleIn(cat, s.cat || '', delay + 100, 900);
       scrambleIn(n, '(' + s.count + ')', delay + 220, 900);
     });
