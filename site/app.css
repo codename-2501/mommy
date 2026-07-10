@@ -60,16 +60,18 @@ img{max-width:100%;display:block}
 /* wordmark: persistent site logo (big, top) — sits mid-screen during the intro.
    Original: text-[11.7em], mix-blend-difference, lines clip-reveal 1.5s "snappy" stagger .1 */
 .wordmark{
-  position:fixed;left:50%;top:1.5rem;transform:translateX(-50%);
+  position:fixed;left:50%;top:10rem;
+  transform:translateX(-50%) scale(.62);transform-origin:top center;
   width:90em;max-width:100vw;
   font-size:.4rem;
-  pointer-events:none;user-select:none;z-index:10;
+  pointer-events:none;user-select:none;
+  z-index:20;   /* above the ruler so difference-blend inverts the ticks through the letters */
   display:flex;flex-direction:column;align-items:center;
   color:#fff;mix-blend-mode:difference;
   transition:top 1.5s var(--ease-out-expo),transform 1.5s var(--ease-out-expo);
 }
 @media (min-width:700px){.wordmark{font-size:.9rem}}
-.wordmark.at-intro{top:35%;transform:translateX(-50%) translateY(-50%)}
+.wordmark.at-intro{top:35%;transform:translateX(-50%) translateY(-50%) scale(1)}
 .wordmark .line{
   display:flex;gap:0 .175em;
   font-size:11.7em;font-weight:700;line-height:.85;letter-spacing:-.01em;
