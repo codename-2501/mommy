@@ -265,7 +265,9 @@ img{max-width:100%;display:block}
   opacity:0;transition:opacity .35s ease;   /* original: old page autoAlpha .35 power1 */
 }
 .detail.is-on .dt-bg{opacity:1}
-.detail.is-off .dt-bg{opacity:0;transition-delay:.3s}
+/* close: drop the veil at once — the reverse flights happen in the HOME layer and
+   must be visible immediately (original: the left strip area is transparent) */
+.detail.is-off .dt-bg{opacity:0;transition:opacity .15s ease}
 /* right panel: outer mask slides from +100%, inner from -100% (original curtain) */
 .dt-panel{
   position:absolute;top:0;right:0;bottom:0;left:61.5rem;
