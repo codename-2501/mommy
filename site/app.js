@@ -11,6 +11,7 @@ let icons = {};               // path -> inline svg markup
 let entered = false;          // intro gate passed this page-load
 let carousel = null;          // active carousel instance
 let pendingFlip = null;       // clicked painting rect/src for the detail FLIP
+let flipSources = [];         // home media hidden while their ghosts are in the detail
 
 /* audio flags — "Enter with sound" turns on tick/click sounds (original) */
 window.TLB_AUDIO = { on: false };
@@ -326,7 +327,7 @@ function renderHome() {
         if (!img) return null;
         const r = img.getBoundingClientRect();
         if (r.right < 0 || r.left > innerWidth) return null;   // only visible ones fly
-        return { rect: r, src: img.currentSrc || img.src };
+        return { rect: r, src: img.currentSrc || img.src, el: it.querySelector('.car-media') };
       };
       const track = item.parentElement;
       pendingFlip = {
@@ -334,6 +335,8 @@ function renderHome() {
         prev: grab(item.previousElementSibling || track.lastElementChild),
         next: grab(item.nextElementSibling || track.firstElementChild),
       };
+      flipSources = [pendingFlip.cur, pendingFlip.prev, pendingFlip.next]
+        .filter(Boolean).map((f) => f.el);
       navigate('/p/' + (s.id || ''));
     },
   );
@@ -366,6 +369,8 @@ function renderStub(name) {
 
 /* detail close: the home re-enters with its full entrance (original Y() replays) */
 function replayHomeEnter() {
+  for (const el of flipSources) el.style.visibility = '';   // restore flown paintings
+  flipSources = [];
   const view = document.querySelector('.view--home');
   if (!view) return;
   view.classList.add('no-trans');
