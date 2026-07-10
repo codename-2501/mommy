@@ -156,8 +156,9 @@ img{max-width:100%;display:block}
 .car-item{
   position:relative;flex:0 0 28.1rem;max-width:28.1rem;margin-right:2rem;
   cursor:pointer;
-  perspective:1000px;transform-style:preserve-3d;   /* original: makes rotateY a real 3D tilt */
 }
+/* perspective must sit on the DIRECT parent of the rotated .car-content */
+.car-entr{perspective:1000px;transform-style:preserve-3d}
 @media (max-width:699px){.car-item{flex-basis:20rem;max-width:20rem;margin-right:1.2rem}}
 /* motion skew (rotateY) is applied inline by JS to VISIBLE items only —
    a CSS var here would restyle all 390 items every frame and drop frames */
