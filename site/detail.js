@@ -231,10 +231,11 @@ function flipInto(fromRect, imgSrc, targetBox, host, srcEl) {
   targetBox.style.visibility = 'hidden';
   const rec = { ghost, target: targetBox, done: 0 };
   activeFlights.add(rec);
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    if (srcEl) srcEl.style.visibility = 'hidden';   // only once the ghost is painted
-    ghost.style.transform = 'translate(0,0) scale(1)';
-  }));
+  /* start the flight in the SAME frame — any rAF/timeout delay reads as a stall.
+     A forced reflow commits the start transform so the transition still runs. */
+  void ghost.offsetWidth;
+  if (srcEl) srcEl.style.visibility = 'hidden';
+  ghost.style.transform = 'translate(0,0) scale(1)';
   rec.done = setTimeout(() => {
     targetBox.style.visibility = '';
     ghost.remove();
@@ -347,7 +348,8 @@ function render(container, opts, id, flip, dir) {
       const r = fb.getBoundingClientRect();
       const img = fb.querySelector('img');
       tb.style.visibility = 'hidden';    // before first paint
-      later(() => flipInto(r, img ? (img.currentSrc || img.src) : '', tb, container, fb), delay);
+      if (delay) later(() => flipInto(r, img ? (img.currentSrc || img.src) : '', tb, container, fb), delay);
+      else flipInto(r, img ? (img.currentSrc || img.src) : '', tb, container, fb);
     }
     const out = os && os.querySelector(fwd ? '.dt-side--prev .dt-media' : '.dt-side--next .dt-media');
     if (out) out.style.transform = 'translateX(' + (fwd ? -110 : 110) + '%)';
@@ -369,7 +371,8 @@ function render(container, opts, id, flip, dir) {
       const box = strip.querySelector(sel);
       if (!box) continue;
       box.style.visibility = 'hidden';   // before first paint — no pop-in flash
-      later(() => flipInto(src.rect, src.src, box, container, src.el), delay);
+      if (delay) later(() => flipInto(src.rect, src.src, box, container, src.el), delay);
+      else flipInto(src.rect, src.src, box, container, src.el);   // cur flies NOW
     }
   }
 
@@ -438,7 +441,8 @@ function close() {
       const r = box.getBoundingClientRect();
       const img = box.querySelector('img');
       target.style.visibility = 'hidden';                 // before the home is unveiled
-      later(() => flipInto(r, img ? (img.currentSrc || img.src) : '', target, root, box), delay);
+      if (delay) later(() => flipInto(r, img ? (img.currentSrc || img.src) : '', target, root, box), delay);
+      else flipInto(r, img ? (img.currentSrc || img.src) : '', target, root, box);
     }
   }
 
