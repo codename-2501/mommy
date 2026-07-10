@@ -286,8 +286,12 @@ img{max-width:100%;display:block}
 .dt-month{opacity:.6}
 .dt-title{
   margin-top:3rem;
-  font-size:min(5.7rem,57px);font-weight:700;line-height:.9;text-transform:uppercase;
+  font-size:min(5.7rem,57px);font-weight:700;text-transform:uppercase;
+  line-height:1.12;   /* .9 clips Hangul ascenders/descenders inside the reveal mask */
 }
+.dt-spec{margin-top:2.4rem;display:flex;flex-direction:column;gap:.6rem}
+.dt-spec__k{opacity:.5;margin-right:1.2rem;min-width:6rem;display:inline-block}
+.dt-spec__v{font-size:min(1.6rem,16px)}
 .dt-body{margin-top:4rem;font-size:min(2rem,20px);line-height:1.5;max-width:72rem}
 .dt-body p{margin:0 0 1.5em}
 .dt-fig{margin:3rem 0;display:flex;flex-direction:column}
@@ -295,6 +299,22 @@ img{max-width:100%;display:block}
 .dt-fig--center{align-items:center}
 .dt-fig--right{align-items:flex-end}
 .dt-fig img{max-width:50%;height:auto;display:block}   /* attached media at half the content width */
+.dt-zoomable{cursor:zoom-in}
+
+/* lightbox: original-size image in a modal */
+.dt-lightbox{
+  position:fixed;inset:0;z-index:120;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1.6rem;
+  background:rgba(255,255,255,.96);cursor:zoom-out;
+  opacity:0;transition:opacity .35s ease;
+}
+.dt-lightbox.is-on{opacity:1}
+.dt-lightbox img{
+  max-width:92vw;max-height:88vh;display:block;
+  transform:scale(.96);transition:transform .5s var(--ease-unmask);
+}
+.dt-lightbox.is-on img{transform:scale(1)}
+.dt-lightbox__cap{opacity:.6}
 .dt-fig figcaption{margin-top:.8rem;opacity:.6}
 .dt-video{position:relative;width:100%;aspect-ratio:16/9}
 .dt-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
