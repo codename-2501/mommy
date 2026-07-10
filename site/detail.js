@@ -174,8 +174,9 @@ function buildControls(nextId, onNext, onClose) {
   return nav;
 }
 
-/* FLIP: fly a clone from the clicked painting to the strip slot */
-function flipInto(fromRect, imgSrc, targetBox) {
+/* FLIP: fly a clone into a slot. The ghost lives INSIDE the overlay at z5 so the
+   flight passes UNDER the right panel, like the original's reparented figures. */
+function flipInto(fromRect, imgSrc, targetBox, host) {
   const t = targetBox.getBoundingClientRect();
   if (!fromRect || !t.width) return;
   const ghost = el('div', 'dt-ghost');
@@ -189,7 +190,7 @@ function flipInto(fromRect, imgSrc, targetBox) {
   const dx = fromRect.left - t.left, dy = fromRect.top - t.top;
   const sc = fromRect.width / t.width;
   ghost.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + sc + ')';
-  document.body.appendChild(ghost);
+  (host || document.body).appendChild(ghost);
   targetBox.style.visibility = 'hidden';
   requestAnimationFrame(() => requestAnimationFrame(() => {
     ghost.style.transform = 'translate(0,0) scale(1)';
@@ -253,15 +254,38 @@ function render(container, opts, id, flip, dir) {
     () => window.TLBDetail.close());
   if (oldCtl) oldCtl.replaceWith(ctl); else container.appendChild(ctl);
 
-  /* item→item: the new painting slides in from the travel direction (original Q()) */
+  /* item→item — original role-shift: cur→prev slot and next→cur slot FLY (reverse
+     for prev), the incoming far side slides in, the outgoing far side slides away */
   if (dir) {
-    const cm = strip.querySelector('.dt-cur__media');
-    cm.style.transition = 'none';
-    cm.style.transform = 'translateX(' + (dir * 110) + '%)';
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      cm.style.transition = '';
-      cm.style.transform = '';
-    }));
+    const os = dir.oldStrip;
+    const fwd = dir.dir > 0;
+    const inn2 = strip.querySelector(fwd ? '.dt-side--next .dt-media' : '.dt-side--prev .dt-media');
+    if (inn2) {
+      inn2.style.transition = 'none';
+      inn2.style.transform = 'translateX(' + (fwd ? 110 : -110) + '%)';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        inn2.style.transition = 'transform 1s var(--ease-snappy)';
+        inn2.style.transform = '';
+      }));
+    }
+    const flights = fwd ? [
+      ['.dt-cur__media', '.dt-side--prev .dt-media', 0],
+      ['.dt-side--next .dt-media', '.dt-cur__media', 35],
+    ] : [
+      ['.dt-cur__media', '.dt-side--next .dt-media', 0],
+      ['.dt-side--prev .dt-media', '.dt-cur__media', 35],
+    ];
+    for (const [fromSel, toSel, delay] of flights) {
+      const fb = os && os.querySelector(fromSel);
+      const tb = strip.querySelector(toSel);
+      if (!fb || !tb) continue;
+      const r = fb.getBoundingClientRect();
+      const img = fb.querySelector('img');
+      fb.style.visibility = 'hidden';
+      setTimeout(() => flipInto(r, img ? (img.currentSrc || img.src) : '', tb, container), delay);
+    }
+    const out = os && os.querySelector(fwd ? '.dt-side--prev .dt-media' : '.dt-side--next .dt-media');
+    if (out) out.style.transform = 'translateX(' + (fwd ? -110 : 110) + '%)';
   }
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -278,7 +302,7 @@ function render(container, opts, id, flip, dir) {
     for (const [src, sel, delay] of slots) {
       if (!src) continue;
       const box = strip.querySelector(sel);
-      if (box) setTimeout(() => flipInto(src.rect, src.src, box), delay);
+      if (box) setTimeout(() => flipInto(src.rect, src.src, box, container), delay);
     }
   }
 
@@ -286,13 +310,10 @@ function render(container, opts, id, flip, dir) {
     history.pushState(null, '', '/p/' + nid);
     const ni = slideIdx(slides, nid);
     const fwd = ((ni - i + slides.length) % slides.length) <= slides.length / 2;
-    /* old strip: painting exits toward the travel direction, labels/sides fade */
-    strip.classList.add('dt-strip--out');
-    const om = strip.querySelector('.dt-cur__media');
-    if (om) om.style.transform = 'translateX(' + (fwd ? -110 : 110) + '%)';
-    setTimeout(() => strip.remove(), 1000);
+    strip.classList.add('dt-strip--out');           // labels fade; images handled below
+    setTimeout(() => strip.remove(), 1100);
     container.classList.remove('is-rev');           // replay text reveals only
-    render(container, opts, nid, null, fwd ? 1 : -1);
+    render(container, opts, nid, null, { dir: fwd ? 1 : -1, oldStrip: strip });
   }
 }
 
@@ -320,14 +341,39 @@ function close() {
   if (!root || closing) return;
   closing = true;
   if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') history.pushState(null, '', '/');
-  const onClose = root._opts && root._opts.onClose;
-  if (onClose) onClose();                        // home replays its entrance underneath
+  const opts = root._opts || {};
+  if (opts.onClose) opts.onClose();              // home replays its entrance underneath
+
+  /* original: the strip paintings FLY BACK to their carousel slots (reverse flip) */
+  const strip = root.querySelector('.dt-strip:not(.dt-strip--out)');
+  if (strip && opts.getHomeTarget && opts.content) {
+    const slides = opts.content.slides || [];
+    const n = slides.length;
+    const i = slideIdx(slides, curId);
+    const pairs = [
+      ['.dt-cur__media', i, 0],
+      ['.dt-side--prev .dt-media', (i - 1 + n) % n, 35],
+      ['.dt-side--next .dt-media', (i + 1) % n, 70],
+    ];
+    for (const [sel, k, delay] of pairs) {
+      const box = strip.querySelector(sel);
+      const target = box && opts.getHomeTarget(k);
+      if (!box || !target) continue;
+      const t = target.getBoundingClientRect();
+      if (t.right < 0 || t.left > innerWidth) continue;   // fly only into view
+      const r = box.getBoundingClientRect();
+      const img = box.querySelector('img');
+      box.style.visibility = 'hidden';                    // the ghost takes over
+      setTimeout(() => flipInto(r, img ? (img.currentSrc || img.src) : '', target, root), delay);
+    }
+  }
+
   root.classList.add('is-off');
   root.classList.remove('is-on');
   setTimeout(() => {
     if (root) root.remove();
     root = null; curId = null; closing = false;
-  }, 800);
+  }, 1150);
 }
 
 document.addEventListener('keydown', (e) => {
