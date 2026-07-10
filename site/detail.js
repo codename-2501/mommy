@@ -100,13 +100,17 @@ function buildBody(s) {
 function buildContent(s, i, slides) {
   const wrap = el('div', 'dt-content');
   const meta = el('div', 'dt-meta');
-  const chipMask = el('div', 'dt-reveal');
-  chipMask.appendChild(el('span', 'dt-chip', category(s)));
-  const moMask = el('div', 'dt-reveal');
-  moMask.appendChild(el('span', 'dt-month label', '(' + month(s) + ')'));
-  meta.appendChild(chipMask);
-  meta.appendChild(moMask);
-  wrap.appendChild(meta);
+  if (category(s)) {
+    const chipMask = el('div', 'dt-reveal');
+    chipMask.appendChild(el('span', 'dt-chip', category(s)));
+    meta.appendChild(chipMask);
+  }
+  if (month(s)) {
+    const moMask = el('div', 'dt-reveal');
+    moMask.appendChild(el('span', 'dt-month label', '(' + month(s) + ')'));
+    meta.appendChild(moMask);
+  }
+  if (meta.children.length) wrap.appendChild(meta);
   if (s.title) {
     const h = el('h1', 'dt-title');
     const m = el('div', 'dt-reveal');
@@ -139,9 +143,12 @@ function buildStrip(s, i, slides, aspects, nav) {
   numMask.appendChild(el('div', 'label', String(i + 1)));
   cur.appendChild(numMask);
   cur.appendChild(mediaCell(s, aspects, 'dt-cur__media'));
-  const catMask = el('div', 'dt-reveal');
-  catMask.appendChild(el('div', 'label', category(s) + ' (' + month(s) + ')'));
-  cur.appendChild(catMask);
+  const catText = [category(s), month(s) && '(' + month(s) + ')'].filter(Boolean).join(' ');
+  if (catText) {
+    const catMask = el('div', 'dt-reveal');
+    catMask.appendChild(el('div', 'label', catText));
+    cur.appendChild(catMask);
+  }
   row.appendChild(cur);
 
   row.appendChild(side(next, 'dt-side--next'));
@@ -193,7 +200,7 @@ function flipInto(fromRect, imgSrc, targetBox) {
   }, 1050);
 }
 
-function render(container, opts, id, flip) {
+function render(container, opts, id, flip, dir) {
   const { content, aspects, onSync } = opts;
   const slides = content.slides || [];
   const i = slideIdx(slides, id);
@@ -206,7 +213,7 @@ function render(container, opts, id, flip) {
   const inner = container.querySelector('.dt-panel__in');
   inner.replaceChildren(scroller);
 
-  const old = container.querySelector('.dt-strip');
+  const old = container.querySelector('.dt-strip:not(.dt-strip--out)');
   const strip = buildStrip(s, i, slides, aspects, (nid) => go(nid));
   if (old) old.replaceWith(strip); else container.insertBefore(strip, container.firstChild);
 
@@ -216,13 +223,34 @@ function render(container, opts, id, flip) {
     () => window.TLBDetail.close());
   if (oldCtl) oldCtl.replaceWith(ctl); else container.appendChild(ctl);
 
-  requestAnimationFrame(() => requestAnimationFrame(() => container.classList.add('is-on')));
+  /* item→item: the new painting slides in from the travel direction (original Q()) */
+  if (dir) {
+    const cm = strip.querySelector('.dt-cur__media');
+    cm.style.transition = 'none';
+    cm.style.transform = 'translateX(' + (dir * 110) + '%)';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      cm.style.transition = '';
+      cm.style.transform = '';
+    }));
+  }
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    container.classList.add('is-on');
+    container.classList.add('is-rev');
+  }));
   if (flip) flipInto(flip.rect, flip.src, strip.querySelector('.dt-cur__media'));
 
   function go(nid) {
     history.pushState(null, '', '/p/' + nid);
-    container.classList.remove('is-on');            // re-run reveals
-    render(container, opts, nid, null);
+    const ni = slideIdx(slides, nid);
+    const fwd = ((ni - i + slides.length) % slides.length) <= slides.length / 2;
+    /* old strip: painting exits toward the travel direction, labels/sides fade */
+    strip.classList.add('dt-strip--out');
+    const om = strip.querySelector('.dt-cur__media');
+    if (om) om.style.transform = 'translateX(' + (fwd ? -110 : 110) + '%)';
+    setTimeout(() => strip.remove(), 1000);
+    container.classList.remove('is-rev');           // replay text reveals only
+    render(container, opts, nid, null, fwd ? 1 : -1);
   }
 }
 

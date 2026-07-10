@@ -248,6 +248,7 @@ img{max-width:100%;display:block}
 .dt-panel{
   position:absolute;top:0;right:0;bottom:0;left:61.5rem;
   border-left:1px solid rgba(0,0,0,.1);background:#fff;overflow:hidden;
+  z-index:12;   /* original s:z-[12] — the strip images slide UNDER this panel */
   transform:translateX(100%);
   transition:transform 1s var(--ease-snappy);
 }
@@ -286,7 +287,7 @@ img{max-width:100%;display:block}
 .dt-fig--left{align-items:flex-start}
 .dt-fig--center{align-items:center}
 .dt-fig--right{align-items:flex-end}
-.dt-fig img{max-width:100%;height:auto;display:block}
+.dt-fig img{max-width:50%;height:auto;display:block}   /* attached media at half the content width */
 .dt-fig figcaption{margin-top:.8rem;opacity:.6}
 .dt-video{position:relative;width:100%;aspect-ratio:16/9}
 .dt-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -309,25 +310,36 @@ img{max-width:100%;display:block}
 }
 .dt-media{position:relative;width:100%;overflow:hidden;background:#f2f2f2}
 .dt-media img{width:100%;height:100%;object-fit:cover;display:block}
+/* prev/next navigation: the current painting slides in/out (original Q(): xPercent ±100, 1s snappy) */
+.dt-cur__media{transition:transform 1s var(--ease-snappy)}
+.dt-strip--out .dt-side,.dt-strip--out .dt-reveal,
+.detail.is-off .dt-strip,.detail.is-off .dt-controls{
+  opacity:0;transition:opacity .35s ease;
+}
 
-/* masked text reveals — original js-t-slide: yPercent 105 -> 0, 1.15s expo */
+/* masked text reveals — original js-t-slide: yPercent 105 -> 0, 1.15s expo.
+   Keyed on .is-rev (not .is-on) so prev/next replay them without moving the panel */
 .dt-reveal{overflow:hidden}
 .dt-reveal>*{
   display:block;transform:translateY(105%);
   transition:transform 1.15s var(--ease-out-expo) .25s;
 }
-.detail.is-on .dt-reveal>*{transform:translateY(0)}
+.detail.is-rev .dt-reveal>*{transform:translateY(0)}
 .dt-title .dt-reveal>*{transition-delay:.35s}
 /* body fade — original js-t-fade: alpha .35s power1 at .3 */
 .dt-fade{opacity:0;transition:opacity .35s ease .3s}
-.detail.is-on .dt-fade{opacity:1}
+.detail.is-rev .dt-fade{opacity:1}
 .detail.is-off .dt-fade{opacity:0;transition:opacity .2s ease}
+/* controls fade in with the content */
+.dt-controls{opacity:0;transition:opacity .35s ease .3s}
+.detail.is-rev .dt-controls{opacity:1}
 
-/* bottom controls (original .controls-link) */
+/* bottom controls — original shows these on MOBILE only (desktop = strip + header Close) */
 .dt-controls{
   position:absolute;bottom:2rem;left:0;right:0;
-  display:flex;justify-content:center;gap:.8rem;z-index:3;
+  display:flex;justify-content:center;gap:.8rem;z-index:13;
 }
+@media (min-width:700px){.dt-controls{display:none}}
 .dt-ctl{
   display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
   height:4rem;min-width:4rem;padding:0 1.5rem;
