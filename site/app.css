@@ -78,12 +78,16 @@ img{max-width:100%;display:block}
   position:fixed;right:2rem;top:50%;transform:translateY(-50%);
   display:grid;grid-template-columns:auto auto;gap:.6rem 4rem;
   text-align:left;z-index:11;
-  opacity:0;transition:opacity .9s ease .9s;
 }
-.intro.is-ready .intro-months{opacity:1}
-.intro.is-leaving .intro-months{opacity:0;transition:opacity .45s ease}
 .intro-months .col{display:flex;flex-direction:column;gap:.6rem}
-.intro-months .row{white-space:nowrap}
+.intro-months .row{white-space:nowrap;overflow:hidden}
+.intro-months .row .in{
+  display:block;min-height:1.5em;
+  transition:transform .7s var(--ease-out-expo);
+  transition-delay:var(--dx,0s);
+  will-change:transform;
+}
+.intro.is-leaving .row .in{transform:translateY(-110%)}
 .intro-months .row .n{opacity:.5;margin-left:.4em}
 @media (max-width:699px){
   .intro-months{right:1.6rem;gap:.5rem 2rem}
