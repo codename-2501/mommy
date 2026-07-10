@@ -1,0 +1,123 @@
+/* THE LOOKBACK — rebuilt frontend (no original branding, our data only) */
+
+/* ---------- fonts (vendored, offline) ---------- */
+@font-face{font-display:swap;font-family:sans;font-style:normal;font-weight:700;
+  src:url(/site/assets/fonts/PPNeueMontreal-Bold.l3ulKZJq.woff2) format("woff2")}
+@font-face{font-display:swap;font-family:sans;font-style:normal;font-weight:500;
+  src:url(/site/assets/fonts/PPNeueMontreal-Medium.BCmCQQaX.woff2) format("woff2")}
+@font-face{font-display:swap;font-family:sans;font-style:normal;font-weight:400;
+  src:url(/site/assets/fonts/PPNeueMontreal-Book.Oo-9ba79.woff2) format("woff2")}
+@font-face{font-display:swap;font-family:mono;font-style:normal;font-weight:500;
+  src:url(/site/assets/fonts/PPNeueMontrealMono-Medium.DUem7D_U.woff2) format("woff2")}
+
+/* ---------- root scale (same fluid rem as reference) ---------- */
+:root{
+  --size:1500;
+  --ease-out-expo:cubic-bezier(.19,1,.22,1);
+}
+@media (max-width:699px){:root{--size:390}}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{
+  font-size:clamp(1px,calc(10 * 100vw / var(--size)),20px);
+  -webkit-text-size-adjust:none;
+  -webkit-font-smoothing:antialiased;
+  background:#fff;color:#000;
+  overscroll-behavior:none;width:100%;
+}
+body{font-family:sans,system-ui,sans-serif;font-weight:400;line-height:1.5}
+a{color:inherit;text-decoration:none}
+button{font:inherit;background:none;border:0;color:inherit;cursor:pointer}
+img{max-width:100%;display:block}
+
+.label{
+  font-family:mono,ui-monospace,monospace;
+  font-size:min(1.4rem,14px);
+  text-transform:uppercase;
+  letter-spacing:.01em;
+}
+
+/* ---------- intro gate ---------- */
+.intro{
+  position:fixed;inset:0;z-index:50;background:#fff;
+  overflow:hidden;
+}
+.intro.is-leaving{pointer-events:none}
+
+/* wordmark: 3 stacked lines, letters stagger in/out */
+.intro-logo{
+  position:fixed;left:50%;top:1.5rem;transform:translateX(-50%);
+  width:90em;max-width:100vw;
+  font-size:.4rem;
+  pointer-events:none;user-select:none;z-index:10;
+  display:flex;flex-direction:column;align-items:center;
+}
+@media (min-width:700px){.intro-logo{font-size:.9rem}}
+.intro-logo .line{
+  display:flex;gap:0 .175em;
+  font-size:11.7em;font-weight:700;line-height:.85;letter-spacing:-.01em;
+  text-transform:uppercase;overflow:hidden;
+}
+.intro-logo .word{display:flex}
+.intro-logo .ltr{
+  display:block;
+  transform:translateY(110%);
+  transition:transform 1.1s var(--ease-out-expo);
+  transition-delay:var(--d,0s);
+  will-change:transform;
+}
+.intro.is-ready .ltr{transform:translateY(0)}
+.intro.is-leaving .ltr{
+  transform:translateY(-110%);
+  transition-duration:.8s;
+  transition-delay:var(--dx,0s);
+}
+
+/* right-hand month list (2 columns: Jan–Jul / Aug–Dec) */
+.intro-months{
+  position:fixed;right:2rem;top:50%;transform:translateY(-50%);
+  display:grid;grid-template-columns:auto auto;gap:.6rem 4rem;
+  text-align:left;z-index:11;
+  opacity:0;transition:opacity .9s ease .9s;
+}
+.intro.is-ready .intro-months{opacity:1}
+.intro.is-leaving .intro-months{opacity:0;transition:opacity .45s ease}
+.intro-months .col{display:flex;flex-direction:column;gap:.6rem}
+.intro-months .row{white-space:nowrap}
+.intro-months .row .n{opacity:.5;margin-left:.4em}
+@media (max-width:699px){
+  .intro-months{right:1.6rem;gap:.5rem 2rem}
+}
+
+/* enter gate (bottom center) */
+.intro-gate{
+  position:fixed;left:50%;bottom:6rem;transform:translate(-50%,0);
+  display:flex;flex-direction:column;align-items:center;gap:1.2rem;
+  z-index:12;
+  opacity:0;transition:opacity .9s ease 1.4s;
+}
+.intro.is-ready .intro-gate{opacity:1}
+.intro.is-leaving .intro-gate{opacity:0;transition:opacity .35s ease}
+.intro-gate button{display:block}
+.intro-gate button:hover{opacity:.55;transition:opacity .25s ease}
+
+/* ---------- app shell after enter ---------- */
+.site-logo{
+  position:fixed;left:50%;top:1.5rem;transform:translateX(-50%);
+  z-index:40;user-select:none;
+  opacity:0;transition:opacity .8s ease .2s;
+}
+.site-logo.is-in{opacity:1}
+
+.view{min-height:100vh}
+.view-stub{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+}
+
+/* bottom menu placeholder (real frosted menu lands in Phase 2) */
+.menu{
+  position:fixed;left:50%;bottom:2rem;transform:translate(-50%,140%);
+  transition:transform .9s var(--ease-out-expo);
+  z-index:45;display:flex;gap:1rem;align-items:center;
+}
+.menu.is-in{transform:translate(-50%,0)}
