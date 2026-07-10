@@ -1,4 +1,6 @@
-admin.log
-__pycache__/
 *.pyc
 .DS_Store
+__pycache__/
+admin.log
+content.json.bak-dummy
+images/.thumbs/
