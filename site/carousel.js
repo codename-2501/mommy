@@ -299,6 +299,7 @@ function mount(view, slides, aspects, years, onOpen) {
     wrap.classList.remove('is-active');
   }
   function onWheel(e) {
+    if (window.TLBDetail && window.TLBDetail.isOpen) return;   // detail owns the wheel
     // original: i = wheelDeltaY || deltaY*-1; i *= 0.9(win)/0.4; x -= i
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
     target += raw * WHEEL_MULT;
@@ -307,6 +308,7 @@ function mount(view, slides, aspects, years, onOpen) {
     return Math.round(target / step);
   }
   function onKey(e) {
+    if (window.TLBDetail && window.TLBDetail.isOpen) return;
     if (document.activeElement && document.activeElement.nodeName === 'INPUT') return;
     if (e.key === 'ArrowUp') { target -= KEY_STEP; }
     else if (e.key === 'ArrowDown') { target += KEY_STEP; }
