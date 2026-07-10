@@ -8,7 +8,7 @@ Usage:  python admin_server.py [port]     (default 8082)
 Site:   http://localhost:8082/
 Admin:  http://localhost:8082/admin/
 """
-import sys, os, json, re, copy, urllib.parse, http.server, socketserver
+import sys, os, json, re, copy, urllib.parse, http.server, socketserver, socket
 from html.parser import HTMLParser
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -623,10 +623,28 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         pass
 
 
+class DualStackServer(socketserver.ThreadingTCPServer):
+    """Listen on IPv6 with dual-stack so both 127.0.0.1 and ::1 (localhost) reach us.
+    On Windows, `localhost` often resolves to ::1 first — an IPv4-only bind then refuses it."""
+    address_family = socket.AF_INET6
+    allow_reuse_address = True
+
+    def server_bind(self):
+        try:
+            self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        except (AttributeError, OSError):
+            pass
+        super().server_bind()
+
+
 def main():
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.ThreadingTCPServer(("", PORT), Handler) as httpd:
-        print(f"THE LOOKBACK + admin -> http://localhost:{PORT}/")
+    try:
+        httpd = DualStackServer(("", PORT), Handler)     # IPv4 + IPv6
+    except OSError:
+        httpd = socketserver.ThreadingTCPServer(("", PORT), Handler)   # IPv4-only fallback
+    with httpd:
+        print(f"THE LOOKBACK + admin -> http://localhost:{PORT}/  (127.0.0.1 and ::1)")
         print(f"Admin panel        -> http://localhost:{PORT}/admin/")
         print("Ctrl+C to stop.")
         try:
