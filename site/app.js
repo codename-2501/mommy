@@ -14,6 +14,8 @@ let pendingFlip = null;       // clicked painting rect/src for the detail FLIP
 let flipSources = [];         // home media hidden while their ghosts are in the detail
 let activeView = null;        // surf/index/about instance (destroy on route change)
 let lastViewPath = '/';       // where the detail Close returns to
+let wmEl = null;              // persistent wordmark (survives route changes)
+let menuEl = null;            // persistent menu
 
 /* audio flags — "Enter with sound" turns on tick/click sounds (original) */
 window.TLB_AUDIO = { on: false };
@@ -311,14 +313,8 @@ function renderHome() {
   const rows = monthStats(content.slides).length * 2;
   const logoStart = Math.max(0, 500 + (rows - 1) * 75 - 500) / 1000;
 
-  const wm = buildWordmark(entered ? 0 : logoStart);
-  frag.appendChild(wm);
-
   const view = el('main', 'view view--home');
   frag.appendChild(view);
-
-  const menu = buildMenu();
-  frag.appendChild(menu);
 
   if (carousel) { carousel.destroy(); carousel = null; }
   carousel = window.TLBCarousel.mount(
@@ -345,40 +341,27 @@ function renderHome() {
   );
 
   if (!entered) {
-    wm.classList.add('at-intro');
+    wmEl.classList.add('at-intro');
     frag.appendChild(renderIntro(logoStart));
   } else {
-    wm.classList.add('is-ready');
-    menu.classList.add('is-in');
-    view.classList.add('is-in');
+    wmEl.classList.add('is-ready');
+    menuEl.classList.add('is-in');
+    requestAnimationFrame(() => requestAnimationFrame(() => view.classList.add('is-in')));
   }
   return frag;
 }
 
 function renderStub(name) {
-  const frag = document.createDocumentFragment();
-  const logo = el('div', 'site-logo label is-in', wordmark().l2);
-  frag.appendChild(logo);
   const view = el('main', 'view view-stub');
   view.appendChild(el('div', 'label', name));
-  frag.appendChild(view);
-  const menu = buildMenu();
-  menu.classList.add('is-in');
-  frag.appendChild(menu);
-  return frag;
+  return view;
 }
 
-/* surf/index/about — persistent wordmark + menu around the mounted view */
+/* surf/index/about — the persistent wordmark + menu stay; only the view swaps */
 function renderView(name, mount) {
   const frag = document.createDocumentFragment();
-  const wm = buildWordmark(0);
-  wm.classList.add('is-ready');
-  frag.appendChild(wm);
   const view = el('main', 'view view--' + name);
   frag.appendChild(view);
-  const menu = buildMenu();
-  menu.classList.add('is-in');
-  frag.appendChild(menu);
   const openFrom = (s, box) => {
     const img = box && box.querySelector('img');
     pendingFlip = { cur: img ? { el: box, src: img.currentSrc || img.src } : null, prev: null, next: null };
@@ -450,11 +433,34 @@ function render() {
     return;
   }
 
-  if (carousel) { carousel.destroy(); carousel = null; }
-  if (activeView) { activeView.destroy(); activeView = null; }
+  /* exit choreography (original: old page leaves WHILE the new one enters) */
+  const oldEl = app.querySelector('.view');
+  const oldInst = activeView;
+  const oldCar = carousel;
+  const oldPath = lastViewPath;
+  activeView = null;
+  carousel = null;
   lastViewPath = path;
+  updateMenu(path);
   document.body.classList.add('lock');       // every view manages its own scroll
-  app.replaceChildren();
+  app.querySelectorAll('.intro,.detail').forEach((n) => n.remove());
+
+  if (oldEl) {
+    if (oldPath === '/surf' && oldInst && oldInst.exit) {
+      oldInst.exit(() => oldEl.remove());                  // cards fly up (original V())
+    } else if (oldPath === '/about') {
+      if (oldInst) oldInst.destroy();
+      oldEl.classList.remove('is-in');
+      oldEl.classList.add('is-out');                        // curtains reverse
+      setTimeout(() => oldEl.remove(), 1050);
+    } else {
+      if (oldInst) oldInst.destroy();
+      if (oldCar) oldCar.destroy();
+      oldEl.classList.add('is-exit');                       // autoAlpha .35 (original X())
+      setTimeout(() => oldEl.remove(), 400);
+    }
+  }
+
   const slides = content.slides || [];
   if (path === '/') {
     app.appendChild(renderHome());
@@ -474,6 +480,14 @@ function render() {
   } else {
     app.appendChild(renderStub('not found'));
   }
+}
+
+/* persistent menu: only the active state changes between routes */
+function updateMenu(path) {
+  if (!menuEl) return;
+  menuEl.querySelectorAll('a').forEach((a) => {
+    a.classList.toggle('active', a.getAttribute('href') === path);
+  });
 }
 
 function navigate(href) {
@@ -497,6 +511,15 @@ Promise.all([loadContent(), loadAspects(), loadIcons()]).then(([c, a]) => {
   if (matchMedia('(max-width:699px)').matches) entered = true;   // original: no gate on mobile
   const wm = wordmark();
   document.title = [wm.l2, wm.l1].filter(Boolean).join(' — ');
+  /* persistent chrome: wordmark + menu live outside the router (original layout level) */
+  const rows0 = monthStats(content.slides).length * 2;
+  const logoStart0 = Math.max(0, 500 + (rows0 - 1) * 75 - 500) / 1000;
+  wmEl = buildWordmark(entered ? 0 : logoStart0);
+  if (entered) wmEl.classList.add('is-ready');
+  document.body.appendChild(wmEl);
+  menuEl = buildMenu();
+  if (entered) menuEl.classList.add('is-in');
+  document.body.appendChild(menuEl);
   document.body.appendChild(el('div', 'noise'));   // film grain, above everything
   render();
 });

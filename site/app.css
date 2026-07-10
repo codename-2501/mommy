@@ -480,6 +480,11 @@ img{max-width:100%;display:block}
   transform:translateY(-100%);transition:transform 1s var(--ease-snappy);
 }
 .view--about.is-in .about__mask,.view--about.is-in .about__mask-in{transform:translateY(0)}
+/* about exit: curtains leave the way they came (original fromAbout wrap [-100,100]) */
+.view--about.is-out .about__mask{transform:translateY(-100%)}
+.view--about.is-out .about__mask-in{transform:translateY(100%)}
+/* generic page exit — original X(): old page autoAlpha .35 power1 */
+.view.is-exit{opacity:0 !important;transition:opacity .35s ease !important;pointer-events:none}
 .about__scroll{padding:0 2rem;will-change:transform}
 .about__head{
   height:100svh;display:flex;align-items:center;justify-content:space-between;
