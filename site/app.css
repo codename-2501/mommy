@@ -13,7 +13,18 @@
 /* ---------- root scale (same fluid rem as reference) ---------- */
 :root{
   --size:1500;
-  --ease-out-expo:cubic-bezier(.19,1,.22,1);
+  --ease-out-expo:cubic-bezier(.19,1,.22,1);            /* gsap "expo" */
+  --ease-unmask:cubic-bezier(.16,1,.3,1);               /* original CustomEase "unmask" */
+  /* original CustomEase "snappy" — exact curve, sampled to linear() */
+  --ease-snappy:linear(0, 0.02245 4%, 0.06795 8%, 0.1675 12%, 0.3479 17%, 0.5419 21%,
+    0.6911 25%, 0.8148 29%, 0.8755 33%, 0.9133 38%, 0.9493 42%, 0.9664 46%, 0.9772 50%,
+    0.9834 54%, 0.9862 58%, 0.991 62%, 0.9931 67%, 0.9949 71%, 0.9964 75%, 0.9977 79%,
+    0.9987 83%, 0.9994 88%, 0.9999 92%, 1 96%, 1);
+  /* original CustomEase "mask" */
+  --ease-mask:linear(0, 0.002477 4%, 0.009691 8%, 0.02868 12%, 0.05651 17%, 0.09206 21%,
+    0.1496 25%, 0.2708 29%, 0.5093 33%, 0.6591 38%, 0.7663 42%, 0.8453 46%, 0.8893 50%,
+    0.9182 54%, 0.937 58%, 0.9512 62%, 0.9646 67%, 0.9729 71%, 0.9804 75%, 0.987 79%,
+    0.9924 83%, 0.9965 88%, 0.998 92%, 0.9998 96%, 1);
 }
 @media (max-width:699px){:root{--size:390}}
 
@@ -39,46 +50,46 @@ img{max-width:100%;display:block}
 }
 
 /* ---------- intro gate ---------- */
+/* transparent overlay: the home builds underneath while the intro leaves (original) */
 .intro{
-  position:fixed;inset:0;z-index:50;background:#fff;
+  position:fixed;inset:0;z-index:50;
   overflow:hidden;
 }
 .intro.is-leaving{pointer-events:none}
 
-/* wordmark: 3 stacked lines, letters stagger in/out — vertically centered like the original intro */
-.intro-logo{
-  position:fixed;left:50%;top:35%;transform:translate(-50%,-50%);
+/* wordmark: persistent site logo (big, top) — sits mid-screen during the intro.
+   Original: text-[11.7em], mix-blend-difference, lines clip-reveal 1.5s "snappy" stagger .1 */
+.wordmark{
+  position:fixed;left:50%;top:1.5rem;transform:translateX(-50%);
   width:90em;max-width:100vw;
   font-size:.4rem;
   pointer-events:none;user-select:none;z-index:10;
   display:flex;flex-direction:column;align-items:center;
+  color:#fff;mix-blend-mode:difference;
+  transition:top 1.5s var(--ease-out-expo),transform 1.5s var(--ease-out-expo);
 }
-@media (min-width:700px){.intro-logo{font-size:.9rem}}
-.intro-logo .line{
+@media (min-width:700px){.wordmark{font-size:.9rem}}
+.wordmark.at-intro{top:35%;transform:translateX(-50%) translateY(-50%)}
+.wordmark .line{
   display:flex;gap:0 .175em;
-  font-size:7.4em;font-weight:700;line-height:.85;letter-spacing:-.01em;
+  font-size:11.7em;font-weight:700;line-height:.85;letter-spacing:-.01em;
   text-transform:uppercase;overflow:hidden;
 }
-.intro-logo .word{display:flex}
-.intro-logo .ltr{
+.wordmark .line-in{
   display:block;
-  transform:translateY(110%);
-  transition:transform 1.1s var(--ease-out-expo);
-  transition-delay:var(--d,0s);
+  transform:translateY(105%);
+  clip-path:inset(0 0 100% 0);
+  transition:transform 1.5s var(--ease-snappy),clip-path 1.5s var(--ease-snappy);
+  transition-delay:var(--ld,0s);
   will-change:transform;
 }
-.intro.is-ready .ltr{transform:translateY(0)}
-.intro.is-leaving .ltr{
-  transform:translateY(-110%);
-  transition-duration:.8s;
-  transition-delay:var(--dx,0s);
-}
+.wordmark.is-ready .line-in{transform:translateY(0);clip-path:inset(0 0 -20% 0)}
 
 /* right-hand month list (2 columns: Jan–Jul / Aug–Dec) */
 .intro-months{
   position:fixed;left:67.5%;top:2.8rem;
   display:grid;grid-template-columns:24.3rem auto;
-  text-align:left;z-index:11;line-height:1.3;
+  text-align:left;z-index:5;line-height:1.3;   /* under the wordmark: it blends over us */
 }
 .intro-months .col{display:flex;flex-direction:column}
 .intro-months .mo{display:flex;flex-direction:column}
@@ -87,13 +98,10 @@ img{max-width:100%;display:block}
 @media (max-width:699px){
   .intro-months{left:auto;right:1.6rem;grid-template-columns:auto;top:2rem}
 }
-.intro-months .row .in{
-  display:block;min-height:1.5em;
-  transition:transform .7s var(--ease-out-expo);
-  transition-delay:var(--dx,0s);
-  will-change:transform;
-}
-.intro.is-leaving .row .in{transform:translateY(-110%)}
+.intro-months .row .in{display:block;min-height:1.5em}
+/* exit: month names scramble out (JS); the count lines linger, then fade */
+.intro-months .row.pl .in{transition:opacity .5s ease}
+.intro.is-fade-counts .row.pl .in{opacity:0}
 .intro-months .row .n{opacity:.5;margin-left:.4em}
 @media (max-width:699px){
   .intro-months{right:1.6rem;gap:.5rem 2rem}
@@ -104,10 +112,10 @@ img{max-width:100%;display:block}
   position:fixed;left:50%;top:51%;transform:translateX(-50%);
   display:flex;flex-direction:column;align-items:center;gap:1.8rem;
   z-index:12;
-  opacity:0;transition:opacity .9s ease 1.4s;
+  opacity:0;transition:opacity .5s ease-out 1.2s;   /* original duration-500 */
 }
 .intro.is-ready .intro-gate{opacity:1}
-.intro.is-leaving .intro-gate{opacity:0;transition:opacity .35s ease}
+.intro.is-leaving .intro-gate{opacity:0;transition:opacity .5s ease-out}
 .intro-gate .btn{
   display:flex;align-items:center;gap:.7em;
   border:1px solid #000;padding:1rem 2rem;
@@ -165,9 +173,16 @@ img{max-width:100%;display:block}
 .car-item:hover .car-label__in{transform:translateY(0)}
 @media (max-width:699px){.car-label{display:none}}
 
-/* entrance: whole home fades/rises after the gate */
-.view--home{opacity:0;transform:translateY(4rem);transition:opacity .9s ease .15s,transform 1.1s var(--ease-out-expo) .15s}
-.view--home.is-in{opacity:1;transform:translateY(0)}
+/* entrance: each slide rises from just below the viewport by its own distance
+   (original: from y = viewportBottom - itemTop, 1.5s "expo", no stagger —
+   the cascade comes from the differing travel distances) */
+.view--home .car-item{
+  transform:translateY(var(--ey,110vh));
+  transition:transform 1.5s var(--ease-out-expo);
+}
+.view--home.is-in .car-item{transform:translateY(0)}
+.view--home .ruler{opacity:0;transition:opacity .5s ease 1.1s}   /* original .5s power1 */
+.view--home.is-in .ruler{opacity:1}
 
 /* ---------- top timeline ruler (flipped: line on top, ticks hang down) ---------- */
 .ruler{
@@ -184,7 +199,7 @@ img{max-width:100%;display:block}
 /* ---------- frosted menu: 3 view icons in a capsule + round About ---------- */
 .menu{
   position:fixed;left:50%;bottom:2.6rem;transform:translate(-50%,180%);
-  transition:transform .7s cubic-bezier(.16,1,.3,1),opacity .5s ease;
+  transition:transform .7s var(--ease-unmask),opacity .5s ease .2s;
   opacity:0;
   z-index:45;display:flex;gap:1.4rem;align-items:center;
 }

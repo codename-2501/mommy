@@ -127,6 +127,16 @@ function mount(view, slides, aspects, years, onOpen) {
   addEventListener('resize', resize);
   resize();
 
+  /* entrance offsets — original: each item enters from y = viewportBottom - itemTop.
+     offsetTop is used because the items already carry their entrance transform. */
+  requestAnimationFrame(() => {
+    const base = track.getBoundingClientRect().top;
+    for (const item of track.children) {
+      const top = base + item.offsetTop;
+      item.style.setProperty('--ey', Math.max(0, innerHeight - top + 40) + 'px');
+    }
+  });
+
   function drawTicks(off) {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);

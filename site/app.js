@@ -113,6 +113,24 @@ function randChars(n) {
   return s;
 }
 
+function scrambleOut(node, dur) {
+  const text = node.textContent;
+  if (!text) return;
+  let start = null;
+  let scr = randChars(text.length);
+  let last = 0;
+  function tick(ts) {
+    if (start === null) start = ts;
+    const t = Math.min(1, (ts - start) / dur);
+    const keep = Math.round((1 - t) * text.length);
+    if (ts - last > 50) { scr = randChars(text.length); last = ts; }
+    node.textContent = scr.slice(0, keep);
+    if (t < 1) requestAnimationFrame(tick);
+    else node.textContent = '';
+  }
+  requestAnimationFrame(tick);
+}
+
 function scrambleIn(node, text, delay, dur) {
   const interval = 50;                  // scramble refresh (= gsap speed .05)
   let start = null;
@@ -122,9 +140,8 @@ function scrambleIn(node, text, delay, dur) {
   function tick(ts) {
     if (start === null) start = ts + delay;
     if (ts < start) { requestAnimationFrame(tick); return; }
-    const t = Math.min(1, (ts - start) / dur);
-    const p = 1 - (1 - t) * (1 - t);    // ease-out reveal, left → right
-    const shown = Math.floor(p * text.length + 0.5);
+    const t = Math.min(1, (ts - start) / dur);   // linear reveal (original ease:"none")
+    const shown = Math.floor(t * text.length + 0.5);
     if (ts - last > interval) { scr = randChars(text.length); last = ts; }
     node.textContent = text.slice(0, shown) + scr.slice(shown, text.length);
     if (t < 1) requestAnimationFrame(tick);
@@ -133,45 +150,37 @@ function scrambleIn(node, text, delay, dur) {
   requestAnimationFrame(tick);
 }
 
-/* ---------- intro gate ---------- */
+/* ---------- wordmark (persistent big logo) ---------- */
 
-function buildLine(text, letterIndex) {
-  const line = el('div', 'line');
-  for (const word of text.split(/\s+/)) {
-    const w = el('div', 'word');
-    for (const ch of word) {
-      const l = el('div', 'ltr', ch);
-      l.style.setProperty('--d', (letterIndex.line * 0.12 + letterIndex.i * 0.028).toFixed(3) + 's');
-      l.style.setProperty('--dx', (letterIndex.i * 0.012).toFixed(3) + 's');
-      letterIndex.i += 1;
-      w.appendChild(l);
-    }
-    line.appendChild(w);
-  }
-  return line;
+/* original: lines rise with yPercent:105 + clip reveal, 1.5s "snappy", stagger .1 */
+function buildWordmark(revealDelay) {
+  const wm = wordmark();
+  const node = el('div', 'wordmark');
+  [wm.l1, wm.l2, wm.l3].filter(Boolean).forEach((text, i) => {
+    const line = el('div', 'line');
+    const inner = el('div', 'line-in', text);
+    inner.style.setProperty('--ld', (revealDelay + i * 0.1).toFixed(2) + 's');
+    line.appendChild(inner);
+    node.appendChild(line);
+  });
+  return node;
 }
 
-function renderIntro() {
-  const intro = el('div', 'intro');
-  const wm = wordmark();
+/* ---------- intro gate ---------- */
 
-  const logo = el('div', 'intro-logo');
-  const idx = { i: 0, line: 0 };
-  for (const text of [wm.l1, wm.l2, wm.l3]) {
-    if (!text) continue;
-    logo.appendChild(buildLine(text, idx));
-    idx.line += 1;
-  }
-  intro.appendChild(logo);
+function renderIntro(logoStart) {
+  const intro = el('div', 'intro');
 
   /* month list — 2 columns: Jan–Jul / Aug–Dec */
   const stats = monthStats(content.slides);
   const months = el('div', 'intro-months label');
   const colA = el('div', 'col');
   const colB = el('div', 'col');
+  /* original: each visual LINE scrambles in for .5s, ease none, stagger .075 */
   const years = yearByMonth(content.slides);
   const scrambles = [];
-  stats.forEach((s, i) => {
+  let row = 0;
+  stats.forEach((s) => {
     /* original structure: month name (+year), then indented category (count) line */
     const block = el('div', 'mo');
     const monthRow = el('div', 'row');
@@ -190,24 +199,24 @@ function renderIntro() {
     catRow.appendChild(catIn);
     block.appendChild(monthRow);
     block.appendChild(catRow);
-    monthIn.style.setProperty('--dx', (i * 0.02).toFixed(3) + 's');
-    catIn.style.setProperty('--dx', (i * 0.02 + 0.01).toFixed(3) + 's');
     (MONTHS.indexOf(s.month) < 7 ? colA : colB).appendChild(block);
     const year = years[MONTHS.indexOf(s.month) + 1] || '2026';
-    const delay = 700 + i * 70;
+    const dMonth = row * 75; row += 1;
+    const dCat = row * 75; row += 1;
     scrambles.push(() => {
-      scrambleIn(monthName, s.month.toUpperCase(), delay, 800);
-      scrambleIn(yearEl, year, delay + 80, 800);
-      scrambleIn(cat, s.cat || '', delay + 100, 900);
-      scrambleIn(n, '(' + s.count + ')', delay + 220, 900);
+      scrambleIn(monthName, s.month.toUpperCase(), dMonth, 500);
+      scrambleIn(yearEl, year, dMonth, 500);
+      scrambleIn(cat, s.cat || '', dCat, 500);
+      scrambleIn(n, '(' + s.count + ')', dCat, 500);
     });
   });
   months.appendChild(colA);
   months.appendChild(colB);
   intro.appendChild(months);
 
-  /* enter gate */
+  /* enter gate — appears alongside the wordmark phase of the timeline */
   const gate = el('div', 'intro-gate');
+  gate.style.transitionDelay = (logoStart + 0.6).toFixed(2) + 's';
   const withSound = el('button', 'btn', 'Enter with sound →');
   const noSound = el('button', 'alt', '…or without');
   withSound.addEventListener('click', () => enterSite(intro, true));
@@ -218,6 +227,8 @@ function renderIntro() {
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
     intro.classList.add('is-ready');
+    const wm = document.querySelector('.wordmark');
+    if (wm) wm.classList.add('is-ready');
     for (const run of scrambles) run();
   }));
   return intro;
@@ -226,16 +237,24 @@ function renderIntro() {
 function enterSite(intro) {
   if (entered) return;
   entered = true;
+  const gate = intro.querySelector('.intro-gate');
+  if (gate) gate.style.transitionDelay = '0s';
   intro.classList.add('is-leaving');
-  const logo = document.querySelector('.site-logo');
+  /* month-name lines scramble out (original: stagger .035, ~.5s each);
+     the count lines linger, then fade */
+  intro.querySelectorAll('.intro-months .in.m').forEach((line, k) => {
+    line.querySelectorAll('span').forEach((sp) => {
+      setTimeout(() => scrambleOut(sp, 500), k * 35);
+    });
+  });
+  setTimeout(() => intro.classList.add('is-fade-counts'), 1800);
+  const wm = document.querySelector('.wordmark');
   const menu = document.querySelector('.menu');
   const home = document.querySelector('.view--home');
-  setTimeout(() => {
-    intro.remove();
-    if (logo) logo.classList.add('is-in');
-    if (menu) menu.classList.add('is-in');
-    if (home) home.classList.add('is-in');
-  }, 950);
+  setTimeout(() => { if (wm) wm.classList.remove('at-intro'); }, 400);   // rides up 1.5s expo
+  setTimeout(() => { if (home) home.classList.add('is-in'); }, 900);     // slides rise underneath
+  setTimeout(() => { if (menu) menu.classList.add('is-in'); }, 1100);
+  setTimeout(() => intro.remove(), 2400);
 }
 
 /* ---------- views ---------- */
@@ -274,8 +293,12 @@ function yearsByName() {
 function renderHome() {
   const frag = document.createDocumentFragment();
 
-  const logo = el('div', 'site-logo label', wordmark().l2);
-  frag.appendChild(logo);
+  /* wordmark reveal starts as the month list finishes (original: label "-=.5") */
+  const rows = monthStats(content.slides).length * 2;
+  const logoStart = Math.max(0, 500 + (rows - 1) * 75 - 500) / 1000;
+
+  const wm = buildWordmark(entered ? 0 : logoStart);
+  frag.appendChild(wm);
 
   const view = el('main', 'view view--home');
   frag.appendChild(view);
@@ -290,9 +313,10 @@ function renderHome() {
   );
 
   if (!entered) {
-    frag.appendChild(renderIntro());
+    wm.classList.add('at-intro');
+    frag.appendChild(renderIntro(logoStart));
   } else {
-    logo.classList.add('is-in');
+    wm.classList.add('is-ready');
     menu.classList.add('is-in');
     view.classList.add('is-in');
   }
