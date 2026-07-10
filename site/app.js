@@ -276,6 +276,7 @@ function menuLink(m) {
   a.title = m.title;
   a.setAttribute('data-nav', '');
   a.innerHTML = icons[m.icon] || '';
+  a.appendChild(el('span', 'menu__txt', m.title));   // mobile: text buttons (original)
   const cur = location.pathname.replace(/\/+$/, '') || '/';
   if (cur === m.href) a.classList.add('active');
   return a;
@@ -449,6 +450,7 @@ window.addEventListener('popstate', render);
 Promise.all([loadContent(), loadAspects(), loadIcons()]).then(([c, a]) => {
   content = c;
   aspects = a;
+  if (matchMedia('(max-width:699px)').matches) entered = true;   // original: no gate on mobile
   const wm = wordmark();
   document.title = [wm.l2, wm.l1].filter(Boolean).join(' — ');
   document.body.appendChild(el('div', 'noise'));   // film grain, above everything

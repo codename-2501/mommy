@@ -241,6 +241,21 @@ img{max-width:100%;display:block}
 .ic--flow{transform:scale(.94)}
 .ic--collage{transform:scale(1.08)}
 .ic--profile{transform:scale(.90)}
+.menu__txt{display:none}
+
+/* mobile menu — original: bordered TEXT buttons, no blend, no icons */
+@media (max-width:699px){
+  .menu{gap:.8rem;bottom:2rem;color:#000;mix-blend-mode:normal}
+  .menu__capsule{border:0;padding:0;gap:.8rem}
+  .menu__about{border:0;width:auto;height:auto;border-radius:0}
+  .menu .ic{display:none}
+  .menu__txt{display:block;font-size:1.5rem;font-weight:500}
+  .menu a{
+    border:1px solid #e0e0e0;border-radius:.6rem;background:#fff;
+    padding:1.1rem 1.5rem;opacity:1;color:#9a9a9a;
+  }
+  .menu a.active{color:#000}
+}
 
 /* ---------- detail view (overlay above home; original transition values) ---------- */
 .detail{position:fixed;inset:0;z-index:60}
@@ -367,6 +382,15 @@ img{max-width:100%;display:block}
 /* controls fade in with the content */
 .dt-controls{opacity:0;transition:opacity .35s ease .3s}
 .detail.is-rev .dt-controls{opacity:1}
+
+/* mobile detail (original): no strip, full-width panel, bottom controls */
+@media (max-width:699px){
+  .dt-panel{left:0;border-left:0}
+  .dt-strip{display:none}
+  .dt-head{padding:1.4rem 1.6rem}
+  .dt-body{max-width:none}
+  .dt-fig img{max-width:100%}
+}
 
 /* bottom controls — original shows these on MOBILE only (desktop = strip + header Close) */
 .dt-controls{
