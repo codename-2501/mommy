@@ -35,13 +35,17 @@ function slideMonth(s) {
 
 function buildItem(s, i, ratio) {
   const art = el('article', 'car-item');
+  const entr = el('div', 'car-entr');     // entrance rise (CSS transition, Y only)
   const content = el('div', 'car-content');
   const num = el('div', 'car-label car-label--top');
   num.appendChild(Object.assign(el('div', 'car-label__in'), { textContent: String(i + 1) }));
   const box = el('div', 'car-media');
   box.style.aspectRatio = String(ratio || 1);
   const img = el('img');
-  img.src = s.image || '';
+  /* carousel-size webp (originals are multi-MB and stutter the scroll) */
+  const file = String(s.image || '').split('/').pop();
+  img.src = file ? '/thumbs/600/' + encodeURIComponent(file) : '';
+  img.addEventListener('error', () => { img.src = s.image || ''; }, { once: true });
   img.alt = s.title || s.bottom || '';
   img.loading = i < 8 ? 'eager' : 'lazy';
   img.decoding = 'async';
@@ -54,7 +58,8 @@ function buildItem(s, i, ratio) {
   content.appendChild(num);
   content.appendChild(box);
   content.appendChild(cap);
-  art.appendChild(content);
+  entr.appendChild(content);
+  art.appendChild(entr);
   return art;
 }
 
@@ -92,16 +97,18 @@ function mount(view, slides, aspects, years, onOpen) {
     return aspects[name] || 1;
   });
 
+  /* single set of slides — each one wraps around individually every frame
+     (the original's design: the track never becomes one huge moving layer) */
   let moved = false;
-  const contents = [];            // .car-content per child, for the visible-only skew
-  for (let copy = 0; copy < 2; copy++) {
-    slides.forEach((s, i) => {
-      const item = buildItem(s, i, ratios[i]);
-      item.addEventListener('click', () => { if (!moved) onOpen(s); });
-      track.appendChild(item);
-      contents.push(item.firstChild);
-    });
-  }
+  const items = [], contents = [];
+  slides.forEach((s, i) => {
+    const item = buildItem(s, i, ratios[i]);
+    item.addEventListener('click', () => { if (!moved) onOpen(s); });
+    track.appendChild(item);
+    items.push(item);
+    contents.push(item.firstChild.firstChild);   // .car-entr > .car-content
+  });
+  const onScreen = new Uint8Array(items.length);
 
   /* ---------- geometry ---------- */
   let rem = rootPx();
@@ -243,14 +250,28 @@ function mount(view, slides, aspects, years, onOpen) {
     cur += (target - cur) * LERP * ratio;
     cur = Math.round(cur * 100) / 100;
     diff = Math.round((cur - target) * 1000) / 1000;
-    const off = ((cur % half) + half) % half;
-    track.style.transform = 'translate3d(' + (-off) + 'px,0,0)';
-    if (!isSmall() && step) {
-      /* original: content rotateY(velocity * .05deg) — visible items only */
-      const ry = 'rotateY(' + (diff * 0.05) + 'deg)';
-      const from = Math.max(0, Math.floor(off / step) - 1);
-      const to = Math.min(contents.length - 1, Math.ceil((off + innerWidth) / step) + 1);
-      for (let k = from; k <= to; k++) contents[k].style.transform = ry;
+    /* per-slide wrap (original): d = wrap(end - total, end, cur); x = -d */
+    if (step) {
+      const pad = 2 * rem;
+      const slideW = step - ((isSmall() ? 1.2 : 2) * rem);
+      const ry = isSmall() ? null : 'rotateY(' + (diff * 0.05) + 'deg)';
+      for (let k = 0; k < items.length; k++) {
+        const left = pad + k * step;
+        const end = left + slideW;
+        let d = (cur - (end - half)) % half;
+        if (d < 0) d += half;
+        d += end - half;                       // d in [end - half, end)
+        const sx = left - d;                   // on-screen x of the slide
+        const vis = sx > -step && sx < innerWidth + step;
+        if (vis) {
+          items[k].style.transform = 'translate3d(' + (-d) + 'px,0,0)';
+          if (ry) contents[k].style.transform = ry;
+          onScreen[k] = 1;
+        } else if (onScreen[k]) {
+          items[k].style.transform = 'translate3d(' + (-d) + 'px,0,0)';   // park just off-screen
+          onScreen[k] = 0;
+        }
+      }
     }
     const rOff = cur * scale;
     let lOff = rOff % rulerHalf;
@@ -314,8 +335,9 @@ function mount(view, slides, aspects, years, onOpen) {
   /* entrance offsets — original: each item enters from y = viewportBottom - itemTop */
   requestAnimationFrame(() => {
     const base = track.getBoundingClientRect().top;
-    for (const item of track.children) {
-      item.style.setProperty('--ey', Math.max(0, innerHeight - (base + item.offsetTop) + 40) + 'px');
+    for (const item of items) {
+      item.firstChild.style.setProperty('--ey',
+        Math.max(0, innerHeight - (base + item.offsetTop) + 40) + 'px');
     }
   });
 

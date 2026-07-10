@@ -533,6 +533,39 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if path == "/api/aspects":
             return self._send_json({"aspects": image_aspects()})
 
+        # resized image cache: /thumbs/<width>/<name> -> webp (carousel-size assets;
+        # the originals are multi-MB and stall the scroll while decoding)
+        mth = re.match(r"^/thumbs/(\d{2,4})/([^/]+)$", path)
+        if mth:
+            try:
+                w = max(64, min(2000, int(mth.group(1))))
+                name = safe_name(urllib.parse.unquote(mth.group(2)))
+                src = os.path.join(IMAGES_DIR, name)
+                if not os.path.isfile(src):
+                    return self._send_json({"error": "no such image"}, 404)
+                tdir = os.path.join(IMAGES_DIR, ".thumbs", str(w))
+                dest = os.path.join(tdir, name + ".webp")
+                if (not os.path.isfile(dest)) or os.path.getmtime(dest) < os.path.getmtime(src):
+                    from PIL import Image
+                    os.makedirs(tdir, exist_ok=True)
+                    im = Image.open(src)
+                    if im.mode not in ("RGB", "RGBA"):
+                        im = im.convert("RGB")
+                    if im.width > w:
+                        im = im.resize((w, max(1, round(im.height * w / im.width))), Image.LANCZOS)
+                    im.save(dest, "WEBP", quality=82, method=4)
+                with open(dest, "rb") as fh:
+                    body = fh.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/webp")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.end_headers()
+                self.wfile.write(body)
+                return
+            except Exception as e:
+                return self._send_json({"error": str(e)}, 500)
+
         if path == "/api/pages":
             return self._send_json({"pages": ROUTES})
 

@@ -152,7 +152,6 @@ img{max-width:100%;display:block}
 .carousel__track{
   display:flex;align-items:center;
   padding-bottom:16vh;padding-left:2rem;
-  will-change:transform;
 }
 .car-item{
   position:relative;flex:0 0 28.1rem;max-width:28.1rem;margin-right:2rem;
@@ -187,11 +186,11 @@ img{max-width:100%;display:block}
 /* entrance: each slide rises from just below the viewport by its own distance
    (original: from y = viewportBottom - itemTop, 1.5s "expo", no stagger —
    the cascade comes from the differing travel distances) */
-.view--home .car-item{
+.view--home .car-entr{
   transform:translateY(var(--ey,110vh));
   transition:transform 1.5s var(--ease-out-expo);
 }
-.view--home.is-in .car-item{transform:translateY(0)}
+.view--home.is-in .car-entr{transform:translateY(0)}
 .view--home .ruler{opacity:0;transition:opacity .5s ease 1.1s}   /* original .5s power1 */
 .view--home.is-in .ruler{opacity:1}
 
