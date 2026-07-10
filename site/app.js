@@ -251,14 +251,12 @@ function enterSite(intro, withSound) {
   const gate = intro.querySelector('.intro-gate');
   if (gate) gate.style.transitionDelay = '0s';
   intro.classList.add('is-leaving');
-  /* month-name lines scramble out (original: stagger .035, ~.5s each);
-     the count lines linger, then fade */
-  intro.querySelectorAll('.intro-months .in.m').forEach((line, k) => {
-    line.querySelectorAll('span').forEach((sp) => {
+  /* every list line scrambles out — original: to(lines, {scrambleText:"", stagger:.035}) */
+  intro.querySelectorAll('.intro-months .row').forEach((row, k) => {
+    row.querySelectorAll('.in > span').forEach((sp) => {
       setTimeout(() => scrambleOut(sp, 500), k * 35);
     });
   });
-  setTimeout(() => intro.classList.add('is-fade-counts'), 1800);
   const wm = document.querySelector('.wordmark');
   const menu = document.querySelector('.menu');
   const home = document.querySelector('.view--home');

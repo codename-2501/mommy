@@ -270,7 +270,9 @@ function mount(view, slides, aspects, years, onOpen) {
     wrap.classList.remove('is-active');
   }
   function onWheel(e) {
-    target += e.deltaY * WHEEL_MULT;        // original virtual-scroll (0.9 win / 0.4 mac)
+    // original: i = wheelDeltaY || deltaY*-1; i *= 0.9(win)/0.4; x -= i
+    const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
+    target += raw * WHEEL_MULT;
   }
   function nearestIdx() {
     return Math.round(target / step);
@@ -288,7 +290,7 @@ function mount(view, slides, aspects, years, onOpen) {
   function onRulerMove(e) { hoverX = e.offsetX; }
 
   wrap.addEventListener('pointerdown', onDown);
-  wrap.addEventListener('pointermove', onMove);
+  addEventListener('pointermove', onMove);   // window-level: no dead zone over the ruler
   addEventListener('pointerup', onUp);
   addEventListener('pointercancel', onUp);
   addEventListener('wheel', onWheel, { passive: true });
@@ -312,6 +314,7 @@ function mount(view, slides, aspects, years, onOpen) {
   return {
     destroy() {
       cancelAnimationFrame(raf);
+      removeEventListener('pointermove', onMove);
       removeEventListener('pointerup', onUp);
       removeEventListener('pointercancel', onUp);
       removeEventListener('wheel', onWheel);
