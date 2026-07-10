@@ -11,6 +11,16 @@ let icons = {};               // path -> inline svg markup
 let entered = false;          // intro gate passed this page-load
 let carousel = null;          // active carousel instance
 
+/* audio flags — "Enter with sound" turns on tick/click sounds (original) */
+window.TLB_AUDIO = { on: false };
+let clickAudio = null;
+document.addEventListener('click', () => {
+  if (!window.TLB_AUDIO.on) return;
+  if (!clickAudio) clickAudio = new Audio('/site/assets/click.mp3');
+  clickAudio.currentTime = 0;
+  clickAudio.play().catch(() => {});
+});
+
 /* menu icons — Noun Project, CC BY 3.0 (credits inside each SVG file) */
 const MENU = [
   { href: '/',         icon: '/icons/timeline.svg', key: 'timeline', title: 'Timeline' },
@@ -234,9 +244,10 @@ function renderIntro(logoStart) {
   return intro;
 }
 
-function enterSite(intro) {
+function enterSite(intro, withSound) {
   if (entered) return;
   entered = true;
+  window.TLB_AUDIO.on = !!withSound;
   const gate = intro.querySelector('.intro-gate');
   if (gate) gate.style.transitionDelay = '0s';
   intro.classList.add('is-leaving');
@@ -378,6 +389,7 @@ Promise.all([loadContent(), loadAspects(), loadIcons()]).then(([c, a]) => {
   aspects = a;
   const wm = wordmark();
   document.title = [wm.l2, wm.l1].filter(Boolean).join(' — ');
+  document.body.appendChild(el('div', 'noise'));   // film grain, above everything
   render();
 });
 })();
