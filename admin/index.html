@@ -127,6 +127,14 @@
     <button class="btn ghost" id="reloadText">다시 스캔</button>
   </div>
   <main>
+    <div style="background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
+      <div style="font-weight:600;margin-bottom:4px">로고 / 워드마크 <span style="color:var(--mut);font-weight:400;font-size:12px">(인트로·홈 상단)</span></div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:12px">로고 브랜드명 2줄을 편집합니다. 비워두면 원본(Better Off® / THE LOOKBACK) 유지. 세 번째 줄 (BO®S/2026)은 고정입니다.</div>
+      <div style="display:flex;flex-direction:column;gap:8px;max-width:520px">
+        <input id="wm-l1" placeholder="Better Off®" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="wm-l2" placeholder="THE LOOKBACK" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+      </div>
+    </div>
     <div class="hint">원본 텍스트(왼쪽)를 오른쪽에서 수정하세요. 같은 문구가 여러 곳에 있으면 모두 바뀝니다. 저장 후 사이트 새로고침 시 반영됩니다.</div>
     <div class="textlist" id="textList"></div>
   </main>
@@ -170,8 +178,9 @@
           <button class="btn sm" id="editPickImg" style="width:100%;margin-top:8px">대표 이미지 변경</button>
         </div>
         <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:14px">
-          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">위 문구 (번호)</label>
-            <input id="ed-top" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
+          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">위 문구 (번호) · 자동</label>
+            <input id="ed-top" readonly title="이미지 순서에 따라 자동 부여됩니다 (순서 변경 시 자동 갱신)" style="width:100%;margin-top:4px;background:#0a0b0e;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:9px 11px;cursor:not-allowed">
+            <div style="font-size:11px;color:var(--mut);margin-top:4px">이미지 순서에 따라 자동 부여 — 순서를 바꾸면 번호도 자동으로 바뀝니다.</div></div>
           <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">카테고리 (뱃지)</label>
             <input id="ed-category" placeholder="예: Inspire / Showcase / Educate" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
             <div style="font-size:11px;color:var(--mut);margin-top:4px">상세·홈의 보라색 뱃지로 표시됩니다. 비우면 아래 문구의 괄호 앞부분을 사용.</div></div>
@@ -222,6 +231,7 @@ async function load(){
   ]);
   cfg=c; if(!cfg.texts)cfg.texts={}; images=im.images||[];
   const sel=$('#pageSel'); sel.innerHTML=(pg.pages||['/']).map(p=>`<option value="${p}">${p}</option>`).join('');
+  loadWordmark();
   renderSlides(); renderImages();
   setStatus(cfg.slides.length+'개 슬라이드 · '+images.length+'개 이미지','ok');
 }
@@ -236,7 +246,13 @@ $$('.tab').forEach(t=>t.onclick=()=>{
 
 /* ---------- slides CRUD ---------- */
 function usageCount(name){return cfg.slides.filter(s=>(s.image||'').endsWith('/'+name)).length;}
+/* ---------- 로고 / 워드마크 ---------- */
+function loadWordmark(){ const w=(cfg&&cfg.wordmark)||{}; ['l1','l2','l3'].forEach(k=>{ const el=$('#wm-'+k); if(el) el.value=w[k]||''; }); }
+['l1','l2','l3'].forEach(k=>{ const el=$('#wm-'+k); if(el) el.addEventListener('input',()=>{ if(!cfg)return; cfg.wordmark=cfg.wordmark||{}; const v=el.value.trim(); if(v) cfg.wordmark[k]=v; else delete cfg.wordmark[k]; if(!Object.keys(cfg.wordmark).length) delete cfg.wordmark; dirty(); }); });
+
+function renumber(){ cfg.slides.forEach((s,i)=>{ s.top=String(i+1); }); }  // 순번은 항상 배열 순서 = 번호
 function renderSlides(){
+  renumber();   // 순서변경/추가/삭제 후 자동 재번호
   const q=($('#qSlide').value||'').toLowerCase().trim();
   const g=$('#slideGrid'); g.innerHTML=''; let shown=0;
   cfg.slides.forEach((s,i)=>{
@@ -472,7 +488,7 @@ $('#ed-date').addEventListener('input',e=>{
 function closeEditModal(){ $('#editModal').classList.remove('open'); renderSlides(); }
 $('#editClose').onclick=closeEditModal;
 $('#editModal').addEventListener('click',e=>{ if(e.target.id==='editModal')closeEditModal(); });
-[['ed-top','top'],['ed-bottom','bottom'],['ed-category','category'],['ed-title','title'],['ed-desc','desc']].forEach(([id,key])=>{
+[['ed-bottom','bottom'],['ed-category','category'],['ed-title','title'],['ed-desc','desc']].forEach(([id,key])=>{
   $('#'+id).addEventListener('input',e=>{ if(editTarget!=null){ cfg.slides[editTarget][key]=e.target.value; dirty(); } });
 });
 // paragraph count changes live -> refresh position options so the shown slot always matches
