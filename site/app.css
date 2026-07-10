@@ -372,7 +372,9 @@ img{max-width:100%;display:block}
   transition:transform 1s var(--ease-snappy);
 }
 .dt-ghost img{width:100%;height:100%;object-fit:cover}
-/* old strip images slide with the same curve while leaving */
+/* old strip images slide with the same curve while leaving; no clicks while dying */
+.dt-strip--out{pointer-events:none}
+.dt-strip--out *{pointer-events:none !important}
 .dt-strip--out .dt-media{transition:transform 1s var(--ease-snappy)}
 
 /* ---------- film-grain noise overlay (original: noise.png, 1s steps(2)) ---------- */
