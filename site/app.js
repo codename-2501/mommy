@@ -124,19 +124,28 @@ function renderIntro() {
   const colB = el('div', 'col');
   const scrambles = [];
   stats.forEach((s, i) => {
-    const row = el('div', 'row');
-    const inner = el('span', 'in');
-    inner.style.setProperty('--dx', (i * 0.02).toFixed(3) + 's');
+    /* original structure: month name, then indented category (count) line */
+    const block = el('div', 'mo');
+    const monthRow = el('div', 'row');
+    const monthIn = el('span', 'in m');
+    monthRow.appendChild(monthIn);
+    const catRow = el('div', 'row pl');
+    const catIn = el('span', 'in');
     const cat = el('span', null, '');
     const n = el('span', 'n', '');
-    inner.appendChild(cat);
-    inner.appendChild(n);
-    row.appendChild(inner);
-    (MONTHS.indexOf(s.month) < 7 ? colA : colB).appendChild(row);
+    catIn.appendChild(cat);
+    catIn.appendChild(n);
+    catRow.appendChild(catIn);
+    block.appendChild(monthRow);
+    block.appendChild(catRow);
+    monthIn.style.setProperty('--dx', (i * 0.02).toFixed(3) + 's');
+    catIn.style.setProperty('--dx', (i * 0.02 + 0.01).toFixed(3) + 's');
+    (MONTHS.indexOf(s.month) < 7 ? colA : colB).appendChild(block);
     const delay = 700 + i * 70;
     scrambles.push(() => {
-      scrambleIn(cat, s.cat || s.month, delay, 900);
-      scrambleIn(n, '(' + s.count + ')', delay + 120, 900);
+      scrambleIn(monthIn, s.month.toUpperCase(), delay, 800);
+      scrambleIn(cat, s.cat || '', delay + 100, 900);
+      scrambleIn(n, '(' + s.count + ')', delay + 220, 900);
     });
   });
   months.appendChild(colA);
