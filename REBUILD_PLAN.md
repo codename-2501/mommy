@@ -95,6 +95,24 @@
 - **Phase 5 — 폴리시**: 애니메이션 타이밍, 반응형, 접근성, 성능. 관리자와 왕복 검증(편집→반영).
 - 각 Phase 후 헤드리스(격리 프로필) 스크린샷 검증. **50% 컨텍스트 규칙**: 한 세션에 1~2 Phase씩.
 
+## 진행 상황 (2026-07-10 — 다른 컴퓨터 인수인계용)
+
+> **새 세션 시작법**: 이 섹션을 읽고 "Phase 5 이어서"라고 하면 됨. `python admin_server.py 8082` 실행 후 http://localhost:8082/
+
+**Phase 0~4 완료 + 트랜지션 폴리시 완료** (마지막 커밋 7f4a929 계열). 새 프론트 = `site/` (index.html · app.js 라우터/인트로/홈 · carousel.js 홈 캐러셀+눈금 · detail.js 상세 오버레이 · views.js Surf/Index/About · app.css).
+
+구현된 것: 인트로(워드마크 라인 clip 리빌 1.5s snappy stagger .1 · 월 리스트 스크램블 0.5s stagger .075 · 퇴장 전행 스크램블 stagger .035 · Enter 게이트), 홈(퍼-슬라이드 wrap 무한 캐러셀 · lerp .1 · 드래그 x2/모바일 x3.5 · 휠 wheelDeltaY*.9win/.4mac · ↑↓120px Space ←→슬라이드스냅 · rotateY(diff*.05)+perspective 1000 · 눈금 슬라이드당 9틱x11px 스케일 1/3 · 중앙 커서틱 50px · 호버부스트 18px · fx/click.mp3 · 노이즈 z9999 · 워드마크/메뉴 mix-blend-difference), 상세(오버레이 · 진입 전 180ms 대기박자 · 리파런팅 FLIP flyLive 1s snappy · 이웃 동반비행 stagger 35ms · 역할교대 이동 · 역플립 닫기 · 커튼 패널 · fade-up 본문 · SIZE/TYPE 필드 · 라이트박스 · 가상스크롤 delta*.9 lerp .1 · ←→ 이동 · 모바일 전용 하단 컨트롤), Surf(카드덱 ww/18 · 사인부유 · rotateY(-70-15p) · ±4장 키), Index(12열 그리드 · SmoothScroll lerp .125 · 행 rotateX 틸트), About(블랙 커튼 · 라인 리빌 · Noun 크레딧), 페이지 전환(동시 퇴장/등장: 페이드 .35 · surf 카드 상승비행 · about 커튼 역방향 · 워드마크/메뉴 상주), 모바일(게이트 스킵 · 텍스트 메뉴 · 상세 풀폭), 관리자에 size/ptype 필드, /thumbs/<w>/<name> 썸네일 API(webp 캐시), 더미데이터 채움.
+
+**하드 룰(어기면 사용자가 지적했던 버그 재발):**
+1. 시각 이슈는 반드시 레거시(`/_legacy/`)와 프레임 캡처 비교 — 추측 수정 금지. selenium+격리프로필, chrome --virtual-time-budget은 rAF 미렌더 착시.
+2. 플립 = 복제 금지, 실제 img 리파런팅(flyLive). 캐러셀 goTo는 닫기 시점에만(열 때 하면 그림이 맨앞으로 점프).
+3. rect 측정은 DOM 삽입 후 rAF(fragment면 0-rect→NaN transform 조용히 무시).
+4. 트랙 전체 translate 금지(거대 레이어) — 퍼-슬라이드 wrap. will-change 대량 금지. rotateY는 보이는 아이템만 인라인.
+5. 임의 효과 추가 금지 — 원본 번들에서 수치 추출(BSuY0ud1=홈/인트로, NYCGuiUc=캐러셀+눈금, C1kfZrZv=surf, BnLrvkiE+Bx_gN5Pg=index/smoothscroll, wyNRnxoT=about, DNhanIij=페이지 전환, BGLHITTy=가상스크롤/Observer/커스텀이즈). 분석법: `re.sub(r'([;{}])',r'\1\n',js)` 프리티파이.
+6. 커스텀 이즈: snappy/mask는 app.css :root의 linear() 샘플, unmask=cubic-bezier(.16,1,.3,1), expo=cubic-bezier(.19,1,.22,1).
+
+**남은 것 (Phase 5):** ① 뷰 간 그림 플립 공유(home↔surf↔articles 전환 시 같은 그림이 슬롯 간 비행 — 원본 W()/J() data-id 매칭; 현재는 페이드/비행 퇴장만) ② 관리자 편집→반영 왕복 검증 ③ 반응형 미세조정·접근성 ④ 원본 대비 최종 QA(레거시와 나란히 프레임 비교).
+
 ## 완료 기준
 - 화면 어디에도 원본 브랜딩/데이터 없음(SVG 크레딧만).
 - 인트로·캐러셀·상세·메뉴 모션이 원본 느낌으로 동작, 플래시/끊김 없음.
