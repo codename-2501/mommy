@@ -43,7 +43,7 @@ function buildItem(s, i, ratio) {
   const img = el('img');
   img.src = s.image || '';
   img.alt = s.title || s.bottom || '';
-  img.loading = 'lazy';
+  img.loading = i < 8 ? 'eager' : 'lazy';
   img.decoding = 'async';
   img.draggable = false;
   if (img.complete) img.classList.add('ok');
@@ -93,11 +93,13 @@ function mount(view, slides, aspects, years, onOpen) {
   });
 
   let moved = false;
+  const contents = [];            // .car-content per child, for the visible-only skew
   for (let copy = 0; copy < 2; copy++) {
     slides.forEach((s, i) => {
       const item = buildItem(s, i, ratios[i]);
       item.addEventListener('click', () => { if (!moved) onOpen(s); });
       track.appendChild(item);
+      contents.push(item.firstChild);
     });
   }
 
@@ -243,7 +245,13 @@ function mount(view, slides, aspects, years, onOpen) {
     diff = Math.round((cur - target) * 1000) / 1000;
     const off = ((cur % half) + half) % half;
     track.style.transform = 'translate3d(' + (-off) + 'px,0,0)';
-    if (!isSmall()) track.style.setProperty('--ry', (diff * 0.05) + 'deg');
+    if (!isSmall() && step) {
+      /* original: content rotateY(velocity * .05deg) — visible items only */
+      const ry = 'rotateY(' + (diff * 0.05) + 'deg)';
+      const from = Math.max(0, Math.floor(off / step) - 1);
+      const to = Math.min(contents.length - 1, Math.ceil((off + innerWidth) / step) + 1);
+      for (let k = from; k <= to; k++) contents[k].style.transform = ry;
+    }
     const rOff = cur * scale;
     let lOff = rOff % rulerHalf;
     if (lOff < 0) lOff += rulerHalf;
