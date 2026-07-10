@@ -99,9 +99,6 @@ img{max-width:100%;display:block}
   .intro-months{left:auto;right:1.6rem;grid-template-columns:auto;top:2rem}
 }
 .intro-months .row .in{display:block;min-height:1.5em}
-/* exit: month names scramble out (JS); the count lines linger, then fade */
-.intro-months .row.pl .in{transition:opacity .5s ease}
-.intro.is-fade-counts .row.pl .in{opacity:0}
 .intro-months .row .n{opacity:.5;margin-left:.4em}
 @media (max-width:699px){
   .intro-months{right:1.6rem;gap:.5rem 2rem}
