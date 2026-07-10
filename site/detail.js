@@ -369,7 +369,7 @@ function render(container, opts, id, flip, dir) {
       const box = strip.querySelector(sel);
       if (!box) continue;
       box.style.visibility = 'hidden';   // before first paint — no pop-in flash
-      later(() => flipInto(src.rect, src.src, box, container), delay);
+      later(() => flipInto(src.rect, src.src, box, container, src.el), delay);
     }
   }
 
