@@ -103,7 +103,7 @@ function mount(view, slides, aspects, years, onOpen) {
   const items = [], contents = [];
   slides.forEach((s, i) => {
     const item = buildItem(s, i, ratios[i]);
-    item.addEventListener('click', () => { if (!moved) onOpen(s); });
+    item.addEventListener('click', () => { if (!moved) onOpen(s, item); });
     track.appendChild(item);
     items.push(item);
     contents.push(item.firstChild.firstChild);   // .car-entr > .car-content
@@ -342,6 +342,7 @@ function mount(view, slides, aspects, years, onOpen) {
   });
 
   return {
+    goTo(i) { target = i * step; cur = target; },   // instant jump (detail close sync)
     destroy() {
       cancelAnimationFrame(raf);
       removeEventListener('pointermove', onMove);

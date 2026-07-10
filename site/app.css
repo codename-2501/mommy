@@ -236,6 +236,116 @@ img{max-width:100%;display:block}
 .ic--collage{transform:scale(1.08)}
 .ic--profile{transform:scale(.90)}
 
+/* ---------- detail view (overlay above home; original transition values) ---------- */
+.detail{position:fixed;inset:0;z-index:60}
+.dt-bg{
+  position:absolute;inset:0;background:#fff;
+  opacity:0;transition:opacity .35s ease;   /* original: old page autoAlpha .35 power1 */
+}
+.detail.is-on .dt-bg{opacity:1}
+.detail.is-off .dt-bg{opacity:0;transition-delay:.3s}
+/* right panel: outer mask slides from +100%, inner from -100% (original curtain) */
+.dt-panel{
+  position:absolute;top:0;right:0;bottom:0;left:61.5rem;
+  border-left:1px solid rgba(0,0,0,.1);background:#fff;overflow:hidden;
+  transform:translateX(100%);
+  transition:transform 1s var(--ease-snappy);
+}
+.dt-panel__in{
+  position:absolute;inset:0;overflow:hidden;background:#fff;
+  transform:translateX(-100%);
+  transition:transform 1s var(--ease-snappy);
+}
+.detail.is-on .dt-panel,.detail.is-on .dt-panel__in{transform:translateX(0)}
+.detail.is-off .dt-panel{transform:translateX(100%)}
+.detail.is-off .dt-panel__in{transform:translateX(-100%)}
+.dt-scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden}
+.dt-head{
+  position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;
+  padding:1.8rem 2rem;z-index:2;color:#fff;mix-blend-mode:difference;
+}
+.dt-head button{font-size:min(1.6rem,16px)}
+.dt-head button:hover{opacity:.6}
+
+.dt-content{padding:13rem 11rem 6rem}
+@media (max-width:699px){.dt-content{padding:8rem 2rem 6rem}}
+.dt-meta{display:flex;align-items:center;gap:1rem}
+.dt-chip{
+  display:inline-flex;align-items:center;height:2.8rem;padding:0 1rem;
+  border-radius:.4rem;font-size:1.4rem;
+  color:rgb(125 69 180);background:rgb(238 227 249);
+}
+.dt-month{opacity:.6}
+.dt-title{
+  margin-top:3rem;
+  font-size:min(5.7rem,57px);font-weight:700;line-height:.9;text-transform:uppercase;
+}
+.dt-body{margin-top:4rem;font-size:min(2rem,20px);line-height:1.5;max-width:72rem}
+.dt-body p{margin:0 0 1.5em}
+.dt-fig{margin:3rem 0;display:flex;flex-direction:column}
+.dt-fig--left{align-items:flex-start}
+.dt-fig--center{align-items:center}
+.dt-fig--right{align-items:flex-end}
+.dt-fig img{max-width:100%;height:auto;display:block}
+.dt-fig figcaption{margin-top:.8rem;opacity:.6}
+.dt-video{position:relative;width:100%;aspect-ratio:16/9}
+.dt-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+
+/* left strip: prev / current / next (original: 61.5rem col, centre 32.5rem, -5rem overhang) */
+.dt-strip{
+  position:absolute;top:0;bottom:0;left:0;width:61.5rem;
+  display:flex;align-items:center;z-index:2;
+}
+.dt-strip__row{
+  position:relative;display:flex;align-items:center;gap:2rem;
+  margin:0 -5rem;width:calc(100% + 10rem);
+}
+.dt-side{position:relative;flex:1;cursor:pointer;min-width:0}
+.dt-side .dt-media{transition:opacity .25s ease}
+.dt-side:hover .dt-media{opacity:.7}
+.dt-cur{
+  display:flex;flex-direction:column;gap:1.2rem;
+  min-width:32.5rem;max-width:32.5rem;
+}
+.dt-media{position:relative;width:100%;overflow:hidden;background:#f2f2f2}
+.dt-media img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* masked text reveals — original js-t-slide: yPercent 105 -> 0, 1.15s expo */
+.dt-reveal{overflow:hidden}
+.dt-reveal>*{
+  display:block;transform:translateY(105%);
+  transition:transform 1.15s var(--ease-out-expo) .25s;
+}
+.detail.is-on .dt-reveal>*{transform:translateY(0)}
+.dt-title .dt-reveal>*{transition-delay:.35s}
+/* body fade — original js-t-fade: alpha .35s power1 at .3 */
+.dt-fade{opacity:0;transition:opacity .35s ease .3s}
+.detail.is-on .dt-fade{opacity:1}
+.detail.is-off .dt-fade{opacity:0;transition:opacity .2s ease}
+
+/* bottom controls (original .controls-link) */
+.dt-controls{
+  position:absolute;bottom:2rem;left:0;right:0;
+  display:flex;justify-content:center;gap:.8rem;z-index:3;
+}
+.dt-ctl{
+  display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+  height:4rem;min-width:4rem;padding:0 1.5rem;
+  background:#fff;border:1px solid #e0e0e0;border-radius:.4rem;
+  font-size:min(1.5rem,15px);
+}
+.dt-ctl svg{width:1.2rem;min-width:12px}
+.dt-ctl--close svg{width:1.6rem;min-width:14px}
+.dt-ctl:hover{background:#f5f5f5}
+
+/* FLIP ghost — original: 1s "snappy", transform-origin top left */
+.dt-ghost{
+  position:fixed;z-index:70;pointer-events:none;overflow:hidden;
+  transform-origin:top left;
+  transition:transform 1s var(--ease-snappy);
+}
+.dt-ghost img{width:100%;height:100%;object-fit:cover}
+
 /* ---------- film-grain noise overlay (original: noise.png, 1s steps(2)) ---------- */
 .noise{position:fixed;inset:0;pointer-events:none;will-change:transform;z-index:9999;overflow:hidden}
 .noise::before{

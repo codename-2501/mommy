@@ -1,0 +1,270 @@
+/* THE LOOKBACK — detail view (overlay above home, original transition values).
+   FLIP: clicked painting flies to the strip slot (1s "snappy").
+   Panel: outer mask from +100%, inner from -100% (curtain), content reveals 1.15s expo. */
+(() => {
+'use strict';
+
+let root = null;              // overlay element
+let curId = null;
+let closing = false;
+
+function el(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
+}
+
+function thumb(src, w) {
+  const f = String(src || '').split('/').pop();
+  return f ? '/thumbs/' + w + '/' + encodeURIComponent(f) : '';
+}
+
+function slideIdx(slides, id) {
+  const i = slides.findIndex((s) => s.id === id);
+  return i < 0 ? 0 : i;
+}
+
+function category(s) {
+  return String(s.category || '').trim() ||
+    String(s.bottom || '').replace(/\s*\([^)]*\)\s*$/, '').trim();
+}
+
+function month(s) {
+  const m = /\(([^)]+)\)\s*$/.exec(String(s.bottom || ''));
+  return m ? m[1].trim() : '';
+}
+
+/* strip media cell: natural aspect, width-bound */
+function mediaCell(s, aspects, cls) {
+  const box = el('div', 'dt-media ' + (cls || ''));
+  const name = String(s.image || '').split('/').pop();
+  box.style.aspectRatio = String(aspects[name] || 1);
+  const img = el('img');
+  img.src = thumb(s.image, 600);
+  img.alt = s.title || s.bottom || '';
+  img.draggable = false;
+  box.appendChild(img);
+  return box;
+}
+
+/* article body: paragraphs from desc, media interleaved by pos, aligned l/c/r */
+function buildBody(s) {
+  const body = el('div', 'dt-body');
+  const paras = String(s.desc || '').split(/\n+/).map((p) => p.trim()).filter(Boolean);
+  const media = Array.isArray(s.media) && s.media.length
+    ? s.media
+    : (s.image ? [{ type: 'image', src: s.image, pos: -1 }] : []);
+  const P = paras.length;
+  const slot = (m) => {
+    if (m.pos === -1) return -1;                      // implicit main image: skip in body
+    if (m.pos == null || m.pos === '') return P;
+    const k = parseInt(m.pos, 10);
+    return isNaN(k) ? P : Math.max(0, Math.min(P, k));
+  };
+  const emit = (i) => {
+    for (const m of media) {
+      if (slot(m) !== i) continue;
+      const fig = el('figure', 'dt-fig dt-fig--' + (m.align || 'center'));
+      if (m.type === 'video' && (m.videoId || m.url)) {
+        const vid = m.videoId || (String(m.url).match(/(?:v=|\/embed\/|youtu\.be\/|\/shorts\/)([\w-]{6,})/) || [])[1];
+        if (!vid) continue;
+        const fr = el('div', 'dt-video');
+        const ifr = document.createElement('iframe');
+        ifr.src = 'https://www.youtube.com/embed/' + vid;
+        ifr.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        ifr.allowFullscreen = true;
+        fr.appendChild(ifr);
+        fig.appendChild(fr);
+      } else {
+        const src = m.src || m.image;
+        if (!src) continue;
+        const img = el('img');
+        img.src = src;                                 // body images: full quality
+        img.loading = 'lazy';
+        img.alt = m.caption || '';
+        fig.appendChild(img);
+      }
+      if (m.caption) fig.appendChild(el('figcaption', 'label', m.caption));
+      body.appendChild(fig);
+    }
+  };
+  emit(0);
+  paras.forEach((p, i) => {
+    body.appendChild(el('p', null, p));
+    emit(i + 1);
+  });
+  return body;
+}
+
+function buildContent(s, i, slides) {
+  const wrap = el('div', 'dt-content');
+  const meta = el('div', 'dt-meta');
+  const chipMask = el('div', 'dt-reveal');
+  chipMask.appendChild(el('span', 'dt-chip', category(s)));
+  const moMask = el('div', 'dt-reveal');
+  moMask.appendChild(el('span', 'dt-month label', '(' + month(s) + ')'));
+  meta.appendChild(chipMask);
+  meta.appendChild(moMask);
+  wrap.appendChild(meta);
+  if (s.title) {
+    const h = el('h1', 'dt-title');
+    const m = el('div', 'dt-reveal');
+    m.appendChild(el('span', null, s.title));
+    h.appendChild(m);
+    wrap.appendChild(h);
+  }
+  const fade = el('div', 'dt-fade');
+  fade.appendChild(buildBody(s));
+  wrap.appendChild(fade);
+  return wrap;
+}
+
+function buildStrip(s, i, slides, aspects, nav) {
+  const strip = el('div', 'dt-strip');
+  const row = el('div', 'dt-strip__row');
+  const prev = slides[(i - 1 + slides.length) % slides.length];
+  const next = slides[(i + 1) % slides.length];
+
+  const side = (sl, cls) => {
+    const a = el('div', 'dt-side ' + cls);
+    a.appendChild(mediaCell(sl, aspects));
+    a.addEventListener('click', () => nav(sl.id));
+    return a;
+  };
+  row.appendChild(side(prev, 'dt-side--prev'));
+
+  const cur = el('div', 'dt-cur');
+  const numMask = el('div', 'dt-reveal');
+  numMask.appendChild(el('div', 'label', String(i + 1)));
+  cur.appendChild(numMask);
+  cur.appendChild(mediaCell(s, aspects, 'dt-cur__media'));
+  const catMask = el('div', 'dt-reveal');
+  catMask.appendChild(el('div', 'label', category(s) + ' (' + month(s) + ')'));
+  cur.appendChild(catMask);
+  row.appendChild(cur);
+
+  row.appendChild(side(next, 'dt-side--next'));
+  strip.appendChild(row);
+  /* empty strip area = Close (original: backdrop click navigates back) */
+  strip.addEventListener('click', (e) => {
+    if (e.target === strip || e.target === row) window.TLBDetail.close();
+  });
+  return strip;
+}
+
+function buildControls(nextId, onNext, onClose) {
+  const nav = el('nav', 'dt-controls');
+  const nx = el('button', 'dt-ctl');
+  nx.innerHTML = '<svg viewBox="0 0 12 10" fill="none"><path d="M7.36 9.49 6.34 8.53 9.26 5.42H0V4.05h9.26L6.34.94 7.36 0l4.39 4.74-4.39 4.75Z" fill="currentColor"/></svg>';
+  nx.title = 'Next';
+  nx.addEventListener('click', onNext);
+  const cl = el('button', 'dt-ctl dt-ctl--close');
+  cl.innerHTML = '<svg viewBox="0 0 17 17" fill="none"><rect x="3.5" y="4.9" width="2" height="12" transform="rotate(-45 3.5 4.9)" fill="currentColor"/><rect x="12" y="3.5" width="2" height="12" transform="rotate(45 12 3.5)" fill="currentColor"/></svg><span>Close</span>';
+  cl.addEventListener('click', onClose);
+  nav.appendChild(nx);
+  nav.appendChild(cl);
+  return nav;
+}
+
+/* FLIP: fly a clone from the clicked painting to the strip slot */
+function flipInto(fromRect, imgSrc, targetBox) {
+  const t = targetBox.getBoundingClientRect();
+  if (!fromRect || !t.width) return;
+  const ghost = el('div', 'dt-ghost');
+  const img = el('img');
+  img.src = imgSrc;
+  ghost.appendChild(img);
+  Object.assign(ghost.style, {
+    left: t.left + 'px', top: t.top + 'px',
+    width: t.width + 'px', height: t.height + 'px',
+  });
+  const dx = fromRect.left - t.left, dy = fromRect.top - t.top;
+  const sc = fromRect.width / t.width;
+  ghost.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + sc + ')';
+  document.body.appendChild(ghost);
+  targetBox.style.visibility = 'hidden';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    ghost.style.transform = 'translate(0,0) scale(1)';
+  }));
+  setTimeout(() => {
+    targetBox.style.visibility = '';
+    ghost.remove();
+  }, 1050);
+}
+
+function render(container, opts, id, flip) {
+  const { content, aspects, onSync } = opts;
+  const slides = content.slides || [];
+  const i = slideIdx(slides, id);
+  const s = slides[i];
+  curId = id;
+  if (onSync) onSync(i);
+
+  const scroller = el('div', 'dt-scroll');
+  scroller.appendChild(buildContent(s, i, slides));
+  const inner = container.querySelector('.dt-panel__in');
+  inner.replaceChildren(scroller);
+
+  const old = container.querySelector('.dt-strip');
+  const strip = buildStrip(s, i, slides, aspects, (nid) => go(nid));
+  if (old) old.replaceWith(strip); else container.insertBefore(strip, container.firstChild);
+
+  const oldCtl = container.querySelector('.dt-controls');
+  const ctl = buildControls(null,
+    () => go(slides[(i + 1) % slides.length].id),
+    () => window.TLBDetail.close());
+  if (oldCtl) oldCtl.replaceWith(ctl); else container.appendChild(ctl);
+
+  requestAnimationFrame(() => requestAnimationFrame(() => container.classList.add('is-on')));
+  if (flip) flipInto(flip.rect, flip.src, strip.querySelector('.dt-cur__media'));
+
+  function go(nid) {
+    history.pushState(null, '', '/p/' + nid);
+    container.classList.remove('is-on');            // re-run reveals
+    render(container, opts, nid, null);
+  }
+}
+
+function open(parent, opts, id, flip) {
+  closing = false;
+  if (!root) {
+    root = el('div', 'detail');
+    root.appendChild(el('div', 'dt-bg'));   // home fades under us (original: .35s)
+    const panel = el('div', 'dt-panel');
+    const inn = el('div', 'dt-panel__in');
+    const head = el('header', 'dt-head');
+    const close = el('button', null, 'Close');
+    close.addEventListener('click', () => window.TLBDetail.close());
+    head.appendChild(close);
+    panel.appendChild(inn);
+    panel.appendChild(head);
+    root.appendChild(panel);
+    parent.appendChild(root);
+    root._opts = opts;
+  }
+  render(root, opts, id, flip);
+}
+
+function close() {
+  if (!root || closing) return;
+  closing = true;
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') history.pushState(null, '', '/');
+  root.classList.add('is-off');
+  root.classList.remove('is-on');
+  setTimeout(() => {
+    if (root) root.remove();
+    root = null; curId = null; closing = false;
+  }, 800);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && root) close();
+});
+
+window.TLBDetail = {
+  open, close,
+  get isOpen() { return !!root; },
+  get id() { return curId; },
+};
+})();
