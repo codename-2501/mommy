@@ -292,19 +292,19 @@ function smoothScroll(sc) {
 }
 
 function render(container, opts, id, flip, dir) {
-  const { content, aspects, onSync } = opts;
+  const { content, aspects } = opts;
   const slides = content.slides || [];
   const i = slideIdx(slides, id);
   const s = slides[i];
   curId = id;
-  if (onSync) onSync(i);
 
   const scroller = el('div', 'dt-scroll');
   scroller.appendChild(buildContent(s, i, slides));
   const inner = container.querySelector('.dt-panel__in');
   const oldSc = inner.querySelector('.dt-scroll:not(.dt-scroll--out)');
   if (oldSc && dir) {
-    oldSc.classList.add('dt-scroll--out');       // original: old content fades .35
+    oldSc.classList.add('dt-scroll--out');       // original: old content fades .35…
+    scroller.classList.add('dt-scroll--in');     // …new content fades in right after
     setTimeout(() => oldSc.remove(), 400);
     inner.appendChild(scroller);
   } else {
@@ -314,7 +314,6 @@ function render(container, opts, id, flip, dir) {
 
   const old = container.querySelector('.dt-strip:not(.dt-strip--out)');
   const strip = buildStrip(s, i, slides, aspects, (nid) => go(nid));
-  if (dir) strip.classList.add('dt-strip--in');  // sides fade in after the swap
   if (old) old.replaceWith(strip); else container.insertBefore(strip, container.firstChild);
 
   const oldCtl = container.querySelector('.dt-controls');
@@ -433,6 +432,11 @@ function close() {
   if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') history.pushState(null, '', '/');
   const opts = root._opts || {};
   cancelFlights();                               // settle any in-progress item flights
+  /* NOW move the hidden carousel to the current painting (original body.dataset.index)
+     — never at open, where the jump would be visible under the click */
+  if (opts.onSync && opts.content) {
+    opts.onSync(slideIdx(opts.content.slides || [], curId));
+  }
   if (opts.onClose) opts.onClose();              // home replays its entrance underneath
 
   /* original: the strip paintings FLY BACK to their carousel slots (reverse flip) */

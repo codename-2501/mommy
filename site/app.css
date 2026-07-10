@@ -355,7 +355,8 @@ img{max-width:100%;display:block}
 .dt-media img{width:100%;height:100%;object-fit:cover;display:block}
 /* prev/next navigation: the current painting slides in/out (original Q(): xPercent ±100, 1s snappy) */
 .dt-cur__media{transition:transform 1s var(--ease-snappy)}
-.dt-strip--out .dt-side,.dt-strip--out .dt-reveal,
+/* leaving strip: labels fade; the images slide/fly at full opacity (original) */
+.dt-strip--out .dt-reveal,
 .detail.is-off .dt-strip,.detail.is-off .dt-controls{
   opacity:0;transition:opacity .35s ease;
 }
@@ -376,10 +377,10 @@ img{max-width:100%;display:block}
 }
 .detail.is-rev .dt-fade{opacity:1;transform:translateY(0)}
 .detail.is-off .dt-fade{opacity:0;transition:opacity .2s ease}
-/* item→item: outgoing content fades .35, incoming follows (original Q()) */
+/* item→item: outgoing content fades .35, incoming content follows (original Q()) */
 .dt-scroll--out{opacity:0 !important;transition:opacity .35s ease !important}
-.dt-strip--in .dt-side{animation:dtSideIn .35s ease .35s backwards}
-@keyframes dtSideIn{from{opacity:0}to{opacity:1}}
+.dt-scroll--in{animation:dtFadeIn .35s ease .35s backwards}
+@keyframes dtFadeIn{from{opacity:0}to{opacity:1}}
 /* controls fade in with the content */
 .dt-controls{opacity:0;transition:opacity .35s ease .3s}
 .detail.is-rev .dt-controls{opacity:1}
