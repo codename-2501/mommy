@@ -205,44 +205,45 @@ function cancelFlights() {
   pendingFlights.clear();
   for (const f of activeFlights) {
     clearTimeout(f.done);
-    f.ghost.remove();
-    if (f.target) f.target.style.visibility = '';
+    f.img.style.transition = 'none';             // land instantly
+    f.img.style.transform = '';
+    f.img.style.transformOrigin = '';
+    f.box.classList.remove('is-flying');
   }
   activeFlights.clear();
 }
 
-/* FLIP: fly a clone into a slot. The ghost lives INSIDE the overlay at z5 so the
-   flight passes UNDER the right panel, like the original's reparented figures. */
-function flipInto(fromRect, imgSrc, targetBox, host, srcEl) {
-  const t = targetBox.getBoundingClientRect();
-  if (!fromRect || !t.width) return;
-  const ghost = el('div', 'dt-ghost');
-  const img = el('img');
-  img.decoding = 'sync';        // paint WITH the image on the first frame — no blank blink
-  img.src = imgSrc;
-  ghost.appendChild(img);
-  Object.assign(ghost.style, {
-    left: t.left + 'px', top: t.top + 'px',
-    width: t.width + 'px', height: t.height + 'px',
-  });
-  const dx = fromRect.left - t.left, dy = fromRect.top - t.top;
-  const sc = fromRect.width / t.width;
-  ghost.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + sc + ')';
-  (host || document.body).appendChild(ghost);
-  targetBox.style.visibility = 'hidden';
-  const rec = { ghost, target: targetBox, done: 0 };
+/* FLIP the ORIGINAL way: reparent the actual <img> into the destination slot and
+   animate it from its old screen position. The same painted pixels move — an image
+   swap or blank frame is structurally impossible. */
+function flyLive(fromBox, toBox) {
+  const img = fromBox && fromBox.querySelector('img');
+  if (!img || !toBox) return false;
+  const f = fromBox.getBoundingClientRect();
+  const t = toBox.getBoundingClientRect();
+  if (!f.width || !t.width) return false;
+  toBox.replaceChildren(img);                    // reparent (original J(): appendChild)
+  img.classList.add('ok');                       // carousel imgs gate opacity on .ok
+  fromBox.style.visibility = 'hidden';           // empty shell stays hidden
+  toBox.style.visibility = '';
+  toBox.classList.add('is-flying');              // overflow free during the flight
+  img.style.transformOrigin = 'top left';
+  img.style.transition = 'none';
+  img.style.transform = 'translate(' + (f.left - t.left) + 'px,' + (f.top - t.top) +
+    'px) scale(' + (f.width / t.width) + ')';
+  void img.offsetWidth;
+  img.style.transition = 'transform 1s var(--ease-snappy)';
+  img.style.transform = '';
+  const rec = { img, box: toBox, done: 0 };
   activeFlights.add(rec);
-  /* start the flight in the SAME frame — any rAF/timeout delay reads as a stall.
-     A forced reflow commits the start transform so the transition still runs. */
-  void ghost.offsetWidth;
-  ghost.style.transform = 'translate(0,0) scale(1)';
-  /* the source hides one frame later, when the ghost provably covers it */
-  if (srcEl) requestAnimationFrame(() => { srcEl.style.visibility = 'hidden'; });
   rec.done = setTimeout(() => {
-    targetBox.style.visibility = '';
-    ghost.remove();
+    img.style.transition = '';
+    img.style.transform = '';
+    img.style.transformOrigin = '';
+    toBox.classList.remove('is-flying');
     activeFlights.delete(rec);
   }, 1050);
+  return true;
 }
 
 /* lightbox — attached image at natural size (contained), click/Esc closes */
@@ -347,11 +348,9 @@ function render(container, opts, id, flip, dir) {
       const fb = os && os.querySelector(fromSel);
       const tb = strip.querySelector(toSel);
       if (!fb || !tb) continue;
-      const r = fb.getBoundingClientRect();
-      const img = fb.querySelector('img');
       tb.style.visibility = 'hidden';    // before first paint
-      if (delay) later(() => flipInto(r, img ? (img.currentSrc || img.src) : '', tb, container, fb), delay);
-      else flipInto(r, img ? (img.currentSrc || img.src) : '', tb, container, fb);
+      if (delay) later(() => flyLive(fb, tb), delay);
+      else flyLive(fb, tb);
     }
     const out = os && os.querySelector(fwd ? '.dt-side--prev .dt-media' : '.dt-side--next .dt-media');
     if (out) out.style.transform = 'translateX(' + (fwd ? -110 : 110) + '%)';
@@ -373,9 +372,9 @@ function render(container, opts, id, flip, dir) {
       for (const [src, sel, delay] of slots) {
         const box = strip.querySelector(sel);
         if (!box) continue;
-        if (!src) { box.style.visibility = ''; continue; }   // nothing flies here
-        if (delay) later(() => flipInto(src.rect, src.src, box, container, src.el), delay);
-        else flipInto(src.rect, src.src, box, container, src.el);
+        if (!src || !src.el) { box.style.visibility = ''; continue; }   // nothing flies here
+        if (delay) later(() => flyLive(src.el, box), delay);
+        else flyLive(src.el, box);
       }
     }
   };
@@ -453,11 +452,9 @@ function close() {
       if (!box || !target) continue;
       const t = target.getBoundingClientRect();
       if (t.right < 0 || t.left > innerWidth) continue;   // fly only into view
-      const r = box.getBoundingClientRect();
-      const img = box.querySelector('img');
       target.style.visibility = 'hidden';                 // before the home is unveiled
-      if (delay) later(() => flipInto(r, img ? (img.currentSrc || img.src) : '', target, root, box), delay);
-      else flipInto(r, img ? (img.currentSrc || img.src) : '', target, root, box);
+      if (delay) later(() => flyLive(box, target), delay);
+      else flyLive(box, target);
     }
   }
 

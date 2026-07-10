@@ -328,7 +328,7 @@ function renderHome() {
         if (!img) return null;
         const r = img.getBoundingClientRect();
         if (r.right < 0 || r.left > innerWidth) return null;   // only visible ones fly
-        return { rect: r, src: img.currentSrc || img.src, el: it.querySelector('.car-media') };
+        return { el: it.querySelector('.car-media'), src: img.currentSrc || img.src };
       };
       const track = item.parentElement;
       pendingFlip = {
@@ -337,7 +337,7 @@ function renderHome() {
         next: grab(item.nextElementSibling || track.firstElementChild),
       };
       flipSources = [pendingFlip.cur, pendingFlip.prev, pendingFlip.next]
-        .filter(Boolean).map((f) => f.el);
+        .filter(Boolean).map((f) => ({ box: f.el, src: f.src }));
       navigate('/p/' + (s.id || ''));
     },
   );
@@ -370,7 +370,17 @@ function renderStub(name) {
 
 /* detail close: the home re-enters with its full entrance (original Y() replays) */
 function replayHomeEnter() {
-  for (const el of flipSources) el.style.visibility = '';   // restore flown paintings
+  /* boxes whose live <img> was reparented into the detail get a fresh one back */
+  for (const f of flipSources) {
+    if (!f.box.querySelector('img')) {
+      const img = document.createElement('img');
+      img.src = f.src;
+      img.className = 'ok';
+      img.draggable = false;
+      f.box.appendChild(img);
+    }
+    f.box.style.visibility = '';
+  }
   flipSources = [];
   const view = document.querySelector('.view--home');
   if (!view) return;
