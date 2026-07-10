@@ -332,12 +332,12 @@ function mount(view, slides, aspects, years, onOpen) {
 
   for (let i = 0; i < 4; i++) fxPool.push(new Audio('/site/assets/fx.mp3'));
 
-  /* entrance offsets — original: each item enters from y = viewportBottom - itemTop */
+  /* entrance offsets — original: each item enters from y = viewportBottom - itemTop.
+     item rects are safe to read: only children carry the entrance/wrap transforms */
   requestAnimationFrame(() => {
-    const base = track.getBoundingClientRect().top;
     for (const item of items) {
-      item.firstChild.style.setProperty('--ey',
-        Math.max(0, innerHeight - (base + item.offsetTop) + 40) + 'px');
+      const top = item.getBoundingClientRect().top;
+      item.firstChild.style.setProperty('--ey', Math.max(0, innerHeight - top + 40) + 'px');
     }
   });
 
