@@ -200,6 +200,27 @@ function flipInto(fromRect, imgSrc, targetBox) {
   }, 1050);
 }
 
+/* panel smooth scroll — original virtual-scroll feel (delta *0.9, lerp .1/frame) */
+function smoothScroll(sc) {
+  let target = 0, cur = 0, last = 0;
+  const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;
+  sc.addEventListener('wheel', (e) => {
+    const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
+    target = Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight, target + raw * mult));
+    e.preventDefault();
+  }, { passive: false });
+  function tick(ts) {
+    if (!sc.isConnected) return;
+    const ratio = last ? Math.min(3, (ts - last) / (1000 / 60)) : 1;
+    last = ts;
+    cur += (target - cur) * 0.1 * ratio;
+    if (Math.abs(sc.scrollTop - cur) >= 0.5) sc.scrollTop = cur;
+    else { cur = sc.scrollTop; target = Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight, target)); }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
 function render(container, opts, id, flip, dir) {
   const { content, aspects, onSync } = opts;
   const slides = content.slides || [];
@@ -211,10 +232,19 @@ function render(container, opts, id, flip, dir) {
   const scroller = el('div', 'dt-scroll');
   scroller.appendChild(buildContent(s, i, slides));
   const inner = container.querySelector('.dt-panel__in');
-  inner.replaceChildren(scroller);
+  const oldSc = inner.querySelector('.dt-scroll:not(.dt-scroll--out)');
+  if (oldSc && dir) {
+    oldSc.classList.add('dt-scroll--out');       // original: old content fades .35
+    setTimeout(() => oldSc.remove(), 400);
+    inner.appendChild(scroller);
+  } else {
+    inner.replaceChildren(scroller);
+  }
+  smoothScroll(scroller);
 
   const old = container.querySelector('.dt-strip:not(.dt-strip--out)');
   const strip = buildStrip(s, i, slides, aspects, (nid) => go(nid));
+  if (dir) strip.classList.add('dt-strip--in');  // sides fade in after the swap
   if (old) old.replaceWith(strip); else container.insertBefore(strip, container.firstChild);
 
   const oldCtl = container.querySelector('.dt-controls');
@@ -238,7 +268,19 @@ function render(container, opts, id, flip, dir) {
     container.classList.add('is-on');
     container.classList.add('is-rev');
   }));
-  if (flip) flipInto(flip.rect, flip.src, strip.querySelector('.dt-cur__media'));
+  /* original: every matching visible painting flies to its slot, stagger .035 */
+  if (flip) {
+    const slots = [
+      [flip.cur, '.dt-cur__media', 0],
+      [flip.prev, '.dt-side--prev .dt-media', 35],
+      [flip.next, '.dt-side--next .dt-media', 70],
+    ];
+    for (const [src, sel, delay] of slots) {
+      if (!src) continue;
+      const box = strip.querySelector(sel);
+      if (box) setTimeout(() => flipInto(src.rect, src.src, box), delay);
+    }
+  }
 
   function go(nid) {
     history.pushState(null, '', '/p/' + nid);
@@ -278,6 +320,8 @@ function close() {
   if (!root || closing) return;
   closing = true;
   if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') history.pushState(null, '', '/');
+  const onClose = root._opts && root._opts.onClose;
+  if (onClose) onClose();                        // home replays its entrance underneath
   root.classList.add('is-off');
   root.classList.remove('is-on');
   setTimeout(() => {

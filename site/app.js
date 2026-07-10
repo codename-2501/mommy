@@ -320,8 +320,19 @@ function renderHome() {
   carousel = window.TLBCarousel.mount(
     view, content.slides || [], aspects, yearsByName(),
     (s, item) => {
-      const img = item.querySelector('.car-media img');
-      if (img) pendingFlip = { rect: img.getBoundingClientRect(), src: img.currentSrc || img.src };
+      const grab = (it) => {
+        const img = it && it.querySelector('.car-media img');
+        if (!img) return null;
+        const r = img.getBoundingClientRect();
+        if (r.right < 0 || r.left > innerWidth) return null;   // only visible ones fly
+        return { rect: r, src: img.currentSrc || img.src };
+      };
+      const track = item.parentElement;
+      pendingFlip = {
+        cur: grab(item),
+        prev: grab(item.previousElementSibling || track.lastElementChild),
+        next: grab(item.nextElementSibling || track.firstElementChild),
+      };
       navigate('/p/' + (s.id || ''));
     },
   );
@@ -352,6 +363,17 @@ function renderStub(name) {
 
 /* ---------- router ---------- */
 
+/* detail close: the home re-enters with its full entrance (original Y() replays) */
+function replayHomeEnter() {
+  const view = document.querySelector('.view--home');
+  if (!view) return;
+  view.classList.add('no-trans');
+  view.classList.remove('is-in');
+  void view.offsetWidth;                        // apply the reset without animating
+  view.classList.remove('no-trans');
+  requestAnimationFrame(() => requestAnimationFrame(() => view.classList.add('is-in')));
+}
+
 function render() {
   const path = location.pathname.replace(/\/+$/, '') || '/';
 
@@ -369,6 +391,7 @@ function render() {
     window.TLBDetail.open(app, {
       content, aspects,
       onSync: (i) => { if (carousel) carousel.goTo(i); },
+      onClose: replayHomeEnter,
     }, path.slice(3), flip);
     return;
   }
