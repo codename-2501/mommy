@@ -57,6 +57,35 @@ function monthStats(slides) {
   return stats.filter((s) => s.count > 0);
 }
 
+/* scramble-text reveal (original uses GSAP ScrambleText — same feel, vanilla) */
+const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+function randChars(n) {
+  let s = '';
+  while (n-- > 0) s += SCRAMBLE_CHARS[(Math.random() * SCRAMBLE_CHARS.length) | 0];
+  return s;
+}
+
+function scrambleIn(node, text, delay, dur) {
+  const interval = 50;                  // scramble refresh (= gsap speed .05)
+  let start = null;
+  let scr = randChars(text.length);
+  let last = 0;
+  node.textContent = '';
+  function tick(ts) {
+    if (start === null) start = ts + delay;
+    if (ts < start) { requestAnimationFrame(tick); return; }
+    const t = Math.min(1, (ts - start) / dur);
+    const p = 1 - (1 - t) * (1 - t);    // ease-out reveal, left → right
+    const shown = Math.floor(p * text.length + 0.5);
+    if (ts - last > interval) { scr = randChars(text.length); last = ts; }
+    node.textContent = text.slice(0, shown) + scr.slice(shown, text.length);
+    if (t < 1) requestAnimationFrame(tick);
+    else node.textContent = text;
+  }
+  requestAnimationFrame(tick);
+}
+
 /* ---------- intro gate ---------- */
 
 function buildLine(text, letterIndex) {
@@ -93,12 +122,23 @@ function renderIntro() {
   const months = el('div', 'intro-months label');
   const colA = el('div', 'col');
   const colB = el('div', 'col');
-  for (const s of stats) {
+  const scrambles = [];
+  stats.forEach((s, i) => {
     const row = el('div', 'row');
-    row.appendChild(el('span', null, s.cat || s.month));
-    row.appendChild(el('span', 'n', '(' + s.count + ')'));
+    const inner = el('span', 'in');
+    inner.style.setProperty('--dx', (i * 0.02).toFixed(3) + 's');
+    const cat = el('span', null, '');
+    const n = el('span', 'n', '');
+    inner.appendChild(cat);
+    inner.appendChild(n);
+    row.appendChild(inner);
     (MONTHS.indexOf(s.month) < 7 ? colA : colB).appendChild(row);
-  }
+    const delay = 700 + i * 70;
+    scrambles.push(() => {
+      scrambleIn(cat, s.cat || s.month, delay, 900);
+      scrambleIn(n, '(' + s.count + ')', delay + 120, 900);
+    });
+  });
   months.appendChild(colA);
   months.appendChild(colB);
   intro.appendChild(months);
@@ -113,7 +153,10 @@ function renderIntro() {
   gate.appendChild(noSound);
   intro.appendChild(gate);
 
-  requestAnimationFrame(() => requestAnimationFrame(() => intro.classList.add('is-ready')));
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    intro.classList.add('is-ready');
+    for (const run of scrambles) run();
+  }));
   return intro;
 }
 
