@@ -218,6 +218,7 @@ function flipInto(fromRect, imgSrc, targetBox, host, srcEl) {
   if (!fromRect || !t.width) return;
   const ghost = el('div', 'dt-ghost');
   const img = el('img');
+  img.decoding = 'sync';        // paint WITH the image on the first frame — no blank blink
   img.src = imgSrc;
   ghost.appendChild(img);
   Object.assign(ghost.style, {
@@ -234,8 +235,9 @@ function flipInto(fromRect, imgSrc, targetBox, host, srcEl) {
   /* start the flight in the SAME frame — any rAF/timeout delay reads as a stall.
      A forced reflow commits the start transform so the transition still runs. */
   void ghost.offsetWidth;
-  if (srcEl) srcEl.style.visibility = 'hidden';
   ghost.style.transform = 'translate(0,0) scale(1)';
+  /* the source hides one frame later, when the ghost provably covers it */
+  if (srcEl) requestAnimationFrame(() => { srcEl.style.visibility = 'hidden'; });
   rec.done = setTimeout(() => {
     targetBox.style.visibility = '';
     ghost.remove();
@@ -355,10 +357,10 @@ function render(container, opts, id, flip, dir) {
     if (out) out.style.transform = 'translateX(' + (fwd ? -110 : 110) + '%)';
   }
 
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    container.classList.add('is-on');
-    container.classList.add('is-rev');
-  }));
+  /* fades/reveals start on the same frame as the flights (original: one timeline) */
+  void container.offsetWidth;
+  container.classList.add('is-on');
+  container.classList.add('is-rev');
   /* original: every matching visible painting flies to its slot, stagger .035 */
   if (flip) {
     const slots = [
