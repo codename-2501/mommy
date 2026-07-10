@@ -343,13 +343,44 @@ function ytId(url){
 }
 /* media lives inside the edit modal (mediaTarget === editTarget) */
 function openMediaModal(i){ openEditModal(i); }   // card 🎞 shortcut → edit modal
+function descParas(i){
+  const d=(cfg.slides[i]&&cfg.slides[i].desc)||'';
+  return d.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+}
+function posOptions(P,cur){
+  // slots 0..P : 0=맨 위, 1..P-1=문단 뒤, 맨 아래=빈 값 sentinel(문단 수 바뀌어도 항상 하단 유지)
+  const unset=(cur==null||cur==='');
+  const n=unset?null:Math.max(0,Math.min(P,+cur));
+  let html='';
+  for(let v=0;v<=P;v++){
+    const isBottom=v===P;
+    const val=isBottom?'':v;
+    const label=v===0?'맨 위(글 앞)':(isBottom?'맨 아래(글 뒤)':v+'번째 문단 뒤');
+    const on=isBottom?(unset||n>=P):(!unset&&n===v);
+    html+=`<option value="${val}"${on?' selected':''}>${label}</option>`;
+  }
+  return html;
+}
+function alignOptions(cur){
+  const c=cur||'center';   // default 가운데
+  return ['left','center','right'].map(v=>{
+    const lbl=v==='left'?'좌':(v==='center'?'중앙':'우');
+    return `<option value="${v}"${v===c?' selected':''}>${lbl}</option>`;
+  }).join('');
+}
 function renderMediaList(){
   const i=mediaTarget, media=slideMedia(i);
   $('#editMediaSub').textContent=media.length+'개';
+  const P=descParas(i).length;
   const L=$('#editMediaList'); L.innerHTML='';
   media.forEach((m,k)=>{
     const isVid=m.type==='video';
     const thumb=isVid ? `https://i.ytimg.com/vi/${ytId(m.videoId||m.url)}/hqdefault.jpg` : (m.src||m.image||'');
+    const selStyle='background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:12px';
+    const posCtrl = P>0
+      ? `<select data-mk="${k}" data-mf="pos" title="본문 대비 세로 위치" style="flex:1;min-width:0;${selStyle}">${posOptions(P,m.pos)}</select>`
+      : `<div style="flex:1;font-size:11px;color:var(--mut);align-self:center">본문 없음</div>`;
+    const alignCtrl = `<select data-mk="${k}" data-mf="align" title="가로 정렬(종횡비 유지)" style="flex:0 0 auto;${selStyle}">${alignOptions(m.align)}</select>`;
     const row=document.createElement('div');
     row.style.cssText='display:flex;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px';
     row.innerHTML=`
@@ -360,6 +391,7 @@ function renderMediaList(){
       <div style="flex:1;min-width:0">
         <div style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">${isVid?'영상':'이미지'} #${k+1}</div>
         <input data-mk="${k}" data-mf="caption" value="${escAttr(m.caption)}" placeholder="캡션(선택)" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:12px">
+        <div style="display:flex;gap:6px;margin-top:5px">${posCtrl}${alignCtrl}</div>
       </div>
       <div class="rowbtns">
         <button class="btn sm" data-mact="up" data-mk="${k}">↑</button>
@@ -369,7 +401,7 @@ function renderMediaList(){
     L.appendChild(row);
   });
 }
-function addMediaImage(src){ slideMedia(mediaTarget).push({type:'image',src:src,caption:''}); renderMediaList(); dirty(); }
+function addMediaImage(src){ slideMedia(mediaTarget).push({type:'image',src:src,caption:'',align:'center'}); renderMediaList(); dirty(); }
 
 /* inline image picker (inside the edit modal — no separate layer) */
 let editPickMode='media';
@@ -400,12 +432,17 @@ $('#editAddImg').onclick=()=>showEditPicker('media');
 $('#editAddVid').onclick=()=>{
   const url=prompt('유튜브 URL 또는 영상 ID를 붙여넣으세요:'); if(!url)return;
   const id=ytId(url.trim()); if(!id){ alert('유튜브 ID를 인식하지 못했습니다.'); return; }
-  slideMedia(mediaTarget).push({type:'video',videoId:id,caption:''}); renderMediaList(); dirty();
+  slideMedia(mediaTarget).push({type:'video',videoId:id,caption:'',align:'center'}); renderMediaList(); dirty();
 };
-$('#editMediaList').addEventListener('input',e=>{
-  const t=e.target; if(t.dataset.mk==null)return;
-  slideMedia(mediaTarget)[+t.dataset.mk][t.dataset.mf]=t.value; dirty();
-});
+function editMediaField(t){
+  if(t.dataset.mk==null)return;
+  const m=slideMedia(mediaTarget)[+t.dataset.mk];
+  if(t.dataset.mf==='pos'){ if(t.value==='') delete m.pos; else m.pos=+t.value; }  // '' = 하단(unset)
+  else m[t.dataset.mf]=t.value;
+  dirty();
+}
+$('#editMediaList').addEventListener('input',e=>editMediaField(e.target));
+$('#editMediaList').addEventListener('change',e=>editMediaField(e.target)); // <select>
 $('#editMediaList').addEventListener('click',e=>{
   const b=e.target.closest('button[data-mact]'); if(!b)return;
   const k=+b.dataset.mk, M=slideMedia(mediaTarget);
@@ -438,6 +475,9 @@ $('#editModal').addEventListener('click',e=>{ if(e.target.id==='editModal')close
 [['ed-top','top'],['ed-bottom','bottom'],['ed-category','category'],['ed-title','title'],['ed-desc','desc']].forEach(([id,key])=>{
   $('#'+id).addEventListener('input',e=>{ if(editTarget!=null){ cfg.slides[editTarget][key]=e.target.value; dirty(); } });
 });
+// paragraph count changes live -> refresh position options so the shown slot always matches
+// the current text (prevents Ctrl+S saving a media at a slot different from the visible one)
+$('#ed-desc').addEventListener('input',()=>{ if(editTarget!=null) renderMediaList(); });
 $('#editPickImg').onclick=$('#editThumb').onclick=()=>showEditPicker('thumb');
 
 /* ---------- images CRUD ---------- */

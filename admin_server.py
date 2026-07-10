@@ -229,23 +229,56 @@ def gql_response(slug):
         try:
             content = page["content"]
             doc = content["value"]["document"]
+            # text becomes paragraphs (split on blank/new lines); media items are
+            # interleaved by their `pos` (= number of paragraphs placed before them):
+            #   pos 0        -> above all text
+            #   pos k (1..P-1) -> after paragraph k
+            #   pos >= P / unset -> after all text (bottom; legacy default)
+            paras = [p.strip() for p in re.split(r"\n+", desc) if p.strip()] if desc else []
+            if desc and not paras:
+                paras = [desc]   # whitespace-only desc: keep the single paragraph (legacy parity)
+            media = _slide_media(s)
+            P = len(paras)
+
+            def _slot(m):
+                pos = m.get("pos")
+                if pos is None or pos == "":
+                    return P
+                try:
+                    return max(0, min(P, int(pos)))
+                except (TypeError, ValueError):
+                    return P
+
             children, blocks = [], []
-            if desc:
-                children.append({"type": "paragraph", "children": [{"type": "span", "value": desc, "marks": []}]})
-            for i, m in enumerate(_slide_media(s)):
-                bid = "tlbblk%d" % i
-                if (m.get("type") == "video") and (m.get("videoId") or m.get("url")):
-                    vid = m.get("videoId") or _yt_id(m.get("url"))
-                    bl = _video_block(bid, vid, m.get("caption")) if vid else None
-                    if bl:
-                        blocks.append(bl)
-                        children.append({"type": "block", "item": bid})
-                else:
-                    src = m.get("src") or m.get("image") or ""
-                    if src:
-                        first_img = first_img or src
-                        blocks.append(_image_block(bid, src, m.get("caption")))
-                        children.append({"type": "block", "item": bid})
+
+            def _emit_slot(slot_i):
+                for j, m in enumerate(media):
+                    if _slot(m) != slot_i:
+                        continue
+                    bid = "tlbblk%d" % j
+                    if (m.get("type") == "video") and (m.get("videoId") or m.get("url")):
+                        vid = m.get("videoId") or _yt_id(m.get("url"))
+                        bl = _video_block(bid, vid, m.get("caption")) if vid else None
+                        if bl:
+                            blocks.append(bl)
+                            children.append({"type": "block", "item": bid})
+                    else:
+                        src = m.get("src") or m.get("image") or ""
+                        if src:
+                            blocks.append(_image_block(bid, src, m.get("caption")))
+                            children.append({"type": "block", "item": bid})
+
+            _emit_slot(0)                       # media above all text
+            for i, p in enumerate(paras):
+                children.append({"type": "paragraph", "children": [{"type": "span", "value": p, "marks": []}]})
+                _emit_slot(i + 1)               # media after paragraph i (bottom when i+1 == P)
+
+            for m in media:                     # first image -> meta/og fallback
+                src = m.get("src") or m.get("image") or ""
+                if src and m.get("type") != "video":
+                    first_img = src
+                    break
+
             doc["children"] = children
             content["blocks"] = blocks
         except Exception:
@@ -261,7 +294,9 @@ def gql_response(slug):
     out = json.dumps(obj, ensure_ascii=False)
     # clean up any leftover template asset URLs (meta/og/thumbnails) -> our first image
     if s:
-        fallback = first_img or s.get("image")
+        # prefer the slide's explicit thumbnail so reordering media never silently
+        # swaps the og/social image; fall back to the first body image
+        fallback = s.get("image") or first_img
         if fallback:
             out = _DATO_URL.sub(fallback, out)
     return out
