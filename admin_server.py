@@ -432,29 +432,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 return self._send_json({"error": str(e)}, 500)
 
-        # A fresh full-page load of a detail route (refresh / direct entry / real slug)
-        # would hydrate from the prerendered ORIGINAL inline payload — our data never
-        # loads. Redirect such document loads to the home SPA, which re-opens the article
-        # via client navigation (the only path that renders OUR data + related strip).
-        mdoc = re.match(r"^/articles/([^/]+)/?$", path)
-        accept = self.headers.get("Accept", "")
-        is_document = ("text/html" in accept) or (self.headers.get("Sec-Fetch-Dest", "") == "document")
-        if mdoc and is_document and mdoc.group(1) != "":
-            slug = mdoc.group(1)
-            tlb = None
-            if slug.startswith("tlb-"):
-                tlb = slug
-            else:
-                sl = _slide_for_slug(slug)          # real article slug -> our slide
-                if sl and sl.get("id"):
-                    tlb = "tlb-" + sl["id"]
-            if tlb:
-                self.send_response(302)
-                self.send_header("Location", "/?open=" + tlb)
-                self.send_header("Cache-Control", "no-store")
-                self.end_headers()
-                return
-
         # virtual per-slide article payload: /articles/tlb-<id>/_payload.json
         mvp = re.match(r"^/articles/(tlb-[^/]+)/_payload\.json$", path)
         if mvp:
