@@ -10,6 +10,7 @@ let aspects = {};             // image filename -> width/height
 let icons = {};               // path -> inline svg markup
 let entered = false;          // intro gate passed this page-load
 let carousel = null;          // active carousel instance
+let pendingFlip = null;       // clicked painting rect/src for the detail FLIP
 
 /* audio flags — "Enter with sound" turns on tick/click sounds (original) */
 window.TLB_AUDIO = { on: false };
@@ -318,7 +319,11 @@ function renderHome() {
   if (carousel) { carousel.destroy(); carousel = null; }
   carousel = window.TLBCarousel.mount(
     view, content.slides || [], aspects, yearsByName(),
-    (s) => navigate('/p/' + (s.id || '')),
+    (s, item) => {
+      const img = item.querySelector('.car-media img');
+      if (img) pendingFlip = { rect: img.getBoundingClientRect(), src: img.currentSrc || img.src };
+      navigate('/p/' + (s.id || ''));
+    },
   );
 
   if (!entered) {
@@ -349,6 +354,29 @@ function renderStub(name) {
 
 function render() {
   const path = location.pathname.replace(/\/+$/, '') || '/';
+
+  /* detail = overlay above the (kept) home — no home teardown, no flash */
+  if (path.startsWith('/p/')) {
+    if (!document.querySelector('.view--home')) {
+      entered = true;                        // deep link: skip the gate
+      if (carousel) { carousel.destroy(); carousel = null; }
+      document.body.classList.add('lock');
+      app.replaceChildren();
+      app.appendChild(renderHome());
+    }
+    const flip = pendingFlip;
+    pendingFlip = null;
+    window.TLBDetail.open(app, {
+      content, aspects,
+      onSync: (i) => { if (carousel) carousel.goTo(i); },
+    }, path.slice(3), flip);
+    return;
+  }
+  if (path === '/' && window.TLBDetail.isOpen && document.querySelector('.view--home')) {
+    window.TLBDetail.close();                // back from detail: animate out, keep home
+    return;
+  }
+
   if (carousel) { carousel.destroy(); carousel = null; }
   document.body.classList.toggle('lock', path === '/');
   app.replaceChildren();
@@ -360,8 +388,6 @@ function render() {
     app.appendChild(renderStub('index'));
   } else if (path === '/about') {
     app.appendChild(renderStub('about'));
-  } else if (path.startsWith('/p/')) {
-    app.appendChild(renderStub(path.slice(3)));
   } else {
     app.appendChild(renderStub('not found'));
   }
