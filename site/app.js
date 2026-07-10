@@ -6,7 +6,18 @@ const MONTHS = ['January','February','March','April','May','June',
   'July','August','September','October','November','December'];
 const app = document.getElementById('app');
 let content = null;
+let aspects = {};             // image filename -> width/height
+let icons = {};               // path -> inline svg markup
 let entered = false;          // intro gate passed this page-load
+let carousel = null;          // active carousel instance
+
+/* menu icons — Noun Project, CC BY 3.0 (credits inside each SVG file) */
+const MENU = [
+  { href: '/',         icon: '/icons/timeline.svg', key: 'timeline', title: 'Timeline' },
+  { href: '/surf',     icon: '/icons/flow.svg',     key: 'flow',     title: 'Surf' },
+  { href: '/articles', icon: '/icons/collage.svg',  key: 'collage',  title: 'Index' },
+];
+const ABOUT = { href: '/about', icon: '/icons/profile.svg', key: 'profile', title: 'About' };
 
 /* ---------- helpers ---------- */
 
@@ -26,6 +37,31 @@ async function loadContent() {
     console.error('content load failed:', err);
     return { slides: [], wordmark: {}, texts: {} };
   }
+}
+
+async function loadAspects() {
+  try {
+    const r = await fetch('/api/aspects');
+    const j = await r.json();
+    return j.aspects || {};
+  } catch (err) {
+    console.error('aspects load failed:', err);
+    return {};
+  }
+}
+
+async function loadIcons() {
+  const all = [...MENU, ABOUT];
+  await Promise.all(all.map(async (m) => {
+    try {
+      const r = await fetch(m.icon);
+      const txt = await r.text();
+      icons[m.icon] = txt.replace(/<svg\b/,
+        '<svg class="ic ic--' + m.key + '" aria-hidden="true" fill="currentColor"');
+    } catch (err) {
+      console.error('icon load failed:', m.icon, err);
+    }
+  }));
 }
 
 function wordmark() {
@@ -193,14 +229,47 @@ function enterSite(intro) {
   intro.classList.add('is-leaving');
   const logo = document.querySelector('.site-logo');
   const menu = document.querySelector('.menu');
+  const home = document.querySelector('.view--home');
   setTimeout(() => {
     intro.remove();
     if (logo) logo.classList.add('is-in');
     if (menu) menu.classList.add('is-in');
+    if (home) home.classList.add('is-in');
   }, 950);
 }
 
 /* ---------- views ---------- */
+
+function menuLink(m) {
+  const a = el('a', null);
+  a.href = m.href;
+  a.title = m.title;
+  a.setAttribute('data-nav', '');
+  a.innerHTML = icons[m.icon] || '';
+  const cur = location.pathname.replace(/\/+$/, '') || '/';
+  if (cur === m.href) a.classList.add('active');
+  return a;
+}
+
+function buildMenu() {
+  const menu = el('nav', 'menu');
+  menu.setAttribute('aria-label', 'Main navigation');
+  const capsule = el('div', 'menu__capsule');
+  for (const m of MENU) capsule.appendChild(menuLink(m));
+  menu.appendChild(capsule);
+  const about = el('div', 'menu__about');
+  about.appendChild(menuLink(ABOUT));
+  menu.appendChild(about);
+  return menu;
+}
+
+/* month name -> year, for the ruler labels */
+function yearsByName() {
+  const byNum = yearByMonth(content.slides);
+  const out = {};
+  MONTHS.forEach((m, i) => { if (byNum[i + 1]) out[m] = byNum[i + 1]; });
+  return out;
+}
 
 function renderHome() {
   const frag = document.createDocumentFragment();
@@ -208,17 +277,24 @@ function renderHome() {
   const logo = el('div', 'site-logo label', wordmark().l2);
   frag.appendChild(logo);
 
-  const view = el('main', 'view');           // carousel lands here in Phase 2
+  const view = el('main', 'view view--home');
   frag.appendChild(view);
 
-  const menu = el('nav', 'menu');            // frosted menu lands here in Phase 2
+  const menu = buildMenu();
   frag.appendChild(menu);
+
+  if (carousel) { carousel.destroy(); carousel = null; }
+  carousel = window.TLBCarousel.mount(
+    view, content.slides || [], aspects, yearsByName(),
+    (s) => navigate('/p/' + (s.id || '')),
+  );
 
   if (!entered) {
     frag.appendChild(renderIntro());
   } else {
     logo.classList.add('is-in');
     menu.classList.add('is-in');
+    view.classList.add('is-in');
   }
   return frag;
 }
@@ -230,6 +306,9 @@ function renderStub(name) {
   const view = el('main', 'view view-stub');
   view.appendChild(el('div', 'label', name));
   frag.appendChild(view);
+  const menu = buildMenu();
+  menu.classList.add('is-in');
+  frag.appendChild(menu);
   return frag;
 }
 
@@ -237,6 +316,8 @@ function renderStub(name) {
 
 function render() {
   const path = location.pathname.replace(/\/+$/, '') || '/';
+  if (carousel) { carousel.destroy(); carousel = null; }
+  document.body.classList.toggle('lock', path === '/');
   app.replaceChildren();
   if (path === '/') {
     app.appendChild(renderHome());
@@ -268,8 +349,9 @@ window.addEventListener('popstate', render);
 
 /* ---------- boot ---------- */
 
-loadContent().then((c) => {
+Promise.all([loadContent(), loadAspects(), loadIcons()]).then(([c, a]) => {
   content = c;
+  aspects = a;
   const wm = wordmark();
   document.title = [wm.l2, wm.l1].filter(Boolean).join(' — ');
   render();
