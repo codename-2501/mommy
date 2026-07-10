@@ -83,6 +83,8 @@ function buildBody(s) {
         img.src = src;                                 // body images: full quality
         img.loading = 'lazy';
         img.alt = m.caption || '';
+        img.classList.add('dt-zoomable');
+        img.addEventListener('click', () => lightbox(src, m.caption));
         fig.appendChild(img);
       }
       if (m.caption) fig.appendChild(el('figcaption', 'label', m.caption));
@@ -117,6 +119,21 @@ function buildContent(s, i, slides) {
     m.appendChild(el('span', null, s.title));
     h.appendChild(m);
     wrap.appendChild(h);
+  }
+  /* product spec rows (admin: 제품 규격 / 제품 타입) */
+  if (s.size || s.ptype) {
+    const spec = el('div', 'dt-spec');
+    const row = (k, v) => {
+      const r = el('div', 'dt-spec__row dt-reveal');
+      const inn = el('div', null);
+      inn.appendChild(el('span', 'dt-spec__k label', k));
+      inn.appendChild(el('span', 'dt-spec__v', v));
+      r.appendChild(inn);
+      spec.appendChild(r);
+    };
+    if (s.size) row('Size', s.size);
+    if (s.ptype) row('Type', s.ptype);
+    wrap.appendChild(spec);
   }
   const fade = el('div', 'dt-fade');
   fade.appendChild(buildBody(s));
@@ -225,9 +242,30 @@ function flipInto(fromRect, imgSrc, targetBox, host, srcEl) {
   }, 1050);
 }
 
+/* lightbox — attached image at natural size (contained), click/Esc closes */
+function lightbox(src, caption) {
+  const lb = el('div', 'dt-lightbox');
+  const img = el('img');
+  img.src = src;
+  lb.appendChild(img);
+  if (caption) lb.appendChild(el('div', 'label dt-lightbox__cap', caption));
+  lb.addEventListener('click', () => {
+    lb.classList.remove('is-on');
+    setTimeout(() => lb.remove(), 380);
+  });
+  document.body.appendChild(lb);
+  requestAnimationFrame(() => requestAnimationFrame(() => lb.classList.add('is-on')));
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const lb = document.querySelector('.dt-lightbox');
+  if (lb) { e.stopImmediatePropagation(); lb.click(); }
+}, true);
+
 /* panel smooth scroll — original virtual-scroll feel (delta *0.9, lerp .1/frame) */
 function smoothScroll(sc) {
-  let target = 0, cur = 0, last = 0;
+  let target = 0, cur = 0, last = 0, applied = -1;
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;
   sc.addEventListener('wheel', (e) => {
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
@@ -238,9 +276,12 @@ function smoothScroll(sc) {
     if (!sc.isConnected) return;
     const ratio = last ? Math.min(3, (ts - last) / (1000 / 60)) : 1;
     last = ts;
+    if (applied >= 0 && Math.abs(sc.scrollTop - applied) > 1) {
+      cur = target = sc.scrollTop;         // external scroll (anchors, scrollIntoView…)
+    }
     cur += (target - cur) * 0.1 * ratio;
-    if (Math.abs(sc.scrollTop - cur) >= 0.5) sc.scrollTop = cur;
-    else { cur = sc.scrollTop; target = Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight, target)); }
+    sc.scrollTop = cur;
+    applied = sc.scrollTop;
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);

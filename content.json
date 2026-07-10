@@ -9,7 +9,7 @@
    "id": "s0",
    "image": "/images/09ec9c9cf4ce0.png",
    "top": "1",
-   "bottom": "Inspire (January)",
+   "bottom": "Inspire (January)ㅋ",
    "desc": "ㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹㄴㅁㄹㄴㅁㅇㄹㄴㅇㄹㅇㄴㅁㄹㄴㅁㄹ",
    "title": "작품명이래",
    "url": "/articles/defective-units-vol-1",
@@ -22,12 +22,14 @@
     {
      "type": "image",
      "src": "/images/a6ab44b7575c8.png",
-     "caption": ""
+     "caption": "",
+     "align": "left"
     },
     {
      "type": "image",
      "src": "/images/c3149ecb4e4fd.jpg",
-     "caption": ""
+     "caption": "",
+     "align": "right"
     },
     {
      "type": "image",
@@ -35,12 +37,14 @@
      "caption": ""
     }
    ],
-   "category": "ㅋㅋㅋ"
+   "category": "ㅋㅋㅋ",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s2",
    "image": "/images/102b79c0173a5.webp",
-   "top": "3",
+   "top": "2",
    "bottom": "Inspire (March)",
    "title": "ㄴㅁㅇㄹㄴㅁㅇ",
    "desc": "ㄹㄴㅁㅇㅇㄴㅁㄹ",
@@ -52,16 +56,20 @@
      "caption": ""
     }
    ],
-   "category": "ㄴㅁㄹㅇ"
+   "category": "ㄴㅁㄹㅇ",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s1",
    "image": "/images/0b77ebf1938e1.jpg",
-   "top": "2",
+   "top": "3",
    "bottom": "Inspire (March)",
    "desc": "sadfsadfrose",
    "title": "asdfsad",
-   "url": "/articles/defective-units-vol-1"
+   "url": "/articles/defective-units-vol-1",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s3",
@@ -69,8 +77,10 @@
    "top": "4",
    "bottom": "Inspire (March)",
    "url": "/articles/99-cents-only-store-gallery-exhibition",
-   "title": "",
-   "desc": ""
+   "title": "빛의 결",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s4",
@@ -78,8 +88,10 @@
    "top": "5",
    "bottom": "Inspire (March)",
    "url": "/articles/99-cents-only-store-gallery-exhibition",
-   "title": "",
-   "desc": ""
+   "title": "바람의 기억",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s5",
@@ -87,1332 +99,2107 @@
    "top": "6",
    "bottom": "Inspire (March)",
    "url": "/articles/99-cents-only-store-gallery-exhibition",
-   "title": "",
-   "desc": ""
+   "title": "피어나는 계절",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s6",
    "image": "/images/242f1689deb00.png",
    "top": "7",
    "bottom": "Inspire (February)",
-   "url": "/articles/the-legend-of-phil-shao"
+   "url": "/articles/the-legend-of-phil-shao",
+   "title": "겨울 창가",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s7",
    "image": "/images/2fdbe4301b34e.png",
    "top": "8",
    "bottom": "Inspire (February)",
-   "url": "/articles/the-legend-of-phil-shao"
+   "url": "/articles/the-legend-of-phil-shao",
+   "title": "노을의 온도",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s8",
    "image": "/images/3a1a7d3b70473.png",
    "top": "9",
    "bottom": "Inspire (February)",
-   "url": "/articles/jellyfish-by-pharrell-from-virginia"
+   "url": "/articles/jellyfish-by-pharrell-from-virginia",
+   "title": "푸른 새벽",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s9",
    "image": "/images/486624d093849.png",
    "top": "10",
    "bottom": "Inspire (February)",
-   "url": "/articles/jellyfish-by-pharrell-from-virginia"
+   "url": "/articles/jellyfish-by-pharrell-from-virginia",
+   "title": "꽃과 화병",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s10",
    "image": "/images/5fe11bac36895.jpg",
    "top": "11",
    "bottom": "Inspire (February)",
-   "url": "/articles/jellyfish-by-pharrell-from-virginia"
+   "url": "/articles/jellyfish-by-pharrell-from-virginia",
+   "title": "산책길에서",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s11",
    "image": "/images/62ae5300bda35.png",
    "top": "12",
    "bottom": "Inspire (February)",
-   "url": "/articles/adollarap-rocky-punk-rocky"
+   "url": "/articles/adollarap-rocky-punk-rocky",
+   "title": "여름의 문턱",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s12",
    "image": "/images/6d8c9cf7b9618.png",
    "top": "13",
    "bottom": "Inspire (February)",
-   "url": "/articles/adollarap-rocky-punk-rocky"
+   "url": "/articles/adollarap-rocky-punk-rocky",
+   "title": "기억의 풍경",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s13",
    "image": "/images/6e53b3796caa6.jpg",
    "top": "14",
    "bottom": "Inspire (February)",
-   "url": "/articles/adollarap-rocky-punk-rocky"
+   "url": "/articles/adollarap-rocky-punk-rocky",
+   "title": "흐르는 빛",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s14",
    "image": "/images/8708eb5c27359.jpg",
    "top": "15",
    "bottom": "Showcase (January)",
-   "url": "/articles/get-happly"
+   "url": "/articles/get-happly",
+   "title": "작은 위로",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s15",
    "image": "/images/88d6731cc43a6.jpg",
    "top": "16",
    "bottom": "Showcase (January)",
-   "url": "/articles/get-happly"
+   "url": "/articles/get-happly",
+   "title": "봄의 정원 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s16",
    "image": "/images/8f0c56e5291b1.png",
    "top": "17",
    "bottom": "Showcase (January)",
-   "url": "/articles/get-happly"
+   "url": "/articles/get-happly",
+   "title": "장미의 시간 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s17",
    "image": "/images/92b84f6dc2382.webp",
    "top": "18",
    "bottom": "Inspire (January)",
-   "url": "/articles/winter-x-games-2026"
+   "url": "/articles/winter-x-games-2026",
+   "title": "고요한 오후 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s18",
    "image": "/images/9532d3c7d5d9c.jpg",
    "top": "19",
    "bottom": "Inspire (January)",
-   "url": "/articles/winter-x-games-2026"
+   "url": "/articles/winter-x-games-2026",
+   "title": "빛의 결 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s19",
    "image": "/images/5fe11bac36895.jpg",
    "top": "20",
    "bottom": "Showcase (January)",
-   "url": "/articles/bo-reset-the-standard"
+   "url": "/articles/bo-reset-the-standard",
+   "title": "바람의 기억 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s20",
    "image": "/images/97703af9e4c8f.webp",
    "top": "21",
    "bottom": "Showcase (January)",
-   "url": "/articles/bo-reset-the-standard"
+   "url": "/articles/bo-reset-the-standard",
+   "title": "피어나는 계절 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s21",
    "image": "/images/9b7b474e4a5e2.jpg",
    "top": "22",
    "bottom": "Showcase (January)",
-   "url": "/articles/bo-reset-the-standard"
+   "url": "/articles/bo-reset-the-standard",
+   "title": "겨울 창가 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s22",
    "image": "/images/a306ef91fe377.png",
    "top": "23",
    "bottom": "Inspire (December)",
-   "url": "/articles/andrew-dutton-sneaker-shots"
+   "url": "/articles/andrew-dutton-sneaker-shots",
+   "title": "노을의 온도 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s23",
    "image": "/images/a6ab44b7575c8.png",
    "top": "24",
    "bottom": "Inspire (December)",
-   "url": "/articles/andrew-dutton-sneaker-shots"
+   "url": "/articles/andrew-dutton-sneaker-shots",
+   "title": "푸른 새벽 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s24",
    "image": "/images/a709fc3de67fa.webp",
    "top": "25",
    "bottom": "Inspire (December)",
-   "url": "/articles/photography-by-estevan-oriol"
+   "url": "/articles/photography-by-estevan-oriol",
+   "title": "꽃과 화병 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s25",
    "image": "/images/a8ef59966e56a.png",
    "top": "26",
    "bottom": "Inspire (December)",
-   "url": "/articles/photography-by-estevan-oriol"
+   "url": "/articles/photography-by-estevan-oriol",
+   "title": "산책길에서 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s26",
    "image": "/images/a92fb706592cb.png",
    "top": "27",
    "bottom": "Inspire (December)",
-   "url": "/articles/photography-by-estevan-oriol"
+   "url": "/articles/photography-by-estevan-oriol",
+   "title": "여름의 문턱 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s27",
    "image": "/images/b78e801844263.jpg",
    "top": "28",
    "bottom": "Inspire (December)",
-   "url": "/articles/skateboard-culture-book-finally-out"
+   "url": "/articles/skateboard-culture-book-finally-out",
+   "title": "기억의 풍경 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s28",
    "image": "/images/b996087ba4b81.png",
    "top": "29",
    "bottom": "Inspire (December)",
-   "url": "/articles/skateboard-culture-book-finally-out"
+   "url": "/articles/skateboard-culture-book-finally-out",
+   "title": "흐르는 빛 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s29",
    "image": "/images/c3149ecb4e4fd.jpg",
    "top": "30",
    "bottom": "Inspire (December)",
-   "url": "/articles/skateboard-culture-book-finally-out"
+   "url": "/articles/skateboard-culture-book-finally-out",
+   "title": "작은 위로 2",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s30",
    "image": "/images/ca2b4eb75a03f.png",
    "top": "31",
    "bottom": "Inspire (November)",
-   "url": "/articles/wu-nopoly-is-officially-out"
+   "url": "/articles/wu-nopoly-is-officially-out",
+   "title": "봄의 정원 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s31",
    "image": "/images/ca673fec5b6b7.webp",
    "top": "32",
    "bottom": "Inspire (November)",
-   "url": "/articles/wu-nopoly-is-officially-out"
+   "url": "/articles/wu-nopoly-is-officially-out",
+   "title": "장미의 시간 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s32",
    "image": "/images/cf616f78edd58.png",
    "top": "33",
    "bottom": "Inspire (November)",
-   "url": "/articles/twojeys-headwear-by-new-era"
+   "url": "/articles/twojeys-headwear-by-new-era",
+   "title": "고요한 오후 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s33",
    "image": "/images/d58c784d25981.png",
    "top": "34",
    "bottom": "Inspire (November)",
-   "url": "/articles/twojeys-headwear-by-new-era"
+   "url": "/articles/twojeys-headwear-by-new-era",
+   "title": "빛의 결 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s34",
    "image": "/images/e1bc8b97eaea9.png",
    "top": "35",
    "bottom": "Inspire (November)",
-   "url": "/articles/twojeys-headwear-by-new-era"
+   "url": "/articles/twojeys-headwear-by-new-era",
+   "title": "바람의 기억 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s35",
    "image": "/images/e23e1375aacf9.png",
    "top": "36",
    "bottom": "Inspire (November)",
-   "url": "/articles/works-by-oezase"
+   "url": "/articles/works-by-oezase",
+   "title": "피어나는 계절 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s36",
    "image": "/images/02ece5a890247.png",
    "top": "37",
    "bottom": "Inspire (November)",
-   "url": "/articles/works-by-oezase"
+   "url": "/articles/works-by-oezase",
+   "title": "겨울 창가 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s37",
    "image": "/images/069af310e5866.png",
    "top": "38",
    "bottom": "Inspire (November)",
-   "url": "/articles/works-by-oezase"
+   "url": "/articles/works-by-oezase",
+   "title": "노을의 온도 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s38",
    "image": "/images/09ec9c9cf4ce0.png",
    "top": "39",
    "bottom": "Inspire (October)",
-   "url": "/articles/erl-drops-new-vamp-boot"
+   "url": "/articles/erl-drops-new-vamp-boot",
+   "title": "푸른 새벽 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s39",
    "image": "/images/0b77ebf1938e1.jpg",
    "top": "40",
    "bottom": "Inspire (October)",
-   "url": "/articles/erl-drops-new-vamp-boot"
+   "url": "/articles/erl-drops-new-vamp-boot",
+   "title": "꽃과 화병 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s40",
    "image": "/images/102b79c0173a5.webp",
    "top": "41",
    "bottom": "Inspire (October)",
-   "url": "/articles/erl-drops-new-vamp-boot"
+   "url": "/articles/erl-drops-new-vamp-boot",
+   "title": "산책길에서 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s41",
    "image": "/images/1aff2f008ad96.jpg",
    "top": "42",
    "bottom": "Inspire (October)",
-   "url": "/articles/they-said-no-drum-machines"
+   "url": "/articles/they-said-no-drum-machines",
+   "title": "여름의 문턱 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s42",
    "image": "/images/1c91f200eb441.png",
    "top": "43",
    "bottom": "Inspire (October)",
-   "url": "/articles/they-said-no-drum-machines"
+   "url": "/articles/they-said-no-drum-machines",
+   "title": "기억의 풍경 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s43",
    "image": "/images/1f7ffa08880a9.jpg",
    "top": "44",
    "bottom": "Inspire (October)",
-   "url": "/articles/adidas-and-brain-dead-present-the-barricade-13"
+   "url": "/articles/adidas-and-brain-dead-present-the-barricade-13",
+   "title": "흐르는 빛 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s44",
    "image": "/images/242f1689deb00.png",
    "top": "45",
    "bottom": "Inspire (October)",
-   "url": "/articles/adidas-and-brain-dead-present-the-barricade-13"
+   "url": "/articles/adidas-and-brain-dead-present-the-barricade-13",
+   "title": "작은 위로 3",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s45",
    "image": "/images/2fdbe4301b34e.png",
    "top": "46",
    "bottom": "Inspire (October)",
-   "url": "/articles/adidas-and-brain-dead-present-the-barricade-13"
+   "url": "/articles/adidas-and-brain-dead-present-the-barricade-13",
+   "title": "봄의 정원 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s46",
    "image": "/images/3a1a7d3b70473.png",
    "top": "47",
    "bottom": "Inspire (September)",
-   "url": "/articles/streetplaza-sokolov"
+   "url": "/articles/streetplaza-sokolov",
+   "title": "장미의 시간 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s47",
    "image": "/images/486624d093849.png",
    "top": "48",
    "bottom": "Inspire (September)",
-   "url": "/articles/streetplaza-sokolov"
+   "url": "/articles/streetplaza-sokolov",
+   "title": "고요한 오후 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s48",
    "image": "/images/5fe11bac36895.jpg",
    "top": "49",
    "bottom": "Inspire (September)",
-   "url": "/articles/streetplaza-sokolov"
+   "url": "/articles/streetplaza-sokolov",
+   "title": "빛의 결 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s49",
    "image": "/images/62ae5300bda35.png",
    "top": "50",
    "bottom": "Inspire (September)",
-   "url": "/articles/carharttwip-skate-jam-in-milan"
+   "url": "/articles/carharttwip-skate-jam-in-milan",
+   "title": "바람의 기억 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s50",
    "image": "/images/6d8c9cf7b9618.png",
    "top": "51",
    "bottom": "Inspire (September)",
-   "url": "/articles/carharttwip-skate-jam-in-milan"
+   "url": "/articles/carharttwip-skate-jam-in-milan",
+   "title": "피어나는 계절 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s51",
    "image": "/images/6e53b3796caa6.jpg",
    "top": "52",
    "bottom": "Inspire (September)",
-   "url": "/articles/carharttwip-skate-jam-in-milan"
+   "url": "/articles/carharttwip-skate-jam-in-milan",
+   "title": "겨울 창가 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s52",
    "image": "/images/8708eb5c27359.jpg",
    "top": "53",
    "bottom": "Inspire (September)",
-   "url": "/articles/carpet-company-for-living-proof-magazine-issue-11"
+   "url": "/articles/carpet-company-for-living-proof-magazine-issue-11",
+   "title": "노을의 온도 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s53",
    "image": "/images/88d6731cc43a6.jpg",
    "top": "54",
    "bottom": "Inspire (September)",
-   "url": "/articles/carpet-company-for-living-proof-magazine-issue-11"
+   "url": "/articles/carpet-company-for-living-proof-magazine-issue-11",
+   "title": "푸른 새벽 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s54",
    "image": "/images/8f0c56e5291b1.png",
    "top": "55",
    "bottom": "Inspire (August)",
-   "url": "/articles/pharrell-launches-virginia"
+   "url": "/articles/pharrell-launches-virginia",
+   "title": "꽃과 화병 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s55",
    "image": "/images/92b84f6dc2382.webp",
    "top": "56",
    "bottom": "Inspire (August)",
-   "url": "/articles/pharrell-launches-virginia"
+   "url": "/articles/pharrell-launches-virginia",
+   "title": "산책길에서 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s56",
    "image": "/images/9532d3c7d5d9c.jpg",
    "top": "57",
    "bottom": "Inspire (August)",
-   "url": "/articles/pharrell-launches-virginia"
+   "url": "/articles/pharrell-launches-virginia",
+   "title": "여름의 문턱 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s57",
    "image": "/images/97703af9e4c8f.webp",
    "top": "58",
    "bottom": "Inspire (August)",
-   "url": "/articles/new-balance-933-andrew-reynolds"
+   "url": "/articles/new-balance-933-andrew-reynolds",
+   "title": "기억의 풍경 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s58",
    "image": "/images/9b7b474e4a5e2.jpg",
    "top": "59",
    "bottom": "Inspire (August)",
-   "url": "/articles/new-balance-933-andrew-reynolds"
+   "url": "/articles/new-balance-933-andrew-reynolds",
+   "title": "흐르는 빛 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s59",
    "image": "/images/a306ef91fe377.png",
    "top": "60",
    "bottom": "Inspire (August)",
-   "url": "/articles/new-balance-933-andrew-reynolds"
+   "url": "/articles/new-balance-933-andrew-reynolds",
+   "title": "작은 위로 4",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s60",
    "image": "/images/a6ab44b7575c8.png",
    "top": "61",
    "bottom": "Inspire (August)",
-   "url": "/articles/rick-rubin-and-the-art-of-being"
+   "url": "/articles/rick-rubin-and-the-art-of-being",
+   "title": "봄의 정원 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s61",
    "image": "/images/a709fc3de67fa.webp",
    "top": "62",
    "bottom": "Inspire (August)",
-   "url": "/articles/rick-rubin-and-the-art-of-being"
+   "url": "/articles/rick-rubin-and-the-art-of-being",
+   "title": "장미의 시간 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s62",
    "image": "/images/a8ef59966e56a.png",
    "top": "63",
    "bottom": "Inspire (August)",
-   "url": "/articles/rick-rubin-and-the-art-of-being"
+   "url": "/articles/rick-rubin-and-the-art-of-being",
+   "title": "고요한 오후 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s63",
    "image": "/images/a92fb706592cb.png",
    "top": "64",
    "bottom": "Inspire (July)",
-   "url": "/articles/let-god-sort-em-out-album-from-clipse"
+   "url": "/articles/let-god-sort-em-out-album-from-clipse",
+   "title": "빛의 결 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s64",
    "image": "/images/b78e801844263.jpg",
    "top": "65",
    "bottom": "Inspire (July)",
-   "url": "/articles/let-god-sort-em-out-album-from-clipse"
+   "url": "/articles/let-god-sort-em-out-album-from-clipse",
+   "title": "바람의 기억 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s65",
    "image": "/images/b996087ba4b81.png",
    "top": "66",
    "bottom": "Inspire (July)",
-   "url": "/articles/let-god-sort-em-out-album-from-clipse"
+   "url": "/articles/let-god-sort-em-out-album-from-clipse",
+   "title": "피어나는 계절 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s66",
    "image": "/images/62ae5300bda35.png",
    "top": "67",
    "bottom": "Showcase (July)",
-   "url": "/articles/welcome-to-the-team"
+   "url": "/articles/welcome-to-the-team",
+   "title": "겨울 창가 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s67",
    "image": "/images/c3149ecb4e4fd.jpg",
    "top": "68",
    "bottom": "Showcase (July)",
-   "url": "/articles/welcome-to-the-team"
+   "url": "/articles/welcome-to-the-team",
+   "title": "노을의 온도 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s68",
    "image": "/images/ca2b4eb75a03f.png",
    "top": "69",
    "bottom": "Showcase (July)",
-   "url": "/articles/welcome-to-the-team"
+   "url": "/articles/welcome-to-the-team",
+   "title": "푸른 새벽 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s69",
    "image": "/images/ca673fec5b6b7.webp",
    "top": "70",
    "bottom": "Inspire (June)",
-   "url": "/articles/turnstile-never-enough"
+   "url": "/articles/turnstile-never-enough",
+   "title": "꽃과 화병 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s70",
    "image": "/images/cf616f78edd58.png",
    "top": "71",
    "bottom": "Inspire (June)",
-   "url": "/articles/turnstile-never-enough"
+   "url": "/articles/turnstile-never-enough",
+   "title": "산책길에서 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s71",
    "image": "/images/d58c784d25981.png",
    "top": "72",
    "bottom": "Inspire (June)",
-   "url": "/articles/turnstile-never-enough"
+   "url": "/articles/turnstile-never-enough",
+   "title": "여름의 문턱 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s72",
    "image": "/images/e1bc8b97eaea9.png",
    "top": "73",
    "bottom": "Inspire (June)",
-   "url": "/articles/ch-11-shit-waves-hawaii"
+   "url": "/articles/ch-11-shit-waves-hawaii",
+   "title": "기억의 풍경 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s73",
    "image": "/images/e23e1375aacf9.png",
    "top": "74",
    "bottom": "Inspire (June)",
-   "url": "/articles/ch-11-shit-waves-hawaii"
+   "url": "/articles/ch-11-shit-waves-hawaii",
+   "title": "흐르는 빛 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s74",
    "image": "/images/02ece5a890247.png",
    "top": "75",
    "bottom": "Inspire (June)",
-   "url": "/articles/ch-11-shit-waves-hawaii"
+   "url": "/articles/ch-11-shit-waves-hawaii",
+   "title": "작은 위로 5",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s75",
    "image": "/images/069af310e5866.png",
    "top": "76",
    "bottom": "Inspire (May)",
-   "url": "/articles/stab-high-japan-may"
+   "url": "/articles/stab-high-japan-may",
+   "title": "봄의 정원 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s76",
    "image": "/images/09ec9c9cf4ce0.png",
    "top": "77",
    "bottom": "Inspire (May)",
-   "url": "/articles/stab-high-japan-may"
+   "url": "/articles/stab-high-japan-may",
+   "title": "장미의 시간 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s77",
    "image": "/images/0b77ebf1938e1.jpg",
    "top": "78",
    "bottom": "Inspire (May)",
-   "url": "/articles/fugazi-photo-shooting"
+   "url": "/articles/fugazi-photo-shooting",
+   "title": "고요한 오후 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s78",
    "image": "/images/102b79c0173a5.webp",
    "top": "79",
    "bottom": "Inspire (May)",
-   "url": "/articles/fugazi-photo-shooting"
+   "url": "/articles/fugazi-photo-shooting",
+   "title": "빛의 결 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s79",
    "image": "/images/1aff2f008ad96.jpg",
    "top": "80",
    "bottom": "Inspire (May)",
-   "url": "/articles/fugazi-photo-shooting"
+   "url": "/articles/fugazi-photo-shooting",
+   "title": "바람의 기억 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s80",
    "image": "/images/1c91f200eb441.png",
    "top": "81",
    "bottom": "Inspire (May)",
-   "url": "/articles/devin-bookers-nike-x-chevrolet-collection"
+   "url": "/articles/devin-bookers-nike-x-chevrolet-collection",
+   "title": "피어나는 계절 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s81",
    "image": "/images/1f7ffa08880a9.jpg",
    "top": "82",
    "bottom": "Inspire (May)",
-   "url": "/articles/devin-bookers-nike-x-chevrolet-collection"
+   "url": "/articles/devin-bookers-nike-x-chevrolet-collection",
+   "title": "겨울 창가 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s82",
    "image": "/images/242f1689deb00.png",
    "top": "83",
    "bottom": "Inspire (May)",
-   "url": "/articles/devin-bookers-nike-x-chevrolet-collection"
+   "url": "/articles/devin-bookers-nike-x-chevrolet-collection",
+   "title": "노을의 온도 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s83",
    "image": "/images/2fdbe4301b34e.png",
    "top": "84",
    "bottom": "Inspire (May)",
-   "url": "/articles/supreme-x-margiela-wallet"
+   "url": "/articles/supreme-x-margiela-wallet",
+   "title": "푸른 새벽 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s84",
    "image": "/images/3a1a7d3b70473.png",
    "top": "85",
    "bottom": "Inspire (April)",
-   "url": "/articles/asap-x-rayban"
+   "url": "/articles/asap-x-rayban",
+   "title": "꽃과 화병 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s85",
    "image": "/images/486624d093849.png",
    "top": "86",
    "bottom": "Inspire (April)",
-   "url": "/articles/asap-x-rayban"
+   "url": "/articles/asap-x-rayban",
+   "title": "산책길에서 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s86",
    "image": "/images/5fe11bac36895.jpg",
    "top": "87",
    "bottom": "Inspire (April)",
-   "url": "/articles/converse-shoe-drop-by-works-studio"
+   "url": "/articles/converse-shoe-drop-by-works-studio",
+   "title": "여름의 문턱 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s87",
    "image": "/images/62ae5300bda35.png",
    "top": "88",
    "bottom": "Inspire (April)",
-   "url": "/articles/converse-shoe-drop-by-works-studio"
+   "url": "/articles/converse-shoe-drop-by-works-studio",
+   "title": "기억의 풍경 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s88",
    "image": "/images/6d8c9cf7b9618.png",
    "top": "89",
    "bottom": "Inspire (April)",
-   "url": "/articles/the-sprawl"
+   "url": "/articles/the-sprawl",
+   "title": "흐르는 빛 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s89",
    "image": "/images/6e53b3796caa6.jpg",
    "top": "90",
    "bottom": "Inspire (April)",
-   "url": "/articles/the-sprawl"
+   "url": "/articles/the-sprawl",
+   "title": "작은 위로 6",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s90",
    "image": "/images/8708eb5c27359.jpg",
    "top": "91",
    "bottom": "Inspire (April)",
-   "url": "/articles/north-face-in-early-days"
+   "url": "/articles/north-face-in-early-days",
+   "title": "봄의 정원 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s91",
    "image": "/images/88d6731cc43a6.jpg",
    "top": "92",
    "bottom": "Inspire (April)",
-   "url": "/articles/north-face-in-early-days"
+   "url": "/articles/north-face-in-early-days",
+   "title": "장미의 시간 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s92",
    "image": "/images/8f0c56e5291b1.png",
    "top": "93",
    "bottom": "Inspire (April)",
-   "url": "/articles/north-face-in-early-days"
+   "url": "/articles/north-face-in-early-days",
+   "title": "고요한 오후 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s93",
    "image": "/images/92b84f6dc2382.webp",
    "top": "94",
    "bottom": "Inspire (March)",
-   "url": "/articles/redman-muddy-water-too-album-drop"
+   "url": "/articles/redman-muddy-water-too-album-drop",
+   "title": "빛의 결 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s94",
    "image": "/images/9532d3c7d5d9c.jpg",
    "top": "95",
    "bottom": "Educate (March)",
-   "url": "/articles/mascot-book"
+   "url": "/articles/mascot-book",
+   "title": "바람의 기억 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s95",
    "image": "/images/97703af9e4c8f.webp",
    "top": "96",
    "bottom": "Inspire (March)",
-   "url": "/articles/helge-tscharn-capsule"
+   "url": "/articles/helge-tscharn-capsule",
+   "title": "피어나는 계절 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s96",
    "image": "/images/9b7b474e4a5e2.jpg",
    "top": "97",
    "bottom": "Inspire (March)",
-   "url": "/articles/helge-tscharn-capsule"
+   "url": "/articles/helge-tscharn-capsule",
+   "title": "겨울 창가 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s97",
    "image": "/images/a306ef91fe377.png",
    "top": "98",
    "bottom": "Inspire (March)",
-   "url": "/articles/helge-tscharn-capsule"
+   "url": "/articles/helge-tscharn-capsule",
+   "title": "노을의 온도 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s98",
    "image": "/images/a6ab44b7575c8.png",
    "top": "99",
    "bottom": "Inspire (March)",
-   "url": "/articles/off-white-state-of-resistance"
+   "url": "/articles/off-white-state-of-resistance",
+   "title": "푸른 새벽 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s99",
    "image": "/images/a709fc3de67fa.webp",
    "top": "100",
    "bottom": "Inspire (March)",
-   "url": "/articles/off-white-state-of-resistance"
+   "url": "/articles/off-white-state-of-resistance",
+   "title": "꽃과 화병 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s100",
    "image": "/images/a8ef59966e56a.png",
    "top": "101",
    "bottom": "Inspire (March)",
-   "url": "/articles/off-white-state-of-resistance"
+   "url": "/articles/off-white-state-of-resistance",
+   "title": "산책길에서 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s101",
    "image": "/images/a92fb706592cb.png",
    "top": "102",
    "bottom": "Inspire (February)",
-   "url": "/articles/surfer-aloslebir-108-foot-monster-wave"
+   "url": "/articles/surfer-aloslebir-108-foot-monster-wave",
+   "title": "여름의 문턱 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s102",
    "image": "/images/b78e801844263.jpg",
    "top": "103",
    "bottom": "Inspire (February)",
-   "url": "/articles/surfer-aloslebir-108-foot-monster-wave"
+   "url": "/articles/surfer-aloslebir-108-foot-monster-wave",
+   "title": "기억의 풍경 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s103",
    "image": "/images/b996087ba4b81.png",
    "top": "104",
    "bottom": "Inspire (February)",
-   "url": "/articles/nigo-and-pharrell-williams-appointed-as-creative-advisors-for-not-a-hotel"
+   "url": "/articles/nigo-and-pharrell-williams-appointed-as-creative-advisors-for-not-a-hotel",
+   "title": "흐르는 빛 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s104",
    "image": "/images/c3149ecb4e4fd.jpg",
    "top": "105",
    "bottom": "Inspire (February)",
-   "url": "/articles/nigo-and-pharrell-williams-appointed-as-creative-advisors-for-not-a-hotel"
+   "url": "/articles/nigo-and-pharrell-williams-appointed-as-creative-advisors-for-not-a-hotel",
+   "title": "작은 위로 7",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s105",
    "image": "/images/ca2b4eb75a03f.png",
    "top": "106",
    "bottom": "Inspire (February)",
-   "url": "/articles/nigo-and-pharrell-williams-appointed-as-creative-advisors-for-not-a-hotel"
+   "url": "/articles/nigo-and-pharrell-williams-appointed-as-creative-advisors-for-not-a-hotel",
+   "title": "봄의 정원 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s106",
    "image": "/images/ca673fec5b6b7.webp",
    "top": "107",
    "bottom": "Inspire (February)",
-   "url": "/articles/the-kate-bellm-interview"
+   "url": "/articles/the-kate-bellm-interview",
+   "title": "장미의 시간 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s107",
    "image": "/images/cf616f78edd58.png",
    "top": "108",
    "bottom": "Inspire (February)",
-   "url": "/articles/the-kate-bellm-interview"
+   "url": "/articles/the-kate-bellm-interview",
+   "title": "고요한 오후 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s108",
    "image": "/images/d58c784d25981.png",
    "top": "109",
    "bottom": "Inspire (January)",
-   "url": "/articles/pocket-vol-12"
+   "url": "/articles/pocket-vol-12",
+   "title": "빛의 결 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s109",
    "image": "/images/e1bc8b97eaea9.png",
    "top": "110",
    "bottom": "Inspire (January)",
-   "url": "/articles/pocket-vol-12"
+   "url": "/articles/pocket-vol-12",
+   "title": "바람의 기억 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s110",
    "image": "/images/e23e1375aacf9.png",
    "top": "111",
    "bottom": "Inspire (January)",
-   "url": "/articles/pocket-vol-12"
+   "url": "/articles/pocket-vol-12",
+   "title": "피어나는 계절 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s111",
    "image": "/images/02ece5a890247.png",
    "top": "112",
    "bottom": "Inspire (January)",
-   "url": "/articles/kendrick-lamar-taps-willy-chavarria-for-super-bowl-halftime-collection"
+   "url": "/articles/kendrick-lamar-taps-willy-chavarria-for-super-bowl-halftime-collection",
+   "title": "겨울 창가 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s112",
    "image": "/images/069af310e5866.png",
    "top": "113",
    "bottom": "Inspire (January)",
-   "url": "/articles/post-malone-at-wild-horses-festival-in-san-diego"
+   "url": "/articles/post-malone-at-wild-horses-festival-in-san-diego",
+   "title": "노을의 온도 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s113",
    "image": "/images/09ec9c9cf4ce0.png",
    "top": "114",
    "bottom": "Inspire (January)",
-   "url": "/articles/post-malone-at-wild-horses-festival-in-san-diego"
+   "url": "/articles/post-malone-at-wild-horses-festival-in-san-diego",
+   "title": "푸른 새벽 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s114",
    "image": "/images/0b77ebf1938e1.jpg",
    "top": "115",
    "bottom": "Showcase (December)",
-   "url": "/articles/motive-energy-case"
+   "url": "/articles/motive-energy-case",
+   "title": "꽃과 화병 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s115",
    "image": "/images/102b79c0173a5.webp",
    "top": "116",
    "bottom": "Showcase (December)",
-   "url": "/articles/motive-energy-case"
+   "url": "/articles/motive-energy-case",
+   "title": "산책길에서 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s116",
    "image": "/images/1aff2f008ad96.jpg",
    "top": "117",
    "bottom": "Showcase (December)",
-   "url": "/articles/motive-energy-case"
+   "url": "/articles/motive-energy-case",
+   "title": "여름의 문턱 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s117",
    "image": "/images/1c91f200eb441.png",
    "top": "118",
    "bottom": "Inspire (December)",
-   "url": "/articles/meat-head"
+   "url": "/articles/meat-head",
+   "title": "기억의 풍경 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s118",
    "image": "/images/1f7ffa08880a9.jpg",
    "top": "119",
    "bottom": "Inspire (December)",
-   "url": "/articles/meat-head"
+   "url": "/articles/meat-head",
+   "title": "흐르는 빛 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s119",
    "image": "/images/242f1689deb00.png",
    "top": "120",
    "bottom": "Educate (December)",
-   "url": "/articles/vans-otw-pushes-into-premium-to-spark-turnaround"
+   "url": "/articles/vans-otw-pushes-into-premium-to-spark-turnaround",
+   "title": "작은 위로 8",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s120",
    "image": "/images/2fdbe4301b34e.png",
    "top": "121",
    "bottom": "Educate (December)",
-   "url": "/articles/vans-otw-pushes-into-premium-to-spark-turnaround"
+   "url": "/articles/vans-otw-pushes-into-premium-to-spark-turnaround",
+   "title": "봄의 정원 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s121",
    "image": "/images/3a1a7d3b70473.png",
    "top": "122",
    "bottom": "Inspire (November)",
-   "url": "/articles/revival-surf-park"
+   "url": "/articles/revival-surf-park",
+   "title": "장미의 시간 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s122",
    "image": "/images/486624d093849.png",
    "top": "123",
    "bottom": "Inspire (November)",
-   "url": "/articles/revival-surf-park"
+   "url": "/articles/revival-surf-park",
+   "title": "고요한 오후 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s123",
    "image": "/images/5fe11bac36895.jpg",
    "top": "124",
    "bottom": "Inspire (November)",
-   "url": "/articles/revival-surf-park"
+   "url": "/articles/revival-surf-park",
+   "title": "빛의 결 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s124",
    "image": "/images/62ae5300bda35.png",
    "top": "125",
    "bottom": "Inspire (November)",
-   "url": "/articles/stab-electric-acid"
+   "url": "/articles/stab-electric-acid",
+   "title": "바람의 기억 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s125",
    "image": "/images/6d8c9cf7b9618.png",
    "top": "126",
    "bottom": "Inspire (November)",
-   "url": "/articles/stab-electric-acid"
+   "url": "/articles/stab-electric-acid",
+   "title": "피어나는 계절 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s126",
    "image": "/images/6e53b3796caa6.jpg",
    "top": "127",
    "bottom": "Inspire (November)",
-   "url": "/articles/stab-electric-acid"
+   "url": "/articles/stab-electric-acid",
+   "title": "겨울 창가 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s127",
    "image": "/images/8708eb5c27359.jpg",
    "top": "128",
    "bottom": "Educate (November)",
-   "url": "/articles/this-color-story-stays-quiet"
+   "url": "/articles/this-color-story-stays-quiet",
+   "title": "노을의 온도 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s128",
    "image": "/images/88d6731cc43a6.jpg",
    "top": "129",
    "bottom": "Inspire (October)",
-   "url": "/articles/atiba-jefferson-profile"
+   "url": "/articles/atiba-jefferson-profile",
+   "title": "푸른 새벽 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s129",
    "image": "/images/8f0c56e5291b1.png",
    "top": "130",
    "bottom": "Inspire (October)",
-   "url": "/articles/atiba-jefferson-profile"
+   "url": "/articles/atiba-jefferson-profile",
+   "title": "꽃과 화병 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s130",
    "image": "/images/92b84f6dc2382.webp",
    "top": "131",
    "bottom": "Inspire (October)",
-   "url": "/articles/swatch-the-nines"
+   "url": "/articles/swatch-the-nines",
+   "title": "산책길에서 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s131",
    "image": "/images/9532d3c7d5d9c.jpg",
    "top": "132",
    "bottom": "Inspire (October)",
-   "url": "/articles/swatch-the-nines"
+   "url": "/articles/swatch-the-nines",
+   "title": "여름의 문턱 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s132",
    "image": "/images/97703af9e4c8f.webp",
    "top": "133",
    "bottom": "Inspire (October)",
-   "url": "/articles/swatch-the-nines"
+   "url": "/articles/swatch-the-nines",
+   "title": "기억의 풍경 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s133",
    "image": "/images/9b7b474e4a5e2.jpg",
    "top": "134",
    "bottom": "Inspire (October)",
-   "url": "/articles/atiba-jefferson-epicly-later-d"
+   "url": "/articles/atiba-jefferson-epicly-later-d",
+   "title": "흐르는 빛 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s134",
    "image": "/images/a306ef91fe377.png",
    "top": "135",
    "bottom": "Inspire (October)",
-   "url": "/articles/atiba-jefferson-epicly-later-d"
+   "url": "/articles/atiba-jefferson-epicly-later-d",
+   "title": "작은 위로 9",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s135",
    "image": "/images/a6ab44b7575c8.png",
    "top": "136",
    "bottom": "Inspire (September)",
-   "url": "/articles/wsl-world-champs-2024"
+   "url": "/articles/wsl-world-champs-2024",
+   "title": "봄의 정원 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s136",
    "image": "/images/a709fc3de67fa.webp",
    "top": "137",
    "bottom": "Inspire (September)",
-   "url": "/articles/wsl-world-champs-2024"
+   "url": "/articles/wsl-world-champs-2024",
+   "title": "장미의 시간 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s137",
    "image": "/images/a8ef59966e56a.png",
    "top": "138",
    "bottom": "Inspire (September)",
-   "url": "/articles/wsl-world-champs-2024"
+   "url": "/articles/wsl-world-champs-2024",
+   "title": "고요한 오후 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s138",
    "image": "/images/a92fb706592cb.png",
    "top": "139",
    "bottom": "Educate (September)",
-   "url": "/articles/offshore-talent-on-budget-creative"
+   "url": "/articles/offshore-talent-on-budget-creative",
+   "title": "빛의 결 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s139",
    "image": "/images/b78e801844263.jpg",
    "top": "140",
    "bottom": "Educate (September)",
-   "url": "/articles/offshore-talent-on-budget-creative"
+   "url": "/articles/offshore-talent-on-budget-creative",
+   "title": "바람의 기억 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s140",
    "image": "/images/b996087ba4b81.png",
    "top": "141",
    "bottom": "Inspire (September)",
-   "url": "/articles/epicly-later-book-drop"
+   "url": "/articles/epicly-later-book-drop",
+   "title": "피어나는 계절 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s141",
    "image": "/images/c3149ecb4e4fd.jpg",
    "top": "142",
    "bottom": "Inspire (September)",
-   "url": "/articles/epicly-later-book-drop"
+   "url": "/articles/epicly-later-book-drop",
+   "title": "겨울 창가 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s142",
    "image": "/images/ca2b4eb75a03f.png",
    "top": "143",
    "bottom": "Educate (August)",
-   "url": "/articles/how-awards-impact-brand-trust"
+   "url": "/articles/how-awards-impact-brand-trust",
+   "title": "노을의 온도 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s143",
    "image": "/images/ca673fec5b6b7.webp",
    "top": "144",
    "bottom": "Educate (August)",
-   "url": "/articles/how-awards-impact-brand-trust"
+   "url": "/articles/how-awards-impact-brand-trust",
+   "title": "푸른 새벽 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s144",
    "image": "/images/cf616f78edd58.png",
    "top": "145",
    "bottom": "Showcase (August)",
-   "url": "/articles/better-off-studio-website-awards"
+   "url": "/articles/better-off-studio-website-awards",
+   "title": "꽃과 화병 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s145",
    "image": "/images/d58c784d25981.png",
    "top": "146",
    "bottom": "Showcase (August)",
-   "url": "/articles/better-off-studio-website-awards"
+   "url": "/articles/better-off-studio-website-awards",
+   "title": "산책길에서 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s146",
    "image": "/images/e1bc8b97eaea9.png",
    "top": "147",
    "bottom": "Showcase (August)",
-   "url": "/articles/better-off-studio-website-awards"
+   "url": "/articles/better-off-studio-website-awards",
+   "title": "여름의 문턱 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s147",
    "image": "/images/e23e1375aacf9.png",
    "top": "148",
    "bottom": "Inspire (August)",
-   "url": "/articles/post-malone-f1-trillion"
+   "url": "/articles/post-malone-f1-trillion",
+   "title": "기억의 풍경 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s148",
    "image": "/images/02ece5a890247.png",
    "top": "149",
    "bottom": "Showcase (July)",
-   "url": "/articles/tripleswitch-partnership"
+   "url": "/articles/tripleswitch-partnership",
+   "title": "흐르는 빛 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s149",
    "image": "/images/069af310e5866.png",
    "top": "150",
    "bottom": "Showcase (July)",
-   "url": "/articles/tripleswitch-partnership"
+   "url": "/articles/tripleswitch-partnership",
+   "title": "작은 위로 10",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s150",
    "image": "/images/09ec9c9cf4ce0.png",
    "top": "151",
    "bottom": "Showcase (July)",
-   "url": "/articles/tripleswitch-partnership"
+   "url": "/articles/tripleswitch-partnership",
+   "title": "봄의 정원 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s151",
    "image": "/images/0b77ebf1938e1.jpg",
    "top": "152",
    "bottom": "Showcase (July)",
-   "url": "/articles/better-off-studio-submission"
+   "url": "/articles/better-off-studio-submission",
+   "title": "장미의 시간 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s152",
    "image": "/images/102b79c0173a5.webp",
    "top": "153",
    "bottom": "Showcase (July)",
-   "url": "/articles/better-off-studio-submission"
+   "url": "/articles/better-off-studio-submission",
+   "title": "고요한 오후 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s153",
    "image": "/images/1aff2f008ad96.jpg",
    "top": "154",
    "bottom": "Inspire (July)",
-   "url": "/articles/vans-always-pushing"
+   "url": "/articles/vans-always-pushing",
+   "title": "빛의 결 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s154",
    "image": "/images/1c91f200eb441.png",
    "top": "155",
    "bottom": "Inspire (July)",
-   "url": "/articles/vans-always-pushing"
+   "url": "/articles/vans-always-pushing",
+   "title": "바람의 기억 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s155",
    "image": "/images/1f7ffa08880a9.jpg",
    "top": "156",
    "bottom": "Inspire (July)",
-   "url": "/articles/vans-always-pushing"
+   "url": "/articles/vans-always-pushing",
+   "title": "피어나는 계절 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s156",
    "image": "/images/242f1689deb00.png",
    "top": "157",
    "bottom": "Showcase (June)",
-   "url": "/articles/how-storytelling-strengthens-brand-campaigns"
+   "url": "/articles/how-storytelling-strengthens-brand-campaigns",
+   "title": "겨울 창가 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s157",
    "image": "/images/2fdbe4301b34e.png",
    "top": "158",
    "bottom": "Showcase (June)",
-   "url": "/articles/how-storytelling-strengthens-brand-campaigns"
+   "url": "/articles/how-storytelling-strengthens-brand-campaigns",
+   "title": "노을의 온도 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s158",
    "image": "/images/3a1a7d3b70473.png",
    "top": "159",
    "bottom": "Inspire (June)",
-   "url": "/articles/gabriel-medina-olympics"
+   "url": "/articles/gabriel-medina-olympics",
+   "title": "푸른 새벽 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s159",
    "image": "/images/486624d093849.png",
    "top": "160",
    "bottom": "Inspire (June)",
-   "url": "/articles/gabriel-medina-olympics"
+   "url": "/articles/gabriel-medina-olympics",
+   "title": "꽃과 화병 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s160",
    "image": "/images/5fe11bac36895.jpg",
    "top": "161",
    "bottom": "Inspire (June)",
-   "url": "/articles/stab-high-japan"
+   "url": "/articles/stab-high-japan",
+   "title": "산책길에서 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s161",
    "image": "/images/62ae5300bda35.png",
    "top": "162",
    "bottom": "Inspire (June)",
-   "url": "/articles/stab-high-japan"
+   "url": "/articles/stab-high-japan",
+   "title": "여름의 문턱 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s162",
    "image": "/images/6d8c9cf7b9618.png",
    "top": "163",
    "bottom": "Inspire (June)",
-   "url": "/articles/stab-high-japan"
+   "url": "/articles/stab-high-japan",
+   "title": "기억의 풍경 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s163",
    "image": "/images/6e53b3796caa6.jpg",
    "top": "164",
    "bottom": "Showcase (May)",
-   "url": "/articles/american-gun-owners"
+   "url": "/articles/american-gun-owners",
+   "title": "흐르는 빛 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s164",
    "image": "/images/8708eb5c27359.jpg",
    "top": "165",
    "bottom": "Showcase (May)",
-   "url": "/articles/american-gun-owners"
+   "url": "/articles/american-gun-owners",
+   "title": "작은 위로 11",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s165",
    "image": "/images/88d6731cc43a6.jpg",
    "top": "166",
    "bottom": "Showcase (May)",
-   "url": "/articles/american-gun-owners"
+   "url": "/articles/american-gun-owners",
+   "title": "봄의 정원 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s166",
    "image": "/images/8f0c56e5291b1.png",
    "top": "167",
    "bottom": "Inspire (May)",
-   "url": "/articles/neon-pill"
+   "url": "/articles/neon-pill",
+   "title": "장미의 시간 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s167",
    "image": "/images/92b84f6dc2382.webp",
    "top": "168",
    "bottom": "Educate (May)",
-   "url": "/articles/will-ai-kill-the-creative-business-or-save-it"
+   "url": "/articles/will-ai-kill-the-creative-business-or-save-it",
+   "title": "고요한 오후 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s168",
    "image": "/images/9532d3c7d5d9c.jpg",
    "top": "169",
    "bottom": "Educate (May)",
-   "url": "/articles/will-ai-kill-the-creative-business-or-save-it"
+   "url": "/articles/will-ai-kill-the-creative-business-or-save-it",
+   "title": "빛의 결 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s169",
    "image": "/images/97703af9e4c8f.webp",
    "top": "170",
    "bottom": "Showcase (April)",
-   "url": "/articles/built-things-rebrand"
+   "url": "/articles/built-things-rebrand",
+   "title": "바람의 기억 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s170",
    "image": "/images/9b7b474e4a5e2.jpg",
    "top": "171",
    "bottom": "Showcase (April)",
-   "url": "/articles/built-things-rebrand"
+   "url": "/articles/built-things-rebrand",
+   "title": "피어나는 계절 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s171",
    "image": "/images/a306ef91fe377.png",
    "top": "172",
    "bottom": "Showcase (April)",
-   "url": "/articles/built-things-rebrand"
+   "url": "/articles/built-things-rebrand",
+   "title": "겨울 창가 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s172",
    "image": "/images/a6ab44b7575c8.png",
    "top": "173",
    "bottom": "Inspire (April)",
-   "url": "/articles/zipper-surf-film"
+   "url": "/articles/zipper-surf-film",
+   "title": "노을의 온도 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s173",
    "image": "/images/a709fc3de67fa.webp",
    "top": "174",
    "bottom": "Inspire (April)",
-   "url": "/articles/zipper-surf-film"
+   "url": "/articles/zipper-surf-film",
+   "title": "푸른 새벽 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s174",
    "image": "/images/a8ef59966e56a.png",
    "top": "175",
    "bottom": "Educate (April)",
-   "url": "/articles/kelly-slater-retires"
+   "url": "/articles/kelly-slater-retires",
+   "title": "꽃과 화병 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s175",
    "image": "/images/a92fb706592cb.png",
    "top": "176",
    "bottom": "Educate (April)",
-   "url": "/articles/kelly-slater-retires"
+   "url": "/articles/kelly-slater-retires",
+   "title": "산책길에서 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s176",
    "image": "/images/b78e801844263.jpg",
    "top": "177",
    "bottom": "Showcase (March)",
-   "url": "/articles/olipop-case-study"
+   "url": "/articles/olipop-case-study",
+   "title": "여름의 문턱 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s177",
    "image": "/images/b996087ba4b81.png",
    "top": "178",
    "bottom": "Showcase (March)",
-   "url": "/articles/olipop-case-study"
+   "url": "/articles/olipop-case-study",
+   "title": "기억의 풍경 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s178",
    "image": "/images/c3149ecb4e4fd.jpg",
    "top": "179",
    "bottom": "Showcase (March)",
-   "url": "/articles/olipop-case-study"
+   "url": "/articles/olipop-case-study",
+   "title": "흐르는 빛 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s179",
    "image": "/images/ca2b4eb75a03f.png",
    "top": "180",
    "bottom": "Inspire (March)",
-   "url": "/articles/stussy-autumn-drop"
+   "url": "/articles/stussy-autumn-drop",
+   "title": "작은 위로 12",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s180",
    "image": "/images/ca673fec5b6b7.webp",
    "top": "181",
    "bottom": "Inspire (March)",
-   "url": "/articles/stussy-autumn-drop"
+   "url": "/articles/stussy-autumn-drop",
+   "title": "봄의 정원 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s181",
    "image": "/images/cf616f78edd58.png",
    "top": "182",
    "bottom": "Inspire (March)",
-   "url": "/articles/stussy-autumn-drop"
+   "url": "/articles/stussy-autumn-drop",
+   "title": "장미의 시간 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s182",
    "image": "/images/d58c784d25981.png",
    "top": "183",
    "bottom": "Educate (March)",
-   "url": "/articles/how-subscriptions-end-agency-excess"
+   "url": "/articles/how-subscriptions-end-agency-excess",
+   "title": "고요한 오후 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s183",
    "image": "/images/e1bc8b97eaea9.png",
    "top": "184",
    "bottom": "Showcase (February)",
-   "url": "/articles/viamundi-spirits"
+   "url": "/articles/viamundi-spirits",
+   "title": "빛의 결 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s184",
    "image": "/images/e23e1375aacf9.png",
    "top": "185",
    "bottom": "Showcase (February)",
-   "url": "/articles/viamundi-spirits"
+   "url": "/articles/viamundi-spirits",
+   "title": "바람의 기억 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s185",
    "image": "/images/02ece5a890247.png",
    "top": "186",
    "bottom": "Showcase (February)",
-   "url": "/articles/viamundi-spirits"
+   "url": "/articles/viamundi-spirits",
+   "title": "피어나는 계절 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s186",
    "image": "/images/069af310e5866.png",
    "top": "187",
    "bottom": "Inspire (February)",
-   "url": "/articles/broncho-jams"
+   "url": "/articles/broncho-jams",
+   "title": "겨울 창가 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s187",
    "image": "/images/09ec9c9cf4ce0.png",
    "top": "188",
    "bottom": "Inspire (February)",
-   "url": "/articles/better-off-culture"
+   "url": "/articles/better-off-culture",
+   "title": "노을의 온도 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s188",
    "image": "/images/0b77ebf1938e1.jpg",
    "top": "189",
    "bottom": "Educate (February)",
-   "url": "/articles/sora-launches"
+   "url": "/articles/sora-launches",
+   "title": "푸른 새벽 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "33.4 × 24.2 cm (4호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s189",
    "image": "/images/102b79c0173a5.webp",
    "top": "190",
    "bottom": "Educate (February)",
-   "url": "/articles/sora-launches"
+   "url": "/articles/sora-launches",
+   "title": "꽃과 화병 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s190",
    "image": "/images/1aff2f008ad96.jpg",
    "top": "191",
    "bottom": "Inspire (January)",
-   "url": "/articles/fashion"
+   "url": "/articles/fashion",
+   "title": "산책길에서 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Oil on canvas board"
   },
   {
    "id": "s191",
    "image": "/images/1c91f200eb441.png",
    "top": "192",
    "bottom": "Inspire (January)",
-   "url": "/articles/fashion"
+   "url": "/articles/fashion",
+   "title": "여름의 문턱 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "45.5 × 37.9 cm (8호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s192",
    "image": "/images/1f7ffa08880a9.jpg",
    "top": "193",
    "bottom": "Showcase (January)",
-   "url": "/articles/better-off-studio-launches"
+   "url": "/articles/better-off-studio-launches",
+   "title": "기억의 풍경 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "65.1 × 53.0 cm (15호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s193",
    "image": "/images/242f1689deb00.png",
    "top": "194",
    "bottom": "Showcase (January)",
-   "url": "/articles/better-off-studio-launches"
+   "url": "/articles/better-off-studio-launches",
+   "title": "흐르는 빛 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s194",
    "image": "/images/2fdbe4301b34e.png",
    "top": "195",
-   "bottom": "Showcase (January)",
-   "url": "/articles/better-off-studio-launches"
+   "bottom": "Showcase (January)-",
+   "url": "/articles/better-off-studio-launches",
+   "media": [
+    {
+     "type": "image",
+     "src": "/images/2fdbe4301b34e.png",
+     "caption": ""
+    }
+   ],
+   "date": "2025-01-01",
+   "title": "작은 위로 13",
+   "desc": "캔버스 위에 두텁게 올린 유화 물감이 계절의 공기와 빛을 붙잡는다. 화면 가까이에서는 붓질의 결이, 한 걸음 물러서면 형태와 색의 균형이 드러난다.\n작가는 일상의 순간에서 마주친 색을 오래 들여다보고, 그 잔상을 화면 위에 겹겹이 쌓아 올렸다. 완성된 화면은 보는 이의 기억 속 풍경과 조용히 겹쳐진다.",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas"
   }
  ],
- "texts": {}
+ "texts": {
+  "/": {
+   "/2026": "/2026-"
+  }
+ },
+ "wordmark": {
+  "l1": "LSE GALLERY",
+  "l2": "THE LOOKBACK",
+  "l3": "-"
+ }
 }
