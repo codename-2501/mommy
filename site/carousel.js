@@ -345,6 +345,7 @@ function mount(view, slides, aspects, years, onOpen) {
 
   return {
     goTo(i) { target = i * step; cur = target; },   // instant jump (detail close sync)
+    itemAt(i) { return items[i] || null; },
     destroy() {
       cancelAnimationFrame(raf);
       removeEventListener('pointermove', onMove);

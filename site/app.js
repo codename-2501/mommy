@@ -392,6 +392,15 @@ function render() {
       content, aspects,
       onSync: (i) => { if (carousel) carousel.goTo(i); },
       onClose: replayHomeEnter,
+      /* reverse-flip target: matching carousel slot skips the rise and receives the ghost */
+      getHomeTarget: (k) => {
+        if (!carousel) return null;
+        const item = carousel.itemAt(k);
+        if (!item) return null;
+        item.classList.add('flip-back');
+        setTimeout(() => item.classList.remove('flip-back'), 1200);
+        return item.querySelector('.car-media');
+      },
     }, path.slice(3), flip);
     return;
   }
