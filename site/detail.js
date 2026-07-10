@@ -357,25 +357,38 @@ function render(container, opts, id, flip, dir) {
     if (out) out.style.transform = 'translateX(' + (fwd ? -110 : 110) + '%)';
   }
 
-  /* fades/reveals start on the same frame as the flights (original: one timeline) */
-  void container.offsetWidth;
-  container.classList.add('is-on');
-  container.classList.add('is-rev');
-  /* original: every matching visible painting flies to its slot, stagger .035 */
-  if (flip) {
-    const slots = [
-      [flip.cur, '.dt-cur__media', 0],
-      [flip.prev, '.dt-side--prev .dt-media', 35],
-      [flip.next, '.dt-side--next .dt-media', 70],
-    ];
-    for (const [src, sel, delay] of slots) {
-      if (!src) continue;
-      const box = strip.querySelector(sel);
-      if (!box) continue;
-      box.style.visibility = 'hidden';   // before first paint — no pop-in flash
-      if (delay) later(() => flipInto(src.rect, src.src, box, container, src.el), delay);
-      else flipInto(src.rect, src.src, box, container, src.el);   // cur flies NOW
+  /* home→detail: the original timeline waits for "page-done" (~200ms) before
+     playing — a still beat, THEN fade+flights+panel start together as one */
+  const start = () => {
+    container.classList.remove('is-wait');
+    void container.offsetWidth;
+    container.classList.add('is-on');
+    container.classList.add('is-rev');
+    if (flip) {
+      const slots = [
+        [flip.cur, '.dt-cur__media', 0],
+        [flip.prev, '.dt-side--prev .dt-media', 35],
+        [flip.next, '.dt-side--next .dt-media', 70],
+      ];
+      for (const [src, sel, delay] of slots) {
+        const box = strip.querySelector(sel);
+        if (!box) continue;
+        if (!src) { box.style.visibility = ''; continue; }   // nothing flies here
+        if (delay) later(() => flipInto(src.rect, src.src, box, container, src.el), delay);
+        else flipInto(src.rect, src.src, box, container, src.el);
+      }
     }
+  };
+  if (flip) {
+    /* pre-hide the flight slots before the overlay ever paints */
+    for (const sel of ['.dt-cur__media', '.dt-side--prev .dt-media', '.dt-side--next .dt-media']) {
+      const box = strip.querySelector(sel);
+      if (box) box.style.visibility = 'hidden';
+    }
+    container.classList.add('is-wait');
+    later(start, 180);
+  } else {
+    start();
   }
 
   /* keyboard prev/next (original slug page keydown) */
