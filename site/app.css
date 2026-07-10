@@ -259,6 +259,7 @@ img{max-width:100%;display:block}
 
 /* ---------- detail view (overlay above home; original transition values) ---------- */
 .detail{position:fixed;inset:0;z-index:60}
+.detail.is-wait{visibility:hidden}   /* the original's pre-transition beat */
 .dt-bg{
   position:absolute;inset:0;background:#fff;
   opacity:0;transition:opacity .35s ease;   /* original: old page autoAlpha .35 power1 */
