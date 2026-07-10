@@ -14,6 +14,8 @@ from html.parser import HTMLParser
 ROOT = os.path.dirname(os.path.abspath(__file__))
 CONTENT = os.path.join(ROOT, "content.json")
 IMAGES_DIR = os.path.join(ROOT, "images")
+SITE_DIR = os.path.join(ROOT, "site")
+SITE_ROUTES = ("/", "/surf", "/articles", "/about")   # SPA shell routes (+ /p/<id>)
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8082
 
 INJECT = '<script src="/tlb-admin.js"></script>'
@@ -412,9 +414,32 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _serve_file(self, fs, ctype):
+        with open(fs, "rb") as fh:
+            body = fh.read()
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(body)
+
     # ---------------- GET ----------------
     def do_GET(self):
         path = urllib.parse.urlparse(self.path).path
+
+        # new frontend (site/): SPA shell for all app routes
+        clean_route = path.rstrip("/") or "/"
+        if clean_route in SITE_ROUTES or clean_route.startswith("/p/"):
+            shell = os.path.join(SITE_DIR, "index.html")
+            if os.path.isfile(shell):
+                return self._serve_file(shell, "text/html; charset=utf-8")
+
+        # legacy clone preserved under /_legacy/ (old root HTML, admin override injected)
+        if path == "/_legacy" or path.startswith("/_legacy/"):
+            sub = path[len("/_legacy"):] or "/"
+            self.path = sub
+            path = sub
 
         if path == "/api/content":
             try:
