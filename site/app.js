@@ -1,4 +1,4 @@
-/* THE LOOKBACK — rebuilt frontend. Data: /api/content only. */
+/* LSE GALLERY — painting archive frontend. Data: /api/content only. */
 (() => {
 'use strict';
 
@@ -19,16 +19,6 @@ let leaving = null;           // {el, inst, car, timers} still animating out
 let navGen = 0;               // a newer navigation retires the transition in flight
 let wmEl = null;              // persistent wordmark (survives route changes)
 let menuEl = null;            // persistent menu
-
-/* audio flags — "Enter with sound" turns on tick/click sounds (original) */
-window.TLB_AUDIO = { on: false };
-let clickAudio = null;
-document.addEventListener('click', () => {
-  if (!window.TLB_AUDIO.on) return;
-  if (!clickAudio) clickAudio = new Audio('/site/assets/click.mp3');
-  clickAudio.currentTime = 0;
-  clickAudio.play().catch(() => {});
-});
 
 /* menu icons — Noun Project, CC BY 3.0 (credits inside each SVG file) */
 const MENU = [
@@ -100,8 +90,8 @@ async function loadIcons() {
 function wordmark() {
   const w = (content && content.wordmark) || {};
   return {
-    l1: (w.l1 || '').trim(),
-    l2: (w.l2 || 'THE LOOKBACK').trim(),
+    l1: (w.l1 || 'LSE GALLERY').trim(),
+    l2: (w.l2 || '').trim(),
     l3: (w.l3 || '').trim(),
   };
 }
@@ -267,7 +257,7 @@ function renderIntro(logoStart) {
   const gate = el('div', 'intro-gate');
   gate.style.transitionDelay = (logoStart + 0.6).toFixed(2) + 's';
   const enter = el('button', 'btn', 'Enter →');
-  enter.addEventListener('click', () => enterSite(intro, false));
+  enter.addEventListener('click', () => enterSite(intro));
   gate.appendChild(enter);
   intro.appendChild(gate);
 
@@ -280,10 +270,9 @@ function renderIntro(logoStart) {
   return intro;
 }
 
-function enterSite(intro, withSound) {
+function enterSite(intro) {
   if (entered) return;
   entered = true;
-  window.TLB_AUDIO.on = !!withSound;
   const gate = intro.querySelector('.intro-gate');
   if (gate) gate.style.transitionDelay = '0s';
   intro.classList.add('is-leaving');

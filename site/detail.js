@@ -1,4 +1,4 @@
-/* THE LOOKBACK — detail view (overlay above home, original transition values).
+/* LSE GALLERY — detail view (an overlay above the timeline; the painting flies into it).
    FLIP: clicked painting flies to the strip slot (1s "snappy").
    Panel: outer mask from +100%, inner from -100% (curtain), content reveals 1.15s expo. */
 (() => {
