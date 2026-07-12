@@ -481,6 +481,7 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
     const owner = to.el.closest('.js-flip-o');
     if (owner) { owner.style.zIndex = '5'; owners.push(owner); }
     to.el.replaceChildren(from.el);
+    to.el.style.visibility = '';        // a slot that lent its frame out was hidden — it is back
     const dx = from.bounds.left - to.bounds.left;
     const dy = from.bounds.top - to.bounds.top;
     const scale = to.bounds.width ? from.bounds.width / to.bounds.width : 1;
@@ -618,22 +619,23 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
 
 /* ---------- router ---------- */
 
-/* a slot whose frame flew into the detail and never came home (its slide was off screen
-   by the time we closed) is given a fresh frame once the detail is gone */
-function restoreFlipSources() {
-  for (const f of flipSources) {
-    if (!f.box.querySelector('.js-flip')) {
-      const frame = el('div', 'tlb-frame js-flip');
-      frame.dataset.id = f.box.dataset.id || '';
-      const img = document.createElement('img');
-      img.src = f.src;
-      img.className = 'ok';
-      img.draggable = false;
-      frame.appendChild(img);
-      f.box.appendChild(frame);
-    }
-    f.box.style.visibility = '';
+/* give a slot its painting back — used when the frame it lent out cannot fly home */
+function restoreSlot(f) {
+  if (!f.box.querySelector('.js-flip')) {
+    const frame = el('div', 'tlb-frame js-flip');
+    frame.dataset.id = f.box.dataset.id || '';
+    const img = document.createElement('img');
+    img.src = f.src;
+    img.className = 'ok';
+    img.draggable = false;
+    frame.appendChild(img);
+    f.box.appendChild(frame);
   }
+  f.box.style.visibility = '';
+}
+
+function restoreFlipSources() {
+  for (const f of flipSources) restoreSlot(f);
   flipSources = [];
 }
 
@@ -647,6 +649,15 @@ async function flyDetailHome(detailEl) {
   if (!view || !detailEl) return;
   await nextFrame();                            // let the carousel's jump to this work land
   const { fromFlips, toFlips } = measureFlips(detailEl, view, false);
+  /* a slot whose painting cannot fly home — its slide wrapped off screen while the detail
+     was open — is filled again right now. Waiting until the detail is gone would pop the
+     image in a second late; the copy still in the detail simply leaves with the curtain. */
+  const landing = new Set(toFlips.map((t) => t.el));
+  flipSources = flipSources.filter((f) => {
+    if (landing.has(f.box)) return true;
+    restoreSlot(f);
+    return false;
+  });
   if (!fromFlips.length) return;
   const playFlip = prepareFlip(fromFlips, toFlips, false);
   void view.offsetWidth;                        // paint the from-state before it animates
