@@ -435,7 +435,10 @@ img{max-width:100%;display:block}
   perspective:1000px;transform-style:preserve-3d;   /* original .surf-carousel */
 }
 .surf__deck>*{grid-area:1/1}
-.surf-item{position:relative;cursor:pointer;will-change:transform}
+/* no will-change per card: a compositing layer for each of the 195 cards takes them out
+   of the deck's 3D depth sorting, so a hovered card draws on the wrong side of its
+   neighbours until something forces a restack (original has no will-change here either) */
+.surf-item{position:relative;cursor:pointer}
 .surf-item__media{position:relative}
 @media (hover:hover) and (pointer:fine){
   .surf-item__media{transition:transform .75s var(--ease-out-expo)}

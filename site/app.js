@@ -637,20 +637,20 @@ function restoreFlipSources() {
   flipSources = [];
 }
 
-/* detail close: the leaving detail goes through the SAME engine as any other view —
-   its paintings fly back into their slots (J), the slots that receive none rise (Y) */
+/* detail close: the paintings fly back into their slots with the same J() that carried
+   them out — the mirror of the entrance.
+   No Y() here: in the original the view underneath was torn down and rebuilt, so its
+   slots had to rise. Ours was kept alive behind the detail — it never left, so making it
+   rise again would read as the deck vanishing and coming back. */
 async function flyDetailHome(detailEl) {
   const view = viewEl;
   if (!view || !detailEl) return;
   await nextFrame();                            // let the carousel's jump to this work land
-  const { fromFlips, toFlips, targets } = measureFlips(detailEl, view, false);
-  const playFlip = fromFlips.length ? prepareFlip(fromFlips, toFlips, false) : null;
-  const playRise = prepareRise(targets, false, false);
+  const { fromFlips, toFlips } = measureFlips(detailEl, view, false);
+  if (!fromFlips.length) return;
+  const playFlip = prepareFlip(fromFlips, toFlips, false);
   void view.offsetWidth;                        // paint the from-state before it animates
-  requestAnimationFrame(() => {
-    if (playFlip) playFlip();
-    if (playRise) playRise();
-  });
+  requestAnimationFrame(() => { if (playFlip) playFlip(); });
 }
 
 function render() {
