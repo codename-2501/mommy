@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>THE LOOKBACK — 관리자</title>
+<title>LSE GALLERY — 관리자</title>
 <style>
   :root{--bg:#0f0f11;--panel:#17181c;--panel2:#1d1f24;--line:#2a2c33;--ink:#eceae4;--mut:#8a8c94;--acc:#e85c4a;--ok:#3fb56b;--blue:#4a90d9}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -80,7 +80,7 @@
 </head>
 <body>
 <header>
-  <h1>THE LOOKBACK · 관리자</h1>
+  <h1>LSE GALLERY · 관리자</h1>
   <div class="tabs">
     <div class="tab active" data-view="slides">슬라이드</div>
     <div class="tab" data-view="images">이미지</div>
@@ -129,14 +129,14 @@
   <main>
     <div style="background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
       <div style="font-weight:600;margin-bottom:4px">로고 / 워드마크 <span style="color:var(--mut);font-weight:400;font-size:12px">(인트로·홈 상단)</span></div>
-      <div style="font-size:12px;color:var(--mut);margin-bottom:12px">로고 3줄을 편집합니다. 비워두면 원본(Better Off® / THE LOOKBACK / (BO®S/2026)) 유지.</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:12px">워드마크 3줄을 편집합니다. 비워두면 기본값(LSE GALLERY)이 표시됩니다.</div>
       <div style="display:flex;flex-direction:column;gap:8px;max-width:520px">
-        <input id="wm-l1" placeholder="Better Off®" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
-        <input id="wm-l2" placeholder="THE LOOKBACK" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
-        <input id="wm-l3" placeholder="(BO®S/2026)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="wm-l1" placeholder="갤러리명 (예: LSE GALLERY)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="wm-l2" placeholder="부제 (선택)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="wm-l3" placeholder="연도 표기 (선택)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
       </div>
     </div>
-    <div class="hint">원본 텍스트(왼쪽)를 오른쪽에서 수정하세요. 같은 문구가 여러 곳에 있으면 모두 바뀝니다. 저장 후 사이트 새로고침 시 반영됩니다.</div>
+    <div class="hint">페이지 문구를 편집합니다. 비워두면 기본 문구가 쓰입니다. 저장 후 사이트를 새로고침하면 반영됩니다.</div>
     <div class="textlist" id="textList"></div>
   </main>
 </section>
@@ -543,32 +543,32 @@ async function doUpload(e,after){
   renderImages(); setStatus(files.length+'개 업로드 완료','ok'); e.target.value=''; if(after)after();
 }
 
-/* ---------- text editor ---------- */
+/* ---------- text editor: the page's own copy fields (content.json → texts) ---------- */
 async function loadText(){
-  curPage=$('#pageSel').value||'/';
+  curPage=$('#pageSel').value||'/about';
   const r=await fetch('/api/textscan?path='+encodeURIComponent(curPage)+'&t='+Date.now()).then(r=>r.json());
-  textScan=r.texts||[]; renderText();
+  textScan=r.fields||[]; renderText();
 }
 function renderText(){
-  const ov=(cfg.texts&&cfg.texts[curPage])||{};
   const L=$('#textList'); L.innerHTML='';
-  textScan.forEach((orig,i)=>{
-    const val=ov.hasOwnProperty(orig)?ov[orig]:orig;
-    const it=document.createElement('div'); it.className='titem'+(val!==orig?' changed':'');
-    it.innerHTML=`<div class="orig">${escHtml(orig)}</div>
-      <textarea data-orig="${escAttr(orig)}">${escHtml(val)}</textarea>`;
+  textScan.forEach((f)=>{
+    const cur=((cfg.texts&&cfg.texts[curPage])||{})[f.key];
+    const val=cur==null?f.value:cur;
+    const it=document.createElement('div'); it.className='titem'+(val?' changed':'');
+    it.innerHTML=`<div class="orig">${escHtml(f.label)}</div>
+      <textarea data-key="${escAttr(f.key)}" placeholder="비워두면 기본 문구">${escHtml(val)}</textarea>`;
     L.appendChild(it);
   });
-  $('#countText').textContent=textScan.length+'개 문구';
+  $('#countText').textContent=textScan.length+'개 항목';
 }
 function escHtml(v){return (v==null?'':String(v)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function escAttr(v){return escHtml(v).replace(/"/g,'&quot;');}
 $('#textList').addEventListener('input',e=>{
   const t=e.target; if(t.tagName!=='TEXTAREA')return;
-  const orig=t.dataset.orig, val=t.value;
+  const key=t.dataset.key, val=t.value;
   if(!cfg.texts[curPage])cfg.texts[curPage]={};
-  if(val===orig)delete cfg.texts[curPage][orig]; else cfg.texts[curPage][orig]=val;
-  t.closest('.titem').classList.toggle('changed',val!==orig);
+  if(!val) delete cfg.texts[curPage][key]; else cfg.texts[curPage][key]=val;
+  t.closest('.titem').classList.toggle('changed',!!val);
   dirty();
 });
 $('#pageSel').addEventListener('change',loadText);

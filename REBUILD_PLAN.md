@@ -125,3 +125,27 @@
 - 인트로·캐러셀·상세·메뉴 모션이 원본 느낌으로 동작, 플래시/끊김 없음.
 - 관리자에서 편집한 내용(슬라이드·로고·미디어·정렬·날짜)이 그대로 반영.
 - 깃헙 `codename-2501/mommy`에 커밋.
+
+## 저작권 정리 (2026-07-12)
+
+원본 사이트에서 유래한 자산·코드·브랜드를 리포에서 전부 분리했다.
+
+**리포 밖으로 이동** (`~/tlb-reference/`, git 미추적):
+- `_nuxt/`(원본 컴파일 번들·CSS), 원본 `index.html`, `articles/`(원본 기사 20편), `about/`, `surf/`,
+  `_payload.json`, `gql_template.json`, `tlb-admin.js`, `serve.py`, `*.bat` — 총 73파일 8.4MB.
+- 하드 룰 1의 프레임 비교는 이 로컬 참조본으로 계속 가능하다. 단 **리포·배포물에는 절대 되돌리지 말 것.**
+
+**교체**:
+- 폰트: PP Neue Montreal(Pangram Pangram 상용, 원본 빌드에서 복사됨) → Spoqa Han Sans Neo + JetBrains Mono
+  (둘 다 SIL OFL 1.1, `site/assets/fonts/LICENSE.md`).
+- 필름 그레인 `noise.png`: 원본 자산 → 자체 생성 타일. `@keyframes noise` 오프셋도 새로 작성.
+- 효과음 `click.mp3`/`fx.mp3`: 원본 자산 → 제거(사운드 기능 자체를 걷어냄).
+- 브랜드: 타이틀·기본 워드마크·관리자 placeholder 에서 THE LOOKBACK / Better Off® 제거 → LSE GALLERY.
+- 데이터: `content.json` 슬라이드 195개의 원본 기사 URL 제거, 워드마크에서 원본 마크 제거.
+
+**서버**: 원본 기사 템플릿·DatoCMS 대역(`/gql`)·`_legacy` 라우트·원본 HTML 텍스트 스캐너 삭제
+(admin_server.py 800줄 → 370줄). 관리자 텍스트 탭은 이제 우리 문구 필드(About/워드마크)만 편집한다.
+
+**남은 판단 사항 (파생물 이슈)**: 모션 수치(캐러셀 물리·눈금 기하·전환 타이밍), `js-*` 훅 클래스명,
+GSAP CustomEase 를 수치로 옮긴 `--ease-snappy`/`--ease-mask` 는 원본에서 추출한 값이다. 이것들은
+"복사"가 아니라 "재현"이지만 파생물로 볼 여지가 있다. 유지할지, 자체 수치로 다시 튜닝할지 결정 필요.

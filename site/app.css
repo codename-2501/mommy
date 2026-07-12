@@ -1,14 +1,17 @@
-/* THE LOOKBACK — rebuilt frontend (no original branding, our data only) */
+/* LSE GALLERY — painting archive frontend. Fonts: SIL OFL (see assets/fonts/LICENSE.md) */
 
 /* ---------- fonts (vendored, offline) ---------- */
+/* Self-hosted, SIL OFL 1.1 — see site/assets/fonts/LICENSE.md.
+   Spoqa Han Sans Neo carries both Latin and Hangul, so the wordmark, the labels and the
+   Korean copy all come from one family; JetBrains Mono sets the monospaced label type. */
 @font-face{font-display:swap;font-family:sans;font-style:normal;font-weight:700;
-  src:url(/site/assets/fonts/PPNeueMontreal-Bold.l3ulKZJq.woff2) format("woff2")}
+  src:url(/site/assets/fonts/SpoqaHanSansNeo-Bold.woff2) format("woff2")}
 @font-face{font-display:swap;font-family:sans;font-style:normal;font-weight:500;
-  src:url(/site/assets/fonts/PPNeueMontreal-Medium.BCmCQQaX.woff2) format("woff2")}
+  src:url(/site/assets/fonts/SpoqaHanSansNeo-Medium.woff2) format("woff2")}
 @font-face{font-display:swap;font-family:sans;font-style:normal;font-weight:400;
-  src:url(/site/assets/fonts/PPNeueMontreal-Book.Oo-9ba79.woff2) format("woff2")}
+  src:url(/site/assets/fonts/SpoqaHanSansNeo-Regular.woff2) format("woff2")}
 @font-face{font-display:swap;font-family:mono;font-style:normal;font-weight:500;
-  src:url(/site/assets/fonts/PPNeueMontrealMono-Medium.DUem7D_U.woff2) format("woff2")}
+  src:url(/site/assets/fonts/JetBrainsMono-Medium.woff2) format("woff2")}
 
 /* ---------- root scale (same fluid rem as reference) ---------- */
 :root{
@@ -578,16 +581,16 @@ img{max-width:100%;display:block}
   opacity:.5;pointer-events:none;
   animation:noise 1s steps(2) infinite;
 }
+/* the grain tile jitters so the fixed pattern never reads as a texture. Our own offsets,
+   over our own tile (site/assets/noise.png is generated, not taken from anywhere). */
 @keyframes noise{
-  0%{transform:translate3d(0,9rem,0)}
-  10%{transform:translate3d(-1rem,-4rem,0)}
-  20%{transform:translate3d(-8rem,2rem,0)}
-  30%{transform:translate3d(9rem,-9rem,0)}
-  40%{transform:translate3d(-2rem,7rem,0)}
-  50%{transform:translate3d(-9rem,-4rem,0)}
-  60%{transform:translate3d(2rem,6rem,0)}
-  70%{transform:translate3d(7rem,-8rem,0)}
-  80%{transform:translate3d(-9rem,1rem,0)}
-  90%{transform:translate3d(6rem,-5rem,0)}
-  to{transform:translate3d(-7rem,0,0)}
+  0%{transform:translate3d(-6rem,3rem,0)}
+  12%{transform:translate3d(5rem,-7rem,0)}
+  25%{transform:translate3d(-3rem,-2rem,0)}
+  37%{transform:translate3d(8rem,5rem,0)}
+  50%{transform:translate3d(-8rem,-6rem,0)}
+  62%{transform:translate3d(1rem,8rem,0)}
+  75%{transform:translate3d(7rem,-3rem,0)}
+  87%{transform:translate3d(-5rem,6rem,0)}
+  to{transform:translate3d(4rem,-8rem,0)}
 }

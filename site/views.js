@@ -1,6 +1,6 @@
-/* THE LOOKBACK — Surf (card deck), Index (collage grid), About.
-   Mechanics ported from the originals: surf = C1kfZrZv.js, grid smooth-scroll
-   with rotateX tilt = Bx_gN5Pg.js, about = wyNRnxoT.js. */
+/* LSE GALLERY — Surf (3D card deck), Index (collage grid), About.
+   Surf: sine-bobbing deck with a rotateY tilt. Index: smooth-scrolled 12-column grid
+   whose rows tilt with the scroll velocity. About: curtain page with line reveals. */
 (() => {
 'use strict';
 
@@ -365,11 +365,12 @@ function mountIndex(view, slides, aspects, onOpen) {
 function mountAbout(view, content) {
   const texts = (content && content.texts && content.texts['/about']) || {};
   const wm = (content && content.wordmark) || {};
+  /* our own copy — editable in the admin's 텍스트 tab, these are only the fallbacks */
   const title = texts.title ||
-    '"' + (wm.l2 || 'The Lookback') + '"\n(SE/2026)\nA living\narchive of\n' + (wm.l1 || 'LSE Gallery');
+    (wm.l1 || 'LSE GALLERY') + '\n승은의\n회화\n아카이브';
   const intro = texts.intro ||
-    '승은(Seung Eun)의 1년, 195점의 유화를 한 곳에 모은 디지털 아카이브입니다. 계절을 지나며 그린 꽃과 풍경, 실험적인 화면들이 월별 타임라인으로 이어집니다. 붓이 지나간 순서대로, 한 해의 기록을 돌아봅니다.';
-  const thanks = texts.thanks || 'Thank you for\nlooking back with us.\n\n계속 그리겠습니다.';
+    '캔버스 앞에 앉은 날들을 모았습니다. 꽃과 풍경, 정물과 실험적인 화면까지 — 그린 순서대로 월별 타임라인에 놓았습니다. 한 점씩 눌러 크게 보고, 그림이 놓인 자리와 시간을 함께 읽어주세요.';
+  const thanks = texts.thanks || '보아주셔서 고맙습니다.\n\n계속 그리겠습니다.';
 
   const page = el('div', 'about');
   const maskOuter = el('div', 'about__mask');

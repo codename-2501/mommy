@@ -1,7 +1,6 @@
-/* THE LOOKBACK — home carousel + timeline ruler.
-   Physics, ruler geometry and effects ported 1:1 from the original component
-   (drag ×2 / ×3.5 mobile, lerp .1, rotateY skew, 9 ticks per slide at 11px,
-   centre cursor tick, hover boost, tick sound). */
+/* LSE GALLERY — timeline carousel + ruler.
+   Per-slide wrap (the track is never one huge moving layer), lerp-smoothed position,
+   a canvas ruler of 9 ticks per slide, and a hover boost around the cursor. */
 (() => {
 'use strict';
 
@@ -84,7 +83,6 @@ function monthGroups(slides) {
 function mount(view, slides, aspects, years, onOpen) {
   if (!slides.length) return null;
 
-  const audio = window.TLB_AUDIO || { on: false };
   const wrap = el('div', 'carousel');
   const track = el('div', 'carousel__track');
   wrap.appendChild(track);
@@ -147,9 +145,6 @@ function mount(view, slides, aspects, years, onOpen) {
   let ctx = null, cw = 0, ch = 0, dpr = 1;
   let heights = new Float32Array(0);
   let baseIdx = null;
-  let centerPrev = null;
-  const fxPool = [];
-  let fxIdx = 0;
   let hover = false, hoverX = -1;
 
   function resizeCanvas() {
@@ -179,15 +174,6 @@ function mount(view, slides, aspects, years, onOpen) {
     baseIdx = q;
   }
 
-  function tickSound(idx) {
-    if (centerPrev !== null && idx !== centerPrev && audio.on && !isSmall() && fxPool.length) {
-      const a = fxPool[fxIdx++ % fxPool.length];
-      a.currentTime = 0;
-      a.play().catch(() => {});
-    }
-    centerPrev = idx;
-  }
-
   function drawTick(x, h, baseY, alpha) {
     ctx.globalAlpha = alpha;
     const px = Math.round(x) + 0.5;
@@ -205,9 +191,8 @@ function mount(view, slides, aspects, years, onOpen) {
     if (v < 0) v += TICK_GAP;
     const q = Math.floor((U - v) / TICK_GAP);
     const center = cw * 0.5;
-    const centerIdx = Math.round((U + center) / TICK_GAP);
+    const centerIdx = Math.round((U + center) / TICK_GAP);   // the tick under the cursor line
     shiftHeights(q);
-    tickSound(centerIdx);
     const ease = LERP * ratio, easeC = 0.2 * ratio;
     for (let ox = -v, e = 0; ox <= cw + TICK_GAP; ox += TICK_GAP, e++) {
       const t = q + e;
@@ -356,8 +341,6 @@ function mount(view, slides, aspects, years, onOpen) {
   ruler.addEventListener('mouseenter', onRulerEnter);
   ruler.addEventListener('mouseleave', onRulerLeave);
   ruler.addEventListener('mousemove', onRulerMove);
-  for (let i = 0; i < 4; i++) fxPool.push(new Audio('/site/assets/fx.mp3'));
-
   /* original: the incoming view jumps to the work the last one was on, THEN reports
      "page-done" — the transition only measures the flip once that jump has landed */
   let markReady;

@@ -4,3 +4,4 @@ __pycache__/
 admin.log
 content.json.bak-dummy
 images/.thumbs/
+dist/
