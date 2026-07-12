@@ -87,12 +87,6 @@
     <div class="tab" data-view="text">텍스트</div>
   </div>
   <div class="sp"></div>
-  <button class="btn ghost" id="tunnelBtn" title="cloudflared 임시 공개 링크">임시 링크 발행</button>
-  <a class="btn ghost" id="tunnelUrl" target="_blank" rel="noreferrer" style="display:none"></a>
-  <label class="btn ghost" id="tunnelKeep" style="display:none;gap:6px;align-items:center">
-    <input type="checkbox" id="tunnelKeepChk" style="accent-color:#6ea8fe"> 상시 유지
-  </label>
-  <button class="btn ghost" id="tunnelSend" style="display:none" title="텔레그램으로 링크 전송">텔레그램 전송</button>
   <button class="btn ghost" id="openSite">사이트 열기 ↗</button>
   <button class="btn primary" id="save">저장</button>
   <div class="status" id="status">불러오는 중…</div>
@@ -593,67 +587,6 @@ $('#save').onclick=async()=>{
 };
 $('#openSite').onclick=()=>window.open('/','_blank');
 window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();$('#save').click();}if(e.key==='Escape')closePicker();});
-
-/* ---- 임시 공개 링크 (cloudflared) ---- */
-let tunnelPoll=0;
-function paintTunnel(t){
-  const btn=$('#tunnelBtn'),url=$('#tunnelUrl'),keep=$('#tunnelKeep'),send=$('#tunnelSend');
-  $('#tunnelKeepChk').checked=!!t.keepalive;
-  keep.style.display='inline-flex';
-  if(t.running&&t.url){
-    btn.textContent='링크 내리기';
-    url.style.display='inline-flex';
-    url.href=t.url;
-    url.textContent=t.url.replace('https://','');
-    send.style.display='inline-flex';
-  }else if(t.running){
-    btn.textContent='링크 내리기';
-    url.style.display='none';
-    send.style.display='none';
-    setStatus('임시 링크 발행 중…');
-  }else{
-    btn.textContent='임시 링크 발행';
-    url.style.display='none';
-    send.style.display='none';
-  }
-  /* a fresh tunnel takes a few seconds to report its hostname */
-  clearTimeout(tunnelPoll);
-  if(t.running&&!t.url)tunnelPoll=setTimeout(refreshTunnel,1500);
-}
-async function refreshTunnel(){
-  try{paintTunnel(await(await fetch('/api/tunnel')).json());}catch(e){}
-}
-async function tunnelDo(action,value){
-  const r=await(await fetch('/api/tunnel',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action,value})})).json();
-  if(r.error)throw new Error(r.error);
-  paintTunnel(r);
-  return r;
-}
-$('#tunnelBtn').onclick=async()=>{
-  const up=$('#tunnelBtn').textContent==='링크 내리기';
-  try{
-    setStatus(up?'링크 내리는 중…':'터널 여는 중…');
-    const r=await tunnelDo(up?'stop':'start');
-    setStatus(up?'임시 링크 내림':'임시 링크 발행 — 주소가 나오면 텔레그램으로 자동 전송됩니다','ok');
-    if(!up&&!r.url)setTimeout(refreshTunnel,1500);
-  }catch(err){setStatus('터널 실패: '+err.message,'err');}
-};
-$('#tunnelKeepChk').onchange=async(e)=>{
-  try{
-    await tunnelDo('keepalive',e.target.checked);
-    setStatus(e.target.checked
-      ? '상시 유지 켬 — 터널이 죽거나 서버를 재시작해도 다시 발행합니다'
-      : '상시 유지 끔','ok');
-  }catch(err){setStatus('설정 실패: '+err.message,'err');}
-};
-$('#tunnelSend').onclick=async()=>{
-  try{
-    const r=await tunnelDo('notify');
-    setStatus(r.sent?'텔레그램으로 링크 보냄':'텔레그램 전송 실패: '+(r.error||''),r.sent?'ok':'err');
-  }catch(err){setStatus('전송 실패: '+err.message,'err');}
-};
-refreshTunnel();
 
 load().catch(e=>setStatus('불러오기 실패: '+e.message,'err'));
 </script>
