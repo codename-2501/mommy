@@ -4,8 +4,8 @@
 (() => {
 'use strict';
 
-const LERP = 0.1;
-const WHEEL_MULT = /Win/.test(navigator.platform) ? 0.9 : 0.4;
+const LERP = 0.12;                                              // chase, per frame
+const WHEEL_MULT = /Win/.test(navigator.platform) ? 1 : 0.45;   // wheel feels lighter on mac
 
 function el(tag, cls, text) {
   const n = document.createElement(tag);
@@ -55,7 +55,7 @@ function yearsByMonth(slides) {
   return out;
 }
 
-/* ---------------- SURF: floating card deck (original values) ---------------- */
+/* ---------------- SURF: floating card deck ---------------- */
 function mountSurf(view, slides, aspects, onOpen) {
   const wrap = el('div', 'surf');
   const inner = el('div', 'surf__inner');
@@ -67,13 +67,13 @@ function mountSurf(view, slides, aspects, onOpen) {
   view.appendChild(wrap);
 
   const items = slides.map((s, i) => {
-    const it = el('article', 'surf-item js-flip-o');
+    const it = el('article', 'surf-item lse-card');
     const media = el('div', 'surf-item__media');
-    const box = el('div', 'surf-item__box js-flip-target');
+    const box = el('div', 'surf-item__box lse-slot');
     box.dataset.id = s.id || '';
     const name = String(s.image || '').split('/').pop();
     box.style.aspectRatio = String(aspects[name] || 1);
-    const frame = el('div', 'tlb-frame js-flip');
+    const frame = el('div', 'tlb-frame lse-frame');
     frame.dataset.id = s.id || '';
     const img = el('img');
     img.src = thumb(s.image, 600);
@@ -85,7 +85,7 @@ function mountSurf(view, slides, aspects, onOpen) {
     media.appendChild(box);
     it.appendChild(media);
     /* the painting slides 75% aside on hover — out from under the cursor. This layer stays
-       put over the card's original spot, so the hover (and the click) has something stable
+       put over the card's spot, so the hover (and the click) has something stable
        to land on instead of flickering onto whichever neighbour moves in underneath. */
     it.appendChild(el('div', 'surf-item__hit'));
     it.addEventListener('mouseenter', () => {
@@ -102,16 +102,17 @@ function mountSurf(view, slides, aspects, onOpen) {
     return { el: it, s };
   });
 
-  /* original: P=18 (6 mobile), spread=ww/P, sine bob, rotateY(-70 - 15p) */
+  /* the deck: cards are spread across the viewport width, bob on a sine wave as they pass,
+     and stand at an angle that eases open when the view arrives */
   let bounds = [], total = 0, rest = 0, time = 0;
   let target = 0, cur = 0, vel = 0, deckK = 0;
   let dragging = false, moved = false, sx = 0, sy = 0, st = 0, raf = 0, lastTs = 0;
   let hoverIdx = -1;              // the card the cursor is lifting (see mouseenter above)
 
   function measure() {
-    const P = isSmall() ? 6 : 18;
+    const P = isSmall() ? 7 : 16;   // cards abreast across the viewport
     const spread = innerWidth / P;
-    rest = (innerHeight / (P * 1.5)) * 0.35;
+    rest = (innerHeight / (P * 1.5)) * 0.4;   // bob amplitude
     bounds = items.map((it, i) => {
       it.el.style.transform = 'translate3d(0,0,0)';
       const x = spread * i;
@@ -133,7 +134,7 @@ function mountSurf(view, slides, aspects, onOpen) {
     const xo = p - 0.5;
     const bob = Math.sin(time + xo * Math.PI * 2) * rest * (1 + vel * 0.01);
     const y = innerHeight * 0.5 * xo + bob;
-    const rotY = (-(15 * p) - 70) * deckK;
+    const rotY = (-(18 * p) - 66) * deckK;   // deck angle, opening as the card comes forward
     /* the hovered card slides 75% sideways — pull it forward in the deck's 3D space so it
        passes OVER its neighbours instead of under them */
     const z = i === hoverIdx ? 60 : 0;
@@ -147,7 +148,7 @@ function mountSurf(view, slides, aspects, onOpen) {
     cur += (target - cur) * LERP * ratio;
     cur = Math.round(cur * 100) / 100;
     vel = Math.round((cur - target) * 1000) / 1000;
-    time += 0.02 * ratio;
+    time += 0.022 * ratio;
     if (total > 0) {
       for (let i = 0; i < items.length; i++) {
         const b = bounds[i];
@@ -165,7 +166,7 @@ function mountSurf(view, slides, aspects, onOpen) {
     if (!dragging) return;
     const dx = e.clientX - sx;
     if (Math.abs(dx) > 10) moved = true;
-    target = st - dx * (isSmall() ? 3.5 : 2);
+    target = st - dx * (isSmall() ? 3.6 : 2.2);   // drag travel
   }
   function onUp() { dragging = false; }
   function onWheel(e) {
@@ -189,7 +190,7 @@ function mountSurf(view, slides, aspects, onOpen) {
   addEventListener('keydown', onKey);
   addEventListener('resize', measure);
 
-  /* original: measure, jump to the work the last view was on, then report "page-done" */
+  /* : measure, jump to the work the last view was on, then report "page-done" */
   let markReady;
   const ready = new Promise((res) => { markReady = res; });
   requestAnimationFrame(() => {
@@ -200,7 +201,7 @@ function mountSurf(view, slides, aspects, onOpen) {
   });
   raf = requestAnimationFrame(frame);
 
-  /* original: the deck angle only eases in once the transition says so (surf-unfreeze) */
+  /* : the deck angle only eases in once the transition says so (surf-unfreeze) */
   let unfrozen = false;
   function unfreeze() {
     if (unfrozen) return;
@@ -226,11 +227,11 @@ function mountSurf(view, slides, aspects, onOpen) {
     ready,
     unfreeze,
     destroy,
-    /* original V(): the paintings themselves leave — y to the viewport top, then a further
+    /* the paintings themselves leave — y to the viewport top, then a further
        -150% of their own height. power2.in .5s, stagger .025. The cards stay behind. */
     exit(done) {
       destroy();
-      const frames = wrap.querySelectorAll('.js-flip');
+      const frames = wrap.querySelectorAll('.lse-frame');
       let k = 0;
       for (const f of frames) {
         const r = f.getBoundingClientRect();
@@ -244,10 +245,10 @@ function mountSurf(view, slides, aspects, onOpen) {
   };
 }
 
-/* -------- smooth scroll w/ tilt (original: lerp .125, rotateX(vel * -.02)) -------- */
+/* -------- smooth scroll: the grid chases the wheel, and its rows tilt with the velocity -------- */
 function smoothTilt(outer, content) {
   let target = 0, cur = 0, max = 0, lastTs = 0, raf = 0;
-  const tilts = () => content.querySelectorAll('.js-tilt');
+  const tilts = () => content.querySelectorAll('.lse-row');
   function measure() {
     max = Math.max(0, content.getBoundingClientRect().height - outer.clientHeight);
   }
@@ -270,9 +271,9 @@ function smoothTilt(outer, content) {
     const ratio = lastTs ? Math.min(3, (ts - lastTs) / (1000 / 60)) : 1;
     lastTs = ts;
     const v = cur - target;
-    cur += (target - cur) * 0.125 * ratio;
+    cur += (target - cur) * 0.13 * ratio;
     content.style.transform = 'translate3d(0,' + (-cur) + 'px,0)';
-    const ry = 'rotateX(' + (v * -0.02) + 'deg)';
+    const ry = 'rotateX(' + (v * -0.018) + 'deg)';
     tilts().forEach((t) => { t.style.transform = ry; });
     raf = requestAnimationFrame(frame);
   }
@@ -293,7 +294,7 @@ function smoothTilt(outer, content) {
   };
 }
 
-/* ---------------- INDEX: 12-per-row collage grid (original values) ---------------- */
+/* ---------------- INDEX: collage grid, 12 per row ---------------- */
 function mountIndex(view, slides, aspects, onOpen) {
   const outer = el('div', 'agrid');
   const content = el('div', 'agrid__in');
@@ -305,16 +306,16 @@ function mountIndex(view, slides, aspects, onOpen) {
   let row = null, seenMonth = '';
   slides.forEach((s, i) => {
     if (i % perRow === 0) {
-      row = el('div', 'agrid__row js-tilt');
+      row = el('div', 'agrid__row lse-row');
       content.appendChild(row);
     }
-    const cell = el('article', 'agrid__cell js-flip-o');
-    cell.dataset.index = String(i);          // original: the row lookup that hands the index on
+    const cell = el('article', 'agrid__cell lse-card');
+    cell.dataset.index = String(i);          // : the row lookup that hands the index on
     const name = String(s.image || '').split('/').pop();
-    const box = el('div', 'agrid__media js-flip-target');
+    const box = el('div', 'agrid__media lse-slot');
     box.dataset.id = s.id || '';
     box.style.aspectRatio = String(aspects[name] || 1);
-    const frame = el('div', 'tlb-frame js-flip');
+    const frame = el('div', 'tlb-frame lse-frame');
     frame.dataset.id = s.id || '';
     const img = el('img');
     img.src = thumb(s.image, 300);
@@ -345,7 +346,7 @@ function mountIndex(view, slides, aspects, onOpen) {
   /* the month labels ride up out of their masks on .is-in — without it they stay clipped */
   requestAnimationFrame(() => requestAnimationFrame(() => view.classList.add('is-in')));
 
-  /* original: scroll straight to the handed-over work's row, then report "page-done" */
+  /* : scroll straight to the handed-over work's row, then report "page-done" */
   let markReady;
   const ready = new Promise((res) => { markReady = res; });
   requestAnimationFrame(() => {
@@ -405,7 +406,7 @@ function mountAbout(view, content) {
   });
   scroller.appendChild(thanksEl);
 
-  /* Noun Project attribution (CC BY 3.0 — the plan's only allowed original credit) */
+  /* Noun Project attribution (CC BY 3.0 — the plan's only allowed credit) */
   const cred = el('div', 'about__credits label');
   [['timeline', 'Justin Blake', '3643975'], ['flow', 'Abdul Matic', '7813263'],
    ['collage', 'Mustofa Bayu', '6753741'], ['profile', 'Evan Shuster', '139147']]

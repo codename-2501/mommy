@@ -4,7 +4,7 @@
 Drives the rebuilt site in an isolated headless profile, walks home -> surf ->
 articles -> home, and for each hop:
   - records which work id the leaving view was showing (body.dataset.index handoff)
-  - asserts the LIVE .js-flip frame was reparented into the new view's slot with
+  - asserts the LIVE .lse-frame frame was reparented into the new view's slot with
     the same data-id (original J(): appendChild, never a clone)
   - samples the flying frame's transform across the flight
   - saves frames so the motion can be eyeballed against the legacy clone
@@ -33,7 +33,7 @@ d.set_window_size(1440, 900)
 # now hangs under a view that did NOT exist when the hop started.
 FLIP_PROBE = """
 const out = [];
-for (const f of document.querySelectorAll('.js-flip')) {
+for (const f of document.querySelectorAll('.lse-frame')) {
   const t = getComputedStyle(f).transform;
   if (t === 'none') continue;
   const view = f.closest('.view');
@@ -83,11 +83,11 @@ try:
     time.sleep(1.5)
     shot("00b_home_moved.png")
     home_active = d.execute_script(
-        "const a=document.querySelector('.js-slide-active .js-flip'); return a?a.dataset.id:null;")
+        "const a=document.querySelector('.lse-centred .lse-frame'); return a?a.dataset.id:null;")
     # the works are ordered by their admin date, so a work's id number is NOT its position
     home_active_pos = d.execute_script("""
       const items = [...document.querySelectorAll('.car-item')];
-      const act = document.querySelector('.car-item.js-slide-active');
+      const act = document.querySelector('.car-item.lse-centred');
       return String(items.indexOf(act));
     """)
     print(f"\nhome parked on work {home_active} (slide #{home_active_pos})")
@@ -98,9 +98,9 @@ try:
         before = d.execute_script("""
           const old = document.querySelector('.view');
           old.dataset.oldview = '1';
-          const act = document.querySelector('.js-slide-active .js-flip');
+          const act = document.querySelector('.lse-centred .lse-frame');
           return {
-            visible: [...old.querySelectorAll('.js-flip')]
+            visible: [...old.querySelectorAll('.lse-frame')]
               .filter(f => { const r = f.getBoundingClientRect();
                              return r.right >= 0 && r.left <= innerWidth &&
                                     r.bottom >= 0 && r.top <= innerHeight; })
@@ -139,10 +139,10 @@ try:
         if shared:
             print(f"  shared work ids: {shared[:6]}{'...' if len(shared) > 6 else ''}")
 
-        # no clones: each work id must have exactly one .js-flip in the document
+        # no clones: each work id must have exactly one .lse-frame in the document
         dupes = d.execute_script("""
           const seen = {}, dup = [];
-          for (const f of document.querySelectorAll('.js-flip')) {
+          for (const f of document.querySelectorAll('.lse-frame')) {
             seen[f.dataset.id] = (seen[f.dataset.id] || 0) + 1;
             if (seen[f.dataset.id] > 1) dup.push(f.dataset.id);
           }
@@ -150,14 +150,14 @@ try:
         """)
         # everything must come to rest (no stuck transform / no orphan inline styles)
         stuck = d.execute_script("""
-          return [...document.querySelectorAll('.js-flip,.js-flip-target')]
+          return [...document.querySelectorAll('.lse-frame,.lse-slot')]
             .filter(e => e.style.transform && e.style.transform !== '').length;
         """)
         left = d.execute_script("return document.querySelectorAll('.view').length;")
         # a painting that flies must be visible the whole way, and visible where it lands
         ghosts = sorted({m["id"] for m in moved if m["reparented"] and m["opacity"] == "0"})
         blank = d.execute_script("""
-          return [...document.querySelectorAll('.view .js-flip')].filter(f => {
+          return [...document.querySelectorAll('.view .lse-frame')].filter(f => {
             const r = f.getBoundingClientRect();
             if (r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight) return false;
             const img = f.querySelector('img');

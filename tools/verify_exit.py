@@ -117,7 +117,7 @@ try:
         time.sleep(0.12)
     time.sleep(2.0)
     handed = d.execute_script("""
-      const rows = [...document.querySelectorAll('.js-tilt')];
+      const rows = [...document.querySelectorAll('.lse-row')];
       const mid = innerHeight / 2;
       let best = null, bd = Infinity;
       for (const r of rows) { const dd = Math.abs(r.getBoundingClientRect().top - mid);
@@ -131,7 +131,7 @@ try:
     # every slide must be positioned: an unplaced one sits at its natural flex spot — on screen
     OVERLAP = """
     const boxes = [];
-    for (const f of document.querySelectorAll('.view--home .js-flip')) {
+    for (const f of document.querySelectorAll('.view--home .lse-frame')) {
       const r = f.getBoundingClientRect();
       if (r.width < 30 || r.right < 0 || r.left > innerWidth) continue;
       boxes.push({ id: f.dataset.id, x: r.left, y: r.top, w: r.width, h: r.height });

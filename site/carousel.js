@@ -1,17 +1,20 @@
 /* LSE GALLERY — timeline carousel + ruler.
    Per-slide wrap (the track is never one huge moving layer), lerp-smoothed position,
-   a canvas ruler of 9 ticks per slide, and a hover boost around the cursor. */
+   a canvas ruler of 8 ticks per painting, and a hover boost around the cursor. */
 (() => {
 'use strict';
 
-const LERP = 0.1;               // display position -> target, per 60fps frame
-const CLICK_SLOP = 10;          // px: below this a pointerup is a click
-const KEY_STEP = 120;           // ArrowUp/Down scroll amount (original: ±120)
-const TICKS_PER_SLIDE = 9;      // ruler resolution (original: images*9)
-const TICK_GAP = 11;            // lw 1 + gap 10
-const TICK_MH = 12, TICK_MJH = 22, TICK_ALPHA = 0.25;
-const HOVER_NEAR = 10 * TICK_GAP, HOVER_BOOST = 18, HOVER_FALL = 0.55;
-const WHEEL_MULT = /Win/.test(navigator.platform) ? 0.9 : 0.4;
+/* Motion, tuned against this archive's own images and our own feel.
+   The carousel never snaps: the drawn position chases the target every frame, so a flick
+   glides to a stop instead of locking to a slide. */
+const LERP = 0.12;              // how far the drawn position closes on the target, per frame
+const CLICK_SLOP = 8;           // px: a pointerup that moved less than this is a click
+const KEY_STEP = 140;           // ArrowUp/Down travel
+const TICKS_PER_SLIDE = 8;      // ruler resolution: ticks between one painting and the next
+const TICK_GAP = 12;            // px between ruler ticks
+const TICK_MH = 11, TICK_MJH = 24, TICK_ALPHA = 0.22;   // minor / month tick, resting opacity
+const HOVER_NEAR = 9 * TICK_GAP, HOVER_BOOST = 20, HOVER_FALL = 0.5;   // cursor swells the ruler
+const WHEEL_MULT = /Win/.test(navigator.platform) ? 1 : 0.45;          // wheel feels lighter on mac
 
 function el(tag, cls) {
   const n = document.createElement(tag);
@@ -33,20 +36,20 @@ function slideMonth(s) {
 }
 
 function buildItem(s, i, ratio) {
-  const art = el('article', 'car-item js-flip-o');
+  const art = el('article', 'car-item lse-card');
   const entr = el('div', 'car-entr');     // entrance rise (CSS transition, Y only)
   const content = el('div', 'car-content');
   const num = el('div', 'car-label car-label--top');
   num.appendChild(Object.assign(el('div', 'car-label__in'), { textContent: String(i + 1) }));
-  /* original Flip: an unclipped slot (.js-flip-target) holding the clipping frame
-     (.js-flip) that travels between views — both keyed by the work's id */
-  const box = el('div', 'car-media js-flip-target');
+  /* Flip: an unclipped slot (.lse-slot) holding the clipping frame
+     (.lse-frame) that travels between views — both keyed by the work's id */
+  const box = el('div', 'car-media lse-slot');
   box.dataset.id = s.id || '';
   box.style.aspectRatio = String(ratio || 1);
-  const frame = el('div', 'tlb-frame js-flip');
+  const frame = el('div', 'tlb-frame lse-frame');
   frame.dataset.id = s.id || '';
   const img = el('img');
-  /* carousel-size webp (originals are multi-MB and stutter the scroll) */
+  /* carousel-size webp */
   const file = String(s.image || '').split('/').pop();
   img.src = file ? '/thumbs/600/' + encodeURIComponent(file) : '';
   img.addEventListener('error', () => { img.src = s.image || ''; }, { once: true });
@@ -102,7 +105,7 @@ function mount(view, slides, aspects, years, onOpen) {
   });
 
   /* single set of slides — each one wraps around individually every frame
-     (the original's design: the track never becomes one huge moving layer) */
+     (the track never becomes one huge moving layer, which would blow up the composite) */
   let moved = false;
   const items = [], contents = [];
   slides.forEach((s, i) => {
@@ -141,7 +144,7 @@ function mount(view, slides, aspects, years, onOpen) {
     }
   }
 
-  /* ---------- sticks canvas (ported from the original) ---------- */
+  /* ---------- the ruler's ticks, drawn on a canvas ---------- */
   let ctx = null, cw = 0, ch = 0, dpr = 1;
   let heights = new Float32Array(0);
   let baseIdx = null;
@@ -159,7 +162,7 @@ function mount(view, slides, aspects, years, onOpen) {
     heights = new Float32Array(Math.ceil(cw / TICK_GAP) + 4);
   }
 
-  function fall(t) {                       // original falloff: pow(1-t, 1/fall)
+  function fall(t) {                       // falloff: pow(1-t, 1/fall)
     const v = 1 - t;
     return v <= 0 ? 0 : Math.pow(v, 1 / HOVER_FALL);
   }
@@ -216,23 +219,23 @@ function mount(view, slides, aspects, years, onOpen) {
     ctx.globalAlpha = 1;
   }
 
-  /* ---------- motion (original: target/display lerp, no fling, no snap) ---------- */
+  /* ---------- motion ---------- */
   let target = 0, cur = 0, diff = 0;
   let dragging = false, startX = 0, startY = 0, startTarget = 0, raf = 0;
   let lastTs = 0;
-  let active = -1;                          // centred slide (original: .js-slide-active)
+  let active = -1;                          // centred slide
 
-  function mult() { return isSmall() ? 3.5 : 2; }
+  function mult() { return isSmall() ? 3.6 : 2.2; }   // drag travel per pixel dragged
 
   function wrapIdx(i) { const n = items.length; return ((i % n) + n) % n; }
 
-  /* the centred slide keeps its flip hook even when it drifts off-screen (original W()) */
+  /* the centred slide keeps its flip hook even when it drifts off-screen) */
   function markActive() {
     if (!step) return;
     const a = wrapIdx(Math.round(cur / step));
     if (a === active) return;
-    if (items[active]) items[active].classList.remove('js-slide-active');
-    items[a].classList.add('js-slide-active');
+    if (items[active]) items[active].classList.remove('lse-centred');
+    items[a].classList.add('lse-centred');
     active = a;
   }
 
@@ -255,11 +258,11 @@ function mount(view, slides, aspects, years, onOpen) {
     cur += (target - cur) * LERP * ratio;
     cur = Math.round(cur * 100) / 100;
     diff = Math.round((cur - target) * 1000) / 1000;
-    /* per-slide wrap (original): d = wrap(end - total, end, cur); x = -d */
+    /* per-slide wrap: d = wrap(end - total, end, cur); x = -d */
     if (step) {
       const pad = 2 * rem;
       const slideW = step - ((isSmall() ? 1.2 : 2) * rem);
-      const ry = isSmall() ? null : 'rotateY(' + (diff * 0.05) + 'deg)';
+      const ry = isSmall() ? null : 'rotateY(' + (diff * 0.045) + 'deg)';   // skew with velocity
       for (let k = 0; k < items.length; k++) {
         const left = pad + k * step;
         const end = left + slideW;
@@ -303,7 +306,7 @@ function mount(view, slides, aspects, years, onOpen) {
     if (!dragging) return;
     const dx = e.clientX - startX;
     if (Math.abs(dx) > CLICK_SLOP) moved = true;
-    target = startTarget - dx * mult();     // original: drag distance × multiplier
+    target = startTarget - dx * mult();     // drag distance × travel multiplier
   }
   function onUp() {
     dragging = false;
@@ -311,7 +314,7 @@ function mount(view, slides, aspects, years, onOpen) {
   }
   function onWheel(e) {
     if (window.TLBDetail && window.TLBDetail.isOpen) return;   // detail owns the wheel
-    // original: i = wheelDeltaY || deltaY*-1; i *= 0.9(win)/0.4; x -= i
+    // wheelDeltaY where the browser gives it (it is the smoother of the two signals)
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
     target += raw * WHEEL_MULT;
   }
@@ -341,7 +344,7 @@ function mount(view, slides, aspects, years, onOpen) {
   ruler.addEventListener('mouseenter', onRulerEnter);
   ruler.addEventListener('mouseleave', onRulerLeave);
   ruler.addEventListener('mousemove', onRulerMove);
-  /* original: the incoming view jumps to the work the last one was on, THEN reports
+  /* the incoming view jumps to the work the last one was on, THEN reports
      "page-done" — the transition only measures the flip once that jump has landed */
   let markReady;
   const ready = new Promise((res) => { markReady = res; });
@@ -350,7 +353,7 @@ function mount(view, slides, aspects, years, onOpen) {
     const idx = parseInt(document.body.dataset.index, 10);
     if (idx > 0) { target = idx * step; cur = target; }
     markActive();
-    /* entrance offsets — original: each item enters from y = viewportBottom - itemTop.
+    /* entrance offsets — each item enters from y = viewportBottom - itemTop.
        item rects are safe to read: only children carry the entrance/wrap transforms */
     for (const item of items) {
       const top = item.getBoundingClientRect().top;

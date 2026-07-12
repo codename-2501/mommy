@@ -48,13 +48,13 @@ function dated(s) {
 
 /* strip media cell: natural aspect, width-bound */
 /* same shape as every other view: an unclipped slot holding the clipping frame that
-   travels (original Flip). The detail's paintings can therefore fly home on close. */
+   travels. The detail's paintings can therefore fly home on close. */
 function mediaCell(s, aspects, cls) {
-  const box = el('div', 'dt-media js-flip-target ' + (cls || ''));
+  const box = el('div', 'dt-media lse-slot ' + (cls || ''));
   box.dataset.id = s.id || '';
   const name = String(s.image || '').split('/').pop();
   box.style.aspectRatio = String(aspects[name] || 1);
-  const frame = el('div', 'tlb-frame js-flip');
+  const frame = el('div', 'tlb-frame lse-frame');
   frame.dataset.id = s.id || '';
   const img = el('img');
   img.src = thumb(s.image, 600);
@@ -191,7 +191,7 @@ function buildStrip(s, i, slides, aspects, nav) {
 
   row.appendChild(side(next, 'dt-side--next'));
   strip.appendChild(row);
-  /* empty strip area = Close (original: backdrop click navigates back) */
+  /* empty strip area = Close */
   strip.addEventListener('click', (e) => {
     if (e.target === strip || e.target === row) window.TLBDetail.close();
   });
@@ -234,16 +234,16 @@ function cancelFlights() {
   activeFlights.clear();
 }
 
-/* FLIP the ORIGINAL way: reparent the actual <img> into the destination slot and
+/* FLIP the way: reparent the actual <img> into the destination slot and
    animate it from its old screen position. The same painted pixels move — an image
    swap or blank frame is structurally impossible. */
 function flyLive(fromSlot, toSlot) {
-  const frame = fromSlot && fromSlot.querySelector('.js-flip');
+  const frame = fromSlot && fromSlot.querySelector('.lse-frame');
   if (!frame || !toSlot) return false;
   const f = fromSlot.getBoundingClientRect();
   const t = toSlot.getBoundingClientRect();
   if (!f.width || !t.width) return false;
-  toSlot.replaceChildren(frame);                 // the frame moves house (original J())
+  toSlot.replaceChildren(frame);                 // the frame moves house)
   fromSlot.style.visibility = 'hidden';          // the empty slot it left stays hidden
   toSlot.style.visibility = '';
   toSlot.classList.add('is-flying');             // overflow free during the flight
@@ -251,7 +251,7 @@ function flyLive(fromSlot, toSlot) {
   frame.style.transform = 'translate(' + (f.left - t.left) + 'px,' + (f.top - t.top) +
     'px) scale(' + (f.width / t.width) + ')';
   void frame.offsetWidth;
-  frame.style.transition = 'transform 1s var(--ease-snappy)';
+  frame.style.transition = 'transform 900ms var(--ease-travel)';
   frame.style.transform = '';
   const rec = { img: frame, box: toSlot, done: 0 };
   activeFlights.add(rec);
@@ -260,7 +260,7 @@ function flyLive(fromSlot, toSlot) {
     frame.style.transform = '';
     toSlot.classList.remove('is-flying');
     activeFlights.delete(rec);
-  }, 1050);
+  }, 950);
   return true;
 }
 
@@ -285,7 +285,7 @@ document.addEventListener('keydown', (e) => {
   if (lb) { e.stopImmediatePropagation(); lb.click(); }
 }, true);
 
-/* panel smooth scroll — original virtual-scroll feel (delta *0.9, lerp .1/frame) */
+/* panel smooth scroll — virtual-scroll feel (delta *0.9, lerp .1/frame) */
 function smoothScroll(sc) {
   let target = 0, cur = 0, last = 0, applied = -1;
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;
@@ -321,7 +321,7 @@ function render(container, opts, id, flip, dir) {
   const inner = container.querySelector('.dt-panel__in');
   const oldSc = inner.querySelector('.dt-scroll:not(.dt-scroll--out)');
   if (oldSc && dir) {
-    oldSc.classList.add('dt-scroll--out');       // original: old content fades .35…
+    oldSc.classList.add('dt-scroll--out');       // : old content fades .35…
     scroller.classList.add('dt-scroll--in');     // …new content fades in right after
     setTimeout(() => oldSc.remove(), 400);
     inner.appendChild(scroller);
@@ -340,7 +340,7 @@ function render(container, opts, id, flip, dir) {
     () => window.TLBDetail.close());
   if (oldCtl) oldCtl.replaceWith(ctl); else container.appendChild(ctl);
 
-  /* item→item — original role-shift: cur→prev slot and next→cur slot FLY (reverse
+  /* item→item — role-shift: cur→prev slot and next→cur slot FLY (reverse
      for prev), the incoming far side slides in, the outgoing far side slides away */
   if (dir) {
     const os = dir.oldStrip;
@@ -350,7 +350,7 @@ function render(container, opts, id, flip, dir) {
       inn2.style.transition = 'none';
       inn2.style.transform = 'translateX(' + (fwd ? 110 : -110) + '%)';
       requestAnimationFrame(() => requestAnimationFrame(() => {
-        inn2.style.transition = 'transform 1s var(--ease-snappy)';
+        inn2.style.transition = 'transform 900ms var(--ease-travel)';
         inn2.style.transform = '';
       }));
     }
@@ -373,7 +373,7 @@ function render(container, opts, id, flip, dir) {
     if (out) out.style.transform = 'translateX(' + (fwd ? -110 : 110) + '%)';
   }
 
-  /* home→detail: the original timeline waits for "page-done" (~200ms) before
+  /* home→detail: the timeline waits for "page-done" (~200ms) before
      playing — a still beat, THEN fade+flights+panel start together as one */
   const start = () => {
     container.classList.remove('is-wait');
@@ -402,12 +402,12 @@ function render(container, opts, id, flip, dir) {
       if (box) box.style.visibility = 'hidden';
     }
     container.classList.add('is-wait');
-    later(start, 180);
+    later(start, 160);   // a beat of stillness before the painting takes off
   } else {
     start();
   }
 
-  /* keyboard prev/next (original slug page keydown) */
+  /* keyboard prev/next */
   container._nav = (delta) => go(slides[(i + delta + slides.length) % slides.length].id);
 
   function go(nid) {
@@ -428,7 +428,7 @@ function open(parent, opts, id, flip) {
   closing = false;
   if (!root) {
     root = el('div', 'detail');
-    root.appendChild(el('div', 'dt-bg'));   // home fades under us (original: .35s)
+    root.appendChild(el('div', 'dt-bg'));   // home fades under us
     const panel = el('div', 'dt-panel');
     const inn = el('div', 'dt-panel__in');
     const head = el('header', 'dt-head');
@@ -451,13 +451,13 @@ function close() {
   if ((location.pathname.replace(/\/+$/, '') || '/') !== cp) history.pushState(null, '', cp);
   const opts = root._opts || {};
   cancelFlights();                               // settle any in-progress item flights
-  /* NOW move the hidden carousel to the current painting (original body.dataset.index)
+  /* NOW move the hidden carousel to the current painting
      — never at open, where the jump would be visible under the click */
   if (opts.onSync && opts.content) {
     opts.onSync(slideIdx(opts.content.slides || [], curId));
   }
   /* the leaving detail is handed to the SAME transition engine the views use: its
-     paintings fly home (J) and the slots that get none rise (Y) — original X/J/Y */
+     paintings fly home (J) and the slots that get none rise (Y) — X/J/Y */
   const leavingRoot = root;
   if (opts.onLeave) opts.onLeave(leavingRoot);
 
