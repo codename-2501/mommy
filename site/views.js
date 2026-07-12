@@ -267,6 +267,30 @@ function smoothTilt(outer, content) {
     else if (e.key === 'Home') { target = 0; }
     else if (e.key === 'End') { target = max; }
   }
+  /* A phone fires no wheel events, so the page moved for a mouse and stood still for a
+     finger. Dragging sets the target directly; releasing carries the fling's velocity on. */
+  let dragging = false, lastY = 0, vel = 0, lastMoveTs = 0;
+  function onDown(e) {
+    if (window.LSEDetail && window.LSEDetail.isOpen) return;
+    if (e.pointerType === 'mouse') return;         // the mouse has the wheel
+    dragging = true; lastY = e.clientY; vel = 0; lastMoveTs = e.timeStamp;
+    target = cur;                                  // catch the page where it is
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    const dy = lastY - e.clientY;
+    lastY = e.clientY;
+    const dt = Math.max(1, e.timeStamp - lastMoveTs);
+    lastMoveTs = e.timeStamp;
+    vel = dy / dt;                                 // px per ms
+    target = Math.max(0, Math.min(max, target + dy));
+  }
+  function onUp() {
+    if (!dragging) return;
+    dragging = false;
+    target = Math.max(0, Math.min(max, target + vel * 220));   // fling
+  }
+
   function frame(ts) {
     const ratio = lastTs ? Math.min(3, (ts - lastTs) / (1000 / 60)) : 1;
     lastTs = ts;
@@ -280,6 +304,10 @@ function smoothTilt(outer, content) {
   addEventListener('wheel', onWheel, { passive: true });
   addEventListener('keydown', onKey);
   addEventListener('resize', measure);
+  outer.addEventListener('pointerdown', onDown);
+  outer.addEventListener('pointermove', onMove);
+  outer.addEventListener('pointerup', onUp);
+  outer.addEventListener('pointercancel', onUp);
   requestAnimationFrame(() => { measure(); });
   raf = requestAnimationFrame(frame);
   return {
@@ -290,6 +318,10 @@ function smoothTilt(outer, content) {
       removeEventListener('wheel', onWheel);
       removeEventListener('keydown', onKey);
       removeEventListener('resize', measure);
+      outer.removeEventListener('pointerdown', onDown);
+      outer.removeEventListener('pointermove', onMove);
+      outer.removeEventListener('pointerup', onUp);
+      outer.removeEventListener('pointercancel', onUp);
     },
   };
 }

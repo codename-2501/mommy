@@ -137,6 +137,34 @@
   </div>
   <main>
     <div style="background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
+      <div style="font-weight:600;margin-bottom:4px">사이트 <span style="color:var(--mut);font-weight:400;font-size:12px">(파비콘 · 링크 공유 미리보기)</span></div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:12px">카카오톡 등에 링크를 붙이면 아래 제목·설명·이미지가 썸네일로 보입니다.</div>
+      <div style="display:flex;flex-direction:column;gap:8px;max-width:640px">
+        <input id="mt-title" placeholder="사이트 제목 (탭·공유 제목)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="mt-desc" placeholder="설명 (공유 시 제목 아래 문구)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="mt-url" placeholder="사이트 주소 (정적 배포용 · 예: https://lse.pages.dev)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px">
+          <div style="display:flex;gap:10px;align-items:center">
+            <img id="mt-fav-img" style="width:44px;height:44px;object-fit:cover;border-radius:8px;background:#101116;border:1px solid var(--line)">
+            <div>
+              <div style="font-size:12px;color:var(--mut);margin-bottom:4px">파비콘</div>
+              <button class="btn ghost btn sm" id="pickFavicon">선택</button>
+              <button class="btn ghost btn sm" id="clearFavicon">지움</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <img id="mt-og-img" style="width:78px;height:44px;object-fit:cover;border-radius:8px;background:#101116;border:1px solid var(--line)">
+            <div>
+              <div style="font-size:12px;color:var(--mut);margin-bottom:4px">공유 썸네일 (OG 이미지)</div>
+              <button class="btn ghost btn sm" id="pickOg">선택</button>
+              <button class="btn ghost btn sm" id="clearOg">지움</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
       <div style="font-weight:600;margin-bottom:4px">로고 / 워드마크 <span style="color:var(--mut);font-weight:400;font-size:12px">(인트로·홈 상단)</span></div>
       <div style="font-size:12px;color:var(--mut);margin-bottom:12px">워드마크 3줄을 편집합니다. 비워두면 기본값(LSE GALLERY)이 표시됩니다.</div>
       <div style="display:flex;flex-direction:column;gap:8px;max-width:520px">
@@ -255,7 +283,7 @@ async function load(){
   ]);
   cfg=c; baseVersion=cfg._version||null; delete cfg._version; images=im.images||[];
   const sel=$('#pageSel'); sel.innerHTML=(pg.pages||['/']).map(p=>`<option value="${p}">${p}</option>`).join('');
-  loadWordmark();
+  loadWordmark(); loadMeta();
   renderSlides(); renderImages();
   setStatus(cfg.slides.length+'개 슬라이드 · '+images.length+'개 이미지','ok');
 }
@@ -273,6 +301,34 @@ function usageCount(name){return cfg.slides.filter(s=>(s.image||'').endsWith('/'
 /* ---------- 로고 / 워드마크 ---------- */
 function loadWordmark(){ const w=(cfg&&cfg.wordmark)||{}; ['l1','l2','l3'].forEach(k=>{ const el=$('#wm-'+k); if(el) el.value=w[k]||''; }); }
 ['l1','l2','l3'].forEach(k=>{ const el=$('#wm-'+k); if(el) el.addEventListener('input',()=>{ if(!cfg)return; cfg.wordmark=cfg.wordmark||{}; const v=el.value.trim(); if(v) cfg.wordmark[k]=v; else delete cfg.wordmark[k]; if(!Object.keys(cfg.wordmark).length) delete cfg.wordmark; dirty(); }); });
+
+/* ---------- site meta: favicon + link-preview (content.json → meta) ---------- */
+function siteMeta(){ if(!cfg.meta||typeof cfg.meta!=='object') cfg.meta={}; return cfg.meta; }
+function loadMeta(){
+  const m=(cfg&&cfg.meta)||{};
+  $('#mt-title').value=m.title||'';
+  $('#mt-desc').value=m.description||'';
+  $('#mt-url').value=m.siteUrl||'';
+  renderMetaImages();
+}
+function renderMetaImages(){
+  const m=siteMeta();
+  const fav=$('#mt-fav-img'), og=$('#mt-og-img');
+  fav.src=m.favicon||''; fav.style.visibility=m.favicon?'visible':'hidden';
+  og.src=m.ogImage||'';  og.style.visibility=m.ogImage?'visible':'hidden';
+}
+[['#mt-title','title'],['#mt-desc','description'],['#mt-url','siteUrl']].forEach(([sel,key])=>{
+  $(sel).addEventListener('input',()=>{
+    const m=siteMeta(); const v=$(sel).value.trim();
+    if(v) m[key]=v; else delete m[key];
+    dirty();
+  });
+});
+$('#pickFavicon').onclick=()=>{ pickMode='favicon'; openPicker(); };
+$('#pickOg').onclick=()=>{ pickMode='og'; openPicker(); };
+$('#clearFavicon').onclick=()=>{ delete siteMeta().favicon; renderMetaImages(); dirty(); };
+$('#clearOg').onclick=()=>{ delete siteMeta().ogImage; renderMetaImages(); dirty(); };
+function setMetaImage(kind,src){ siteMeta()[kind]=src; renderMetaImages(); dirty(); }
 
 function renumber(){ cfg.slides.forEach((s,i)=>{ s.top=String(i+1); }); }  // 순번은 항상 배열 순서 = 번호
 function renderSlides(){
@@ -355,6 +411,8 @@ function openPicker(){
     d.onclick=()=>{
       if(pickMode==='media'){ closePicker(); addMediaImage('/images/'+name); }
       else if(pickMode==='about'){ closePicker(); addAboutImage('/images/'+name); }
+      else if(pickMode==='favicon'){ closePicker(); setMetaImage('favicon','/images/'+name); }
+      else if(pickMode==='og'){ closePicker(); setMetaImage('ogImage','/images/'+name); }
       else {
         cfg.slides[pickTarget].image='/images/'+name; dirty(); closePicker();
         if($('#editModal').classList.contains('open')){ $('#editThumbImg').src='/images/'+name; }

@@ -273,23 +273,8 @@ img{max-width:100%;display:block}
 .ic--profile{transform:scale(.90)}
 .menu__txt{display:none}
 
-/* mobile menu — : bordered TEXT buttons, no blend, no icons */
-@media (max-width:699px){
-  .menu{gap:.8rem;bottom:2rem;color:#000;mix-blend-mode:normal}
-  .menu__capsule{border:0;padding:0;gap:.8rem}
-  .menu__about{border:0;width:auto;height:auto;border-radius:0;background:none}
-  .menu__about:has(a.active){background:none}
-  .menu .ic{display:none}
-  .menu__txt{display:block;font-size:1.5rem;font-weight:500}
-  /* same idea without the blend: the selected button is the inverted one */
-  .menu a{
-    width:auto;height:auto;border:1px solid #111;border-radius:.6rem;background:#fff;
-    padding:1.1rem 1.5rem;opacity:1;color:#111;
-    transition:background-color .3s var(--ease-reveal),color .3s var(--ease-reveal);
-  }
-  .menu a:not(.active){opacity:1}
-  .menu a.active,.menu__about:has(a.active) a.active{background:#111;color:#fff;border-color:#111}
-}
+/* the menu is one design everywhere: the icon capsule above. On a phone the root rem is
+   10px, so its 4.4rem buttons land at 44px — the tap target holds without a second layout. */
 
 /* ---------- detail view (overlay above home; transition values) ---------- */
 .detail{position:fixed;inset:0;z-index:60}
@@ -486,7 +471,9 @@ img{max-width:100%;display:block}
 .surf__label.is-on{opacity:1}
 
 /* ---------- INDEX: 12-per-row collage grid ---------- */
-.agrid{position:fixed;inset:0;z-index:1;overflow:hidden}
+/* the grid is moved by script, not by the browser: claim the vertical gesture or the
+   browser swallows the drag (and pulls to refresh) before the page ever sees it */
+.agrid{position:fixed;inset:0;z-index:1;overflow:hidden;touch-action:none}
 .agrid__in{
   display:flex;flex-direction:column;gap:11.5rem;
   padding:40rem 2rem 2rem;will-change:transform;
@@ -516,6 +503,7 @@ img{max-width:100%;display:block}
 .about__mask-in{
   position:absolute;inset:0;background:#000;color:#fff;overflow:hidden;
   transform:translateY(-100%);transition:transform 1s var(--ease-travel);
+  touch-action:none;   /* script-driven scroll — see .agrid */
 }
 .view--about.is-in .about__mask,.view--about.is-in .about__mask-in{transform:translateY(0)}
 /* about exit: curtains leave the way they came */
