@@ -71,8 +71,12 @@ function mountSurf(view, slides, aspects, onOpen) {
     it.addEventListener('mouseenter', () => {
       hoverLbl.textContent = '(' + (i + 1) + ') ' + [category(s), month(s)].filter(Boolean).join(' / ');
       hoverLbl.classList.add('is-on');
+      hoverIdx = i;      // the deck sorts by 3D depth, so the lifted card is pulled forward:
+    });                  // z-index cannot raise it inside a preserve-3d parent
+    it.addEventListener('mouseleave', () => {
+      hoverLbl.classList.remove('is-on');
+      if (hoverIdx === i) hoverIdx = -1;
     });
-    it.addEventListener('mouseleave', () => hoverLbl.classList.remove('is-on'));
     it.addEventListener('click', () => { if (!moved) onOpen(s, box); });
     deck.appendChild(it);
     return { el: it, s };
@@ -82,6 +86,7 @@ function mountSurf(view, slides, aspects, onOpen) {
   let bounds = [], total = 0, rest = 0, time = 0;
   let target = 0, cur = 0, vel = 0, deckK = 0;
   let dragging = false, moved = false, sx = 0, sy = 0, st = 0, raf = 0, lastTs = 0;
+  let hoverIdx = -1;              // the card the cursor is lifting (see mouseenter above)
 
   function measure() {
     const P = isSmall() ? 6 : 18;
@@ -109,8 +114,11 @@ function mountSurf(view, slides, aspects, onOpen) {
     const bob = Math.sin(time + xo * Math.PI * 2) * rest * (1 + vel * 0.01);
     const y = innerHeight * 0.5 * xo + bob;
     const rotY = (-(15 * p) - 70) * deckK;
+    /* the hovered card slides 75% sideways — pull it forward in the deck's 3D space so it
+       passes OVER its neighbours instead of under them */
+    const z = i === hoverIdx ? 60 : 0;
     items[i].el.style.transform =
-      'translate3d(' + (b.left - wrapped) + 'px,' + y + 'px,0) rotateY(' + rotY + 'deg)';
+      'translate3d(' + (b.left - wrapped) + 'px,' + y + 'px,' + z + 'px) rotateY(' + rotY + 'deg)';
   }
 
   function frame(ts) {
