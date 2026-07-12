@@ -473,6 +473,8 @@ img{max-width:100%;display:block}
 .agrid__media img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
 .agrid__cell:hover .agrid__media{opacity:.75;transition:opacity .25s ease}
 .agrid__month{position:absolute;bottom:calc(100% + 1rem);left:0;text-transform:uppercase;white-space:nowrap}
+/* month + year, set the same way as the timeline ruler's labels */
+.agrid__month .label[data-year]:not([data-year=""])::after{content:" " attr(data-year);opacity:.5}
 
 /* ---------- ABOUT: black page (original wyNRnxoT) ---------- */
 .about{position:fixed;inset:0;z-index:4}
