@@ -363,15 +363,53 @@ function mountIndex(view, slides, aspects, onOpen) {
 }
 
 /* ---------------- ABOUT: black page, big lines, credits ---------------- */
+/* One About block -> one element. The page is whatever list the admin composed, in that
+   order: copy and pictures interleave freely, so nothing here may assume a fixed shape. */
+function aboutBlock(b) {
+  const text = (b.text || '').trim();
+
+  if (b.type === 'image') {
+    if (!b.src) return null;
+    const fig = el('figure', 'about__fig about__fade');
+    const img = el('img');
+    img.src = b.src;
+    img.alt = b.caption || '';
+    img.loading = 'lazy';
+    img.addEventListener('load', () => img.classList.add('ok'));
+    fig.appendChild(img);
+    if ((b.caption || '').trim()) fig.appendChild(el('figcaption', null, b.caption));
+    return fig;
+  }
+
+  if (!text) return null;   // an empty block leaves no gap behind
+
+  if (b.type === 'title') {
+    const h1 = el('h1', 'about__title');
+    text.split(/\n/).forEach((line) => {
+      const m = el('div', 'about__line');
+      m.appendChild(el('div', 'about__line-in', line));
+      h1.appendChild(m);
+    });
+    return h1;
+  }
+
+  if (b.type === 'thanks') {
+    const t = el('div', 'about__thanks');
+    text.split(/\n/).forEach((line) => {
+      if (line.trim()) t.appendChild(el('div', null, line));
+    });
+    return t;
+  }
+
+  const p = el('div', 'about__intro about__fade');   // 'text'
+  text.split(/\n+/).forEach((para) => p.appendChild(el('p', null, para)));
+  return p;
+}
+
 function mountAbout(view, content) {
-  const texts = (content && content.texts && content.texts['/about']) || {};
   const wm = (content && content.wordmark) || {};
-  /* our own copy — editable in the admin's 텍스트 tab, these are only the fallbacks */
-  const title = texts.title ||
-    (wm.l1 || 'LSE GALLERY') + '\n승은의\n회화\n아카이브';
-  const intro = texts.intro ||
-    '캔버스 앞에 앉은 날들을 모았습니다. 꽃과 풍경, 정물과 실험적인 화면까지 — 그린 순서대로 월별 타임라인에 놓았습니다. 한 점씩 눌러 크게 보고, 그림이 놓인 자리와 시간을 함께 읽어주세요.';
-  const thanks = texts.thanks || '보아주셔서 고맙습니다.\n\n계속 그리겠습니다.';
+  /* the page lives in content.json, composed in the admin — it is the only source */
+  const blocks = (content && content.blocks && content.blocks['/about']) || [];
 
   const page = el('div', 'about');
   const maskOuter = el('div', 'about__mask');
@@ -387,24 +425,10 @@ function mountAbout(view, content) {
   head.appendChild(l2);
   scroller.appendChild(head);
 
-  const h1 = el('h1', 'about__title');
-  title.split(/\n/).forEach((line) => {
-    const m = el('div', 'about__line');
-    m.appendChild(el('div', 'about__line-in', line));
-    h1.appendChild(m);
+  blocks.forEach((b) => {
+    const node = b && aboutBlock(b);
+    if (node) scroller.appendChild(node);
   });
-  scroller.appendChild(h1);
-
-  const introEl = el('div', 'about__intro about__fade');
-  intro.split(/\n+/).forEach((p) => introEl.appendChild(el('p', null, p)));
-  scroller.appendChild(introEl);
-
-  const thanksEl = el('div', 'about__thanks');
-  thanks.split(/\n/).forEach((line) => {
-    if (!line.trim()) return;
-    thanksEl.appendChild(el('div', null, line));
-  });
-  scroller.appendChild(thanksEl);
 
   /* Noun Project attribution (CC BY 3.0 — the plan's only allowed credit) */
   const cred = el('div', 'about__credits label');

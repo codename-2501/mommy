@@ -533,8 +533,11 @@ img{max-width:100%;display:block}
 .lse-frame img{opacity:0;transition:opacity .5s ease-out}
 .lse-frame img.ok{opacity:1}
 .about__scroll{padding:0 2rem;will-change:transform}
+/* the head holds the two small labels. It used to stand a full screen tall, so the page
+   opened on an empty view and the title only arrived after a scroll — enough height to
+   breathe, not enough to hide what the page is. */
 .about__head{
-  height:100svh;display:flex;align-items:center;justify-content:space-between;
+  height:40svh;display:flex;align-items:center;justify-content:space-between;
 }
 .about__title{
   font-size:min(11.7rem,117px);font-weight:700;line-height:.875;
@@ -557,6 +560,19 @@ img{max-width:100%;display:block}
   max-width:110rem;margin:0 auto 28.5rem;display:flex;flex-direction:column;gap:6rem;
 }
 @media (max-width:699px){.about__intro{font-size:2.8rem;margin-bottom:15rem}}
+/* an image block: it shares the copy's column so pictures and paragraphs line up, and it
+   carries the same bottom margin as a text block so any block order keeps one rhythm.
+   Each picture keeps its own aspect ratio rather than being cropped to a fixed cell. */
+.about__fig{
+  max-width:110rem;margin:0 auto 28.5rem;
+}
+.about__fig img{
+  display:block;width:100%;height:auto;
+  opacity:0;transition:opacity .5s ease-out;
+}
+.about__fig img.ok{opacity:1}
+.about__fig figcaption{margin-top:.8rem;opacity:.6}
+@media (max-width:699px){.about__fig{margin-bottom:15rem}}
 .about__fade{
   opacity:0;transform:translateY(5rem);
   transition:opacity 1.15s var(--ease-rise) 1s,transform 1.15s var(--ease-rise) 1s;
