@@ -34,13 +34,18 @@ function slideMonth(s) {
 }
 
 function buildItem(s, i, ratio) {
-  const art = el('article', 'car-item');
+  const art = el('article', 'car-item js-flip-o');
   const entr = el('div', 'car-entr');     // entrance rise (CSS transition, Y only)
   const content = el('div', 'car-content');
   const num = el('div', 'car-label car-label--top');
   num.appendChild(Object.assign(el('div', 'car-label__in'), { textContent: String(i + 1) }));
-  const box = el('div', 'car-media');
+  /* original Flip: an unclipped slot (.js-flip-target) holding the clipping frame
+     (.js-flip) that travels between views — both keyed by the work's id */
+  const box = el('div', 'car-media js-flip-target');
+  box.dataset.id = s.id || '';
   box.style.aspectRatio = String(ratio || 1);
+  const frame = el('div', 'car-frame js-flip');
+  frame.dataset.id = s.id || '';
   const img = el('img');
   /* carousel-size webp (originals are multi-MB and stutter the scroll) */
   const file = String(s.image || '').split('/').pop();
@@ -52,7 +57,8 @@ function buildItem(s, i, ratio) {
   img.draggable = false;
   if (img.complete) img.classList.add('ok');
   else img.addEventListener('load', () => img.classList.add('ok'), { once: true });
-  box.appendChild(img);
+  frame.appendChild(img);
+  box.appendChild(frame);
   const cap = el('div', 'car-label car-label--bottom');
   cap.appendChild(Object.assign(el('div', 'car-label__in'), { textContent: s.bottom || '' }));
   content.appendChild(num);
@@ -228,8 +234,21 @@ function mount(view, slides, aspects, years, onOpen) {
   let target = 0, cur = 0, diff = 0;
   let dragging = false, startX = 0, startY = 0, startTarget = 0, raf = 0;
   let lastTs = 0;
+  let active = -1;                          // centred slide (original: .js-slide-active)
 
   function mult() { return isSmall() ? 3.5 : 2; }
+
+  function wrapIdx(i) { const n = items.length; return ((i % n) + n) % n; }
+
+  /* the centred slide keeps its flip hook even when it drifts off-screen (original W()) */
+  function markActive() {
+    if (!step) return;
+    const a = wrapIdx(Math.round(cur / step));
+    if (a === active) return;
+    if (items[active]) items[active].classList.remove('js-slide-active');
+    items[a].classList.add('js-slide-active');
+    active = a;
+  }
 
   function resize() {
     rem = rootPx();
@@ -273,6 +292,7 @@ function mount(view, slides, aspects, years, onOpen) {
         }
       }
     }
+    markActive();
     const rOff = cur * scale;
     let lOff = rOff % rulerHalf;
     if (lOff < 0) lOff += rulerHalf;
@@ -330,20 +350,29 @@ function mount(view, slides, aspects, years, onOpen) {
   ruler.addEventListener('mouseenter', onRulerEnter);
   ruler.addEventListener('mouseleave', onRulerLeave);
   ruler.addEventListener('mousemove', onRulerMove);
-  requestAnimationFrame(resize);   // measure after the view is in the document
-
   for (let i = 0; i < 4; i++) fxPool.push(new Audio('/site/assets/fx.mp3'));
 
-  /* entrance offsets — original: each item enters from y = viewportBottom - itemTop.
-     item rects are safe to read: only children carry the entrance/wrap transforms */
+  /* original: the incoming view jumps to the work the last one was on, THEN reports
+     "page-done" — the transition only measures the flip once that jump has landed */
+  let markReady;
+  const ready = new Promise((res) => { markReady = res; });
   requestAnimationFrame(() => {
+    resize();                                       // measure after the view is in the document
+    const idx = parseInt(document.body.dataset.index, 10);
+    if (idx > 0) { target = idx * step; cur = target; }
+    markActive();
+    /* entrance offsets — original: each item enters from y = viewportBottom - itemTop.
+       item rects are safe to read: only children carry the entrance/wrap transforms */
     for (const item of items) {
       const top = item.getBoundingClientRect().top;
       item.firstChild.style.setProperty('--ey', Math.max(0, innerHeight - top + 40) + 'px');
     }
+    markReady();
   });
 
   return {
+    ready,
+    activeIndex() { return step ? wrapIdx(Math.round(target / step)) : 0; },
     goTo(i) { target = i * step; cur = target; },   // instant jump (detail close sync)
     freeze() {                                      // halt drift + clear skew (flip measure)
       target = cur;

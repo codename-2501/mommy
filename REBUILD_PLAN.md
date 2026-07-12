@@ -111,7 +111,14 @@
 5. 임의 효과 추가 금지 — 원본 번들에서 수치 추출(BSuY0ud1=홈/인트로, NYCGuiUc=캐러셀+눈금, C1kfZrZv=surf, BnLrvkiE+Bx_gN5Pg=index/smoothscroll, wyNRnxoT=about, DNhanIij=페이지 전환, BGLHITTy=가상스크롤/Observer/커스텀이즈). 분석법: `re.sub(r'([;{}])',r'\1\n',js)` 프리티파이.
 6. 커스텀 이즈: snappy/mask는 app.css :root의 linear() 샘플, unmask=cubic-bezier(.16,1,.3,1), expo=cubic-bezier(.19,1,.22,1).
 
-**남은 것 (Phase 5):** ① 뷰 간 그림 플립 공유(home↔surf↔articles 전환 시 같은 그림이 슬롯 간 비행 — 원본 W()/J() data-id 매칭; 현재는 페이드/비행 퇴장만) ② 관리자 편집→반영 왕복 검증 ③ 반응형 미세조정·접근성 ④ 원본 대비 최종 QA(레거시와 나란히 프레임 비교).
+**Phase 5 ① 완료 (뷰 간 그림 플립 공유).** 원본 `DNhanIij.js` 를 그대로 이식:
+- 마크업: 슬롯 `.js-flip-target`(클리핑 없음, `data-id`) > 프레임 `.js-flip`(클리핑, 실제로 나는 요소) > img. 카드 = `.js-flip-o`(비행 중 z-index 5). 원본 Flip 컴포넌트(`DJCcLtK2.js`)와 동일 구조이고, 프레임의 transform-origin 은 원본 `origin-top-left`.
+- `app.js` 전환 엔진: `handOverIndex()`=원본 B(), `whenReady()`=K(page-done, 200ms 상한), `measureFlips()`=W(뷰포트 교집합 + `.js-slide-active` 예외), `prepareFlip()`=J(리파런팅 1s snappy, stagger .035 / toSurf 0), `prepareRise()`=Y(미매칭 슬롯 y=-(top-wh)*(toSurf?1.25:1), scale .9, expo 1.15s, 시작 .25s / fromSurf .575s), surf 퇴장=V(프레임 y=-top 후 -150%, power2.in .5s, stagger .025).
+- 새 뷰는 `.is-pre`(visibility:hidden) 로 측정될 때까지 페인트하지 않음 = gsap immediateRender 등가. 홈 도착 시 `.no-rise` 로 인트로 상승과 중복 방지.
+- 회귀 수정: 이미지 로드 페이드 게이트가 `.car-media img` 전용이라, 인덱스/surf 에서 날아온 그림이 캐러셀에 **투명하게** 착지했음. 게이트를 `.js-flip img` + `.ok` 공통 규칙으로 올리고 모든 뷰가 로드 시 `.ok` 를 붙이도록 통일.
+- 검증: `python3 tools/verify_flip.py <out>` (selenium, 격리 프로필 헤드리스). home→surf→articles→home 3홉에서 인덱스 인계, 리파런팅(복제 0), 잔류 transform 0, 비행 중/착지 후 투명 프레임 0 을 검사 + 프레임 캡처 저장. 2026-07-12 기준 15개 검사 전부 통과.
+
+**남은 것 (Phase 5):** ② 관리자 편집→반영 왕복 검증 ③ 반응형 미세조정·접근성 ④ 원본 대비 최종 QA(레거시와 나란히 프레임 비교).
 
 ## 완료 기준
 - 화면 어디에도 원본 브랜딩/데이터 없음(SVG 크레딧만).

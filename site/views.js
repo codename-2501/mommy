@@ -19,6 +19,12 @@ function thumb(src, w) {
   return f ? '/thumbs/' + w + '/' + encodeURIComponent(f) : '';
 }
 
+/* every framed painting fades in when it loads, and keeps that .ok wherever it flies to */
+function gateLoad(img) {
+  if (img.complete) img.classList.add('ok');
+  else img.addEventListener('load', () => img.classList.add('ok'), { once: true });
+}
+
 function isSmall() {
   return matchMedia('(max-width:699px)').matches;
 }
@@ -45,16 +51,21 @@ function mountSurf(view, slides, aspects, onOpen) {
   view.appendChild(wrap);
 
   const items = slides.map((s, i) => {
-    const it = el('article', 'surf-item');
+    const it = el('article', 'surf-item js-flip-o');
     const media = el('div', 'surf-item__media');
-    const box = el('div', 'surf-item__box');
+    const box = el('div', 'surf-item__box js-flip-target');
+    box.dataset.id = s.id || '';
     const name = String(s.image || '').split('/').pop();
     box.style.aspectRatio = String(aspects[name] || 1);
+    const frame = el('div', 'surf-item__frame js-flip');
+    frame.dataset.id = s.id || '';
     const img = el('img');
     img.src = thumb(s.image, 600);
     img.draggable = false;
     img.loading = i < 10 ? 'eager' : 'lazy';
-    box.appendChild(img);
+    gateLoad(img);
+    frame.appendChild(img);
+    box.appendChild(frame);
     media.appendChild(box);
     it.appendChild(media);
     it.addEventListener('mouseenter', () => {
@@ -62,7 +73,7 @@ function mountSurf(view, slides, aspects, onOpen) {
       hoverLbl.classList.add('is-on');
     });
     it.addEventListener('mouseleave', () => hoverLbl.classList.remove('is-on'));
-    it.addEventListener('click', () => { if (!moved) onOpen(s, box); });
+    it.addEventListener('click', () => { if (!moved) onOpen(s, frame); });
     deck.appendChild(it);
     return { el: it, s };
   });
@@ -150,15 +161,29 @@ function mountSurf(view, slides, aspects, onOpen) {
   addEventListener('keydown', onKey);
   addEventListener('resize', measure);
 
-  requestAnimationFrame(measure);   // after insertion — detached rects are all zero
+  /* original: measure, jump to the work the last view was on, then report "page-done" */
+  let markReady;
+  const ready = new Promise((res) => { markReady = res; });
+  requestAnimationFrame(() => {
+    measure();                      // after insertion — detached rects are all zero
+    const idx = parseInt(document.body.dataset.index, 10);
+    if (idx > 0 && bounds[idx]) { target = bounds[idx].left; cur = target; }
+    markReady();
+  });
   raf = requestAnimationFrame(frame);
-  /* original: deck angle eases in (surf-unfreeze, k 0→1, 1s snappy) */
-  const k0 = performance.now();
-  (function unfreeze(ts) {
-    const t = Math.min(1, (performance.now() - k0) / 1000);
-    deckK = 1 - Math.pow(1 - t, 4);
-    if (t < 1) requestAnimationFrame(unfreeze);
-  })();
+
+  /* original: the deck angle only eases in once the transition says so (surf-unfreeze) */
+  let unfrozen = false;
+  function unfreeze() {
+    if (unfrozen) return;
+    unfrozen = true;
+    const k0 = performance.now();
+    (function step() {
+      const t = Math.min(1, (performance.now() - k0) / 1000);
+      deckK = 1 - Math.pow(1 - t, 4);
+      if (t < 1) requestAnimationFrame(step);
+    })();
+  }
 
   function destroy() {
     cancelAnimationFrame(raf);
@@ -170,16 +195,20 @@ function mountSurf(view, slides, aspects, onOpen) {
   }
 
   return {
+    ready,
+    unfreeze,
     destroy,
-    /* original V(): visible cards fly up — y to above viewport, power2.in .5s, stagger .025 */
+    /* original V(): the paintings themselves leave — y to the viewport top, then a further
+       -150% of their own height. power2.in .5s, stagger .025. The cards stay behind. */
     exit(done) {
       destroy();
+      const frames = wrap.querySelectorAll('.js-flip');
       let k = 0;
-      for (const it of items) {
-        const r = it.el.getBoundingClientRect();
+      for (const f of frames) {
+        const r = f.getBoundingClientRect();
         if (r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight) continue;
-        it.el.style.transition = 'transform .5s cubic-bezier(.55,.085,.68,.53) ' + (k * 0.025) + 's';
-        it.el.style.transform += ' translateY(' + (-(r.bottom + innerHeight * 0.5)) + 'px)';
+        f.style.transition = 'transform .5s cubic-bezier(.55,.085,.68,.53) ' + (k * 0.025) + 's';
+        f.style.transform = 'translate3d(0,' + (-r.top) + 'px,0) translateY(-150%)';
         k += 1;
       }
       setTimeout(done, 500 + k * 25);
@@ -250,15 +279,21 @@ function mountIndex(view, slides, aspects, onOpen) {
       row = el('div', 'agrid__row js-tilt');
       content.appendChild(row);
     }
-    const cell = el('article', 'agrid__cell');
+    const cell = el('article', 'agrid__cell js-flip-o');
+    cell.dataset.index = String(i);          // original: the row lookup that hands the index on
     const name = String(s.image || '').split('/').pop();
-    const box = el('div', 'agrid__media');
+    const box = el('div', 'agrid__media js-flip-target');
+    box.dataset.id = s.id || '';
     box.style.aspectRatio = String(aspects[name] || 1);
+    const frame = el('div', 'agrid__frame js-flip');
+    frame.dataset.id = s.id || '';
     const img = el('img');
     img.src = thumb(s.image, 300);
     img.loading = i < perRow * 3 ? 'eager' : 'lazy';
     img.draggable = false;
-    box.appendChild(img);
+    gateLoad(img);
+    frame.appendChild(img);
+    box.appendChild(frame);
     cell.appendChild(box);
     const mo = month(s);
     if (mo && mo !== seenMonth) {
@@ -269,13 +304,26 @@ function mountIndex(view, slides, aspects, onOpen) {
       lbl.appendChild(rev);
       cell.appendChild(lbl);
     }
-    cell.addEventListener('click', () => onOpen(s, box));
+    cell.addEventListener('click', () => onOpen(s, frame));
     row.appendChild(cell);
   });
 
   const sc = smoothTilt(outer, content);
-  requestAnimationFrame(() => requestAnimationFrame(() => view.classList.add('is-in')));
-  return sc;
+
+  /* original: scroll straight to the handed-over work's row, then report "page-done" */
+  let markReady;
+  const ready = new Promise((res) => { markReady = res; });
+  requestAnimationFrame(() => {
+    sc.measure();
+    const idx = parseInt(document.body.dataset.index, 10);
+    const cells = content.querySelectorAll('[data-index]');
+    const cell = idx > 0 ? cells[idx] : null;
+    if (cell && cells[0]) {
+      sc.scrollTo(cell.getBoundingClientRect().top - cells[0].getBoundingClientRect().top);
+    }
+    markReady();
+  });
+  return { ready, destroy: sc.destroy, measure: sc.measure, scrollTo: sc.scrollTo };
 }
 
 /* ---------------- ABOUT: black page, big lines, credits ---------------- */
