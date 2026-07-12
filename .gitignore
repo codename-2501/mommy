@@ -5,3 +5,7 @@ admin.log
 content.json.bak-dummy
 images/.thumbs/
 dist/
+
+# local content snapshots (admin server)
+.backups/
+.content-*.tmp

@@ -9,10 +9,11 @@ Usage:  python admin_server.py [port]     (default 8082)
 Site:   http://localhost:8082/
 Admin:  http://localhost:8082/admin/  (local only — a public tunnel gets a 404)
 """
-import sys, os, json, re, urllib.parse, http.server, socketserver, socket
+import sys, os, json, re, time, glob, shutil, tempfile, urllib.parse, http.server, socketserver, socket
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 CONTENT = os.path.join(ROOT, "content.json")
+BACKUP_DIR = os.path.join(ROOT, ".backups")
 IMAGES_DIR = os.path.join(ROOT, "images")
 SITE_DIR = os.path.join(ROOT, "site")
 SITE_ROUTES = ("/", "/surf", "/articles", "/about")   # SPA shell routes (+ /p/<id>)
@@ -20,10 +21,72 @@ PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8082
 
 ALLOWED_IMG = (".jpg", ".jpeg", ".png", ".webp", ".gif")
 
+KEEP_BACKUPS = 30
+
 
 def read_content():
     with open(CONTENT, encoding="utf-8") as fh:
         return json.load(fh)
+
+
+def backup_content():
+    """Snapshot the current content.json before it is replaced.
+
+    The archive is the only thing standing between a bad write and a lost
+    archive, so it is taken from the file on disk — not from whatever the
+    caller believes the current state to be.
+    """
+    if not os.path.exists(CONTENT):
+        return None
+    os.makedirs(BACKUP_DIR, exist_ok=True)
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    dest = os.path.join(BACKUP_DIR, f"content-{stamp}.json")
+    n = 1
+    while os.path.exists(dest):                      # same-second saves
+        dest = os.path.join(BACKUP_DIR, f"content-{stamp}-{n}.json")
+        n += 1
+    shutil.copy2(CONTENT, dest)
+    old = sorted(glob.glob(os.path.join(BACKUP_DIR, "content-*.json")))[:-KEEP_BACKUPS]
+    for f in old:
+        os.remove(f)
+    return dest
+
+
+def write_content(data, allow_empty=False):
+    """Replace content.json atomically, refusing writes that destroy the archive.
+
+    A truncating open() leaves nothing to fall back on if the payload turns out
+    to be empty or the write dies halfway, so the new content lands in a temp
+    file that is renamed over the old one only once it is complete on disk.
+    """
+    if not isinstance(data, dict) or not isinstance(data.get("slides"), list):
+        raise ValueError("invalid content payload: slides must be a list")
+
+    try:
+        current = read_content().get("slides", [])
+    except Exception:
+        current = []                                  # unreadable/missing: nothing to protect
+
+    incoming = data["slides"]
+    if current and not incoming and not allow_empty:
+        raise ValueError(
+            f"refusing to erase all {len(current)} slides — "
+            "pass ?allow_empty=1 if this is intended"
+        )
+
+    backup_content()
+    fd, tmp = tempfile.mkstemp(dir=ROOT, prefix=".content-", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(data, fh, ensure_ascii=False, indent=1)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp, CONTENT)
+    except Exception:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        raise
+    return len(incoming)
 
 
 _ASSET_REF = re.compile(r'(?:href|src)="(/site/[A-Za-z0-9._/-]+\.(?:css|js))"')
@@ -279,12 +342,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         if path == "/api/content":
             try:
+                qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
                 data = json.loads(body.decode("utf-8"))
-                if not isinstance(data, dict) or "slides" not in data:
-                    raise ValueError("invalid content payload")
-                with open(CONTENT, "w", encoding="utf-8") as fh:
-                    json.dump(data, fh, ensure_ascii=False, indent=1)
-                return self._send_json({"ok": True, "slides": len(data.get("slides", []))})
+                allow_empty = qs.get("allow_empty", ["0"])[0] == "1"
+                n = write_content(data, allow_empty=allow_empty)
+                return self._send_json({"ok": True, "slides": n})
             except Exception as e:
                 return self._send_json({"error": str(e)}, 400)
 

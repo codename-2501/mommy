@@ -72,7 +72,10 @@ img{max-width:100%;display:block}
    It blends against whatever is behind it, so it reads black on white and white over a
    painting; the lines clip-reveal upward, staggered. */
 .wordmark{
-  position:fixed;left:50%;top:10rem;
+  /* rest below the ruler (top:4.4rem + height:6rem = 10.4rem) or the ticks run through
+     the letters on the timeline view. The intro offset below is derived from this. */
+  --rest-top:11.5rem;
+  position:fixed;left:50%;top:var(--rest-top);
   transform:translateX(-50%) scale(.62);transform-origin:top center;
   width:90em;max-width:100vw;
   font-size:.4rem;
@@ -88,7 +91,7 @@ img{max-width:100%;display:block}
 /* during the intro the wordmark sits higher than the middle: the month list and the enter
    button live underneath it, and they need the room */
 .wordmark.at-intro{
-  transform:translateX(-50%) translateY(calc(27vh - 10rem - 50%)) scale(1);
+  transform:translateX(-50%) translateY(calc(27vh - var(--rest-top) - 50%)) scale(1);
 }
 .wordmark .line{
   display:flex;gap:0 .175em;
