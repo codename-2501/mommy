@@ -36,15 +36,23 @@ function month(s) {
 }
 
 /* strip media cell: natural aspect, width-bound */
+/* same shape as every other view: an unclipped slot holding the clipping frame that
+   travels (original Flip). The detail's paintings can therefore fly home on close. */
 function mediaCell(s, aspects, cls) {
-  const box = el('div', 'dt-media ' + (cls || ''));
+  const box = el('div', 'dt-media js-flip-target ' + (cls || ''));
+  box.dataset.id = s.id || '';
   const name = String(s.image || '').split('/').pop();
   box.style.aspectRatio = String(aspects[name] || 1);
+  const frame = el('div', 'tlb-frame js-flip');
+  frame.dataset.id = s.id || '';
   const img = el('img');
   img.src = thumb(s.image, 600);
   img.alt = s.title || s.bottom || '';
   img.draggable = false;
-  box.appendChild(img);
+  if (img.complete) img.classList.add('ok');
+  else img.addEventListener('load', () => img.classList.add('ok'), { once: true });
+  frame.appendChild(img);
+  box.appendChild(frame);
   return box;
 }
 
@@ -216,31 +224,28 @@ function cancelFlights() {
 /* FLIP the ORIGINAL way: reparent the actual <img> into the destination slot and
    animate it from its old screen position. The same painted pixels move — an image
    swap or blank frame is structurally impossible. */
-function flyLive(fromBox, toBox) {
-  const img = fromBox && fromBox.querySelector('img');
-  if (!img || !toBox) return false;
-  const f = fromBox.getBoundingClientRect();
-  const t = toBox.getBoundingClientRect();
+function flyLive(fromSlot, toSlot) {
+  const frame = fromSlot && fromSlot.querySelector('.js-flip');
+  if (!frame || !toSlot) return false;
+  const f = fromSlot.getBoundingClientRect();
+  const t = toSlot.getBoundingClientRect();
   if (!f.width || !t.width) return false;
-  toBox.replaceChildren(img);                    // reparent (original J(): appendChild)
-  img.classList.add('ok');                       // carousel imgs gate opacity on .ok
-  fromBox.style.visibility = 'hidden';           // empty shell stays hidden
-  toBox.style.visibility = '';
-  toBox.classList.add('is-flying');              // overflow free during the flight
-  img.style.transformOrigin = 'top left';
-  img.style.transition = 'none';
-  img.style.transform = 'translate(' + (f.left - t.left) + 'px,' + (f.top - t.top) +
+  toSlot.replaceChildren(frame);                 // the frame moves house (original J())
+  fromSlot.style.visibility = 'hidden';          // the empty slot it left stays hidden
+  toSlot.style.visibility = '';
+  toSlot.classList.add('is-flying');             // overflow free during the flight
+  frame.style.transition = 'none';
+  frame.style.transform = 'translate(' + (f.left - t.left) + 'px,' + (f.top - t.top) +
     'px) scale(' + (f.width / t.width) + ')';
-  void img.offsetWidth;
-  img.style.transition = 'transform 1s var(--ease-snappy)';
-  img.style.transform = '';
-  const rec = { img, box: toBox, done: 0 };
+  void frame.offsetWidth;
+  frame.style.transition = 'transform 1s var(--ease-snappy)';
+  frame.style.transform = '';
+  const rec = { img: frame, box: toSlot, done: 0 };
   activeFlights.add(rec);
   rec.done = setTimeout(() => {
-    img.style.transition = '';
-    img.style.transform = '';
-    img.style.transformOrigin = '';
-    toBox.classList.remove('is-flying');
+    frame.style.transition = '';
+    frame.style.transform = '';
+    toSlot.classList.remove('is-flying');
     activeFlights.delete(rec);
   }, 1050);
   return true;
@@ -438,36 +443,18 @@ function close() {
   if (opts.onSync && opts.content) {
     opts.onSync(slideIdx(opts.content.slides || [], curId));
   }
-  if (opts.onClose) opts.onClose();              // home replays its entrance underneath
-
-  /* original: the strip paintings FLY BACK to their carousel slots (reverse flip) */
-  const strip = root.querySelector('.dt-strip:not(.dt-strip--out)');
-  if (strip && opts.getHomeTarget && opts.content) {
-    const slides = opts.content.slides || [];
-    const n = slides.length;
-    const i = slideIdx(slides, curId);
-    const pairs = [
-      ['.dt-cur__media', i, 0],
-      ['.dt-side--prev .dt-media', (i - 1 + n) % n, 35],
-      ['.dt-side--next .dt-media', (i + 1) % n, 70],
-    ];
-    for (const [sel, k, delay] of pairs) {
-      const box = strip.querySelector(sel);
-      const target = box && opts.getHomeTarget(k);
-      if (!box || !target) continue;
-      const t = target.getBoundingClientRect();
-      if (t.right < 0 || t.left > innerWidth) continue;   // fly only into view
-      target.style.visibility = 'hidden';                 // before the home is unveiled
-      if (delay) later(() => flyLive(box, target), delay);
-      else flyLive(box, target);
-    }
-  }
+  /* the leaving detail is handed to the SAME transition engine the views use: its
+     paintings fly home (J) and the slots that get none rise (Y) — original X/J/Y */
+  const leavingRoot = root;
+  if (opts.onLeave) opts.onLeave(leavingRoot);
 
   root.classList.add('is-off');
   root.classList.remove('is-on');
   setTimeout(() => {
-    if (root) root.remove();
-    root = null; curId = null; closing = false;
+    leavingRoot.remove();
+    if (root === leavingRoot) { root = null; curId = null; }
+    closing = false;
+    if (opts.onGone) opts.onGone();              // any slot left empty gets its frame back
   }, 1150);
 }
 
