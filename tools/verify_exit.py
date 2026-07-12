@@ -71,7 +71,7 @@ def check(cond, msg):
 try:
     d.get("http://localhost:8082/")
     time.sleep(2.5)
-    d.find_element(By.CSS_SELECTOR, ".intro-gate .alt").click()
+    d.find_element(By.CSS_SELECTOR, ".intro-gate .btn").click()
     time.sleep(3.5)
 
     print("\n[A] six menu clicks, each landing mid-transition")
