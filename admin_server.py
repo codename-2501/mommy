@@ -27,6 +27,30 @@ def read_content():
         return json.load(fh)
 
 
+_ASSET_REF = re.compile(r'(?:href|src)="(/site/[A-Za-z0-9._/-]+\.(?:css|js))"')
+
+
+def site_shell():
+    """The SPA shell with every /site/ asset stamped with its file's mtime.
+
+    Without the stamp a browser that already cached app.css or views.js keeps using the
+    old copy, so a code change simply does not show up until a hard reload.
+    """
+    with open(os.path.join(SITE_DIR, "index.html"), encoding="utf-8") as fh:
+        html = fh.read()
+
+    def stamp(m):
+        ref = m.group(1)
+        fs = os.path.join(ROOT, ref.lstrip("/"))
+        try:
+            v = int(os.path.getmtime(fs))
+        except OSError:
+            return m.group(0)
+        return m.group(0).replace(ref, "%s?v=%d" % (ref, v))
+
+    return _ASSET_REF.sub(stamp, html)
+
+
 def safe_name(name):
     name = os.path.basename(name).replace("\\", "_")
     name = re.sub(r"[^A-Za-z0-9._-]", "_", name)
@@ -459,6 +483,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return True
         return False
 
+    def _send_html(self, html):
+        body = html.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(body)
+
     def _serve_file(self, fs, ctype):
         with open(fs, "rb") as fh:
             body = fh.read()
@@ -481,7 +514,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if clean_route in SITE_ROUTES or clean_route.startswith("/p/"):
             shell = os.path.join(SITE_DIR, "index.html")
             if os.path.isfile(shell):
-                return self._serve_file(shell, "text/html; charset=utf-8")
+                return self._send_html(site_shell())
 
         # legacy clone preserved under /_legacy/ (old root HTML, admin override injected)
         if path == "/_legacy" or path.startswith("/_legacy/"):
