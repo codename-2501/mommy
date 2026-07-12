@@ -405,6 +405,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         path = path.split("?", 1)[0].split("#", 1)[0]
         return super().translate_path(path)
 
+    def end_headers(self):
+        """Static files went out with only Last-Modified, so browsers kept serving an old
+        site/app.css and site/views.js from cache long after they changed. Nothing here is
+        worth caching — this is a local editing server."""
+        sent = b"".join(getattr(self, "_headers_buffer", []) or [])
+        if b"Cache-Control" not in sent:
+            self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+
     def _send_json(self, obj, code=200):
         body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
