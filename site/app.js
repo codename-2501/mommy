@@ -737,6 +737,9 @@ Promise.all([loadContent(), loadAspects(), loadIcons()]).then(([c, a]) => {
   content = c;
   aspects = a;
   if (matchMedia('(max-width:699px)').matches) entered = true;   // original: no gate on mobile
+  /* the intro gate belongs to the timeline. Land straight on /surf, /articles, /about or a
+     painting and there is no gate to pass — so the wordmark and menu must already be up. */
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') entered = true;
   const wm = wordmark();
   document.title = [wm.l2, wm.l1].filter(Boolean).join(' — ');
   /* persistent chrome: wordmark + menu live outside the router (original layout level) */
