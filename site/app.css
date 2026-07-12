@@ -273,23 +273,8 @@ img{max-width:100%;display:block}
 .ic--profile{transform:scale(.90)}
 .menu__txt{display:none}
 
-/* mobile menu — : bordered TEXT buttons, no blend, no icons */
-@media (max-width:699px){
-  .menu{gap:.8rem;bottom:2rem;color:#000;mix-blend-mode:normal}
-  .menu__capsule{border:0;padding:0;gap:.8rem}
-  .menu__about{border:0;width:auto;height:auto;border-radius:0;background:none}
-  .menu__about:has(a.active){background:none}
-  .menu .ic{display:none}
-  .menu__txt{display:block;font-size:1.5rem;font-weight:500}
-  /* same idea without the blend: the selected button is the inverted one */
-  .menu a{
-    width:auto;height:auto;border:1px solid #111;border-radius:.6rem;background:#fff;
-    padding:1.1rem 1.5rem;opacity:1;color:#111;
-    transition:background-color .3s var(--ease-reveal),color .3s var(--ease-reveal);
-  }
-  .menu a:not(.active){opacity:1}
-  .menu a.active,.menu__about:has(a.active) a.active{background:#111;color:#fff;border-color:#111}
-}
+/* the menu is one design everywhere: the icon capsule above. On a phone the root rem is
+   10px, so its 4.4rem buttons land at 44px — the tap target holds without a second layout. */
 
 /* ---------- detail view (overlay above home; transition values) ---------- */
 .detail{position:fixed;inset:0;z-index:60}
