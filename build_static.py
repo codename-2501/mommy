@@ -24,6 +24,8 @@ import shutil
 
 from PIL import Image
 
+import admin_server   # the shell's head injection lives there; one source, one behaviour
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DIST = os.path.join(ROOT, "dist")
 IMAGES = os.path.join(ROOT, "images")
@@ -61,6 +63,16 @@ def referenced_images(content):
                 name = image_name(b.get("src") or "")
                 if name:
                     full.add(name)
+
+    # the favicon is served from /thumbs, the share thumbnail at full size. Neither is
+    # referenced by a slide, so without this the built site links to images it never copied.
+    meta = content.get("meta") or {}
+    fav = image_name(meta.get("favicon") or "")
+    if fav:
+        thumbed.add(fav)
+    og = image_name(meta.get("ogImage") or "")
+    if og:
+        full.add(og)
     return thumbed | full, full
 
 
@@ -100,8 +112,20 @@ def main():
     # frontend + assets
     shutil.copytree(os.path.join(ROOT, "site"), os.path.join(DIST, "site"))
     shutil.copytree(os.path.join(ROOT, "icons"), os.path.join(DIST, "icons"))
-    shutil.copy(os.path.join(ROOT, "site", "index.html"), os.path.join(DIST, "index.html"))
     shutil.copy(os.path.join(ROOT, "content.json"), os.path.join(DIST, "content.json"))
+
+    # the shell carries the favicon and the link-preview tags. A static host has no request
+    # to read the hostname from, so og:image can only be absolute if meta.siteUrl says where
+    # the site will live — without it a shared link shows no thumbnail.
+    meta = content.get("meta") or {}
+    site_url = (meta.get("siteUrl") or "").rstrip("/")
+    with open(os.path.join(ROOT, "site", "index.html"), encoding="utf-8") as fh:
+        shell = admin_server.inject_head(fh.read(), meta, site_url, thumb_ext=".webp")
+    with open(os.path.join(DIST, "index.html"), "w", encoding="utf-8") as fh:
+        fh.write(shell)
+    if not site_url:
+        print("  경고: meta.siteUrl 이 비어 있어 og:image 절대 URL 을 만들 수 없습니다 "
+              "— 링크 공유 시 썸네일이 뜨지 않습니다 (관리자 > 사이트에서 주소 입력)")
 
     # /api/aspects -> aspects.json (same envelope: app.js reads j.aspects)
     aspects = {}

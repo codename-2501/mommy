@@ -105,9 +105,66 @@ def write_content(data, allow_empty=False):
 
 
 _ASSET_REF = re.compile(r'(?:href|src)="(/site/[A-Za-z0-9._/-]+\.(?:css|js))"')
+_HEAD_MARK = re.compile(r'<link rel="icon"[^>]*>')
 
 
-def site_shell():
+def esc_attr(v):
+    return (str(v or "")
+            .replace("&", "&amp;").replace('"', "&quot;")
+            .replace("<", "&lt;").replace(">", "&gt;"))
+
+
+def inject_head(html, meta, base_url="", thumb_ext=""):
+    """Favicon + link-preview tags, from content.json's meta.
+
+    KakaoTalk, Slack and the rest fetch the HTML with a bot that runs no JavaScript, so a
+    tag the app adds at runtime is never seen: the preview has to be in the served markup.
+    og:image must also be an absolute URL — a relative one silently yields no thumbnail.
+    """
+    title = meta.get("title") or "LSE GALLERY"
+    desc = meta.get("description") or ""
+    icon = meta.get("favicon") or ""
+    og = meta.get("ogImage") or ""
+    base = (base_url or meta.get("siteUrl") or "").rstrip("/")
+
+    def absolute(path):
+        if not path or path.startswith(("http://", "https://")):
+            return path
+        return base + path if base else ""
+
+    def small(path):
+        """A tab icon has no business being a multi-MB painting: serve the thumbnail."""
+        if path.startswith("/images/"):
+            return "/thumbs/300/" + path.split("/images/", 1)[1] + thumb_ext
+        return path
+
+    icon_href = small(icon) if icon else "data:,"
+    tags = ['<link rel="icon" href="%s">' % esc_attr(icon_href)]
+    if icon:
+        tags.append('<link rel="apple-touch-icon" href="%s">' % esc_attr(icon_href))
+    tags += [
+        '<meta property="og:type" content="website">',
+        '<meta property="og:title" content="%s">' % esc_attr(title),
+        '<meta property="og:site_name" content="%s">' % esc_attr(title),
+    ]
+    if desc:
+        tags.append('<meta property="og:description" content="%s">' % esc_attr(desc))
+    if base:
+        tags.append('<meta property="og:url" content="%s/">' % esc_attr(base))
+    og_abs = absolute(og)
+    if og_abs:
+        tags += [
+            '<meta property="og:image" content="%s">' % esc_attr(og_abs),
+            '<meta name="twitter:card" content="summary_large_image">',
+            '<meta name="twitter:image" content="%s">' % esc_attr(og_abs),
+        ]
+    else:
+        tags.append('<meta name="twitter:card" content="summary">')
+
+    return _HEAD_MARK.sub("\n".join(tags), html, count=1)
+
+
+def site_shell(base_url=""):
     """The SPA shell with every /site/ asset stamped with its file's mtime.
 
     Without the stamp a browser that already cached app.css or views.js keeps using the
@@ -125,7 +182,11 @@ def site_shell():
             return m.group(0)
         return m.group(0).replace(ref, "%s?v=%d" % (ref, v))
 
-    return _ASSET_REF.sub(stamp, html)
+    try:
+        meta = read_content().get("meta") or {}
+    except Exception:
+        meta = {}
+    return _ASSET_REF.sub(stamp, inject_head(html, meta, base_url))
 
 
 def safe_name(name):
@@ -198,6 +259,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _base_url(self):
+        """Where this request thinks the site lives — an og:image must be absolute, and over
+        a tunnel that host is the tunnel's, not localhost. The scraper asks over https."""
+        host = (self.headers.get("Host") or "").strip()
+        if not host:
+            return ""
+        proto = self.headers.get("x-forwarded-proto")
+        if not proto:
+            proto = "http" if host.startswith(("localhost", "127.0.0.1", "[::1]")) else "https"
+        return "%s://%s" % (proto, host)
+
     # ---------------- public vs local ----------------
     def _is_public(self):
         """True when the request arrived from outside this machine.
@@ -264,7 +336,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if clean_route in SITE_ROUTES or clean_route.startswith("/p/"):
             shell = os.path.join(SITE_DIR, "index.html")
             if os.path.isfile(shell):
-                return self._send_html(site_shell())
+                return self._send_html(site_shell(self._base_url()))
 
         if path == "/api/content":
             try:
