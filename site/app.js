@@ -325,11 +325,12 @@ function renderHome() {
     (s, item) => {
       carousel.freeze();   // stop the lerp drift so the flip source stays put
       const grab = (it) => {
-        const img = it && it.querySelector('.tlb-frame img');
-        if (!img) return null;
-        const r = img.getBoundingClientRect();
+        const slot = it && it.querySelector('.js-flip-target');
+        const img = slot && slot.querySelector('img');
+        if (!slot || !img) return null;
+        const r = slot.getBoundingClientRect();
         if (r.right < 0 || r.left > innerWidth) return null;   // only visible ones fly
-        return { el: it.querySelector('.tlb-frame'), src: img.currentSrc || img.src };
+        return { el: slot, src: img.currentSrc || img.src };
       };
       const track = item.parentElement;
       pendingFlip = {
@@ -617,31 +618,39 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
 
 /* ---------- router ---------- */
 
-/* boxes whose live <img> was reparented into the detail get a fresh one back */
+/* a slot whose frame flew into the detail and never came home (its slide was off screen
+   by the time we closed) is given a fresh frame once the detail is gone */
 function restoreFlipSources() {
   for (const f of flipSources) {
-    if (!f.box.querySelector('img')) {
+    if (!f.box.querySelector('.js-flip')) {
+      const frame = el('div', 'tlb-frame js-flip');
+      frame.dataset.id = f.box.dataset.id || '';
       const img = document.createElement('img');
       img.src = f.src;
       img.className = 'ok';
       img.draggable = false;
-      f.box.appendChild(img);
+      frame.appendChild(img);
+      f.box.appendChild(frame);
     }
     f.box.style.visibility = '';
   }
   flipSources = [];
 }
 
-/* detail close: the home re-enters with its full entrance (original Y() replays) */
-function replayHomeEnter() {
-  restoreFlipSources();
-  const view = document.querySelector('.view--home');
-  if (!view) return;
-  view.classList.add('no-trans');
-  view.classList.remove('is-in');
-  void view.offsetWidth;                        // apply the reset without animating
-  view.classList.remove('no-trans');
-  requestAnimationFrame(() => requestAnimationFrame(() => view.classList.add('is-in')));
+/* detail close: the leaving detail goes through the SAME engine as any other view —
+   its paintings fly back into their slots (J), the slots that receive none rise (Y) */
+async function flyDetailHome(detailEl) {
+  const view = viewEl;
+  if (!view || !detailEl) return;
+  await nextFrame();                            // let the carousel's jump to this work land
+  const { fromFlips, toFlips, targets } = measureFlips(detailEl, view, false);
+  const playFlip = fromFlips.length ? prepareFlip(fromFlips, toFlips, false) : null;
+  const playRise = prepareRise(targets, false, false);
+  void view.offsetWidth;                        // paint the from-state before it animates
+  requestAnimationFrame(() => {
+    if (playFlip) playFlip();
+    if (playRise) playRise();
+  });
 }
 
 function render() {
@@ -665,16 +674,8 @@ function render() {
       content, aspects,
       closePath: lastViewPath,
       onSync: (i) => { if (carousel) carousel.goTo(i); },
-      onClose: replayHomeEnter,
-      /* reverse-flip target: matching carousel slot skips the rise and receives the ghost */
-      getHomeTarget: (k) => {
-        if (!carousel) return null;
-        const item = carousel.itemAt(k);
-        if (!item) return null;
-        item.classList.add('flip-back');
-        setTimeout(() => item.classList.remove('flip-back'), 1200);
-        return item.querySelector('.tlb-frame');
-      },
+      onLeave: flyDetailHome,     // the paintings fly back into the view (original J() + Y())
+      onGone: restoreFlipSources,
     }, path.slice(3), flip);
     return;
   }

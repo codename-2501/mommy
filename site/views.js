@@ -73,7 +73,7 @@ function mountSurf(view, slides, aspects, onOpen) {
       hoverLbl.classList.add('is-on');
     });
     it.addEventListener('mouseleave', () => hoverLbl.classList.remove('is-on'));
-    it.addEventListener('click', () => { if (!moved) onOpen(s, frame); });
+    it.addEventListener('click', () => { if (!moved) onOpen(s, box); });
     deck.appendChild(it);
     return { el: it, s };
   });
@@ -304,7 +304,7 @@ function mountIndex(view, slides, aspects, onOpen) {
       lbl.appendChild(rev);
       cell.appendChild(lbl);
     }
-    cell.addEventListener('click', () => onOpen(s, frame));
+    cell.addEventListener('click', () => onOpen(s, box));
     row.appendChild(cell);
   });
 
