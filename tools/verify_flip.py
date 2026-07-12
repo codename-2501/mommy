@@ -70,8 +70,8 @@ def check(cond, msg):
 try:
     d.get("http://localhost:8082/")
     time.sleep(2.5)
-    # intro gate — enter without sound
-    d.find_element(By.CSS_SELECTOR, ".intro-gate .alt").click()
+    # intro gate — the single Enter button
+    d.find_element(By.CSS_SELECTOR, ".intro-gate .btn").click()
     time.sleep(3.0)
     shot("00_home.png")
 

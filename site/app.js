@@ -208,73 +208,67 @@ function buildWordmark(revealDelay) {
 
 /* ---------- intro gate ---------- */
 
-/* Original: every visual line of the month list scrambles in for .5s, stagger .075 — a
-   12-month archive is 24 lines, about 1.7s. An archive spanning several years has many
-   more rows, so the step is compressed to keep the intro the same length. */
-function introStep(monthRows) {
-  return Math.min(75, 1800 / Math.max(1, monthRows * 2 - 1));
+/* Original: every visual line of the month list scrambles in for .5s, stagger .075. An
+   archive spanning several years has many more lines, so the step is compressed to keep
+   the intro the same length. */
+function introStep(lines) {
+  return Math.min(75, 1800 / Math.max(1, lines - 1));
 }
 
 /* when the wordmark starts rising: as the month list finishes (original label "-=.5") */
 function introLogoStart(slides) {
-  const rows = monthStats(slides).length * 2;
-  return Math.max(0, (rows - 1) * introStep(rows / 2)) / 1000;
+  const lines = monthStats(slides).length;
+  return Math.max(0, (lines - 1) * introStep(lines)) / 1000;
 }
 
 function renderIntro(logoStart) {
   const intro = el('div', 'intro');
 
-  /* month list — 2 columns, newest half then the rest */
+  /* month list — three columns, filled newest first, so it fits between the wordmark
+     and the enter button however many years the archive spans */
   const stats = monthStats(content.slides);
   const months = el('div', 'intro-months label');
-  const colA = el('div', 'col');
-  const colB = el('div', 'col');
-  const half = Math.ceil(stats.length / 2);
+  const COLS = 3;
+  const cols = Array.from({ length: COLS }, () => el('div', 'col'));
+  const perCol = Math.ceil(stats.length / COLS);
   const step = introStep(stats.length);
   const scrambles = [];
-  let row = 0;
+  /* one line per month — the original stacked the category under the month name, but the
+     list now sits between the wordmark and the button, where 27 two-line rows would not
+     fit on a short screen. Same four fields, one row: MONTH year — category (n) */
   stats.forEach((s, si) => {
-    /* original structure: month name (+year), then indented category (count) line */
     const block = el('div', 'mo');
-    const monthRow = el('div', 'row');
-    const monthIn = el('span', 'in m');
+    const line = el('div', 'row');
+    const inn = el('span', 'in m');
     const monthName = el('span', null, '');
     const yearEl = el('span', 'n', '');
-    monthIn.appendChild(monthName);
-    monthIn.appendChild(yearEl);
-    monthRow.appendChild(monthIn);
-    const catRow = el('div', 'row pl');
-    const catIn = el('span', 'in');
-    const cat = el('span', null, '');
+    const cat = el('span', 'c', '');
     const n = el('span', 'n', '');
-    catIn.appendChild(cat);
-    catIn.appendChild(n);
-    catRow.appendChild(catIn);
-    block.appendChild(monthRow);
-    block.appendChild(catRow);
-    (si < half ? colA : colB).appendChild(block);
-    const dMonth = row * step; row += 1;
-    const dCat = row * step; row += 1;
+    inn.appendChild(monthName);
+    inn.appendChild(yearEl);
+    inn.appendChild(cat);
+    inn.appendChild(n);
+    line.appendChild(inn);
+    block.appendChild(line);
+    cols[Math.min(COLS - 1, Math.floor(si / perCol))].appendChild(block);
+    const delay = si * step;
     scrambles.push(() => {
-      scrambleIn(monthName, s.month.toUpperCase(), dMonth, 500);
-      scrambleIn(yearEl, s.year, dMonth, 500);
-      scrambleIn(cat, s.cat || '', dCat, 500);
-      scrambleIn(n, '(' + s.count + ')', dCat, 500);
+      scrambleIn(monthName, s.month.toUpperCase(), delay, 500);
+      scrambleIn(yearEl, s.year, delay, 500);
+      scrambleIn(cat, s.cat || '', delay, 500);
+      scrambleIn(n, '(' + s.count + ')', delay, 500);
     });
   });
-  months.appendChild(colA);
-  months.appendChild(colB);
+  for (const c of cols) months.appendChild(c);
   intro.appendChild(months);
 
-  /* enter gate — appears alongside the wordmark phase of the timeline */
+  /* enter gate — one button. The original's second button existed only to opt out of the
+     sound; there is no music here, so the choice was empty and the site enters silent. */
   const gate = el('div', 'intro-gate');
   gate.style.transitionDelay = (logoStart + 0.6).toFixed(2) + 's';
-  const withSound = el('button', 'btn', 'Enter with sound →');
-  const noSound = el('button', 'alt', '…or without');
-  withSound.addEventListener('click', () => enterSite(intro, true));
-  noSound.addEventListener('click', () => enterSite(intro, false));
-  gate.appendChild(withSound);
-  gate.appendChild(noSound);
+  const enter = el('button', 'btn', 'Enter →');
+  enter.addEventListener('click', () => enterSite(intro, false));
+  gate.appendChild(enter);
   intro.appendChild(gate);
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -293,19 +287,28 @@ function enterSite(intro, withSound) {
   const gate = intro.querySelector('.intro-gate');
   if (gate) gate.style.transitionDelay = '0s';
   intro.classList.add('is-leaving');
-  /* every list line scrambles out — original: to(lines, {scrambleText:"", stagger:.035}) */
-  intro.querySelectorAll('.intro-months .row').forEach((row, k) => {
+
+  /* every list line scrambles out — original: to(lines, {scrambleText:"", stagger:.035}).
+     The step is compressed the same way the entrance is, so a long list does not stretch
+     the exit; the site only starts arriving once that exit has actually finished. */
+  const rows = [...intro.querySelectorAll('.intro-months .row')];
+  const outStep = Math.min(35, 900 / Math.max(1, rows.length - 1));
+  rows.forEach((row, k) => {
     row.querySelectorAll('.in > span').forEach((sp) => {
-      setTimeout(() => scrambleOut(sp, 500), k * 35);
+      setTimeout(() => scrambleOut(sp, 500), k * outStep);
     });
   });
+  const exitMs = (rows.length - 1) * outStep + 500;   // the last line has finished scrambling
+
   const wm = document.querySelector('.wordmark');
   const menu = document.querySelector('.menu');
   const home = document.querySelector('.view--home');
-  setTimeout(() => { if (wm) wm.classList.remove('at-intro'); }, 400);   // rides up 1.5s expo
-  setTimeout(() => { if (home) home.classList.add('is-in'); }, 900);     // slides rise underneath
-  setTimeout(() => { if (menu) menu.classList.add('is-in'); }, 1100);
-  setTimeout(() => intro.remove(), 2400);
+  setTimeout(() => {
+    intro.remove();                                   /* the exit has played out in full */
+    if (wm) wm.classList.remove('at-intro');          // rides up 1.5s expo
+    setTimeout(() => { if (home) home.classList.add('is-in'); }, 400);   // slides rise underneath
+    setTimeout(() => { if (menu) menu.classList.add('is-in'); }, 600);
+  }, exitMs);
 }
 
 /* ---------- views ---------- */
@@ -520,6 +523,19 @@ function measureFlips(oldEl, newEl, fromSurf) {
   };
 }
 
+/* A flight tidies its inline styles up when it lands. That tidy-up must never touch an
+   element that has since moved on: if the viewer leaves for another view mid-flight, the
+   frame is already being animated out by the departing view, and wiping its transform
+   would snap it back into place for a moment before the view is removed. */
+function settled(node) {
+  return node.isConnected && node.closest('.view') === viewEl;
+}
+
+function clearFlight(node) {
+  node.style.transition = '';
+  node.style.transform = '';
+}
+
 /* original J(): the painting's own frame moves house into its new slot and flies the
    delta home. No clone, no second <img> — the same pixels travel. */
 function prepareFlip(fromFlips, toFlips, noStagger) {
@@ -549,8 +565,8 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
     }
     const last = flights[flights.length - 1];
     setTimeout(() => {
-      for (const f of flights) { f.el.style.transition = ''; f.el.style.transform = ''; }
-      for (const o of owners) o.style.zIndex = '';
+      for (const f of flights) { if (settled(f.el)) clearFlight(f.el); }
+      for (const o of owners) { if (settled(o)) o.style.zIndex = ''; }
     }, FLIP.dur + last.delay + 50);
   };
 }
@@ -575,7 +591,7 @@ function prepareRise(targets, fromSurf, toSurf) {
     }
     const last = risers[risers.length - 1];
     setTimeout(() => {
-      for (const r of risers) { r.el.style.transition = ''; r.el.style.transform = ''; }
+      for (const r of risers) { if (settled(r.el)) clearFlight(r.el); }
     }, RISE.dur + last.delay + 50);
   };
 }
@@ -593,10 +609,25 @@ function finalizeLeaving() {
 }
 
 /* the old page leaves WHILE the new one arrives (original: mode "", both mounted) */
+/* A view can be left while it is still arriving. Its slots would then keep rising into
+   view on their own transition — surfacing after the exit has already measured them as
+   off screen, and vanishing a moment later when the view is dropped. Stop them where
+   they are: whatever is off screen stays off screen, whatever is visible leaves properly. */
+function freezeEntrance(viewNode) {
+  for (const node of viewNode.querySelectorAll('.js-flip-target,.js-flip')) {
+    if (!node.style.transition && !node.style.transform) continue;
+    const t = getComputedStyle(node).transform;
+    node.style.transition = 'none';
+    node.style.transform = t === 'none' ? '' : t;
+  }
+  void viewNode.offsetWidth;                 // land the freeze before the exit animates
+}
+
 function leave(oldEl, oldInst, oldCar, flags) {
   if (!oldEl) return;
   const { fromSurf, fromAbout, toAbout } = flags;
   const done = () => { if (leaving && leaving.el === oldEl) finalizeLeaving(); };
+  freezeEntrance(oldEl);
 
   if (fromSurf && !toAbout && oldInst && oldInst.exit) {
     leaving = { el: oldEl, inst: null, car: oldCar, timer: 0 };   // exit() already destroyed it
