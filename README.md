@@ -33,7 +33,9 @@ python3 admin_server.py 8082
 - `tools/` — 헤드리스 검증 스크립트 (`verify_flip.py`, `verify_exit.py`)
 
 ## 라이선스·크레딧
-- 폰트: Spoqa Han Sans Neo, JetBrains Mono — SIL OFL 1.1 (`site/assets/fonts/LICENSE.md`)
+- 폰트: Spoqa Han Sans Neo, JetBrains Mono — SIL OFL 1.1. 저작권 표기와 라이선스 전문을
+  `site/assets/fonts/` 에 동봉했다(OFL 요구사항). 배포 시 woff2 와 함께 반드시 포함할 것.
+  Spoqa Han Sans Neo 는 예약 폰트명이 걸려 있어, 파일을 수정·서브셋하면 다른 이름으로 배포해야 한다.
 - 아이콘: Noun Project, CC BY 3.0 — About 페이지에 저작자 표기가 렌더됩니다
 - 그림: 작가 본인 저작물
 - 필름 그레인(`site/assets/noise.png`): 자체 생성
