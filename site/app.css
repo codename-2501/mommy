@@ -533,8 +533,11 @@ img{max-width:100%;display:block}
 .lse-frame img{opacity:0;transition:opacity .5s ease-out}
 .lse-frame img.ok{opacity:1}
 .about__scroll{padding:0 2rem;will-change:transform}
+/* the head holds the two small labels. It used to stand a full screen tall, so the page
+   opened on an empty view and the title only arrived after a scroll — enough height to
+   breathe, not enough to hide what the page is. */
 .about__head{
-  height:100svh;display:flex;align-items:center;justify-content:space-between;
+  height:40svh;display:flex;align-items:center;justify-content:space-between;
 }
 .about__title{
   font-size:min(11.7rem,117px);font-weight:700;line-height:.875;

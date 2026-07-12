@@ -9,7 +9,7 @@ Usage:  python admin_server.py [port]     (default 8082)
 Site:   http://localhost:8082/
 Admin:  http://localhost:8082/admin/  (local only — a public tunnel gets a 404)
 """
-import sys, os, json, re, time, glob, shutil, tempfile, urllib.parse, http.server, socketserver, socket
+import sys, os, json, re, time, glob, shutil, hashlib, tempfile, urllib.parse, http.server, socketserver, socket
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 CONTENT = os.path.join(ROOT, "content.json")
@@ -27,6 +27,21 @@ KEEP_BACKUPS = 30
 def read_content():
     with open(CONTENT, encoding="utf-8") as fh:
         return json.load(fh)
+
+
+def content_version():
+    """A fingerprint of the file as it is right now.
+
+    The admin holds a whole copy of content.json in the browser and saves all of it, so a tab
+    that loaded before some other change landed would write its stale copy back over that
+    change — a lost update nobody sees, because the save reports success. The version tags
+    what a tab read, letting a save that is not based on the current file be refused.
+    """
+    try:
+        with open(CONTENT, "rb") as fh:
+            return hashlib.sha256(fh.read()).hexdigest()[:16]
+    except OSError:
+        return ""
 
 
 def backup_content():
@@ -253,7 +268,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         if path == "/api/content":
             try:
-                return self._send_json(read_content())
+                data = read_content()
+                data["_version"] = content_version()   # what this reader is basing edits on
+                return self._send_json(data)
             except Exception as e:
                 return self._send_json({"error": str(e)}, 500)
 
@@ -323,8 +340,20 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
                 data = json.loads(body.decode("utf-8"))
                 allow_empty = qs.get("allow_empty", ["0"])[0] == "1"
+
+                # a save must be based on the file as it is now, or it is a stale tab
+                # writing its whole copy back over whatever changed in the meantime
+                base = data.pop("_version", None)
+                now = content_version()
+                if base is not None and now and base != now:
+                    return self._send_json({
+                        "error": "content.json 이 이 탭에서 불러온 뒤로 변경됐습니다. "
+                                 "새로고침한 뒤 다시 편집하세요 (덮어쓰기 방지)",
+                        "stale": True,
+                    }, 409)
+
                 n = write_content(data, allow_empty=allow_empty)
-                return self._send_json({"ok": True, "slides": n})
+                return self._send_json({"ok": True, "slides": n, "version": content_version()})
             except Exception as e:
                 return self._send_json({"error": str(e)}, 400)
 

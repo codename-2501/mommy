@@ -2395,6 +2395,11 @@
  "blocks": {
   "/about": [
    {
+    "type": "image",
+    "src": "/images/02ece5a890247.png",
+    "caption": "ㅋㅋ"
+   },
+   {
     "type": "title",
     "text": "LSE GALLERY\n승은의\n회화\n아카이브"
    },
@@ -2404,17 +2409,12 @@
    },
    {
     "type": "image",
-    "src": "/images/02ece5a890247.png",
-    "caption": ""
-   },
-   {
-    "type": "image",
     "src": "/images/1f7ffa08880a9.jpg",
-    "caption": ""
+    "caption": "헤헿"
    },
    {
     "type": "thanks",
-    "text": "보아주셔서 고맙습니다.\n\n계속 그리겠습니다."
+    "text": "고맙습니다.\n\n계속 그리겠습니다."
    }
   ]
  }

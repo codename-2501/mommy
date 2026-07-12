@@ -57,6 +57,18 @@
   .imgcard .nm{font-size:11px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .use{font-size:10px;color:var(--mut)}
 
+  /* block editor: only the grip drags, so a textarea keeps its own text selection */
+  .blk{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);
+    border-radius:10px;padding:10px}
+  .blk.drag{opacity:.4}
+  .blk.over{outline:2px dashed var(--blue)}
+  .blk .grip2{flex:none;align-self:stretch;display:flex;align-items:center;padding:0 2px;color:var(--mut);
+    cursor:grab;user-select:none;font-size:16px}
+  .blk .grip2:active{cursor:grabbing}
+  .blk-ta{width:100%;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;
+    padding:12px 14px;resize:vertical;font-family:inherit;font-size:15px;line-height:1.7;min-height:96px}
+  .blk-ta:focus{outline:none;border-color:#4a4d57}
+
   /* text editor */
   .textlist{display:flex;flex-direction:column;gap:10px;max-width:900px}
   .titem{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;
@@ -231,7 +243,7 @@
 
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-let cfg=null, images=[], pickTarget=null, curPage='/about', nid=0;
+let cfg=null, images=[], pickTarget=null, curPage='/about', nid=0, baseVersion=null;
 function setStatus(m,c=''){const e=$('#status');e.textContent=m;e.className='status '+c;}
 function dirty(){setStatus('저장되지 않은 변경 있음','err');}
 
@@ -241,7 +253,7 @@ async function load(){
     fetch('/api/images?t='+Date.now()).then(r=>r.json()),
     fetch('/api/pages?t='+Date.now()).then(r=>r.json())
   ]);
-  cfg=c; images=im.images||[];
+  cfg=c; baseVersion=cfg._version||null; delete cfg._version; images=im.images||[];
   const sel=$('#pageSel'); sel.innerHTML=(pg.pages||['/']).map(p=>`<option value="${p}">${p}</option>`).join('');
   loadWordmark();
   renderSlides(); renderImages();
@@ -556,6 +568,8 @@ const BLOCK_HINT={
   text:'본문. 빈 줄로 문단을 나눕니다.',
   thanks:'맺음말. 가장 큰 글씨로 놓입니다.',
 };
+/* a body paragraph is the block people actually write in — give it room to write in */
+const BLOCK_ROWS={title:4, text:12, thanks:4};
 function loadText(){ curPage=$('#pageSel').value||'/about'; renderBlocks(); }
 function pageBlocks(){
   if(!cfg.blocks||typeof cfg.blocks!=='object') cfg.blocks={};
@@ -567,7 +581,8 @@ function renderBlocks(){
   const list=pageBlocks(); L.innerHTML='';
   list.forEach((b,i)=>{
     const row=document.createElement('div');
-    row.style.cssText='display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px';
+    row.className='blk'; row.dataset.i=i;
+    const grip=`<div class="grip2" draggable="true" title="끌어서 순서 변경">≡</div>`;
     const nav=`<div style="display:flex;flex-direction:column;gap:4px;flex:none">
         <button class="btn ghost" data-up="${i}" ${i===0?'disabled':''}>↑</button>
         <button class="btn ghost" data-down="${i}" ${i===list.length-1?'disabled':''}>↓</button>
@@ -581,14 +596,43 @@ function renderBlocks(){
                   style="flex:1;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 10px">
          </div>`
       : `<div style="flex:1">
-           <textarea data-text="${i}" rows="${b.type==='text'?4:2}" placeholder="${escAttr(BLOCK_HINT[b.type]||'')}"
-             style="width:100%;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;resize:vertical">${escHtml(b.text||'')}</textarea>
+           <textarea class="blk-ta" data-text="${i}" rows="${BLOCK_ROWS[b.type]||6}"
+             placeholder="${escAttr(BLOCK_HINT[b.type]||'')}">${escHtml(b.text||'')}</textarea>
          </div>`;
-    row.innerHTML=tag+body+nav;
+    row.innerHTML=grip+tag+body+nav;
     L.appendChild(row);
   });
   $('#countBlocks').textContent=list.length+'개 블록';
 }
+
+/* drag to reorder — the grip is the only draggable part, so typing in a block still works */
+let dragB=null;
+$('#blockList').addEventListener('dragstart',e=>{
+  const g=e.target.closest('.grip2'); if(!g){e.preventDefault();return;}
+  const row=g.closest('.blk'); dragB=+row.dataset.i; row.classList.add('drag');
+  e.dataTransfer.effectAllowed='move';
+});
+$('#blockList').addEventListener('dragend',()=>{
+  dragB=null;
+  $$('.blk.drag').forEach(x=>x.classList.remove('drag'));
+  $$('.blk.over').forEach(x=>x.classList.remove('over'));
+});
+$('#blockList').addEventListener('dragover',e=>{
+  if(dragB==null) return;
+  e.preventDefault(); e.dataTransfer.dropEffect='move';
+  const row=e.target.closest('.blk'); if(!row) return;
+  $$('.blk.over').forEach(x=>x.classList.remove('over'));
+  if(+row.dataset.i!==dragB) row.classList.add('over');
+});
+$('#blockList').addEventListener('drop',e=>{
+  e.preventDefault();
+  const row=e.target.closest('.blk'); if(!row||dragB==null) return;
+  const to=+row.dataset.i; if(to===dragB) return;
+  const list=pageBlocks();
+  const [m]=list.splice(dragB,1);
+  list.splice(to,0,m);
+  dragB=null; renderBlocks(); dirty();
+});
 function addAboutImage(src){ pageBlocks().push({type:'image',src:src,caption:''}); renderBlocks(); dirty(); }
 $$('[data-add]').forEach(btn=>btn.onclick=()=>{
   const t=btn.dataset.add;
@@ -626,8 +670,13 @@ $('#save').onclick=async()=>{
       });
       if(!Object.keys(cfg.blocks).length) delete cfg.blocks;
     }
-    const r=await fetch('/api/content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)}).then(r=>r.json());
+    // tell the server which version of the file this tab is editing, so a save that would
+    // clobber someone else's change is refused rather than silently winning
+    const payload=Object.assign({},cfg,{_version:baseVersion});
+    const r=await fetch('/api/content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json());
+    if(r.stale){ setStatus('다른 곳에서 변경됨 — 새로고침 후 다시 편집하세요','err'); return; }
     if(r.error)throw new Error(r.error);
+    baseVersion=r.version||null;
     setStatus('저장 완료 · 사이트 새로고침 시 반영','ok');
   }catch(err){setStatus('저장 실패: '+err.message,'err');}
 };
