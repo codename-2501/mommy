@@ -10,6 +10,7 @@ Admin:  http://localhost:8082/admin/
 """
 import sys, os, json, re, copy, urllib.parse, http.server, socketserver, socket
 from html.parser import HTMLParser
+from tunnel import Tunnel
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 CONTENT = os.path.join(ROOT, "content.json")
@@ -19,6 +20,7 @@ SITE_ROUTES = ("/", "/surf", "/articles", "/about")   # SPA shell routes (+ /p/<
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8082
 
 INJECT = '<script src="/tlb-admin.js"></script>'
+TUNNEL = Tunnel(PORT)      # temporary public link (cloudflared), driven from /admin/
 ALLOWED_IMG = (".jpg", ".jpeg", ".png", ".webp", ".gif")
 
 
@@ -447,6 +449,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 return self._send_json({"error": str(e)}, 500)
 
+        if path == "/api/tunnel":
+            return self._send_json(TUNNEL.status())
+
         if path == "/api/images":
             try:
                 files = sorted(
@@ -621,6 +626,26 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 return self._send_json({"error": str(e)}, 500)
 
+        if path == "/api/tunnel":
+            try:
+                req = json.loads(body.decode("utf-8")) if body else {}
+                action = req.get("action")
+                if action == "start":
+                    return self._send_json(TUNNEL.start())
+                if action == "stop":
+                    return self._send_json(TUNNEL.stop())
+                if action == "keepalive":
+                    return self._send_json(TUNNEL.set_keepalive(bool(req.get("value"))))
+                if action == "notify":
+                    if not TUNNEL.url:
+                        return self._send_json({"error": "no link to send"}, 400)
+                    st = TUNNEL.status()
+                    st["sent"] = TUNNEL.notify(TUNNEL.url)
+                    return self._send_json(st)
+                return self._send_json({"error": "unknown action"}, 400)
+            except Exception as e:
+                return self._send_json({"error": str(e)}, 500)
+
         if path == "/api/content":
             try:
                 data = json.loads(body.decode("utf-8"))
@@ -701,6 +726,7 @@ def main():
         httpd = DualStackServer(("", PORT), Handler)     # IPv4 + IPv6
     except OSError:
         httpd = socketserver.ThreadingTCPServer(("", PORT), Handler)   # IPv4-only fallback
+    TUNNEL.boot()      # "상시 유지" was left on: bring the public link back up
     with httpd:
         print(f"THE LOOKBACK + admin -> http://localhost:{PORT}/  (127.0.0.1 and ::1)")
         print(f"Admin panel        -> http://localhost:{PORT}/admin/")
