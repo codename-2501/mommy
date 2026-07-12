@@ -440,6 +440,8 @@ img{max-width:100%;display:block}
    neighbours until something forces a restack (original has no will-change here either) */
 .surf-item{position:relative;cursor:pointer}
 .surf-item__media{position:relative}
+/* stable hover/click target: it covers the card's own spot and never moves */
+.surf-item__hit{position:absolute;inset:0}
 @media (hover:hover) and (pointer:fine){
   .surf-item__media{transition:transform .75s var(--ease-out-expo)}
   .surf-item:hover .surf-item__media{transform:translate(75%) rotate(10deg)}
