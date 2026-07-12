@@ -366,12 +366,12 @@ function mountIndex(view, slides, aspects, onOpen) {
 function mountAbout(view, content) {
   const texts = (content && content.texts && content.texts['/about']) || {};
   const wm = (content && content.wordmark) || {};
-  /* our own copy — editable in the admin's 텍스트 tab, these are only the fallbacks */
-  const title = texts.title ||
-    (wm.l1 || 'LSE GALLERY') + '\n승은의\n회화\n아카이브';
-  const intro = texts.intro ||
-    '캔버스 앞에 앉은 날들을 모았습니다. 꽃과 풍경, 정물과 실험적인 화면까지 — 그린 순서대로 월별 타임라인에 놓았습니다. 한 점씩 눌러 크게 보고, 그림이 놓인 자리와 시간을 함께 읽어주세요.';
-  const thanks = texts.thanks || '보아주셔서 고맙습니다.\n\n계속 그리겠습니다.';
+  /* the copy lives in content.json, edited in the admin's 텍스트 tab — it is the only
+     source. A second copy hardcoded here would silently outlive an admin edit and
+     resurface as stale text the day texts is empty, so an empty field renders nothing. */
+  const title = texts.title || '';
+  const intro = texts.intro || '';
+  const thanks = texts.thanks || '';
 
   const page = el('div', 'about');
   const maskOuter = el('div', 'about__mask');
@@ -387,24 +387,51 @@ function mountAbout(view, content) {
   head.appendChild(l2);
   scroller.appendChild(head);
 
-  const h1 = el('h1', 'about__title');
-  title.split(/\n/).forEach((line) => {
-    const m = el('div', 'about__line');
-    m.appendChild(el('div', 'about__line-in', line));
-    h1.appendChild(m);
-  });
-  scroller.appendChild(h1);
+  if (title.trim()) {
+    const h1 = el('h1', 'about__title');
+    title.split(/\n/).forEach((line) => {
+      const m = el('div', 'about__line');
+      m.appendChild(el('div', 'about__line-in', line));
+      h1.appendChild(m);
+    });
+    scroller.appendChild(h1);
+  }
 
-  const introEl = el('div', 'about__intro about__fade');
-  intro.split(/\n+/).forEach((p) => introEl.appendChild(el('p', null, p)));
-  scroller.appendChild(introEl);
+  if (intro.trim()) {
+    const introEl = el('div', 'about__intro about__fade');
+    intro.split(/\n+/).forEach((p) => introEl.appendChild(el('p', null, p)));
+    scroller.appendChild(introEl);
+  }
 
-  const thanksEl = el('div', 'about__thanks');
-  thanks.split(/\n/).forEach((line) => {
-    if (!line.trim()) return;
-    thanksEl.appendChild(el('div', null, line));
-  });
-  scroller.appendChild(thanksEl);
+  /* page images, in the order the admin set them */
+  const media = ((content && content.media && content.media['/about']) || [])
+    .filter((m) => m && m.src);
+  if (media.length) {
+    const wrap = el('div', 'about__media about__fade');
+    media.forEach((m) => {
+      const fig = el('figure', 'about__fig');
+      const img = el('img');
+      img.src = m.src;
+      img.alt = m.caption || '';
+      img.loading = 'lazy';
+      img.addEventListener('load', () => img.classList.add('ok'));
+      fig.appendChild(img);
+      if ((m.caption || '').trim()) {
+        fig.appendChild(el('figcaption', null, m.caption));
+      }
+      wrap.appendChild(fig);
+    });
+    scroller.appendChild(wrap);
+  }
+
+  if (thanks.trim()) {
+    const thanksEl = el('div', 'about__thanks');
+    thanks.split(/\n/).forEach((line) => {
+      if (!line.trim()) return;
+      thanksEl.appendChild(el('div', null, line));
+    });
+    scroller.appendChild(thanksEl);
+  }
 
   /* Noun Project attribution (CC BY 3.0 — the plan's only allowed credit) */
   const cred = el('div', 'about__credits label');

@@ -53,6 +53,13 @@ def referenced_images(content):
                 name = image_name(item.get("src") or "")
                 if name:
                     full.add(name)
+    # page images (About): rendered at full width, never thumbnailed — miss these and the
+    # built site ships an About page pointing at images that were never copied
+    for items in (content.get("media") or {}).values():
+        for item in items or []:
+            name = image_name(item.get("src") or "")
+            if name:
+                full.add(name)
     return thumbed | full, full
 
 
