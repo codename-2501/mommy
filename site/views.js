@@ -39,6 +39,22 @@ function month(s) {
   return m ? m[1].trim() : '';
 }
 
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+
+/* month name -> year, exactly as the timeline ruler resolves it: take it from any slide
+   dated in that month, and fall back to 2026 for the months nobody dated */
+function yearsByMonth(slides) {
+  const byNum = {};
+  for (const s of slides || []) {
+    const m = /^(\d{4})-(\d{2})/.exec(String(s.date || ''));
+    if (m) byNum[+m[2]] = m[1];
+  }
+  const out = {};
+  MONTHS.forEach((name, i) => { out[name] = byNum[i + 1] || '2026'; });
+  return out;
+}
+
 /* ---------------- SURF: floating card deck (original values) ---------------- */
 function mountSurf(view, slides, aspects, onOpen) {
   const wrap = el('div', 'surf');
@@ -285,6 +301,7 @@ function mountIndex(view, slides, aspects, onOpen) {
   view.appendChild(outer);
 
   const perRow = isSmall() ? 4 : 12;
+  const years = yearsByMonth(slides);
   let row = null, seenMonth = '';
   slides.forEach((s, i) => {
     if (i % perRow === 0) {
@@ -312,7 +329,11 @@ function mountIndex(view, slides, aspects, onOpen) {
       seenMonth = mo;
       const lbl = el('div', 'agrid__month');
       const rev = el('div', 'dt-reveal');
-      rev.appendChild(el('div', 'label', mo));
+      const txt = el('div', 'label', mo);
+      /* same rule as the ruler: this work's own year, else the month's, else 2026 */
+      const own = /^(\d{4})/.exec(String(s.date || ''));
+      txt.dataset.year = (own && own[1]) || years[mo] || '2026';
+      rev.appendChild(txt);
       lbl.appendChild(rev);
       cell.appendChild(lbl);
     }
