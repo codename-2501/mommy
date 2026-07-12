@@ -46,7 +46,7 @@ function buildItem(s, i, ratio) {
   const box = el('div', 'car-media lse-slot');
   box.dataset.id = s.id || '';
   box.style.aspectRatio = String(ratio || 1);
-  const frame = el('div', 'tlb-frame lse-frame');
+  const frame = el('div', 'lse-frame');
   frame.dataset.id = s.id || '';
   const img = el('img');
   /* carousel-size webp */
@@ -313,7 +313,7 @@ function mount(view, slides, aspects, years, onOpen) {
     wrap.classList.remove('is-active');
   }
   function onWheel(e) {
-    if (window.TLBDetail && window.TLBDetail.isOpen) return;   // detail owns the wheel
+    if (window.LSEDetail && window.LSEDetail.isOpen) return;   // detail owns the wheel
     // wheelDeltaY where the browser gives it (it is the smoother of the two signals)
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
     target += raw * WHEEL_MULT;
@@ -322,7 +322,7 @@ function mount(view, slides, aspects, years, onOpen) {
     return Math.round(target / step);
   }
   function onKey(e) {
-    if (window.TLBDetail && window.TLBDetail.isOpen) return;
+    if (window.LSEDetail && window.LSEDetail.isOpen) return;
     if (document.activeElement && document.activeElement.nodeName === 'INPUT') return;
     if (e.key === 'ArrowUp') { target -= KEY_STEP; }
     else if (e.key === 'ArrowDown') { target += KEY_STEP; }
@@ -383,5 +383,5 @@ function mount(view, slides, aspects, years, onOpen) {
   };
 }
 
-window.TLBCarousel = { mount };
+window.LSECarousel = { mount };
 })();

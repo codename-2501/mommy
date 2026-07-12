@@ -15,7 +15,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-OUT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "/tmp/tlb_frames")
+OUT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "/tmp/lse_frames")
 OUT.mkdir(parents=True, exist_ok=True)
 PROFILE = OUT / "profile"
 

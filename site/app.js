@@ -343,7 +343,7 @@ function renderHome() {
   frag.appendChild(view);
 
   if (carousel) { carousel.destroy(); carousel = null; }
-  carousel = window.TLBCarousel.mount(
+  carousel = window.LSECarousel.mount(
     view, content.slides || [], aspects, yearsByName(),
     (s, item) => {
       carousel.freeze();   // stop the lerp drift so the flip source stays put
@@ -423,13 +423,13 @@ function buildView(path) {
   const slides = content.slides || [];
   if (path === '/') return renderHome();
   if (path === '/surf') {
-    return renderView('surf', (v, open) => window.TLBViews.mountSurf(v, slides, aspects, open));
+    return renderView('surf', (v, open) => window.LSEViews.mountSurf(v, slides, aspects, open));
   }
   if (path === '/articles') {
-    return renderView('articles', (v, open) => window.TLBViews.mountIndex(v, slides, aspects, open));
+    return renderView('articles', (v, open) => window.LSEViews.mountIndex(v, slides, aspects, open));
   }
   if (path === '/about') {
-    return renderView('about', (v) => window.TLBViews.mountAbout(v, content));
+    return renderView('about', (v) => window.LSEViews.mountAbout(v, content));
   }
   return renderStub('not found');
 }
@@ -696,7 +696,7 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
 /* give a slot its painting back — used when the frame it lent out cannot fly home */
 function restoreSlot(f) {
   if (!f.box.querySelector('.lse-frame')) {
-    const frame = el('div', 'tlb-frame lse-frame');
+    const frame = el('div', 'lse-frame');
     frame.dataset.id = f.box.dataset.id || '';
     const img = document.createElement('img');
     img.src = f.src;
@@ -754,7 +754,7 @@ function render() {
     }
     const flip = pendingFlip;
     pendingFlip = null;
-    window.TLBDetail.open(app, {
+    window.LSEDetail.open(app, {
       content, aspects,
       closePath: lastViewPath,
       onSync: (i) => { if (carousel) carousel.goTo(i); },
@@ -763,8 +763,8 @@ function render() {
     }, path.slice(3), flip);
     return;
   }
-  if (window.TLBDetail.isOpen && path === lastViewPath) {
-    window.TLBDetail.close();                // back from detail: animate out, keep the view
+  if (window.LSEDetail.isOpen && path === lastViewPath) {
+    window.LSEDetail.close();                // back from detail: animate out, keep the view
     return;
   }
 

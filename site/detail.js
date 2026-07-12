@@ -54,7 +54,7 @@ function mediaCell(s, aspects, cls) {
   box.dataset.id = s.id || '';
   const name = String(s.image || '').split('/').pop();
   box.style.aspectRatio = String(aspects[name] || 1);
-  const frame = el('div', 'tlb-frame lse-frame');
+  const frame = el('div', 'lse-frame');
   frame.dataset.id = s.id || '';
   const img = el('img');
   img.src = thumb(s.image, 600);
@@ -193,7 +193,7 @@ function buildStrip(s, i, slides, aspects, nav) {
   strip.appendChild(row);
   /* empty strip area = Close */
   strip.addEventListener('click', (e) => {
-    if (e.target === strip || e.target === row) window.TLBDetail.close();
+    if (e.target === strip || e.target === row) window.LSEDetail.close();
   });
   return strip;
 }
@@ -337,7 +337,7 @@ function render(container, opts, id, flip, dir) {
   const oldCtl = container.querySelector('.dt-controls');
   const ctl = buildControls(null,
     () => go(slides[(i + 1) % slides.length].id),
-    () => window.TLBDetail.close());
+    () => window.LSEDetail.close());
   if (oldCtl) oldCtl.replaceWith(ctl); else container.appendChild(ctl);
 
   /* item→item — role-shift: cur→prev slot and next→cur slot FLY (reverse
@@ -433,7 +433,7 @@ function open(parent, opts, id, flip) {
     const inn = el('div', 'dt-panel__in');
     const head = el('header', 'dt-head');
     const close = el('button', null, 'Close');
-    close.addEventListener('click', () => window.TLBDetail.close());
+    close.addEventListener('click', () => window.LSEDetail.close());
     head.appendChild(close);
     panel.appendChild(inn);
     panel.appendChild(head);
@@ -478,7 +478,7 @@ document.addEventListener('keydown', (e) => {
   else if (e.key === 'ArrowLeft' && root._nav) { e.preventDefault(); root._nav(-1); }
 });
 
-window.TLBDetail = {
+window.LSEDetail = {
   open, close,
   get isOpen() { return !!root; },
   get id() { return curId; },
