@@ -325,11 +325,11 @@ function renderHome() {
     (s, item) => {
       carousel.freeze();   // stop the lerp drift so the flip source stays put
       const grab = (it) => {
-        const img = it && it.querySelector('.car-frame img');
+        const img = it && it.querySelector('.tlb-frame img');
         if (!img) return null;
         const r = img.getBoundingClientRect();
         if (r.right < 0 || r.left > innerWidth) return null;   // only visible ones fly
-        return { el: it.querySelector('.car-frame'), src: img.currentSrc || img.src };
+        return { el: it.querySelector('.tlb-frame'), src: img.currentSrc || img.src };
       };
       const track = item.parentElement;
       pendingFlip = {
@@ -673,7 +673,7 @@ function render() {
         if (!item) return null;
         item.classList.add('flip-back');
         setTimeout(() => item.classList.remove('flip-back'), 1200);
-        return item.querySelector('.car-frame');
+        return item.querySelector('.tlb-frame');
       },
     }, path.slice(3), flip);
     return;

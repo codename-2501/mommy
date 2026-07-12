@@ -57,7 +57,7 @@ function mountSurf(view, slides, aspects, onOpen) {
     box.dataset.id = s.id || '';
     const name = String(s.image || '').split('/').pop();
     box.style.aspectRatio = String(aspects[name] || 1);
-    const frame = el('div', 'surf-item__frame js-flip');
+    const frame = el('div', 'tlb-frame js-flip');
     frame.dataset.id = s.id || '';
     const img = el('img');
     img.src = thumb(s.image, 600);
@@ -285,7 +285,7 @@ function mountIndex(view, slides, aspects, onOpen) {
     const box = el('div', 'agrid__media js-flip-target');
     box.dataset.id = s.id || '';
     box.style.aspectRatio = String(aspects[name] || 1);
-    const frame = el('div', 'agrid__frame js-flip');
+    const frame = el('div', 'tlb-frame js-flip');
     frame.dataset.id = s.id || '';
     const img = el('img');
     img.src = thumb(s.image, 300);

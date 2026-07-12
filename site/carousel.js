@@ -44,7 +44,7 @@ function buildItem(s, i, ratio) {
   const box = el('div', 'car-media js-flip-target');
   box.dataset.id = s.id || '';
   box.style.aspectRatio = String(ratio || 1);
-  const frame = el('div', 'car-frame js-flip');
+  const frame = el('div', 'tlb-frame js-flip');
   frame.dataset.id = s.id || '';
   const img = el('img');
   /* carousel-size webp (originals are multi-MB and stutter the scroll) */
@@ -115,6 +115,7 @@ function mount(view, slides, aspects, years, onOpen) {
     contents.push(item.firstChild.firstChild);   // .car-entr > .car-content
   });
   const onScreen = new Uint8Array(items.length);
+  const placed = new Uint8Array(items.length);   // has this slide ever been given a transform?
 
   /* ---------- geometry ---------- */
   let rem = rootPx();
@@ -286,9 +287,14 @@ function mount(view, slides, aspects, years, onOpen) {
           items[k].style.transform = 'translate3d(' + (-d) + 'px,0,0)';
           if (ry) contents[k].style.transform = ry;
           onScreen[k] = 1;
-        } else if (onScreen[k]) {
+          placed[k] = 1;
+        } else if (onScreen[k] || !placed[k]) {
+          /* !placed: a slide that has never been positioned still sits at its natural flex
+             spot — which is ON screen. Starting anywhere but slide 0 (the index handover)
+             would leave it there, overlapping the slides that belong in that spot. */
           items[k].style.transform = 'translate3d(' + (-d) + 'px,0,0)';   // park just off-screen
           onScreen[k] = 0;
+          placed[k] = 1;
         }
       }
     }
