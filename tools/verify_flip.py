@@ -84,7 +84,13 @@ try:
     shot("00b_home_moved.png")
     home_active = d.execute_script(
         "const a=document.querySelector('.js-slide-active .js-flip'); return a?a.dataset.id:null;")
-    print(f"\nhome parked on work {home_active}")
+    # the works are ordered by their admin date, so a work's id number is NOT its position
+    home_active_pos = d.execute_script("""
+      const items = [...document.querySelectorAll('.car-item')];
+      const act = document.querySelector('.car-item.js-slide-active');
+      return String(items.indexOf(act));
+    """)
+    print(f"\nhome parked on work {home_active} (slide #{home_active_pos})")
 
     def hop(name, href, from_view):
         print(f"\n[{name}]")
@@ -163,8 +169,9 @@ try:
     # home -> surf : shared flip, no stagger (original toSurf), index handed over
     before, shared, dupes, stuck, views, flew, ghosts, blank = hop("01_home_to_surf", "/surf", "home")
     handed = d.execute_script("return document.body.dataset.index;")
-    check(handed == home_active.replace("s", ""),
-          f"home->surf: the carousel's work ({home_active}) was handed to surf (index={handed})")
+    check(handed == home_active_pos,
+          f"home->surf: the carousel's work ({home_active}, slide #{home_active_pos}) "
+          f"was handed to surf (index={handed})")
     check(home_active in shared,
           f"home->surf: the work the viewer was on ({home_active}) is the one that flew")
     check(len(shared) > 0, "home->surf: a painting was reparented into the surf slot of the same id")

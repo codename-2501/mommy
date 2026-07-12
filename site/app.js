@@ -47,11 +47,25 @@ function el(tag, cls, text) {
   return n;
 }
 
+/* The timeline runs newest first, so the works are ordered by the date set in the admin.
+   Slides sharing a date (or with none) keep the admin's own order — Array.sort is stable. */
+function byDateDesc(slides) {
+  return (slides || []).slice().sort((a, b) => {
+    const da = String(a.date || ''), db = String(b.date || '');
+    if (da === db) return 0;
+    if (!da) return 1;            // undated works sit at the end rather than at the top
+    if (!db) return -1;
+    return da < db ? 1 : -1;
+  });
+}
+
 async function loadContent() {
   try {
     const r = await fetch('/api/content');
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    return await r.json();
+    const c = await r.json();
+    c.slides = byDateDesc(c.slides);
+    return c;
   } catch (err) {
     console.error('content load failed:', err);
     return { slides: [], wordmark: {}, texts: {} };
@@ -92,24 +106,31 @@ function wordmark() {
   };
 }
 
-/* per-month aggregation from slide `bottom` labels: "Inspire (January)" */
+/* One row per month of the archive, newest first — the same grouping the ruler and the
+   index use. Keyed by year+month, so three different Januaries stay three rows instead of
+   collapsing into one row with a wrong year and a tripled count. */
 function monthStats(slides) {
-  const stats = MONTHS.map((m) => ({ month: m, cat: '', count: 0 }));
+  const rows = [];
+  const byKey = new Map();
   for (const s of slides || []) {
     const bottom = String(s.bottom || '');
     const m = /\(([^)]+)\)\s*$/.exec(bottom);
     if (!m) continue;
     const idx = MONTHS.findIndex((x) => x.toLowerCase() === m[1].trim().toLowerCase());
     if (idx < 0) continue;
-    const cat = String(s.category || '').trim() ||
+    const y = (/^(\d{4})/.exec(String(s.date || '')) || [])[1] || '2026';
+    const key = y + '-' + idx;
+    let row = byKey.get(key);
+    if (!row) {
+      row = { month: MONTHS[idx], year: y, cat: '', count: 0 };
+      byKey.set(key, row);
+      rows.push(row);
+    }
+    row.cat = row.cat || String(s.category || '').trim() ||
       bottom.replace(/\s*\([^)]*\)\s*$/, '').trim();
-    stats[idx] = {
-      month: MONTHS[idx],
-      cat: stats[idx].cat || cat,
-      count: stats[idx].count + 1,
-    };
+    row.count += 1;
   }
-  return stats.filter((s) => s.count > 0);
+  return rows;
 }
 
 /* month (1-12) -> year from slide dates; months without a dated work fall back to 2026 */
@@ -187,19 +208,32 @@ function buildWordmark(revealDelay) {
 
 /* ---------- intro gate ---------- */
 
+/* Original: every visual line of the month list scrambles in for .5s, stagger .075 — a
+   12-month archive is 24 lines, about 1.7s. An archive spanning several years has many
+   more rows, so the step is compressed to keep the intro the same length. */
+function introStep(monthRows) {
+  return Math.min(75, 1800 / Math.max(1, monthRows * 2 - 1));
+}
+
+/* when the wordmark starts rising: as the month list finishes (original label "-=.5") */
+function introLogoStart(slides) {
+  const rows = monthStats(slides).length * 2;
+  return Math.max(0, (rows - 1) * introStep(rows / 2)) / 1000;
+}
+
 function renderIntro(logoStart) {
   const intro = el('div', 'intro');
 
-  /* month list — 2 columns: Jan–Jul / Aug–Dec */
+  /* month list — 2 columns, newest half then the rest */
   const stats = monthStats(content.slides);
   const months = el('div', 'intro-months label');
   const colA = el('div', 'col');
   const colB = el('div', 'col');
-  /* original: each visual LINE scrambles in for .5s, ease none, stagger .075 */
-  const years = yearByMonth(content.slides);
+  const half = Math.ceil(stats.length / 2);
+  const step = introStep(stats.length);
   const scrambles = [];
   let row = 0;
-  stats.forEach((s) => {
+  stats.forEach((s, si) => {
     /* original structure: month name (+year), then indented category (count) line */
     const block = el('div', 'mo');
     const monthRow = el('div', 'row');
@@ -218,13 +252,12 @@ function renderIntro(logoStart) {
     catRow.appendChild(catIn);
     block.appendChild(monthRow);
     block.appendChild(catRow);
-    (MONTHS.indexOf(s.month) < 7 ? colA : colB).appendChild(block);
-    const year = years[MONTHS.indexOf(s.month) + 1] || '2026';
-    const dMonth = row * 75; row += 1;
-    const dCat = row * 75; row += 1;
+    (si < half ? colA : colB).appendChild(block);
+    const dMonth = row * step; row += 1;
+    const dCat = row * step; row += 1;
     scrambles.push(() => {
       scrambleIn(monthName, s.month.toUpperCase(), dMonth, 500);
-      scrambleIn(yearEl, year, dMonth, 500);
+      scrambleIn(yearEl, s.year, dMonth, 500);
       scrambleIn(cat, s.cat || '', dCat, 500);
       scrambleIn(n, '(' + s.count + ')', dCat, 500);
     });
@@ -312,9 +345,7 @@ function yearsByName() {
 function renderHome() {
   const frag = document.createDocumentFragment();
 
-  /* wordmark reveal starts as the month list finishes (original: label "-=.5") */
-  const rows = monthStats(content.slides).length * 2;
-  const logoStart = Math.max(0, 500 + (rows - 1) * 75 - 500) / 1000;
+  const logoStart = introLogoStart(content.slides);
 
   const view = el('main', 'view view--home');
   frag.appendChild(view);
@@ -774,9 +805,7 @@ Promise.all([loadContent(), loadAspects(), loadIcons()]).then(([c, a]) => {
   const wm = wordmark();
   document.title = [wm.l2, wm.l1].filter(Boolean).join(' — ');
   /* persistent chrome: wordmark + menu live outside the router (original layout level) */
-  const rows0 = monthStats(content.slides).length * 2;
-  const logoStart0 = Math.max(0, 500 + (rows0 - 1) * 75 - 500) / 1000;
-  wmEl = buildWordmark(entered ? 0 : logoStart0);
+  wmEl = buildWordmark(entered ? 0 : introLogoStart(content.slides));
   if (entered) wmEl.classList.add('is-ready');
   document.body.appendChild(wmEl);
   menuEl = buildMenu();
