@@ -1,4 +1,4 @@
-/* THE LOOKBACK — rebuilt frontend. Data: /api/content only. */
+/* LSE GALLERY — painting archive frontend. Data: /api/content only. */
 (() => {
 'use strict';
 
@@ -14,18 +14,11 @@ let pendingFlip = null;       // clicked painting rect/src for the detail FLIP
 let flipSources = [];         // home media hidden while their ghosts are in the detail
 let activeView = null;        // surf/index/about instance (destroy on route change)
 let lastViewPath = '/';       // where the detail Close returns to
+let viewEl = null;            // the view that is CURRENT — never the one on its way out
+let leaving = null;           // {el, inst, car, timers} still animating out
+let navGen = 0;               // a newer navigation retires the transition in flight
 let wmEl = null;              // persistent wordmark (survives route changes)
 let menuEl = null;            // persistent menu
-
-/* audio flags — "Enter with sound" turns on tick/click sounds (original) */
-window.TLB_AUDIO = { on: false };
-let clickAudio = null;
-document.addEventListener('click', () => {
-  if (!window.TLB_AUDIO.on) return;
-  if (!clickAudio) clickAudio = new Audio('/site/assets/click.mp3');
-  clickAudio.currentTime = 0;
-  clickAudio.play().catch(() => {});
-});
 
 /* menu icons — Noun Project, CC BY 3.0 (credits inside each SVG file) */
 const MENU = [
@@ -44,11 +37,25 @@ function el(tag, cls, text) {
   return n;
 }
 
+/* The timeline runs newest first, so the works are ordered by the date set in the admin.
+   Slides sharing a date (or with none) keep the admin's own order — Array.sort is stable. */
+function byDateDesc(slides) {
+  return (slides || []).slice().sort((a, b) => {
+    const da = String(a.date || ''), db = String(b.date || '');
+    if (da === db) return 0;
+    if (!da) return 1;            // undated works sit at the end rather than at the top
+    if (!db) return -1;
+    return da < db ? 1 : -1;
+  });
+}
+
 async function loadContent() {
   try {
     const r = await fetch('/api/content');
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    return await r.json();
+    const c = await r.json();
+    c.slides = byDateDesc(c.slides);
+    return c;
   } catch (err) {
     console.error('content load failed:', err);
     return { slides: [], wordmark: {}, texts: {} };
@@ -83,30 +90,37 @@ async function loadIcons() {
 function wordmark() {
   const w = (content && content.wordmark) || {};
   return {
-    l1: (w.l1 || '').trim(),
-    l2: (w.l2 || 'THE LOOKBACK').trim(),
+    l1: (w.l1 || 'LSE GALLERY').trim(),
+    l2: (w.l2 || '').trim(),
     l3: (w.l3 || '').trim(),
   };
 }
 
-/* per-month aggregation from slide `bottom` labels: "Inspire (January)" */
+/* One row per month of the archive, newest first — the same grouping the ruler and the
+   index use. Keyed by year+month, so three different Januaries stay three rows instead of
+   collapsing into one row with a wrong year and a tripled count. */
 function monthStats(slides) {
-  const stats = MONTHS.map((m) => ({ month: m, cat: '', count: 0 }));
+  const rows = [];
+  const byKey = new Map();
   for (const s of slides || []) {
     const bottom = String(s.bottom || '');
     const m = /\(([^)]+)\)\s*$/.exec(bottom);
     if (!m) continue;
     const idx = MONTHS.findIndex((x) => x.toLowerCase() === m[1].trim().toLowerCase());
     if (idx < 0) continue;
-    const cat = String(s.category || '').trim() ||
+    const y = (/^(\d{4})/.exec(String(s.date || '')) || [])[1] || '2026';
+    const key = y + '-' + idx;
+    let row = byKey.get(key);
+    if (!row) {
+      row = { month: MONTHS[idx], year: y, cat: '', count: 0 };
+      byKey.set(key, row);
+      rows.push(row);
+    }
+    row.cat = row.cat || String(s.category || '').trim() ||
       bottom.replace(/\s*\([^)]*\)\s*$/, '').trim();
-    stats[idx] = {
-      month: MONTHS[idx],
-      cat: stats[idx].cat || cat,
-      count: stats[idx].count + 1,
-    };
+    row.count += 1;
   }
-  return stats.filter((s) => s.count > 0);
+  return rows;
 }
 
 /* month (1-12) -> year from slide dates; months without a dated work fall back to 2026 */
@@ -120,7 +134,7 @@ function yearByMonth(slides) {
   return map;
 }
 
-/* scramble-text reveal (original uses GSAP ScrambleText — same feel, vanilla) */
+/* scramble-text reveal */
 const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 function randChars(n) {
@@ -148,7 +162,7 @@ function scrambleOut(node, dur) {
 }
 
 function scrambleIn(node, text, delay, dur) {
-  const interval = 50;                  // scramble refresh (= gsap speed .05)
+  const interval = 50;                  // how often the scrambled letters re-roll
   let start = null;
   let scr = randChars(text.length);
   let last = 0;
@@ -156,7 +170,7 @@ function scrambleIn(node, text, delay, dur) {
   function tick(ts) {
     if (start === null) start = ts + delay;
     if (ts < start) { requestAnimationFrame(tick); return; }
-    const t = Math.min(1, (ts - start) / dur);   // linear reveal (original ease:"none")
+    const t = Math.min(1, (ts - start) / dur);   // linear reveal
     const shown = Math.floor(t * text.length + 0.5);
     if (ts - last > interval) { scr = randChars(text.length); last = ts; }
     node.textContent = text.slice(0, shown) + scr.slice(shown, text.length);
@@ -168,7 +182,7 @@ function scrambleIn(node, text, delay, dur) {
 
 /* ---------- wordmark (persistent big logo) ---------- */
 
-/* original: lines rise with yPercent:105 + clip reveal, 1.5s "snappy", stagger .1 */
+/* : lines rise with yPercent:105 + clip reveal, 1.5s "snappy", stagger .1 */
 function buildWordmark(revealDelay) {
   const wm = wordmark();
   const node = el('div', 'wordmark');
@@ -184,61 +198,67 @@ function buildWordmark(revealDelay) {
 
 /* ---------- intro gate ---------- */
 
+/* : every visual line of the month list scrambles in for .5s, stagger .075. An
+   archive spanning several years has many more lines, so the step is compressed to keep
+   the intro the same length. */
+function introStep(lines) {
+  return Math.min(75, 1800 / Math.max(1, lines - 1));
+}
+
+/* when the wordmark starts rising: as the month list finishes */
+function introLogoStart(slides) {
+  const lines = monthStats(slides).length;
+  return Math.max(0, (lines - 1) * introStep(lines)) / 1000;
+}
+
 function renderIntro(logoStart) {
   const intro = el('div', 'intro');
 
-  /* month list — 2 columns: Jan–Jul / Aug–Dec */
+  /* month list — three columns, filled newest first, so it fits between the wordmark
+     and the enter button however many years the archive spans */
   const stats = monthStats(content.slides);
   const months = el('div', 'intro-months label');
-  const colA = el('div', 'col');
-  const colB = el('div', 'col');
-  /* original: each visual LINE scrambles in for .5s, ease none, stagger .075 */
-  const years = yearByMonth(content.slides);
+  const COLS = 3;
+  const cols = Array.from({ length: COLS }, () => el('div', 'col'));
+  const perCol = Math.ceil(stats.length / COLS);
+  const step = introStep(stats.length);
   const scrambles = [];
-  let row = 0;
-  stats.forEach((s) => {
-    /* original structure: month name (+year), then indented category (count) line */
+  /* one line per month — the stacked the category under the month name, but the
+     list now sits between the wordmark and the button, where 27 two-line rows would not
+     fit on a short screen. Same four fields, one row: MONTH year — category (n) */
+  stats.forEach((s, si) => {
     const block = el('div', 'mo');
-    const monthRow = el('div', 'row');
-    const monthIn = el('span', 'in m');
+    const line = el('div', 'row');
+    const inn = el('span', 'in m');
     const monthName = el('span', null, '');
     const yearEl = el('span', 'n', '');
-    monthIn.appendChild(monthName);
-    monthIn.appendChild(yearEl);
-    monthRow.appendChild(monthIn);
-    const catRow = el('div', 'row pl');
-    const catIn = el('span', 'in');
-    const cat = el('span', null, '');
+    const cat = el('span', 'c', '');
     const n = el('span', 'n', '');
-    catIn.appendChild(cat);
-    catIn.appendChild(n);
-    catRow.appendChild(catIn);
-    block.appendChild(monthRow);
-    block.appendChild(catRow);
-    (MONTHS.indexOf(s.month) < 7 ? colA : colB).appendChild(block);
-    const year = years[MONTHS.indexOf(s.month) + 1] || '2026';
-    const dMonth = row * 75; row += 1;
-    const dCat = row * 75; row += 1;
+    inn.appendChild(monthName);
+    inn.appendChild(yearEl);
+    inn.appendChild(cat);
+    inn.appendChild(n);
+    line.appendChild(inn);
+    block.appendChild(line);
+    cols[Math.min(COLS - 1, Math.floor(si / perCol))].appendChild(block);
+    const delay = si * step;
     scrambles.push(() => {
-      scrambleIn(monthName, s.month.toUpperCase(), dMonth, 500);
-      scrambleIn(yearEl, year, dMonth, 500);
-      scrambleIn(cat, s.cat || '', dCat, 500);
-      scrambleIn(n, '(' + s.count + ')', dCat, 500);
+      scrambleIn(monthName, s.month.toUpperCase(), delay, 500);
+      scrambleIn(yearEl, s.year, delay, 500);
+      scrambleIn(cat, s.cat || '', delay, 500);
+      scrambleIn(n, '(' + s.count + ')', delay, 500);
     });
   });
-  months.appendChild(colA);
-  months.appendChild(colB);
+  for (const c of cols) months.appendChild(c);
   intro.appendChild(months);
 
-  /* enter gate — appears alongside the wordmark phase of the timeline */
+  /* enter gate — one button. The second button existed only to opt out of the
+     sound; there is no music here, so the choice was empty and the site enters silent. */
   const gate = el('div', 'intro-gate');
   gate.style.transitionDelay = (logoStart + 0.6).toFixed(2) + 's';
-  const withSound = el('button', 'btn', 'Enter with sound →');
-  const noSound = el('button', 'alt', '…or without');
-  withSound.addEventListener('click', () => enterSite(intro, true));
-  noSound.addEventListener('click', () => enterSite(intro, false));
-  gate.appendChild(withSound);
-  gate.appendChild(noSound);
+  const enter = el('button', 'btn', 'Enter →');
+  enter.addEventListener('click', () => enterSite(intro));
+  gate.appendChild(enter);
   intro.appendChild(gate);
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -250,26 +270,34 @@ function renderIntro(logoStart) {
   return intro;
 }
 
-function enterSite(intro, withSound) {
+function enterSite(intro) {
   if (entered) return;
   entered = true;
-  window.TLB_AUDIO.on = !!withSound;
   const gate = intro.querySelector('.intro-gate');
   if (gate) gate.style.transitionDelay = '0s';
   intro.classList.add('is-leaving');
-  /* every list line scrambles out — original: to(lines, {scrambleText:"", stagger:.035}) */
-  intro.querySelectorAll('.intro-months .row').forEach((row, k) => {
+
+  /* every list line scrambles out — : to(lines, {scrambleText:"", stagger:.035}).
+     The step is compressed the same way the entrance is, so a long list does not stretch
+     the exit; the site only starts arriving once that exit has actually finished. */
+  const rows = [...intro.querySelectorAll('.intro-months .row')];
+  const outStep = Math.min(35, 900 / Math.max(1, rows.length - 1));
+  rows.forEach((row, k) => {
     row.querySelectorAll('.in > span').forEach((sp) => {
-      setTimeout(() => scrambleOut(sp, 500), k * 35);
+      setTimeout(() => scrambleOut(sp, 500), k * outStep);
     });
   });
+  const exitMs = (rows.length - 1) * outStep + 500;   // the last line has finished scrambling
+
   const wm = document.querySelector('.wordmark');
   const menu = document.querySelector('.menu');
   const home = document.querySelector('.view--home');
-  setTimeout(() => { if (wm) wm.classList.remove('at-intro'); }, 400);   // rides up 1.5s expo
-  setTimeout(() => { if (home) home.classList.add('is-in'); }, 900);     // slides rise underneath
-  setTimeout(() => { if (menu) menu.classList.add('is-in'); }, 1100);
-  setTimeout(() => intro.remove(), 2400);
+  setTimeout(() => {
+    intro.remove();                                   /* the exit has played out in full */
+    if (wm) wm.classList.remove('at-intro');          // rides up 1.5s expo
+    setTimeout(() => { if (home) home.classList.add('is-in'); }, 400);   // slides rise underneath
+    setTimeout(() => { if (menu) menu.classList.add('is-in'); }, 600);
+  }, exitMs);
 }
 
 /* ---------- views ---------- */
@@ -280,7 +308,7 @@ function menuLink(m) {
   a.title = m.title;
   a.setAttribute('data-nav', '');
   a.innerHTML = icons[m.icon] || '';
-  a.appendChild(el('span', 'menu__txt', m.title));   // mobile: text buttons (original)
+  a.appendChild(el('span', 'menu__txt', m.title));   // mobile: text buttons
   const cur = location.pathname.replace(/\/+$/, '') || '/';
   if (cur === m.href) a.classList.add('active');
   return a;
@@ -309,9 +337,7 @@ function yearsByName() {
 function renderHome() {
   const frag = document.createDocumentFragment();
 
-  /* wordmark reveal starts as the month list finishes (original: label "-=.5") */
-  const rows = monthStats(content.slides).length * 2;
-  const logoStart = Math.max(0, 500 + (rows - 1) * 75 - 500) / 1000;
+  const logoStart = introLogoStart(content.slides);
 
   const view = el('main', 'view view--home');
   frag.appendChild(view);
@@ -322,11 +348,12 @@ function renderHome() {
     (s, item) => {
       carousel.freeze();   // stop the lerp drift so the flip source stays put
       const grab = (it) => {
-        const img = it && it.querySelector('.car-media img');
-        if (!img) return null;
-        const r = img.getBoundingClientRect();
+        const slot = it && it.querySelector('.lse-slot');
+        const img = slot && slot.querySelector('img');
+        if (!slot || !img) return null;
+        const r = slot.getBoundingClientRect();
         if (r.right < 0 || r.left > innerWidth) return null;   // only visible ones fly
-        return { el: it.querySelector('.car-media'), src: img.currentSrc || img.src };
+        return { el: slot, src: img.currentSrc || img.src };
       };
       const track = item.parentElement;
       pendingFlip = {
@@ -362,39 +389,352 @@ function renderView(name, mount) {
   const frag = document.createDocumentFragment();
   const view = el('main', 'view view--' + name);
   frag.appendChild(view);
+  /* the detail's strip shows prev/current/next — all three fly out of this view, exactly
+     as they do from the timeline. Only what is actually on screen can travel. */
   const openFrom = (s, box) => {
-    const img = box && box.querySelector('img');
-    pendingFlip = { cur: img ? { el: box, src: img.currentSrc || img.src } : null, prev: null, next: null };
-    flipSources = img ? [{ box, src: img.currentSrc || img.src }] : [];
+    const slides = content.slides || [];
+    const n = slides.length;
+    const i = slides.findIndex((x) => x.id === s.id);
+    const pack = (slot) => {
+      const img = slot && slot.querySelector('img');
+      if (!slot || !img) return null;
+      const r = slot.getBoundingClientRect();
+      if (r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight) return null;
+      return { el: slot, src: img.currentSrc || img.src };
+    };
+    const slotFor = (k) => {
+      const id = n && slides[((k % n) + n) % n].id;
+      return id ? view.querySelector('.lse-slot[data-id="' + id + '"]') : null;
+    };
+    pendingFlip = {
+      cur: pack(box),
+      prev: i < 0 ? null : pack(slotFor(i - 1)),
+      next: i < 0 ? null : pack(slotFor(i + 1)),
+    };
+    flipSources = [pendingFlip.cur, pendingFlip.prev, pendingFlip.next]
+      .filter(Boolean).map((f) => ({ box: f.el, src: f.src }));
     navigate('/p/' + (s.id || ''));
   };
   activeView = mount(view, openFrom);
   return frag;
 }
 
+function buildView(path) {
+  const slides = content.slides || [];
+  if (path === '/') return renderHome();
+  if (path === '/surf') {
+    return renderView('surf', (v, open) => window.TLBViews.mountSurf(v, slides, aspects, open));
+  }
+  if (path === '/articles') {
+    return renderView('articles', (v, open) => window.TLBViews.mountIndex(v, slides, aspects, open));
+  }
+  if (path === '/about') {
+    return renderView('about', (v) => window.TLBViews.mountAbout(v, content));
+  }
+  return renderStub('not found');
+}
+
+/* ---------- page transition ---------- */
+
+/* Our transition timings. A painting that travels between views is the slowest thing on
+   screen (the eye follows it); slots that merely arrive rise faster, and the page it left
+   fades out well before either lands. */
+const FLIP = { dur: 900, stagger: 40 };                              // a painting in flight
+const RISE = { dur: 1100, stagger: 40, start: 220, fromSurf: 540 };  // slots arriving
+const FADE = 320;                                                    // the page leaving
+
+function nextFrame() {
+  return new Promise((res) => requestAnimationFrame(() => res()));
+}
+
+/* the incoming view says when it has settled — but never hold the transition past 200ms */
+function whenReady(inst) {
+  return new Promise((res) => {
+    let done = false;
+    const fin = () => { if (!done) { done = true; res(); } };
+    if (inst && inst.ready) inst.ready.then(fin);
+    setTimeout(fin, 200);
+  });
+}
+
+function inView(r) {
+  return r.bottom >= 0 && r.right >= 0 && r.top <= innerHeight && r.left <= innerWidth;
+}
+
+/* hand the work the viewer was on over to the incoming view */
+function handOverIndex(fromPath, toArticles, oldCar, oldEl) {
+  let idx = 0;
+  if (fromPath === '/' && !toArticles) {
+    idx = (oldCar && oldCar.activeIndex()) || 0;
+  } else if (fromPath === '/articles' && oldEl) {
+    const mid = innerHeight / 2;
+    let best = null, bestD = Infinity;
+    for (const row of oldEl.querySelectorAll('.lse-row')) {
+      const d = Math.abs(row.getBoundingClientRect().top - mid);
+      if (d < bestD) { bestD = d; best = row; }
+    }
+    const cell = best && best.querySelector('[data-index]');
+    idx = cell ? parseInt(cell.dataset.index, 10) || 0 : 0;
+  }
+  document.body.dataset.index = String(idx);
+}
+
+/* pair the leaving paintings with the incoming slots by work id. Only what the viewer can
+   actually see takes part — plus the centred carousel slide, which may sit off screen. */
+function measureFlips(oldEl, newEl, fromSurf) {
+  const bind = (node) => ({ el: node, bounds: node.getBoundingClientRect() });
+  const targetEls = [...newEl.querySelectorAll('.lse-slot')];
+  const flipEls = oldEl ? [...oldEl.querySelectorAll('.lse-frame')] : [];
+  if (!flipEls.length) return { fromFlips: [], toFlips: [], targets: targetEls.map(bind) };
+
+  const seen = [];
+  for (const node of flipEls) {
+    const b = node.getBoundingClientRect();
+    if (inView(b) || node.closest('.lse-centred')) seen.push({ el: node, bounds: b });
+  }
+  let ids = new Set(seen.map((f) => f.el.dataset.id));
+  const toFlips = [];
+  for (const node of targetEls) {
+    if (!ids.has(node.dataset.id)) continue;
+    const b = node.getBoundingClientRect();
+    if (inView(b)) toFlips.push({ el: node, bounds: b });
+  }
+  ids = new Set(toFlips.map((t) => t.el.dataset.id));
+  const paired = new Set(toFlips.map((t) => t.el));
+  const rest = targetEls.filter((node) => !paired.has(node)).map(bind);
+  /* leaving surf nothing flips (the paintings fly out instead) — every slot rises, top row first */
+  const targets = fromSurf
+    ? [...toFlips, ...rest].sort((a, b) => (Math.abs(a.bounds.top - b.bounds.top) > 1
+      ? a.bounds.top - b.bounds.top
+      : a.bounds.left - b.bounds.left))
+    : rest;
+  return {
+    fromFlips: fromSurf ? seen : seen.filter((f) => ids.has(f.el.dataset.id)),
+    toFlips,
+    targets,
+  };
+}
+
+/* A flight tidies its inline styles up when it lands. That tidy-up must never touch an
+   element that has since moved on: if the viewer leaves for another view mid-flight, the
+   frame is already being animated out by the departing view, and wiping its transform
+   would snap it back into place for a moment before the view is removed. */
+function settled(node) {
+  return node.isConnected && node.closest('.view') === viewEl;
+}
+
+function clearFlight(node) {
+  node.style.transition = '';
+  node.style.transform = '';
+}
+
+/* the painting's own frame moves house into its new slot and flies the delta home.
+   No clone, no second <img> — the same pixels travel. */
+function prepareFlip(fromFlips, toFlips, noStagger) {
+  const byId = new Map(toFlips.map((t) => [t.el.dataset.id, t]));
+  const flights = [];
+  const owners = [];
+  for (const from of fromFlips) {
+    const to = byId.get(from.el.dataset.id);
+    if (!to) continue;
+    const owner = to.el.closest('.lse-card');
+    if (owner) { owner.style.zIndex = '5'; owners.push(owner); }
+    to.el.replaceChildren(from.el);
+    to.el.style.visibility = '';        // a slot that lent its frame out was hidden — it is back
+    const dx = from.bounds.left - to.bounds.left;
+    const dy = from.bounds.top - to.bounds.top;
+    const scale = to.bounds.width ? from.bounds.width / to.bounds.width : 1;
+    from.el.style.transition = 'none';
+    from.el.style.transform =
+      'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + scale + ')';
+    flights.push({ el: from.el, delay: noStagger ? 0 : flights.length * FLIP.stagger });
+  }
+  if (!flights.length) return null;
+  return () => {
+    for (const f of flights) {
+      f.el.style.transition = 'transform ' + FLIP.dur + 'ms var(--ease-travel) ' + f.delay + 'ms';
+      f.el.style.transform = '';
+    }
+    const last = flights[flights.length - 1];
+    setTimeout(() => {
+      for (const f of flights) { if (settled(f.el)) clearFlight(f.el); }
+      for (const o of owners) { if (settled(o)) o.style.zIndex = ''; }
+    }, FLIP.dur + last.delay + 50);
+  };
+}
+
+/* slots with no painting of their own coming in rise from below the fold */
+function prepareRise(targets, fromSurf, toSurf) {
+  const start = fromSurf ? RISE.fromSurf : RISE.start;
+  const risers = [];
+  for (const t of targets) {
+    const b = t.bounds;
+    if (b.bottom < 0 || b.top > innerHeight || b.right < -100 || b.left > innerWidth + 100) continue;
+    const y = -((b.top - innerHeight) * (toSurf ? 1.25 : 1));
+    t.el.style.transition = 'none';
+    t.el.style.transform = 'translate3d(0,' + y + 'px,0) scale(.9)';
+    risers.push({ el: t.el, delay: start + (risers.length + 1) * RISE.stagger });
+  }
+  if (!risers.length) return null;
+  return () => {
+    for (const r of risers) {
+      r.el.style.transition = 'transform ' + RISE.dur + 'ms var(--ease-rise) ' + r.delay + 'ms';
+      r.el.style.transform = '';
+    }
+    const last = risers[risers.length - 1];
+    setTimeout(() => {
+      for (const r of risers) { if (settled(r.el)) clearFlight(r.el); }
+    }, RISE.dur + last.delay + 50);
+  };
+}
+
+/* a view that is still animating out is torn down at once when the next navigation
+   lands — otherwise its rAF loop keeps running and its paintings stay on screen */
+function finalizeLeaving() {
+  if (!leaving) return;
+  const { el, inst, car, timer } = leaving;
+  leaving = null;
+  clearTimeout(timer);
+  if (inst && inst.destroy) inst.destroy();
+  if (car) car.destroy();
+  if (el) el.remove();
+}
+
+/* the old page leaves WHILE the new one arrives — both are mounted at once */
+/* A view can be left while it is still arriving. Its slots would then keep rising into
+   view on their own transition — surfacing after the exit has already measured them as
+   off screen, and vanishing a moment later when the view is dropped. Stop them where
+   they are: whatever is off screen stays off screen, whatever is visible leaves properly. */
+function freezeEntrance(viewNode) {
+  for (const node of viewNode.querySelectorAll('.lse-slot,.lse-frame')) {
+    if (!node.style.transition && !node.style.transform) continue;
+    const t = getComputedStyle(node).transform;
+    node.style.transition = 'none';
+    node.style.transform = t === 'none' ? '' : t;
+  }
+  void viewNode.offsetWidth;                 // land the freeze before the exit animates
+}
+
+function leave(oldEl, oldInst, oldCar, flags) {
+  if (!oldEl) return;
+  const { fromSurf, fromAbout, toAbout } = flags;
+  const done = () => { if (leaving && leaving.el === oldEl) finalizeLeaving(); };
+  freezeEntrance(oldEl);
+
+  if (fromSurf && !toAbout && oldInst && oldInst.exit) {
+    leaving = { el: oldEl, inst: null, car: oldCar, timer: 0 };   // exit() already destroyed it
+    oldInst.exit(done);                                  // the paintings fly out
+    return;
+  }
+  if (oldInst) oldInst.destroy();
+  if (oldCar) oldCar.destroy();
+  if (fromAbout) {
+    oldEl.classList.remove('is-in');
+    oldEl.classList.add('is-out');                       // the curtain reverses
+    leaving = { el: oldEl, timer: setTimeout(done, 1050) };
+    return;
+  }
+  if (!fromSurf) oldEl.classList.add('is-exit');         // autoAlpha 0, .35s
+  leaving = { el: oldEl, timer: setTimeout(done, fromSurf ? 1050 : FADE + 50) };
+}
+
+async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
+  const flags = {
+    fromSurf: oldPath === '/surf',
+    fromAbout: oldPath === '/about',
+    toSurf: path === '/surf',
+    toAbout: path === '/about',
+  };
+  const toCarousel = path === '/' || path === '/surf';   // the views that jump to an index
+
+  handOverIndex(oldPath, path === '/articles', oldCar, oldEl);
+  if (oldCar) oldCar.freeze();          // hold the paintings still while they are measured
+
+  const frag = buildView(path);
+  const view = frag.querySelector ? frag.querySelector('.view') : frag;
+  if (view) {
+    view.classList.add('is-pre');       // nothing paints until the from-state is set
+    if (path === '/') view.classList.add('no-rise');   // the flip drives the slides, not the intro rise
+  }
+  app.appendChild(frag);
+  viewEl = view;                        // current from this moment on, even mid-flight
+  const inst = activeView || carousel;
+
+  /* a click that lands mid-transition retires this one: the next navigation already
+     took this view as its "old" one, so it must not go on to animate itself in */
+  const retired = () => gen !== navGen || !view || !view.isConnected;
+
+  await nextFrame();                    // rects exist only once the view is in the document
+  if (toCarousel) await whenReady(inst);
+  await nextFrame();
+  if (retired()) {
+    if (view) view.classList.remove('is-pre');
+    return;
+  }
+
+  const { fromFlips, toFlips, targets } = measureFlips(oldEl, view, flags.fromSurf);
+  if (inst && inst.unfreeze) inst.unfreeze();           // surf: the deck angle eases in
+
+  const skipFlip = flags.fromSurf && !flags.toAbout;    // surf leaves by flying its paintings out
+  const playFlip = fromFlips.length && !skipFlip
+    ? prepareFlip(fromFlips, toFlips, flags.toSurf)
+    : null;
+  const playRise = prepareRise(targets, flags.fromSurf, flags.toSurf);
+
+  leave(oldEl, oldInst, oldCar, flags);
+  view.classList.remove('is-pre');
+  void view.offsetWidth;                // paint the from-state before attaching transitions
+  requestAnimationFrame(() => {
+    if (playFlip) playFlip();
+    if (playRise) playRise();
+  });
+  if (path === '/') setTimeout(() => view.classList.remove('no-rise'), FLIP.dur + 200);
+}
+
 /* ---------- router ---------- */
 
-/* detail close: the home re-enters with its full entrance (original Y() replays) */
-function replayHomeEnter() {
-  /* boxes whose live <img> was reparented into the detail get a fresh one back */
-  for (const f of flipSources) {
-    if (!f.box.querySelector('img')) {
-      const img = document.createElement('img');
-      img.src = f.src;
-      img.className = 'ok';
-      img.draggable = false;
-      f.box.appendChild(img);
-    }
-    f.box.style.visibility = '';
+/* give a slot its painting back — used when the frame it lent out cannot fly home */
+function restoreSlot(f) {
+  if (!f.box.querySelector('.lse-frame')) {
+    const frame = el('div', 'tlb-frame lse-frame');
+    frame.dataset.id = f.box.dataset.id || '';
+    const img = document.createElement('img');
+    img.src = f.src;
+    img.className = 'ok';
+    img.draggable = false;
+    frame.appendChild(img);
+    f.box.appendChild(frame);
   }
+  f.box.style.visibility = '';
+}
+
+function restoreFlipSources() {
+  for (const f of flipSources) restoreSlot(f);
   flipSources = [];
-  const view = document.querySelector('.view--home');
-  if (!view) return;
-  view.classList.add('no-trans');
-  view.classList.remove('is-in');
-  void view.offsetWidth;                        // apply the reset without animating
-  view.classList.remove('no-trans');
-  requestAnimationFrame(() => requestAnimationFrame(() => view.classList.add('is-in')));
+}
+
+/* detail close: the paintings fly back into their slots with the same that carried
+   them out — the mirror of the entrance.
+   Nothing else moves: the view behind the detail was never torn down, so making its slots
+   rise again would read as the deck vanishing and coming back. */
+async function flyDetailHome(detailEl) {
+  const view = viewEl;
+  if (!view || !detailEl) return;
+  await nextFrame();                            // let the carousel's jump to this work land
+  const { fromFlips, toFlips } = measureFlips(detailEl, view, false);
+  /* a slot whose painting cannot fly home — its slide wrapped off screen while the detail
+     was open — is filled again right now. Waiting until the detail is gone would pop the
+     image in a second late; the copy still in the detail simply leaves with the curtain. */
+  const landing = new Set(toFlips.map((t) => t.el));
+  flipSources = flipSources.filter((f) => {
+    if (landing.has(f.box)) return true;
+    restoreSlot(f);
+    return false;
+  });
+  if (!fromFlips.length) return;
+  const playFlip = prepareFlip(fromFlips, toFlips, false);
+  void view.offsetWidth;                        // paint the from-state before it animates
+  requestAnimationFrame(() => { if (playFlip) playFlip(); });
 }
 
 function render() {
@@ -402,12 +742,15 @@ function render() {
 
   /* detail = overlay above the (kept) home — no home teardown, no flash */
   if (path.startsWith('/p/')) {
-    if (!document.querySelector('.view')) {   // deep link only — keep a live view
+    finalizeLeaving();                       // no half-left view may sit under the detail
+    if (!viewEl || !viewEl.isConnected) {    // deep link only — keep a live view
       entered = true;                        // deep link: skip the gate
       if (carousel) { carousel.destroy(); carousel = null; }
       document.body.classList.add('lock');
       app.replaceChildren();
-      app.appendChild(renderHome());
+      const frag = renderHome();
+      viewEl = frag.querySelector('.view');
+      app.appendChild(frag);
     }
     const flip = pendingFlip;
     pendingFlip = null;
@@ -415,16 +758,8 @@ function render() {
       content, aspects,
       closePath: lastViewPath,
       onSync: (i) => { if (carousel) carousel.goTo(i); },
-      onClose: replayHomeEnter,
-      /* reverse-flip target: matching carousel slot skips the rise and receives the ghost */
-      getHomeTarget: (k) => {
-        if (!carousel) return null;
-        const item = carousel.itemAt(k);
-        if (!item) return null;
-        item.classList.add('flip-back');
-        setTimeout(() => item.classList.remove('flip-back'), 1200);
-        return item.querySelector('.car-media');
-      },
+      onLeave: flyDetailHome,     // the paintings fly back into the view +
+      onGone: restoreFlipSources,
     }, path.slice(3), flip);
     return;
   }
@@ -433,53 +768,30 @@ function render() {
     return;
   }
 
-  /* exit choreography (original: old page leaves WHILE the new one enters) */
-  const oldEl = app.querySelector('.view');
+  /* exit choreography */
+  const gen = ++navGen;                      // this navigation retires any earlier one
+  finalizeLeaving();                         // a still-departing view goes now, not later
+  const oldEl = viewEl;
   const oldInst = activeView;
   const oldCar = carousel;
   const oldPath = lastViewPath;
   activeView = null;
   carousel = null;
+  viewEl = null;
   lastViewPath = path;
   updateMenu(path);
   document.body.classList.add('lock');       // every view manages its own scroll
+  restoreFlipSources();                      // a detail may still hold the home's live <img>s
   app.querySelectorAll('.intro,.detail').forEach((n) => n.remove());
 
-  if (oldEl) {
-    if (oldPath === '/surf' && oldInst && oldInst.exit) {
-      oldInst.exit(() => oldEl.remove());                  // cards fly up (original V())
-    } else if (oldPath === '/about') {
-      if (oldInst) oldInst.destroy();
-      oldEl.classList.remove('is-in');
-      oldEl.classList.add('is-out');                        // curtains reverse
-      setTimeout(() => oldEl.remove(), 1050);
-    } else {
-      if (oldInst) oldInst.destroy();
-      if (oldCar) oldCar.destroy();
-      oldEl.classList.add('is-exit');                       // autoAlpha .35 (original X())
-      setTimeout(() => oldEl.remove(), 400);
-    }
+  if (path === '/' && !entered) {            // first load: the intro gate owns the choreography
+    if (oldEl) oldEl.remove();
+    const frag = renderHome();
+    viewEl = frag.querySelector('.view');
+    app.appendChild(frag);
+    return;
   }
-
-  const slides = content.slides || [];
-  if (path === '/') {
-    app.appendChild(renderHome());
-  } else if (path === '/surf') {
-    app.appendChild(renderView('surf', (v, open) =>
-      window.TLBViews.mountSurf(v, slides, aspects, open)));
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      const v = document.querySelector('.view--surf');
-      if (v) v.classList.add('is-in');
-    }));
-  } else if (path === '/articles') {
-    app.appendChild(renderView('articles', (v, open) =>
-      window.TLBViews.mountIndex(v, slides, aspects, open)));
-  } else if (path === '/about') {
-    app.appendChild(renderView('about', (v) =>
-      window.TLBViews.mountAbout(v, content)));
-  } else {
-    app.appendChild(renderStub('not found'));
-  }
+  transition(path, oldEl, oldInst, oldCar, oldPath, gen);
 }
 
 /* persistent menu: only the active state changes between routes */
@@ -508,13 +820,14 @@ window.addEventListener('popstate', render);
 Promise.all([loadContent(), loadAspects(), loadIcons()]).then(([c, a]) => {
   content = c;
   aspects = a;
-  if (matchMedia('(max-width:699px)').matches) entered = true;   // original: no gate on mobile
+  if (matchMedia('(max-width:699px)').matches) entered = true;   // : no gate on mobile
+  /* the intro gate belongs to the timeline. Land straight on /surf, /articles, /about or a
+     painting and there is no gate to pass — so the wordmark and menu must already be up. */
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') entered = true;
   const wm = wordmark();
   document.title = [wm.l2, wm.l1].filter(Boolean).join(' — ');
-  /* persistent chrome: wordmark + menu live outside the router (original layout level) */
-  const rows0 = monthStats(content.slides).length * 2;
-  const logoStart0 = Math.max(0, 500 + (rows0 - 1) * 75 - 500) / 1000;
-  wmEl = buildWordmark(entered ? 0 : logoStart0);
+  /* persistent chrome: wordmark + menu live outside the router */
+  wmEl = buildWordmark(entered ? 0 : introLogoStart(content.slides));
   if (entered) wmEl.classList.add('is-ready');
   document.body.appendChild(wmEl);
   menuEl = buildMenu();

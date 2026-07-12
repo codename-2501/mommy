@@ -1,11 +1,11 @@
-/* THE LOOKBACK — Surf (card deck), Index (collage grid), About.
-   Mechanics ported from the originals: surf = C1kfZrZv.js, grid smooth-scroll
-   with rotateX tilt = Bx_gN5Pg.js, about = wyNRnxoT.js. */
+/* LSE GALLERY — Surf (3D card deck), Index (collage grid), About.
+   Surf: sine-bobbing deck with a rotateY tilt. Index: smooth-scrolled 12-column grid
+   whose rows tilt with the scroll velocity. About: curtain page with line reveals. */
 (() => {
 'use strict';
 
-const LERP = 0.1;
-const WHEEL_MULT = /Win/.test(navigator.platform) ? 0.9 : 0.4;
+const LERP = 0.12;                                              // chase, per frame
+const WHEEL_MULT = /Win/.test(navigator.platform) ? 1 : 0.45;   // wheel feels lighter on mac
 
 function el(tag, cls, text) {
   const n = document.createElement(tag);
@@ -17,6 +17,12 @@ function el(tag, cls, text) {
 function thumb(src, w) {
   const f = String(src || '').split('/').pop();
   return f ? '/thumbs/' + w + '/' + encodeURIComponent(f) : '';
+}
+
+/* every framed painting fades in when it loads, and keeps that .ok wherever it flies to */
+function gateLoad(img) {
+  if (img.complete) img.classList.add('ok');
+  else img.addEventListener('load', () => img.classList.add('ok'), { once: true });
 }
 
 function isSmall() {
@@ -33,7 +39,23 @@ function month(s) {
   return m ? m[1].trim() : '';
 }
 
-/* ---------------- SURF: floating card deck (original values) ---------------- */
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+
+/* month name -> year, exactly as the timeline ruler resolves it: take it from any slide
+   dated in that month, and fall back to 2026 for the months nobody dated */
+function yearsByMonth(slides) {
+  const byNum = {};
+  for (const s of slides || []) {
+    const m = /^(\d{4})-(\d{2})/.exec(String(s.date || ''));
+    if (m) byNum[+m[2]] = m[1];
+  }
+  const out = {};
+  MONTHS.forEach((name, i) => { out[name] = byNum[i + 1] || '2026'; });
+  return out;
+}
+
+/* ---------------- SURF: floating card deck ---------------- */
 function mountSurf(view, slides, aspects, onOpen) {
   const wrap = el('div', 'surf');
   const inner = el('div', 'surf__inner');
@@ -45,37 +67,52 @@ function mountSurf(view, slides, aspects, onOpen) {
   view.appendChild(wrap);
 
   const items = slides.map((s, i) => {
-    const it = el('article', 'surf-item');
+    const it = el('article', 'surf-item lse-card');
     const media = el('div', 'surf-item__media');
-    const box = el('div', 'surf-item__box');
+    const box = el('div', 'surf-item__box lse-slot');
+    box.dataset.id = s.id || '';
     const name = String(s.image || '').split('/').pop();
     box.style.aspectRatio = String(aspects[name] || 1);
+    const frame = el('div', 'tlb-frame lse-frame');
+    frame.dataset.id = s.id || '';
     const img = el('img');
     img.src = thumb(s.image, 600);
     img.draggable = false;
     img.loading = i < 10 ? 'eager' : 'lazy';
-    box.appendChild(img);
+    gateLoad(img);
+    frame.appendChild(img);
+    box.appendChild(frame);
     media.appendChild(box);
     it.appendChild(media);
+    /* the painting slides 75% aside on hover — out from under the cursor. This layer stays
+       put over the card's spot, so the hover (and the click) has something stable
+       to land on instead of flickering onto whichever neighbour moves in underneath. */
+    it.appendChild(el('div', 'surf-item__hit'));
     it.addEventListener('mouseenter', () => {
       hoverLbl.textContent = '(' + (i + 1) + ') ' + [category(s), month(s)].filter(Boolean).join(' / ');
       hoverLbl.classList.add('is-on');
+      hoverIdx = i;      // the deck sorts by 3D depth, so the lifted card is pulled forward:
+    });                  // z-index cannot raise it inside a preserve-3d parent
+    it.addEventListener('mouseleave', () => {
+      hoverLbl.classList.remove('is-on');
+      if (hoverIdx === i) hoverIdx = -1;
     });
-    it.addEventListener('mouseleave', () => hoverLbl.classList.remove('is-on'));
     it.addEventListener('click', () => { if (!moved) onOpen(s, box); });
     deck.appendChild(it);
     return { el: it, s };
   });
 
-  /* original: P=18 (6 mobile), spread=ww/P, sine bob, rotateY(-70 - 15p) */
+  /* the deck: cards are spread across the viewport width, bob on a sine wave as they pass,
+     and stand at an angle that eases open when the view arrives */
   let bounds = [], total = 0, rest = 0, time = 0;
   let target = 0, cur = 0, vel = 0, deckK = 0;
   let dragging = false, moved = false, sx = 0, sy = 0, st = 0, raf = 0, lastTs = 0;
+  let hoverIdx = -1;              // the card the cursor is lifting (see mouseenter above)
 
   function measure() {
-    const P = isSmall() ? 6 : 18;
+    const P = isSmall() ? 7 : 16;   // cards abreast across the viewport
     const spread = innerWidth / P;
-    rest = (innerHeight / (P * 1.5)) * 0.35;
+    rest = (innerHeight / (P * 1.5)) * 0.4;   // bob amplitude
     bounds = items.map((it, i) => {
       it.el.style.transform = 'translate3d(0,0,0)';
       const x = spread * i;
@@ -97,9 +134,12 @@ function mountSurf(view, slides, aspects, onOpen) {
     const xo = p - 0.5;
     const bob = Math.sin(time + xo * Math.PI * 2) * rest * (1 + vel * 0.01);
     const y = innerHeight * 0.5 * xo + bob;
-    const rotY = (-(15 * p) - 70) * deckK;
+    const rotY = (-(18 * p) - 66) * deckK;   // deck angle, opening as the card comes forward
+    /* the hovered card slides 75% sideways — pull it forward in the deck's 3D space so it
+       passes OVER its neighbours instead of under them */
+    const z = i === hoverIdx ? 60 : 0;
     items[i].el.style.transform =
-      'translate3d(' + (b.left - wrapped) + 'px,' + y + 'px,0) rotateY(' + rotY + 'deg)';
+      'translate3d(' + (b.left - wrapped) + 'px,' + y + 'px,' + z + 'px) rotateY(' + rotY + 'deg)';
   }
 
   function frame(ts) {
@@ -108,7 +148,7 @@ function mountSurf(view, slides, aspects, onOpen) {
     cur += (target - cur) * LERP * ratio;
     cur = Math.round(cur * 100) / 100;
     vel = Math.round((cur - target) * 1000) / 1000;
-    time += 0.02 * ratio;
+    time += 0.022 * ratio;
     if (total > 0) {
       for (let i = 0; i < items.length; i++) {
         const b = bounds[i];
@@ -126,7 +166,7 @@ function mountSurf(view, slides, aspects, onOpen) {
     if (!dragging) return;
     const dx = e.clientX - sx;
     if (Math.abs(dx) > 10) moved = true;
-    target = st - dx * (isSmall() ? 3.5 : 2);
+    target = st - dx * (isSmall() ? 3.6 : 2.2);   // drag travel
   }
   function onUp() { dragging = false; }
   function onWheel(e) {
@@ -150,15 +190,29 @@ function mountSurf(view, slides, aspects, onOpen) {
   addEventListener('keydown', onKey);
   addEventListener('resize', measure);
 
-  requestAnimationFrame(measure);   // after insertion — detached rects are all zero
+  /* : measure, jump to the work the last view was on, then report "page-done" */
+  let markReady;
+  const ready = new Promise((res) => { markReady = res; });
+  requestAnimationFrame(() => {
+    measure();                      // after insertion — detached rects are all zero
+    const idx = parseInt(document.body.dataset.index, 10);
+    if (idx > 0 && bounds[idx]) { target = bounds[idx].left; cur = target; }
+    markReady();
+  });
   raf = requestAnimationFrame(frame);
-  /* original: deck angle eases in (surf-unfreeze, k 0→1, 1s snappy) */
-  const k0 = performance.now();
-  (function unfreeze(ts) {
-    const t = Math.min(1, (performance.now() - k0) / 1000);
-    deckK = 1 - Math.pow(1 - t, 4);
-    if (t < 1) requestAnimationFrame(unfreeze);
-  })();
+
+  /* : the deck angle only eases in once the transition says so (surf-unfreeze) */
+  let unfrozen = false;
+  function unfreeze() {
+    if (unfrozen) return;
+    unfrozen = true;
+    const k0 = performance.now();
+    (function step() {
+      const t = Math.min(1, (performance.now() - k0) / 1000);
+      deckK = 1 - Math.pow(1 - t, 4);
+      if (t < 1) requestAnimationFrame(step);
+    })();
+  }
 
   function destroy() {
     cancelAnimationFrame(raf);
@@ -170,16 +224,20 @@ function mountSurf(view, slides, aspects, onOpen) {
   }
 
   return {
+    ready,
+    unfreeze,
     destroy,
-    /* original V(): visible cards fly up — y to above viewport, power2.in .5s, stagger .025 */
+    /* the paintings themselves leave — y to the viewport top, then a further
+       -150% of their own height. power2.in .5s, stagger .025. The cards stay behind. */
     exit(done) {
       destroy();
+      const frames = wrap.querySelectorAll('.lse-frame');
       let k = 0;
-      for (const it of items) {
-        const r = it.el.getBoundingClientRect();
+      for (const f of frames) {
+        const r = f.getBoundingClientRect();
         if (r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight) continue;
-        it.el.style.transition = 'transform .5s cubic-bezier(.55,.085,.68,.53) ' + (k * 0.025) + 's';
-        it.el.style.transform += ' translateY(' + (-(r.bottom + innerHeight * 0.5)) + 'px)';
+        f.style.transition = 'transform .5s cubic-bezier(.55,.085,.68,.53) ' + (k * 0.025) + 's';
+        f.style.transform = 'translate3d(0,' + (-r.top) + 'px,0) translateY(-150%)';
         k += 1;
       }
       setTimeout(done, 500 + k * 25);
@@ -187,10 +245,10 @@ function mountSurf(view, slides, aspects, onOpen) {
   };
 }
 
-/* -------- smooth scroll w/ tilt (original: lerp .125, rotateX(vel * -.02)) -------- */
+/* -------- smooth scroll: the grid chases the wheel, and its rows tilt with the velocity -------- */
 function smoothTilt(outer, content) {
   let target = 0, cur = 0, max = 0, lastTs = 0, raf = 0;
-  const tilts = () => content.querySelectorAll('.js-tilt');
+  const tilts = () => content.querySelectorAll('.lse-row');
   function measure() {
     max = Math.max(0, content.getBoundingClientRect().height - outer.clientHeight);
   }
@@ -213,9 +271,9 @@ function smoothTilt(outer, content) {
     const ratio = lastTs ? Math.min(3, (ts - lastTs) / (1000 / 60)) : 1;
     lastTs = ts;
     const v = cur - target;
-    cur += (target - cur) * 0.125 * ratio;
+    cur += (target - cur) * 0.13 * ratio;
     content.style.transform = 'translate3d(0,' + (-cur) + 'px,0)';
-    const ry = 'rotateX(' + (v * -0.02) + 'deg)';
+    const ry = 'rotateX(' + (v * -0.018) + 'deg)';
     tilts().forEach((t) => { t.style.transform = ry; });
     raf = requestAnimationFrame(frame);
   }
@@ -236,7 +294,7 @@ function smoothTilt(outer, content) {
   };
 }
 
-/* ---------------- INDEX: 12-per-row collage grid (original values) ---------------- */
+/* ---------------- INDEX: collage grid, 12 per row ---------------- */
 function mountIndex(view, slides, aspects, onOpen) {
   const outer = el('div', 'agrid');
   const content = el('div', 'agrid__in');
@@ -244,28 +302,39 @@ function mountIndex(view, slides, aspects, onOpen) {
   view.appendChild(outer);
 
   const perRow = isSmall() ? 4 : 12;
+  const years = yearsByMonth(slides);
   let row = null, seenMonth = '';
   slides.forEach((s, i) => {
     if (i % perRow === 0) {
-      row = el('div', 'agrid__row js-tilt');
+      row = el('div', 'agrid__row lse-row');
       content.appendChild(row);
     }
-    const cell = el('article', 'agrid__cell');
+    const cell = el('article', 'agrid__cell lse-card');
+    cell.dataset.index = String(i);          // : the row lookup that hands the index on
     const name = String(s.image || '').split('/').pop();
-    const box = el('div', 'agrid__media');
+    const box = el('div', 'agrid__media lse-slot');
+    box.dataset.id = s.id || '';
     box.style.aspectRatio = String(aspects[name] || 1);
+    const frame = el('div', 'tlb-frame lse-frame');
+    frame.dataset.id = s.id || '';
     const img = el('img');
     img.src = thumb(s.image, 300);
     img.loading = i < perRow * 3 ? 'eager' : 'lazy';
     img.draggable = false;
-    box.appendChild(img);
+    gateLoad(img);
+    frame.appendChild(img);
+    box.appendChild(frame);
     cell.appendChild(box);
     const mo = month(s);
     if (mo && mo !== seenMonth) {
       seenMonth = mo;
       const lbl = el('div', 'agrid__month');
       const rev = el('div', 'dt-reveal');
-      rev.appendChild(el('div', 'label', mo));
+      const txt = el('div', 'label', mo);
+      /* same rule as the ruler: this work's own year, else the month's, else 2026 */
+      const own = /^(\d{4})/.exec(String(s.date || ''));
+      txt.dataset.year = (own && own[1]) || years[mo] || '2026';
+      rev.appendChild(txt);
       lbl.appendChild(rev);
       cell.appendChild(lbl);
     }
@@ -274,19 +343,35 @@ function mountIndex(view, slides, aspects, onOpen) {
   });
 
   const sc = smoothTilt(outer, content);
+  /* the month labels ride up out of their masks on .is-in — without it they stay clipped */
   requestAnimationFrame(() => requestAnimationFrame(() => view.classList.add('is-in')));
-  return sc;
+
+  /* : scroll straight to the handed-over work's row, then report "page-done" */
+  let markReady;
+  const ready = new Promise((res) => { markReady = res; });
+  requestAnimationFrame(() => {
+    sc.measure();
+    const idx = parseInt(document.body.dataset.index, 10);
+    const cells = content.querySelectorAll('[data-index]');
+    const cell = idx > 0 ? cells[idx] : null;
+    if (cell && cells[0]) {
+      sc.scrollTo(cell.getBoundingClientRect().top - cells[0].getBoundingClientRect().top);
+    }
+    markReady();
+  });
+  return { ready, destroy: sc.destroy, measure: sc.measure, scrollTo: sc.scrollTo };
 }
 
 /* ---------------- ABOUT: black page, big lines, credits ---------------- */
 function mountAbout(view, content) {
   const texts = (content && content.texts && content.texts['/about']) || {};
   const wm = (content && content.wordmark) || {};
+  /* our own copy — editable in the admin's 텍스트 tab, these are only the fallbacks */
   const title = texts.title ||
-    '"' + (wm.l2 || 'The Lookback') + '"\n(SE/2026)\nA living\narchive of\n' + (wm.l1 || 'LSE Gallery');
+    (wm.l1 || 'LSE GALLERY') + '\n승은의\n회화\n아카이브';
   const intro = texts.intro ||
-    '승은(Seung Eun)의 1년, 195점의 유화를 한 곳에 모은 디지털 아카이브입니다. 계절을 지나며 그린 꽃과 풍경, 실험적인 화면들이 월별 타임라인으로 이어집니다. 붓이 지나간 순서대로, 한 해의 기록을 돌아봅니다.';
-  const thanks = texts.thanks || 'Thank you for\nlooking back with us.\n\n계속 그리겠습니다.';
+    '캔버스 앞에 앉은 날들을 모았습니다. 꽃과 풍경, 정물과 실험적인 화면까지 — 그린 순서대로 월별 타임라인에 놓았습니다. 한 점씩 눌러 크게 보고, 그림이 놓인 자리와 시간을 함께 읽어주세요.';
+  const thanks = texts.thanks || '보아주셔서 고맙습니다.\n\n계속 그리겠습니다.';
 
   const page = el('div', 'about');
   const maskOuter = el('div', 'about__mask');
@@ -321,7 +406,7 @@ function mountAbout(view, content) {
   });
   scroller.appendChild(thanksEl);
 
-  /* Noun Project attribution (CC BY 3.0 — the plan's only allowed original credit) */
+  /* Noun Project attribution (CC BY 3.0 — the plan's only allowed credit) */
   const cred = el('div', 'about__credits label');
   [['timeline', 'Justin Blake', '3643975'], ['flow', 'Abdul Matic', '7813263'],
    ['collage', 'Mustofa Bayu', '6753741'], ['profile', 'Evan Shuster', '139147']]
