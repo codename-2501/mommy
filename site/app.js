@@ -14,6 +14,9 @@ let pendingFlip = null;       // clicked painting rect/src for the detail FLIP
 let flipSources = [];         // home media hidden while their ghosts are in the detail
 let activeView = null;        // surf/index/about instance (destroy on route change)
 let lastViewPath = '/';       // where the detail Close returns to
+let viewEl = null;            // the view that is CURRENT — never the one on its way out
+let leaving = null;           // {el, inst, car, timers} still animating out
+let navGen = 0;               // a newer navigation retires the transition in flight
 let wmEl = null;              // persistent wordmark (survives route changes)
 let menuEl = null;            // persistent menu
 
@@ -524,12 +527,27 @@ function prepareRise(targets, fromSurf, toSurf) {
   };
 }
 
+/* a view that is still animating out is torn down at once when the next navigation
+   lands — otherwise its rAF loop keeps running and its paintings stay on screen */
+function finalizeLeaving() {
+  if (!leaving) return;
+  const { el, inst, car, timer } = leaving;
+  leaving = null;
+  clearTimeout(timer);
+  if (inst && inst.destroy) inst.destroy();
+  if (car) car.destroy();
+  if (el) el.remove();
+}
+
 /* the old page leaves WHILE the new one arrives (original: mode "", both mounted) */
 function leave(oldEl, oldInst, oldCar, flags) {
   if (!oldEl) return;
   const { fromSurf, fromAbout, toAbout } = flags;
+  const done = () => { if (leaving && leaving.el === oldEl) finalizeLeaving(); };
+
   if (fromSurf && !toAbout && oldInst && oldInst.exit) {
-    oldInst.exit(() => oldEl.remove());                  // V(): the paintings fly out
+    leaving = { el: oldEl, inst: null, car: oldCar, timer: 0 };   // exit() already destroyed it
+    oldInst.exit(done);                                  // V(): the paintings fly out
     return;
   }
   if (oldInst) oldInst.destroy();
@@ -537,14 +555,14 @@ function leave(oldEl, oldInst, oldCar, flags) {
   if (fromAbout) {
     oldEl.classList.remove('is-in');
     oldEl.classList.add('is-out');                       // the curtain reverses
-    setTimeout(() => oldEl.remove(), 1050);
+    leaving = { el: oldEl, timer: setTimeout(done, 1050) };
     return;
   }
   if (!fromSurf) oldEl.classList.add('is-exit');         // autoAlpha 0, .35s
-  setTimeout(() => oldEl.remove(), fromSurf ? 1050 : FADE + 50);
+  leaving = { el: oldEl, timer: setTimeout(done, fromSurf ? 1050 : FADE + 50) };
 }
 
-async function transition(path, oldEl, oldInst, oldCar, oldPath) {
+async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
   const flags = {
     fromSurf: oldPath === '/surf',
     fromAbout: oldPath === '/about',
@@ -563,12 +581,20 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath) {
     if (path === '/') view.classList.add('no-rise');   // the flip drives the slides, not the intro rise
   }
   app.appendChild(frag);
+  viewEl = view;                        // current from this moment on, even mid-flight
   const inst = activeView || carousel;
+
+  /* a click that lands mid-transition retires this one: the next navigation already
+     took this view as its "old" one, so it must not go on to animate itself in */
+  const retired = () => gen !== navGen || !view || !view.isConnected;
 
   await nextFrame();                    // rects exist only once the view is in the document
   if (toCarousel) await whenReady(inst);
   await nextFrame();
-  if (!view || !view.isConnected) return;
+  if (retired()) {
+    if (view) view.classList.remove('is-pre');
+    return;
+  }
 
   const { fromFlips, toFlips, targets } = measureFlips(oldEl, view, flags.fromSurf);
   if (inst && inst.unfreeze) inst.unfreeze();           // surf: the deck angle eases in
@@ -623,12 +649,15 @@ function render() {
 
   /* detail = overlay above the (kept) home — no home teardown, no flash */
   if (path.startsWith('/p/')) {
-    if (!document.querySelector('.view')) {   // deep link only — keep a live view
+    finalizeLeaving();                       // no half-left view may sit under the detail
+    if (!viewEl || !viewEl.isConnected) {    // deep link only — keep a live view
       entered = true;                        // deep link: skip the gate
       if (carousel) { carousel.destroy(); carousel = null; }
       document.body.classList.add('lock');
       app.replaceChildren();
-      app.appendChild(renderHome());
+      const frag = renderHome();
+      viewEl = frag.querySelector('.view');
+      app.appendChild(frag);
     }
     const flip = pendingFlip;
     pendingFlip = null;
@@ -655,12 +684,15 @@ function render() {
   }
 
   /* exit choreography (original: old page leaves WHILE the new one enters) */
-  const oldEl = app.querySelector('.view');
+  const gen = ++navGen;                      // this navigation retires any earlier one
+  finalizeLeaving();                         // a still-departing view goes now, not later
+  const oldEl = viewEl;
   const oldInst = activeView;
   const oldCar = carousel;
   const oldPath = lastViewPath;
   activeView = null;
   carousel = null;
+  viewEl = null;
   lastViewPath = path;
   updateMenu(path);
   document.body.classList.add('lock');       // every view manages its own scroll
@@ -669,10 +701,12 @@ function render() {
 
   if (path === '/' && !entered) {            // first load: the intro gate owns the choreography
     if (oldEl) oldEl.remove();
-    app.appendChild(renderHome());
+    const frag = renderHome();
+    viewEl = frag.querySelector('.view');
+    app.appendChild(frag);
     return;
   }
-  transition(path, oldEl, oldInst, oldCar, oldPath);
+  transition(path, oldEl, oldInst, oldCar, oldPath, gen);
 }
 
 /* persistent menu: only the active state changes between routes */
