@@ -366,10 +366,30 @@ function renderView(name, mount) {
   const frag = document.createDocumentFragment();
   const view = el('main', 'view view--' + name);
   frag.appendChild(view);
+  /* the detail's strip shows prev/current/next — all three fly out of this view, exactly
+     as they do from the timeline. Only what is actually on screen can travel. */
   const openFrom = (s, box) => {
-    const img = box && box.querySelector('img');
-    pendingFlip = { cur: img ? { el: box, src: img.currentSrc || img.src } : null, prev: null, next: null };
-    flipSources = img ? [{ box, src: img.currentSrc || img.src }] : [];
+    const slides = content.slides || [];
+    const n = slides.length;
+    const i = slides.findIndex((x) => x.id === s.id);
+    const pack = (slot) => {
+      const img = slot && slot.querySelector('img');
+      if (!slot || !img) return null;
+      const r = slot.getBoundingClientRect();
+      if (r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight) return null;
+      return { el: slot, src: img.currentSrc || img.src };
+    };
+    const slotFor = (k) => {
+      const id = n && slides[((k % n) + n) % n].id;
+      return id ? view.querySelector('.js-flip-target[data-id="' + id + '"]') : null;
+    };
+    pendingFlip = {
+      cur: pack(box),
+      prev: i < 0 ? null : pack(slotFor(i - 1)),
+      next: i < 0 ? null : pack(slotFor(i + 1)),
+    };
+    flipSources = [pendingFlip.cur, pendingFlip.prev, pendingFlip.next]
+      .filter(Boolean).map((f) => ({ box: f.el, src: f.src }));
     navigate('/p/' + (s.id || ''));
   };
   activeView = mount(view, openFrom);
