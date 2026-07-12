@@ -35,6 +35,17 @@ function month(s) {
   return m ? m[1].trim() : '';
 }
 
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+
+/* the work's year and month, as the admin has it: "February 2026" */
+function dated(s) {
+  const m = /^(\d{4})-(\d{2})/.exec(String(s.date || ''));
+  if (!m) return '';
+  const name = MONTHS[parseInt(m[2], 10) - 1] || month(s);
+  return name ? name + ' ' + m[1] : m[1];
+}
+
 /* strip media cell: natural aspect, width-bound */
 /* same shape as every other view: an unclipped slot holding the clipping frame that
    travels (original Flip). The detail's paintings can therefore fly home on close. */
@@ -128,8 +139,9 @@ function buildContent(s, i, slides) {
     h.appendChild(m);
     wrap.appendChild(h);
   }
-  /* product spec rows (admin: 제품 규격 / 제품 타입) */
-  if (s.size || s.ptype) {
+  /* spec rows (admin: 연월 / 제품 규격 / 제품 타입) */
+  const when = dated(s);
+  if (when || s.size || s.ptype) {
     const spec = el('div', 'dt-spec');
     const row = (k, v) => {
       const r = el('div', 'dt-spec__row dt-reveal');
@@ -139,6 +151,7 @@ function buildContent(s, i, slides) {
       r.appendChild(inn);
       spec.appendChild(r);
     };
+    if (when) row('Date', when);
     if (s.size) row('Size', s.size);
     if (s.ptype) row('Type', s.ptype);
     wrap.appendChild(spec);
