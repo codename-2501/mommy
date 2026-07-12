@@ -151,22 +151,9 @@ def image_aspects():
     return _ASPECTS
 
 
-TEXT_FIELDS = {
-    "/about": [
-        ("title", "제목 (줄바꿈으로 행 구분)"),
-        ("intro", "소개 문단"),
-        ("thanks", "맺음말"),
-    ],
-}
-
-
-def text_fields(path):
-    """The editable copy of a page — keys the site actually renders, from content.json."""
-    texts = (read_content().get("texts") or {}).get(path) or {}
-    return [
-        {"key": k, "label": label, "value": texts.get(k, "")}
-        for k, label in TEXT_FIELDS.get(path, [])
-    ]
+# Pages whose body the admin composes as blocks (content.json → blocks[page]).
+# The block list IS the page: there is no fixed field set to scan for.
+EDITABLE_PAGES = ("/about",)
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -217,7 +204,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         p = path.rstrip("/") or "/"
         blocked = (
             p == "/admin" or p.startswith("/admin/")
-            or p.startswith("/api/textscan") or p.startswith("/api/pages")
+            or p.startswith("/api/pages")
         )
         if blocked:
             self.send_error(404, "Not Found")
@@ -317,15 +304,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return self._send_json({"error": str(e)}, 500)
 
         if path == "/api/pages":
-            return self._send_json({"pages": sorted(TEXT_FIELDS)})
-
-        if path == "/api/textscan":
-            qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
-            p = qs.get("path", ["/about"])[0]
-            try:
-                return self._send_json({"path": p, "fields": text_fields(p)})
-            except Exception as e:
-                return self._send_json({"error": str(e)}, 500)
+            return self._send_json({"pages": list(EDITABLE_PAGES)})
 
         return super().do_GET()
 

@@ -363,15 +363,53 @@ function mountIndex(view, slides, aspects, onOpen) {
 }
 
 /* ---------------- ABOUT: black page, big lines, credits ---------------- */
+/* One About block -> one element. The page is whatever list the admin composed, in that
+   order: copy and pictures interleave freely, so nothing here may assume a fixed shape. */
+function aboutBlock(b) {
+  const text = (b.text || '').trim();
+
+  if (b.type === 'image') {
+    if (!b.src) return null;
+    const fig = el('figure', 'about__fig about__fade');
+    const img = el('img');
+    img.src = b.src;
+    img.alt = b.caption || '';
+    img.loading = 'lazy';
+    img.addEventListener('load', () => img.classList.add('ok'));
+    fig.appendChild(img);
+    if ((b.caption || '').trim()) fig.appendChild(el('figcaption', null, b.caption));
+    return fig;
+  }
+
+  if (!text) return null;   // an empty block leaves no gap behind
+
+  if (b.type === 'title') {
+    const h1 = el('h1', 'about__title');
+    text.split(/\n/).forEach((line) => {
+      const m = el('div', 'about__line');
+      m.appendChild(el('div', 'about__line-in', line));
+      h1.appendChild(m);
+    });
+    return h1;
+  }
+
+  if (b.type === 'thanks') {
+    const t = el('div', 'about__thanks');
+    text.split(/\n/).forEach((line) => {
+      if (line.trim()) t.appendChild(el('div', null, line));
+    });
+    return t;
+  }
+
+  const p = el('div', 'about__intro about__fade');   // 'text'
+  text.split(/\n+/).forEach((para) => p.appendChild(el('p', null, para)));
+  return p;
+}
+
 function mountAbout(view, content) {
-  const texts = (content && content.texts && content.texts['/about']) || {};
   const wm = (content && content.wordmark) || {};
-  /* the copy lives in content.json, edited in the admin's 텍스트 tab — it is the only
-     source. A second copy hardcoded here would silently outlive an admin edit and
-     resurface as stale text the day texts is empty, so an empty field renders nothing. */
-  const title = texts.title || '';
-  const intro = texts.intro || '';
-  const thanks = texts.thanks || '';
+  /* the page lives in content.json, composed in the admin — it is the only source */
+  const blocks = (content && content.blocks && content.blocks['/about']) || [];
 
   const page = el('div', 'about');
   const maskOuter = el('div', 'about__mask');
@@ -387,51 +425,10 @@ function mountAbout(view, content) {
   head.appendChild(l2);
   scroller.appendChild(head);
 
-  if (title.trim()) {
-    const h1 = el('h1', 'about__title');
-    title.split(/\n/).forEach((line) => {
-      const m = el('div', 'about__line');
-      m.appendChild(el('div', 'about__line-in', line));
-      h1.appendChild(m);
-    });
-    scroller.appendChild(h1);
-  }
-
-  if (intro.trim()) {
-    const introEl = el('div', 'about__intro about__fade');
-    intro.split(/\n+/).forEach((p) => introEl.appendChild(el('p', null, p)));
-    scroller.appendChild(introEl);
-  }
-
-  /* page images, in the order the admin set them */
-  const media = ((content && content.media && content.media['/about']) || [])
-    .filter((m) => m && m.src);
-  if (media.length) {
-    const wrap = el('div', 'about__media about__fade');
-    media.forEach((m) => {
-      const fig = el('figure', 'about__fig');
-      const img = el('img');
-      img.src = m.src;
-      img.alt = m.caption || '';
-      img.loading = 'lazy';
-      img.addEventListener('load', () => img.classList.add('ok'));
-      fig.appendChild(img);
-      if ((m.caption || '').trim()) {
-        fig.appendChild(el('figcaption', null, m.caption));
-      }
-      wrap.appendChild(fig);
-    });
-    scroller.appendChild(wrap);
-  }
-
-  if (thanks.trim()) {
-    const thanksEl = el('div', 'about__thanks');
-    thanks.split(/\n/).forEach((line) => {
-      if (!line.trim()) return;
-      thanksEl.appendChild(el('div', null, line));
-    });
-    scroller.appendChild(thanksEl);
-  }
+  blocks.forEach((b) => {
+    const node = b && aboutBlock(b);
+    if (node) scroller.appendChild(node);
+  });
 
   /* Noun Project attribution (CC BY 3.0 — the plan's only allowed credit) */
   const cred = el('div', 'about__credits label');
