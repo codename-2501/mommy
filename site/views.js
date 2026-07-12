@@ -68,6 +68,10 @@ function mountSurf(view, slides, aspects, onOpen) {
     box.appendChild(frame);
     media.appendChild(box);
     it.appendChild(media);
+    /* the painting slides 75% aside on hover — out from under the cursor. This layer stays
+       put over the card's original spot, so the hover (and the click) has something stable
+       to land on instead of flickering onto whichever neighbour moves in underneath. */
+    it.appendChild(el('div', 'surf-item__hit'));
     it.addEventListener('mouseenter', () => {
       hoverLbl.textContent = '(' + (i + 1) + ') ' + [category(s), month(s)].filter(Boolean).join(' / ');
       hoverLbl.classList.add('is-on');
@@ -317,6 +321,8 @@ function mountIndex(view, slides, aspects, onOpen) {
   });
 
   const sc = smoothTilt(outer, content);
+  /* the month labels ride up out of their masks on .is-in — without it they stay clipped */
+  requestAnimationFrame(() => requestAnimationFrame(() => view.classList.add('is-in')));
 
   /* original: scroll straight to the handed-over work's row, then report "page-done" */
   let markReady;
