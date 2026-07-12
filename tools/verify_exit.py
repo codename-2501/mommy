@@ -16,7 +16,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
-OUT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "/tmp/tlb_exit")
+OUT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "/tmp/lse_exit")
 OUT.mkdir(parents=True, exist_ok=True)
 
 opts = Options()

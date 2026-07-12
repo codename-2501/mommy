@@ -217,7 +217,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         p = path.rstrip("/") or "/"
         blocked = (
             p == "/admin" or p.startswith("/admin/")
-            or p == "/tlb-admin.js"
             or p.startswith("/api/textscan") or p.startswith("/api/pages")
         )
         if blocked:

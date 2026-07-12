@@ -73,7 +73,7 @@ function mountSurf(view, slides, aspects, onOpen) {
     box.dataset.id = s.id || '';
     const name = String(s.image || '').split('/').pop();
     box.style.aspectRatio = String(aspects[name] || 1);
-    const frame = el('div', 'tlb-frame lse-frame');
+    const frame = el('div', 'lse-frame');
     frame.dataset.id = s.id || '';
     const img = el('img');
     img.src = thumb(s.image, 600);
@@ -170,12 +170,12 @@ function mountSurf(view, slides, aspects, onOpen) {
   }
   function onUp() { dragging = false; }
   function onWheel(e) {
-    if (window.TLBDetail && window.TLBDetail.isOpen) return;
+    if (window.LSEDetail && window.LSEDetail.isOpen) return;
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
     target += raw * WHEEL_MULT;
   }
   function onKey(e) {
-    if (window.TLBDetail && window.TLBDetail.isOpen) return;
+    if (window.LSEDetail && window.LSEDetail.isOpen) return;
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     e.preventDefault();
     const lefts = bounds.map((b) => b.left);
@@ -253,12 +253,12 @@ function smoothTilt(outer, content) {
     max = Math.max(0, content.getBoundingClientRect().height - outer.clientHeight);
   }
   function onWheel(e) {
-    if (window.TLBDetail && window.TLBDetail.isOpen) return;
+    if (window.LSEDetail && window.LSEDetail.isOpen) return;
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
     target = Math.max(0, Math.min(max, target + raw * WHEEL_MULT));
   }
   function onKey(e) {
-    if (window.TLBDetail && window.TLBDetail.isOpen) return;
+    if (window.LSEDetail && window.LSEDetail.isOpen) return;
     const wh = innerHeight;
     if (e.key === 'ArrowDown') { e.preventDefault(); target = Math.min(max, target + 100); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); target = Math.max(0, target - 100); }
@@ -315,7 +315,7 @@ function mountIndex(view, slides, aspects, onOpen) {
     const box = el('div', 'agrid__media lse-slot');
     box.dataset.id = s.id || '';
     box.style.aspectRatio = String(aspects[name] || 1);
-    const frame = el('div', 'tlb-frame lse-frame');
+    const frame = el('div', 'lse-frame');
     frame.dataset.id = s.id || '';
     const img = el('img');
     img.src = thumb(s.image, 300);
@@ -380,7 +380,7 @@ function mountAbout(view, content) {
 
   const head = el('div', 'about__head');
   const l1 = el('div', 'label dt-reveal');
-  l1.appendChild(el('div', null, '(' + (wm.l2 || 'TLB') + ')'));
+  l1.appendChild(el('div', null, '(' + (wm.l2 || 'LSE') + ')'));
   const l2 = el('div', 'label dt-reveal');
   l2.appendChild(el('div', null, '(25-26)'));
   head.appendChild(l1);
@@ -429,5 +429,5 @@ function mountAbout(view, content) {
   return sc;
 }
 
-window.TLBViews = { mountSurf, mountIndex, mountAbout };
+window.LSEViews = { mountSurf, mountIndex, mountAbout };
 })();
