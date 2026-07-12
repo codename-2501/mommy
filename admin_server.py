@@ -414,6 +414,42 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    # ---------------- public vs local ----------------
+    def _is_public(self):
+        """True when the request arrived from outside this machine.
+
+        A tunnel (cloudflared) connects to us over loopback, so the peer address always
+        looks local. What gives a public request away is the Host it asked for and the
+        proxy headers it carries.
+        """
+        for h in ("cf-connecting-ip", "x-forwarded-for", "cf-ray", "x-real-ip"):
+            if self.headers.get(h):
+                return True
+        host = (self.headers.get("Host") or "").rsplit(":", 1)[0].strip("[]").lower()
+        return host not in ("localhost", "127.0.0.1", "::1", "")
+
+    def _deny_public(self, path):
+        """The editing surface exists for the machine that runs the server, not the world."""
+        if not self._is_public():
+            return False
+        p = path.rstrip("/") or "/"
+        blocked = (
+            p == "/admin" or p.startswith("/admin/")
+            or p == "/tlb-admin.js"
+            or p.startswith("/api/textscan") or p.startswith("/api/pages")
+        )
+        if blocked:
+            self.send_error(404, "Not Found")
+            return True
+        return False
+
+    def _deny_public_write(self):
+        """Saving content, uploading and deleting are local-only, whatever the route."""
+        if self._is_public():
+            self._send_json({"error": "read-only"}, 403)
+            return True
+        return False
+
     def _serve_file(self, fs, ctype):
         with open(fs, "rb") as fh:
             body = fh.read()
@@ -427,6 +463,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     # ---------------- GET ----------------
     def do_GET(self):
         path = urllib.parse.urlparse(self.path).path
+
+        if self._deny_public(path):          # over a tunnel the admin simply does not exist
+            return
 
         # new frontend (site/): SPA shell for all app routes
         clean_route = path.rstrip("/") or "/"
@@ -605,6 +644,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(length) if length else b""
 
+        # /gql is the site's own read-only data source — everything else that writes is local
+        if not path.startswith("/gql") and self._deny_public_write():
+            return
+
         # local GraphQL endpoint standing in for DatoCMS — returns our slide data
         if path.startswith("/gql"):
             try:
@@ -659,6 +702,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     # ---------------- DELETE ----------------
     def do_DELETE(self):
         path = urllib.parse.urlparse(self.path).path
+        if self._deny_public_write():
+            return
         if path == "/api/images":
             try:
                 qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
