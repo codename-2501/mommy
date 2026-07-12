@@ -322,11 +322,11 @@ function renderHome() {
     (s, item) => {
       carousel.freeze();   // stop the lerp drift so the flip source stays put
       const grab = (it) => {
-        const img = it && it.querySelector('.car-media img');
+        const img = it && it.querySelector('.car-frame img');
         if (!img) return null;
         const r = img.getBoundingClientRect();
         if (r.right < 0 || r.left > innerWidth) return null;   // only visible ones fly
-        return { el: it.querySelector('.car-media'), src: img.currentSrc || img.src };
+        return { el: it.querySelector('.car-frame'), src: img.currentSrc || img.src };
       };
       const track = item.parentElement;
       pendingFlip = {
@@ -372,11 +372,227 @@ function renderView(name, mount) {
   return frag;
 }
 
+function buildView(path) {
+  const slides = content.slides || [];
+  if (path === '/') return renderHome();
+  if (path === '/surf') {
+    return renderView('surf', (v, open) => window.TLBViews.mountSurf(v, slides, aspects, open));
+  }
+  if (path === '/articles') {
+    return renderView('articles', (v, open) => window.TLBViews.mountIndex(v, slides, aspects, open));
+  }
+  if (path === '/about') {
+    return renderView('about', (v) => window.TLBViews.mountAbout(v, content));
+  }
+  return renderStub('not found');
+}
+
+/* ---------- page transition (ported from the original DNhanIij.js) ---------- */
+
+const FLIP = { dur: 1000, stagger: 35 };                          // 1s "snappy"
+const RISE = { dur: 1150, stagger: 35, start: 250, fromSurf: 575 };  // 1.15s "expo"
+const FADE = 350;                                                 // .35s "power1"
+
+function nextFrame() {
+  return new Promise((res) => requestAnimationFrame(() => res()));
+}
+
+/* original K(): the incoming view reports "page-done" — never wait longer than 200ms */
+function whenReady(inst) {
+  return new Promise((res) => {
+    let done = false;
+    const fin = () => { if (!done) { done = true; res(); } };
+    if (inst && inst.ready) inst.ready.then(fin);
+    setTimeout(fin, 200);
+  });
+}
+
+function inView(r) {
+  return r.bottom >= 0 && r.right >= 0 && r.top <= innerHeight && r.left <= innerWidth;
+}
+
+/* original B(): hand the work the viewer was on over to the incoming view */
+function handOverIndex(fromPath, toArticles, oldCar, oldEl) {
+  let idx = 0;
+  if (fromPath === '/' && !toArticles) {
+    idx = (oldCar && oldCar.activeIndex()) || 0;
+  } else if (fromPath === '/articles' && oldEl) {
+    const mid = innerHeight / 2;
+    let best = null, bestD = Infinity;
+    for (const row of oldEl.querySelectorAll('.js-tilt')) {
+      const d = Math.abs(row.getBoundingClientRect().top - mid);
+      if (d < bestD) { bestD = d; best = row; }
+    }
+    const cell = best && best.querySelector('[data-index]');
+    idx = cell ? parseInt(cell.dataset.index, 10) || 0 : 0;
+  }
+  document.body.dataset.index = String(idx);
+}
+
+/* original W(): pair the leaving paintings with the incoming slots by work id.
+   Only what the viewer can actually see takes part — plus the centred carousel slide. */
+function measureFlips(oldEl, newEl, fromSurf) {
+  const bind = (node) => ({ el: node, bounds: node.getBoundingClientRect() });
+  const targetEls = [...newEl.querySelectorAll('.js-flip-target')];
+  const flipEls = oldEl ? [...oldEl.querySelectorAll('.js-flip')] : [];
+  if (!flipEls.length) return { fromFlips: [], toFlips: [], targets: targetEls.map(bind) };
+
+  const seen = [];
+  for (const node of flipEls) {
+    const b = node.getBoundingClientRect();
+    if (inView(b) || node.closest('.js-slide-active')) seen.push({ el: node, bounds: b });
+  }
+  let ids = new Set(seen.map((f) => f.el.dataset.id));
+  const toFlips = [];
+  for (const node of targetEls) {
+    if (!ids.has(node.dataset.id)) continue;
+    const b = node.getBoundingClientRect();
+    if (inView(b)) toFlips.push({ el: node, bounds: b });
+  }
+  ids = new Set(toFlips.map((t) => t.el.dataset.id));
+  const paired = new Set(toFlips.map((t) => t.el));
+  const rest = targetEls.filter((node) => !paired.has(node)).map(bind);
+  /* leaving surf nothing flips (the paintings fly out instead) — every slot rises, top row first */
+  const targets = fromSurf
+    ? [...toFlips, ...rest].sort((a, b) => (Math.abs(a.bounds.top - b.bounds.top) > 1
+      ? a.bounds.top - b.bounds.top
+      : a.bounds.left - b.bounds.left))
+    : rest;
+  return {
+    fromFlips: fromSurf ? seen : seen.filter((f) => ids.has(f.el.dataset.id)),
+    toFlips,
+    targets,
+  };
+}
+
+/* original J(): the painting's own frame moves house into its new slot and flies the
+   delta home. No clone, no second <img> — the same pixels travel. */
+function prepareFlip(fromFlips, toFlips, noStagger) {
+  const byId = new Map(toFlips.map((t) => [t.el.dataset.id, t]));
+  const flights = [];
+  const owners = [];
+  for (const from of fromFlips) {
+    const to = byId.get(from.el.dataset.id);
+    if (!to) continue;
+    const owner = to.el.closest('.js-flip-o');
+    if (owner) { owner.style.zIndex = '5'; owners.push(owner); }
+    to.el.replaceChildren(from.el);
+    const dx = from.bounds.left - to.bounds.left;
+    const dy = from.bounds.top - to.bounds.top;
+    const scale = to.bounds.width ? from.bounds.width / to.bounds.width : 1;
+    from.el.style.transition = 'none';
+    from.el.style.transform =
+      'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + scale + ')';
+    flights.push({ el: from.el, delay: noStagger ? 0 : flights.length * FLIP.stagger });
+  }
+  if (!flights.length) return null;
+  return () => {
+    for (const f of flights) {
+      f.el.style.transition = 'transform ' + FLIP.dur + 'ms var(--ease-snappy) ' + f.delay + 'ms';
+      f.el.style.transform = '';
+    }
+    const last = flights[flights.length - 1];
+    setTimeout(() => {
+      for (const f of flights) { f.el.style.transition = ''; f.el.style.transform = ''; }
+      for (const o of owners) o.style.zIndex = '';
+    }, FLIP.dur + last.delay + 50);
+  };
+}
+
+/* original Y(): slots with no painting of their own coming in rise from below the fold */
+function prepareRise(targets, fromSurf, toSurf) {
+  const start = fromSurf ? RISE.fromSurf : RISE.start;
+  const risers = [];
+  for (const t of targets) {
+    const b = t.bounds;
+    if (b.bottom < 0 || b.top > innerHeight || b.right < -100 || b.left > innerWidth + 100) continue;
+    const y = -((b.top - innerHeight) * (toSurf ? 1.25 : 1));
+    t.el.style.transition = 'none';
+    t.el.style.transform = 'translate3d(0,' + y + 'px,0) scale(.9)';
+    risers.push({ el: t.el, delay: start + (risers.length + 1) * RISE.stagger });
+  }
+  if (!risers.length) return null;
+  return () => {
+    for (const r of risers) {
+      r.el.style.transition = 'transform ' + RISE.dur + 'ms var(--ease-out-expo) ' + r.delay + 'ms';
+      r.el.style.transform = '';
+    }
+    const last = risers[risers.length - 1];
+    setTimeout(() => {
+      for (const r of risers) { r.el.style.transition = ''; r.el.style.transform = ''; }
+    }, RISE.dur + last.delay + 50);
+  };
+}
+
+/* the old page leaves WHILE the new one arrives (original: mode "", both mounted) */
+function leave(oldEl, oldInst, oldCar, flags) {
+  if (!oldEl) return;
+  const { fromSurf, fromAbout, toAbout } = flags;
+  if (fromSurf && !toAbout && oldInst && oldInst.exit) {
+    oldInst.exit(() => oldEl.remove());                  // V(): the paintings fly out
+    return;
+  }
+  if (oldInst) oldInst.destroy();
+  if (oldCar) oldCar.destroy();
+  if (fromAbout) {
+    oldEl.classList.remove('is-in');
+    oldEl.classList.add('is-out');                       // the curtain reverses
+    setTimeout(() => oldEl.remove(), 1050);
+    return;
+  }
+  if (!fromSurf) oldEl.classList.add('is-exit');         // autoAlpha 0, .35s
+  setTimeout(() => oldEl.remove(), fromSurf ? 1050 : FADE + 50);
+}
+
+async function transition(path, oldEl, oldInst, oldCar, oldPath) {
+  const flags = {
+    fromSurf: oldPath === '/surf',
+    fromAbout: oldPath === '/about',
+    toSurf: path === '/surf',
+    toAbout: path === '/about',
+  };
+  const toCarousel = path === '/' || path === '/surf';   // the views that jump to an index
+
+  handOverIndex(oldPath, path === '/articles', oldCar, oldEl);
+  if (oldCar) oldCar.freeze();          // hold the paintings still while they are measured
+
+  const frag = buildView(path);
+  const view = frag.querySelector ? frag.querySelector('.view') : frag;
+  if (view) {
+    view.classList.add('is-pre');       // nothing paints until the from-state is set
+    if (path === '/') view.classList.add('no-rise');   // the flip drives the slides, not the intro rise
+  }
+  app.appendChild(frag);
+  const inst = activeView || carousel;
+
+  await nextFrame();                    // rects exist only once the view is in the document
+  if (toCarousel) await whenReady(inst);
+  await nextFrame();
+  if (!view || !view.isConnected) return;
+
+  const { fromFlips, toFlips, targets } = measureFlips(oldEl, view, flags.fromSurf);
+  if (inst && inst.unfreeze) inst.unfreeze();           // surf: the deck angle eases in
+
+  const skipFlip = flags.fromSurf && !flags.toAbout;    // surf leaves by flying its paintings out
+  const playFlip = fromFlips.length && !skipFlip
+    ? prepareFlip(fromFlips, toFlips, flags.toSurf)
+    : null;
+  const playRise = prepareRise(targets, flags.fromSurf, flags.toSurf);
+
+  leave(oldEl, oldInst, oldCar, flags);
+  view.classList.remove('is-pre');
+  void view.offsetWidth;                // paint the from-state before attaching transitions
+  requestAnimationFrame(() => {
+    if (playFlip) playFlip();
+    if (playRise) playRise();
+  });
+  if (path === '/') setTimeout(() => view.classList.remove('no-rise'), FLIP.dur + 200);
+}
+
 /* ---------- router ---------- */
 
-/* detail close: the home re-enters with its full entrance (original Y() replays) */
-function replayHomeEnter() {
-  /* boxes whose live <img> was reparented into the detail get a fresh one back */
+/* boxes whose live <img> was reparented into the detail get a fresh one back */
+function restoreFlipSources() {
   for (const f of flipSources) {
     if (!f.box.querySelector('img')) {
       const img = document.createElement('img');
@@ -388,6 +604,11 @@ function replayHomeEnter() {
     f.box.style.visibility = '';
   }
   flipSources = [];
+}
+
+/* detail close: the home re-enters with its full entrance (original Y() replays) */
+function replayHomeEnter() {
+  restoreFlipSources();
   const view = document.querySelector('.view--home');
   if (!view) return;
   view.classList.add('no-trans');
@@ -423,7 +644,7 @@ function render() {
         if (!item) return null;
         item.classList.add('flip-back');
         setTimeout(() => item.classList.remove('flip-back'), 1200);
-        return item.querySelector('.car-media');
+        return item.querySelector('.car-frame');
       },
     }, path.slice(3), flip);
     return;
@@ -443,43 +664,15 @@ function render() {
   lastViewPath = path;
   updateMenu(path);
   document.body.classList.add('lock');       // every view manages its own scroll
+  restoreFlipSources();                      // a detail may still hold the home's live <img>s
   app.querySelectorAll('.intro,.detail').forEach((n) => n.remove());
 
-  if (oldEl) {
-    if (oldPath === '/surf' && oldInst && oldInst.exit) {
-      oldInst.exit(() => oldEl.remove());                  // cards fly up (original V())
-    } else if (oldPath === '/about') {
-      if (oldInst) oldInst.destroy();
-      oldEl.classList.remove('is-in');
-      oldEl.classList.add('is-out');                        // curtains reverse
-      setTimeout(() => oldEl.remove(), 1050);
-    } else {
-      if (oldInst) oldInst.destroy();
-      if (oldCar) oldCar.destroy();
-      oldEl.classList.add('is-exit');                       // autoAlpha .35 (original X())
-      setTimeout(() => oldEl.remove(), 400);
-    }
-  }
-
-  const slides = content.slides || [];
-  if (path === '/') {
+  if (path === '/' && !entered) {            // first load: the intro gate owns the choreography
+    if (oldEl) oldEl.remove();
     app.appendChild(renderHome());
-  } else if (path === '/surf') {
-    app.appendChild(renderView('surf', (v, open) =>
-      window.TLBViews.mountSurf(v, slides, aspects, open)));
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      const v = document.querySelector('.view--surf');
-      if (v) v.classList.add('is-in');
-    }));
-  } else if (path === '/articles') {
-    app.appendChild(renderView('articles', (v, open) =>
-      window.TLBViews.mountIndex(v, slides, aspects, open)));
-  } else if (path === '/about') {
-    app.appendChild(renderView('about', (v) =>
-      window.TLBViews.mountAbout(v, content)));
-  } else {
-    app.appendChild(renderStub('not found'));
+    return;
   }
+  transition(path, oldEl, oldInst, oldCar, oldPath);
 }
 
 /* persistent menu: only the active state changes between routes */
