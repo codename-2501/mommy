@@ -597,7 +597,7 @@ html.is-resizing .wordmark{transition:none}
    42px of overlap on a desktop. The lines need room for the tallest thing that can sit in
    them, and that is 한글. */
 .about__title{
-  font-size:min(11.7rem,117px);font-weight:700;line-height:.875;
+  font-size:min(11.7rem,117px);font-weight:700;line-height:1.1;
   text-transform:uppercase;text-align:center;margin:-10rem 0 22.5rem;
 }
 @media (max-width:699px){.about__title{font-size:3.6rem;margin:-2.5rem 0 15rem}}
@@ -612,8 +612,12 @@ html.is-resizing .wordmark{transition:none}
 .about__line:nth-child(3) .about__line-in{transition-delay:.7s}
 .about__line:nth-child(4) .about__line-in{transition-delay:.8s}
 .about__line:nth-child(5) .about__line-in{transition-delay:.9s}
+/* line-height:1 is a Latin setting — a cap is short and the lines still clear each other. A
+   Hangul glyph fills 1.26em, so the body copy, which is the one block here that actually
+   wraps onto many lines, ran into itself: 앉은 sat on 습니다. The lines get room for the
+   tallest thing they can hold. */
 .about__intro{
-  font-size:min(4rem,40px);font-weight:700;line-height:1;text-transform:uppercase;
+  font-size:min(4rem,40px);font-weight:700;line-height:1.35;text-transform:uppercase;
   max-width:110rem;margin:0 auto 28.5rem;display:flex;flex-direction:column;gap:6rem;
 }
 @media (max-width:699px){.about__intro{font-size:2.8rem;margin-bottom:15rem}}
@@ -668,7 +672,7 @@ html.is-resizing .wordmark{transition:none}
 /* month labels on the grid use the shared reveal mask */
 .view--articles.is-in .dt-reveal>*{transform:translateY(0)}
 .about__thanks{
-  font-size:min(11.7rem,117px);font-weight:700;line-height:.875;text-transform:uppercase;
+  font-size:min(11.7rem,117px);font-weight:700;line-height:1.1;text-transform:uppercase;
   margin-bottom:5rem;
 }
 @media (max-width:699px){.about__thanks{font-size:3.6rem}}
