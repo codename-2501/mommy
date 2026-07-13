@@ -77,11 +77,14 @@ img{max-width:100%;display:block}
 @media (max-height:780px){
   .intro{padding-top:max(calc(44vh + 3rem),calc(27vh + 12rem));gap:2.2rem}
 }
-/* Only the desktop wordmark (.9rem) can afford to give up size on a short window. The phone's
-   is already .4rem — set to .72rem it grows past 100vw, wraps onto extra lines and eats half
-   the screen, which is what pushed the Enter button out of view on a 320x568 phone. */
+/* A short desktop window makes the intro's wordmark give up a fifth of its size. That used to
+   be a font-size (.9rem -> .72rem), and font-size does not transition: the moment the intro
+   let go of the wordmark the type snapped back to full size — the logo ballooned and only
+   then eased down to its resting scale. Give the same reduction as scale, which the existing
+   transform transition carries, and the exit becomes one continuous move.
+   (The phone is left alone: its wordmark is .4rem and shrinking it further is pointless.) */
 @media (max-height:780px) and (min-width:700px){
-  .wordmark.at-intro{font-size:.72rem}
+  .wordmark.at-intro{--intro-scale:.8}   /* .72rem / .9rem */
 }
 
 /* wordmark: persistent site logo (big, top) — sits mid-screen during the intro.
@@ -121,7 +124,7 @@ html.is-resizing .wordmark{transition:none}
 /* during the intro the wordmark sits higher than the middle: the month list and the enter
    button live underneath it, and they need the room */
 .wordmark.at-intro{
-  transform:translateX(-50%) translateY(calc(27vh - var(--rest-top) - 50%)) scale(1);
+  transform:translateX(-50%) translateY(calc(27vh - var(--rest-top) - 50%)) scale(var(--intro-scale,1));
 }
 .wordmark .line{
   display:flex;gap:0 .175em;
