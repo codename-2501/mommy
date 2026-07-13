@@ -749,9 +749,19 @@ function renderBlocks(){
               <div><button class="btn ghost btn sm" data-ladd="${i}">+ 항목 추가</button></div>
             </div>`;
     } else {
+      /* 정렬을 안 정하면 사이트가 그리던 그대로: 제목은 중앙, 글·맺음말은 좌측 */
+      const def={title:'center',text:'left',thanks:'left'}[b.type]||'left';
+      const al=['left','center','right'].includes(b.align)?b.align:def;
+      const opt=(v,label)=>`<option value="${v}"${v===al?' selected':''}>${label}</option>`;
       body=`<div class="blk__body">
            <textarea class="blk-ta" data-text="${i}" rows="${BLOCK_ROWS[b.type]||6}"
              placeholder="${escAttr(BLOCK_HINT[b.type]||'')}">${escHtml(b.text||'')}</textarea>
+           <div style="display:flex;gap:6px;align-items:center;margin-top:6px">
+             <span style="font-size:12px;color:var(--mut)">정렬</span>
+             <select class="blk-sel" data-align="${i}">
+               ${opt('left','좌측')}${opt('center','중앙')}${opt('right','우측')}
+             </select>
+           </div>
          </div>`;
     }
     row.innerHTML=grip+tag+body+nav;
