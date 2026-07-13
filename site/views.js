@@ -498,7 +498,12 @@ function mountAbout(view, content) {
 
   blocks.forEach((b) => {
     const node = b && aboutBlock(b);
-    if (node) scroller.appendChild(node);
+    if (!node) return;
+    /* the space under a block belongs to every kind of block, not just the copy — set it here
+       rather than in each branch, so a picture and a CV group answer to the same control */
+    const gap = ['sm', 'md', 'lg'].includes(b.gap) ? b.gap : 'md';
+    node.classList.add('about__gap--' + gap);
+    scroller.appendChild(node);
   });
 
   /* Noun Project attribution (CC BY 3.0 — the plan's only allowed credit) */

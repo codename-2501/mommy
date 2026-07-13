@@ -608,7 +608,7 @@ html.is-resizing .wordmark{transition:none}
    them, and that is 한글. */
 .about__title{
   font-size:calc(min(11.7rem,117px) * var(--sz,1));font-weight:700;line-height:1.1;
-  text-transform:uppercase;text-align:center;margin:-10rem 0 22.5rem;
+  text-transform:uppercase;text-align:center;margin:-10rem 0 calc(22.5rem * var(--gap,1));
 }
 @media (max-width:699px){.about__title{font-size:calc(3.6rem * var(--sz,1));margin:-2.5rem 0 15rem}}
 .about__line{overflow:hidden}
@@ -628,9 +628,9 @@ html.is-resizing .wordmark{transition:none}
    tallest thing they can hold. */
 .about__intro{
   font-size:calc(min(4rem,40px) * var(--sz,1));font-weight:700;line-height:1.35;text-transform:uppercase;
-  max-width:110rem;margin:0 auto 28.5rem;display:flex;flex-direction:column;gap:6rem;
+  max-width:110rem;margin:0 auto calc(28.5rem * var(--gap,1));display:flex;flex-direction:column;gap:6rem;
 }
-@media (max-width:699px){.about__intro{font-size:calc(2.8rem * var(--sz,1));margin-bottom:15rem}}
+@media (max-width:699px){.about__intro{font-size:calc(2.8rem * var(--sz,1));margin-bottom:calc(15rem * var(--gap,1))}}
 /* an image block: it shares the copy's column so pictures and paragraphs line up, and it
    carries the same bottom margin as a text block so any block order keeps one rhythm.
    Each picture keeps its own aspect ratio rather than being cropped to a fixed cell. */
@@ -639,7 +639,7 @@ html.is-resizing .wordmark{transition:none}
    followed by the year and the place, set quiet and small beside it. On a phone there is no
    second column to give: the group's name sits above its entries. */
 .about__cv{
-  max-width:110rem;margin:0 auto 12rem;
+  max-width:110rem;margin:0 auto calc(12rem * var(--gap,1));
   display:grid;grid-template-columns:16rem 1fr;gap:0 3rem;align-items:start;
 }
 .about__cv-label{
@@ -653,14 +653,14 @@ html.is-resizing .wordmark{transition:none}
 .about__cv-n{font-size:min(1.6rem,16px);opacity:.55;line-height:1.45}
 @media (max-width:699px){
   .about__cv{
-    grid-template-columns:1fr;gap:.8rem;margin-bottom:8rem;
+    grid-template-columns:1fr;gap:.8rem;margin-bottom:calc(8rem * var(--gap,1));
   }
   .about__cv-label{text-align:left;padding-top:0}
   .about__cv-t{font-size:1.9rem}
   .about__cv-n{font-size:1.4rem}
 }
 .about__fig{
-  max-width:110rem;margin:0 auto 28.5rem;
+  max-width:110rem;margin:0 auto calc(28.5rem * var(--gap,1));
 }
 /* half fills half the column; the picture's own ratio decides its height either way, so a
    size never crops it. The alignment says which side the spare half goes to — with margin
@@ -677,13 +677,18 @@ html.is-resizing .wordmark{transition:none}
 .about__fig figcaption{margin-top:.8rem;opacity:.6}
 /* a phone column has no room to give away: a half-width picture there is just a small one */
 @media (max-width:699px){
-  .about__fig{margin-bottom:15rem}
+  .about__fig{margin-bottom:calc(15rem * var(--gap,1))}
   .about__fig--half{max-width:70%}
 }
 /* a copy block's alignment, set in the admin. These sit after .about__title's own centring so
    they can override it — until now the title was centred and nothing else could be moved. */
 /* size is a multiple of what the block already was, never a fixed px: the page is drawn on a
    scale that tracks the viewport, and a hard size would opt one block out of it. */
+/* the gap under a block, as a multiple of the gap it already had — same reason as the size:
+   a fixed px would step outside the page's scale */
+.about__gap--sm{--gap:.5}
+.about__gap--md{--gap:1}
+.about__gap--lg{--gap:1.6}
 .about__sz--sm{--sz:.72}
 .about__sz--md{--sz:1}
 .about__sz--lg{--sz:1.4}
@@ -699,7 +704,7 @@ html.is-resizing .wordmark{transition:none}
 .view--articles.is-in .dt-reveal>*{transform:translateY(0)}
 .about__thanks{
   font-size:calc(min(11.7rem,117px) * var(--sz,1));font-weight:700;line-height:1.1;text-transform:uppercase;
-  margin-bottom:5rem;
+  margin-bottom:calc(5rem * var(--gap,1));
 }
 @media (max-width:699px){.about__thanks{font-size:calc(3.6rem * var(--sz,1))}}
 .about__thanks div:nth-child(even){text-align:right}
