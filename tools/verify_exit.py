@@ -33,7 +33,7 @@ return {
   views: document.querySelectorAll('.view').length,
   details: document.querySelectorAll('.detail').length,
   mounted: document.querySelectorAll('.carousel').length
-         + document.querySelectorAll('.surf').length
+         + document.querySelectorAll('.flow').length
          + document.querySelectorAll('.agrid').length,
 };
 """
@@ -75,7 +75,7 @@ try:
     time.sleep(3.5)
 
     print("\n[A] six menu clicks, each landing mid-transition")
-    for href in ["/surf", "/articles", "/", "/surf", "/articles", "/"]:
+    for href in ["/flow", "/articles", "/", "/flow", "/articles", "/"]:
         d.find_element(By.CSS_SELECTOR, f'a[href="{href}"]').click()
         time.sleep(0.35)                       # deliberately interrupt the transition
         c = d.execute_script(COUNTS)

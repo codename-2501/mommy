@@ -167,7 +167,7 @@ try:
         return before, shared, dupes, stuck, left, len(moved), ghosts, blank
 
     # home -> surf : shared flip, no stagger (original toSurf), index handed over
-    before, shared, dupes, stuck, views, flew, ghosts, blank = hop("01_home_to_surf", "/surf", "home")
+    before, shared, dupes, stuck, views, flew, ghosts, blank = hop("01_home_to_flow", "/flow", "home")
     handed = d.execute_script("return document.body.dataset.index;")
     check(handed == home_active_pos,
           f"home->surf: the carousel's work ({home_active}, slide #{home_active_pos}) "
@@ -182,7 +182,7 @@ try:
     check(not blank, f"home->surf: no empty frame on screen (blank={blank})")
 
     # surf -> articles : original V() — paintings fly OUT, nothing flips
-    before, shared, dupes, stuck, views, flew, ghosts, blank = hop("02_surf_to_articles", "/articles", "surf")
+    before, shared, dupes, stuck, views, flew, ghosts, blank = hop("02_flow_to_articles", "/articles", "flow")
     check(flew > 0, "surf->articles: the surf paintings animate out (original V())")
     check(len(shared) == 0, "surf->articles: nothing is reparented (surf leaves by flying out)")
     check(views == 1, f"surf->articles: the old view was removed (views={views})")
