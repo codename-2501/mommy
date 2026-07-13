@@ -244,6 +244,10 @@ function smoothTilt(outer, content) {
   let target = 0, cur = 0, lastTs = 0, raf = 0, applied = -1, prevTop = 0;
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;   // detail.js: same numbers
   const tilts = () => content.querySelectorAll('.lse-row');
+  /* the phone's tilt is a scroll-driven CSS animation (app.css: rowTilt); everywhere else the
+     script still drives it from the scroll's speed */
+  const cssTilt = () => isSmall() &&
+    typeof CSS !== 'undefined' && CSS.supports && CSS.supports('animation-timeline', 'view()');
   const limit = () => Math.max(0, outer.scrollHeight - outer.clientHeight);
   function measure() { target = Math.min(target, limit()); }
 
@@ -280,10 +284,13 @@ function smoothTilt(outer, content) {
     prevTop = outer.scrollTop;
     /* a phone's rows are a quarter the width, so the same angle bends them a quarter as far
        across the screen — it takes more angle there to read as the same lean */
-    const k = isSmall() ? 0.9 : 0.45;
-    const deg = Math.max(-22, Math.min(22, v * k));
-    const ry = 'perspective(600px) rotateX(' + deg + 'deg)';
-    tilts().forEach((t) => { t.style.transform = ry; });
+    /* where the compositor draws the tilt itself (a phone, see app.css: rowTilt) the script
+       must keep its hands off the transform — an inline one every frame would fight it */
+    if (!cssTilt()) {
+      const deg = Math.max(-22, Math.min(22, v * 0.45));
+      const ry = 'perspective(600px) rotateX(' + deg + 'deg)';
+      tilts().forEach((t) => { t.style.transform = ry; });
+    }
     raf = requestAnimationFrame(frame);
   }
 

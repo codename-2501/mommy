@@ -259,7 +259,10 @@ function mount(view, slides, aspects, years, onOpen) {
     if (step) {
       const pad = 2 * rem;
       const slideW = step - ((isSmall() ? 1.2 : 2) * rem);
-      const ry = isSmall() ? null : 'rotateY(' + (diff * 0.045) + 'deg)';   // skew with velocity
+      /* skew with velocity. The phone used to be left out of it — but the carousel runs on its
+         own lerp, not the system's scroll, so its frames keep coming there too. A phone's cards
+         are smaller, so the same lean needs a little more angle to read. */
+      const ry = 'rotateY(' + (diff * (isSmall() ? 0.07 : 0.045)) + 'deg)';
       for (let k = 0; k < items.length; k++) {
         const left = pad + k * step;
         const end = left + slideW;
