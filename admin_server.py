@@ -7,9 +7,14 @@ ours: no third-party site, bundle or content is read or shipped.
 
 Usage:  python admin_server.py [port]     (default 8082)
 Site:   http://localhost:8082/
-Admin:  http://localhost:8082/admin/  (local only — a public tunnel gets a 404)
+Admin:  http://localhost:8082/admin/  (local always; from outside only with a key — see below)
+
+Remote admin is off unless a key exists. `python admin_server.py --remote-admin` writes one
+to .admin_token and prints the single link that carries it. Whoever holds that link can edit
+the archive, so it is the whole lock: hand it out as you would a key, and `--forget-remote`
+throws it away — every link minted from it dies with it.
 """
-import sys, os, json, re, time, glob, shutil, hashlib, tempfile, urllib.parse, http.server, socketserver, socket
+import sys, os, json, re, time, glob, shutil, hashlib, hmac, secrets, tempfile, urllib.parse, http.server, socketserver, socket
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 CONTENT = os.path.join(ROOT, "content.json")
@@ -18,11 +23,36 @@ IMAGES_DIR = os.path.join(ROOT, "images")
 SITE_DIR = os.path.join(ROOT, "site")
 SITE_ROUTES = ("/", "/flow", "/articles", "/about")   # SPA shell routes (+ /p/<id>)
 LEGACY_ROUTES = {"/surf": "/flow"}                    # renamed — keep old links alive
-PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8082
+_ports = [a for a in sys.argv[1:] if a.isdigit()]     # the flags are not a port
+PORT = int(_ports[0]) if _ports else 8082
 
 ALLOWED_IMG = (".jpg", ".jpeg", ".png", ".webp", ".gif")
 
 KEEP_BACKUPS = 30
+
+TOKEN_FILE = os.path.join(ROOT, ".admin_token")
+COOKIE = "lse_admin"
+COOKIE_DAYS = 14
+
+
+def remote_key():
+    """The key that lets a request from outside edit — empty when remote admin is off.
+
+    Its absence is the safe default: with no key the admin does not exist beyond this
+    machine, whatever the tunnel says."""
+    try:
+        with open(TOKEN_FILE) as fh:
+            return fh.read().strip()
+    except OSError:
+        return ""
+
+
+def mint_key():
+    key = secrets.token_urlsafe(32)
+    fd = os.open(TOKEN_FILE, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as fh:
+        fh.write(key + "\n")
+    return key
 
 
 def image_uses(content, name):
@@ -323,9 +353,54 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         host = (self.headers.get("Host") or "").rsplit(":", 1)[0].strip("[]").lower()
         return host not in ("localhost", "127.0.0.1", "::1", "")
 
-    def _deny_public(self, path):
-        """The editing surface exists for the machine that runs the server, not the world."""
+    def _cookies(self):
+        out = {}
+        for part in (self.headers.get("Cookie") or "").split(";"):
+            k, _, v = part.strip().partition("=")
+            if k:
+                out[k] = v
+        return out
+
+    def _authed(self):
+        """Whether this request may edit.
+
+        Local requests always may — the panel exists for the machine that runs the server.
+        A request from outside may only if it carries the key, compared in constant time so
+        the comparison itself does not leak how much of a guess was right.
+        """
         if not self._is_public():
+            return True
+        key = remote_key()
+        if not key:
+            return False
+        offered = (self._cookies().get(COOKIE)
+                   or self.headers.get("X-Admin-Key")
+                   or urllib.parse.parse_qs(
+                       urllib.parse.urlparse(self.path).query).get("k", [""])[0])
+        return bool(offered) and hmac.compare_digest(offered, key)
+
+    def _grant(self, path):
+        """Trade the key in the URL for a cookie, then send the caller back without it.
+
+        A key that stays in the address bar is a key left in the lock: it is written to
+        history, offered to whatever the page later links to, and read over the holder's
+        shoulder. It is spent once, here, and the browser carries it from then on.
+        """
+        secure = "; Secure" if self.headers.get("x-forwarded-proto") == "https" else ""
+        self.send_response(302)
+        self.send_header("Set-Cookie",
+                         "%s=%s; Path=/; Max-Age=%d; HttpOnly; SameSite=Lax%s"
+                         % (COOKIE, remote_key(), COOKIE_DAYS * 86400, secure))
+        self.send_header("Location", path if path.endswith("/") else path + "/")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.end_headers()
+
+    def _deny_public(self, path):
+        """The editing surface exists for the machine that runs the server, and for whoever
+        holds the key — to everyone else it is not hidden behind a password, it is absent.
+        A wrong key is answered 404, not 403: a refusal would confirm there is something here
+        to guess at."""
+        if self._authed():
             return False
         p = path.rstrip("/") or "/"
         blocked = (
@@ -338,8 +413,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         return False
 
     def _deny_public_write(self):
-        """Saving content, uploading and deleting are local-only, whatever the route."""
-        if self._is_public():
+        """Saving content, uploading and deleting need the key when they come from outside,
+        whatever the route — reading the archive never does."""
+        if not self._authed():
             self._send_json({"error": "read-only"}, 403)
             return True
         return False
@@ -365,9 +441,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     # ---------------- GET ----------------
     def do_GET(self):
-        path = urllib.parse.urlparse(self.path).path
+        parsed = urllib.parse.urlparse(self.path)
+        path = parsed.path
 
-        if self._deny_public(path):          # over a tunnel the admin simply does not exist
+        # arriving on the admin with a key in hand: take it out of the URL at once
+        if (path.rstrip("/") == "/admin" and self._is_public()
+                and urllib.parse.parse_qs(parsed.query).get("k") and self._authed()):
+            return self._grant(path)
+
+        if self._deny_public(path):          # without the key the admin simply does not exist
             return
 
         # new frontend (site/): SPA shell for all app routes
@@ -543,6 +625,20 @@ class DualStackServer(socketserver.ThreadingTCPServer):
 
 
 def main():
+    if "--remote-admin" in sys.argv:
+        key = remote_key() or mint_key()
+        print("Remote admin is ON. The link below is the key — anyone holding it can edit.")
+        print("  https://<your-tunnel-host>/admin/?k=" + key)
+        print("Run with --forget-remote to revoke it.")
+        return
+    if "--forget-remote" in sys.argv:
+        try:
+            os.remove(TOKEN_FILE)
+            print("Remote admin is OFF. Every link minted from the old key is dead.")
+        except OSError:
+            print("Remote admin was already off.")
+        return
+
     socketserver.TCPServer.allow_reuse_address = True
     try:
         httpd = DualStackServer(("", PORT), Handler)     # IPv4 + IPv6
@@ -551,7 +647,9 @@ def main():
     with httpd:
         print(f"LSE GALLERY + admin -> http://localhost:{PORT}/  (127.0.0.1 and ::1)")
         print(f"Admin panel        -> http://localhost:{PORT}/admin/")
-        print("Ctrl+C to stop.")
+        print("Remote admin       -> " + ("ON (key in .admin_token)" if remote_key()
+                                          else "off — local only"))
+        print("Ctrl+C to stop.", flush=True)
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:

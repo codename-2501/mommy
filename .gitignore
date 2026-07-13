@@ -9,3 +9,4 @@ dist/
 # local content snapshots (admin server)
 .backups/
 .content-*.tmp
+.admin_token
