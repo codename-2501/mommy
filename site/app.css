@@ -108,6 +108,11 @@ img{max-width:100%;display:block}
    logo crawls after the window instead of tracking it. While the window is being resized it
    has nothing to animate to — it simply belongs where the new size puts it. */
 html.is-resizing .wordmark{transition:none}
+/* --rest-top clears the home's ruler. The index has no ruler, and on a phone the wordmark
+   sat low enough to collide with the first month label — there it comes up to its own top. */
+@media (max-width:699px){
+  body:has(.view--articles) .wordmark{--rest-top:5rem}
+}
 @media (min-width:700px){.wordmark{font-size:.9rem}}
 /* during the intro the wordmark sits higher than the middle: the month list and the enter
    button live underneath it, and they need the room */
