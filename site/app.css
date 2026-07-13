@@ -532,18 +532,28 @@ html.is-resizing .wordmark{transition:none}
    keeps drawing through the glide. It leans on the row's position in the scrollport rather
    than the scroll's speed: a row arrives tilted, straightens as it crosses the middle, and
    leans away as it leaves. (views.js stands down where this applies.) */
+/* One vanishing point, at the middle of the screen, for every row — that is what makes the
+   lean read as a trapezoid instead of a row that merely swells. Each row carrying its own
+   perspective() put the vanishing point at its own centre, so every row was distorted the
+   same way wherever it sat, which the eye reads as a scale, not a tilt. Perspective on the
+   scrollport means a row leans away from the viewer as it climbs and towards them at the
+   bottom: the top edge of a high row is further off than its bottom edge, and it draws
+   narrower. */
 @keyframes rowTilt{
-  from{transform:perspective(600px) rotateX(16deg)}
-  50% {transform:perspective(600px) rotateX(0deg)}
-  to  {transform:perspective(600px) rotateX(-16deg)}
+  from{transform:rotateX(16deg)}
+  50% {transform:rotateX(0deg)}
+  to  {transform:rotateX(-16deg)}
 }
 @supports (animation-timeline: view()){
-  @media (max-width:699px){
-    .agrid__row{
-      animation:rowTilt linear both;
-      animation-timeline:view(block);
-      animation-range:entry 0% exit 100%;
-    }
+  .agrid{perspective:900px;perspective-origin:50% 50%}
+  /* perspective reaches direct children only; the column between the scrollport and the rows
+     would flatten it back out unless it keeps the 3D context alive */
+  .agrid__in{transform-style:preserve-3d}
+  .agrid__row{
+    animation:rowTilt linear both;
+    animation-timeline:view(block);
+    animation-range:entry 0% exit 100%;
+    transform-style:preserve-3d;
   }
 }
 @media (max-width:699px){

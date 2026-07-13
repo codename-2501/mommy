@@ -244,9 +244,10 @@ function smoothTilt(outer, content) {
   let target = 0, cur = 0, lastTs = 0, raf = 0, applied = -1, prevTop = 0;
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;   // detail.js: same numbers
   const tilts = () => content.querySelectorAll('.lse-row');
-  /* the phone's tilt is a scroll-driven CSS animation (app.css: rowTilt); everywhere else the
-     script still drives it from the scroll's speed */
-  const cssTilt = () => isSmall() &&
+  /* the tilt is a scroll-driven CSS animation (app.css: rowTilt) wherever the browser has one:
+     the compositor draws it, so it survives a phone's momentum scroll, and every row shares the
+     scrollport's vanishing point. The script only steps in for a browser without it. */
+  const cssTilt = () =>
     typeof CSS !== 'undefined' && CSS.supports && CSS.supports('animation-timeline', 'view()');
   const limit = () => Math.max(0, outer.scrollHeight - outer.clientHeight);
   function measure() { target = Math.min(target, limit()); }
