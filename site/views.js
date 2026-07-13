@@ -308,6 +308,12 @@ function smoothTilt(outer, content) {
   outer.addEventListener('pointermove', onMove);
   outer.addEventListener('pointerup', onUp);
   outer.addEventListener('pointercancel', onUp);
+  /* The scroll limit is the content's height, and that height is not final until the images
+     inside it have loaded — nothing reserves their box beforehand. Measured once on mount,
+     the limit stays at the height of a page whose pictures had not arrived yet, and the last
+     screens simply cannot be reached. Watch the content instead of guessing when it settles. */
+  const ro = new ResizeObserver(measure);
+  ro.observe(content);
   requestAnimationFrame(() => { measure(); });
   raf = requestAnimationFrame(frame);
   return {
@@ -315,6 +321,7 @@ function smoothTilt(outer, content) {
     measure,
     destroy() {
       cancelAnimationFrame(raf);
+      ro.disconnect();
       removeEventListener('wheel', onWheel);
       removeEventListener('keydown', onKey);
       removeEventListener('resize', measure);
