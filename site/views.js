@@ -442,6 +442,12 @@ function aboutBlock(b) {
 
   if (!text) return null;   // an empty block leaves no gap behind
 
+  /* copy blocks can be set left, centre or right. Left unset they keep the page as it was
+     drawn: the title centred over the page, the body and the sign-off ranged left. */
+  const ALIGN_DEFAULT = { title: 'center', text: 'left', thanks: 'left' };
+  const al = ['left', 'center', 'right'].includes(b.align) ? b.align : ALIGN_DEFAULT[b.type];
+  const aligned = (node) => { node.classList.add('about__al--' + al); return node; };
+
   if (b.type === 'title') {
     const h1 = el('h1', 'about__title');
     text.split(/\n/).forEach((line) => {
@@ -449,7 +455,7 @@ function aboutBlock(b) {
       m.appendChild(el('div', 'about__line-in', line));
       h1.appendChild(m);
     });
-    return h1;
+    return aligned(h1);
   }
 
   if (b.type === 'thanks') {
@@ -457,10 +463,10 @@ function aboutBlock(b) {
     text.split(/\n/).forEach((line) => {
       if (line.trim()) t.appendChild(el('div', null, line));
     });
-    return t;
+    return aligned(t);
   }
 
-  const p = el('div', 'about__intro about__fade');   // 'text'
+  const p = aligned(el('div', 'about__intro about__fade'));   // 'text'
   text.split(/\n+/).forEach((para) => p.appendChild(el('p', null, para)));
   return p;
 }

@@ -670,6 +670,11 @@ html.is-resizing .wordmark{transition:none}
   .about__fig{margin-bottom:15rem}
   .about__fig--half{max-width:70%}
 }
+/* a copy block's alignment, set in the admin. These sit after .about__title's own centring so
+   they can override it — until now the title was centred and nothing else could be moved. */
+.about__al--left{text-align:left}
+.about__al--center{text-align:center}
+.about__al--right{text-align:right}
 .about__fade{
   opacity:0;transform:translateY(5rem);
   transition:opacity 1.15s var(--ease-rise) 1s,transform 1.15s var(--ease-rise) 1s;
