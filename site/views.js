@@ -408,7 +408,7 @@ function cvItem(it) {
     if (/\d/.test(head)) { date = head; place = tail; }   // "2024.10, 루브르박물관"
     else { place = note; }                                //  no year in it: it is all a place
   }
-  return { text, date, place };
+  return { text, date, place, textEn: String(o.textEn ?? '').trim() };
 }
 
 /* ---------------- ABOUT: black page, big lines, credits ---------------- */
@@ -452,14 +452,21 @@ function aboutBlock(b) {
     group.style.setProperty('--sz-t', pick(b.sizeText, b.size || 'md'));
     group.style.setProperty('--sz-n', pick(b.sizeNote, 'md'));
 
+    /* Korean and English stand together, the English quietly under its Korean — a profile is
+       read by both, and a group with no English simply has none. */
+    const labelEn = (b.labelEn || '').trim();
     const head = el('div', 'about__cv-label label');
-    if (label) head.textContent = label;
+    if (label) head.appendChild(el('div', 'about__cv-label-ko', label));
+    if (labelEn) head.appendChild(el('div', 'about__cv-label-en', labelEn));
     group.appendChild(head);
 
     const list = el('div', 'about__cv-items');
     items.forEach((it) => {
       const row = el('div', 'about__cv-row');
-      if (it.text) row.appendChild(el('span', 'about__cv-t', it.text));
+      const main = el('div', 'about__cv-main');
+      if (it.text) main.appendChild(el('span', 'about__cv-t', it.text));
+      if (it.textEn) main.appendChild(el('span', 'about__cv-en', it.textEn));
+      row.appendChild(main);
       if (it.date) row.appendChild(el('span', 'about__cv-d', it.date));
       if (it.place) row.appendChild(el('span', 'about__cv-n', it.place));
       list.appendChild(row);

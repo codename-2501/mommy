@@ -854,6 +854,8 @@ function renderBlocks(){
         <div class="cv-row">
           <input class="cv-text" data-li="${i}" data-lj="${j}" data-lk="text" value="${escAttr(v.text)}"
                  placeholder="항목 (예: 프랑스 루브르 아트페어)">
+          <input class="cv-text" data-li="${i}" data-lj="${j}" data-lk="textEn" value="${escAttr(it.textEn||'')}"
+                 placeholder="영문 (선택)" style="flex:1 1 min(160px,100%);opacity:.85">
           <input class="cv-date" data-li="${i}" data-lj="${j}" data-lk="date" value="${escAttr(v.date)}"
                  placeholder="2024.10">
           <input class="cv-text" data-li="${i}" data-lj="${j}" data-lk="place" value="${escAttr(v.place)}"
@@ -863,9 +865,13 @@ function renderBlocks(){
           <button class="btn ghost btn sm" data-ldel="${i}" data-lj="${j}">×</button>
         </div>`; }).join('');
       body=`<div class="blk__body" style="display:flex;flex-direction:column;gap:8px">
-              <input class="cv-text" data-label="${i}" value="${escAttr(b.label||'')}"
-                     placeholder="그룹명 (예: 초대 개인전 / 개인전 / 단체전 / 수상 / 現 / 前)"
-                     style="font-weight:600">
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <input class="cv-text" data-label="${i}" value="${escAttr(b.label||'')}"
+                       placeholder="그룹명 (예: 초대 개인전)" style="font-weight:600">
+                <input class="cv-text" data-labelen="${i}" value="${escAttr(b.labelEn||'')}"
+                       placeholder="그룹명 영문 (선택) — 예: Invited Solo Exhibitions"
+                       style="flex:1 1 min(220px,100%);opacity:.85">
+              </div>
               ${rows||'<div style="font-size:12px;color:var(--mut)">항목이 없습니다. 아래에서 추가하세요.</div>'}
               <div><button class="btn ghost btn sm" data-ladd="${i}">+ 항목 추가</button></div>
               <div class="blk-opts">
@@ -962,6 +968,9 @@ $('#blockList').addEventListener('input',e=>{
   else if(t.dataset.label!=null){                // 이력 그룹명
     list[+t.dataset.label].label=t.value; dirty();
   }
+  else if(t.dataset.labelen!=null){              // 이력 그룹명 (영문)
+    list[+t.dataset.labelen].labelEn=t.value; dirty();
+  }
   else if(t.dataset.text!=null){ list[+t.dataset.text].text=t.value; dirty(); }
   else if(t.dataset.cap!=null){ list[+t.dataset.cap].caption=t.value; dirty(); }
 });
@@ -1010,8 +1019,8 @@ $('#save').onclick=async()=>{
       const filled=b=>{
         if(b.type==='image') return !!b.src;
         if(b.type==='list'){
-          b.items=(b.items||[]).filter(it=>(it.text||'').trim()||(it.date||'').trim()||(it.place||'').trim()||(it.note||'').trim());
-          return b.items.length>0 || (b.label||'').trim().length>0;
+          b.items=(b.items||[]).filter(it=>(it.text||'').trim()||(it.textEn||'').trim()||(it.date||'').trim()||(it.place||'').trim()||(it.note||'').trim());
+          return b.items.length>0 || (b.label||'').trim().length>0 || (b.labelEn||'').trim().length>0;
         }
         return (b.text||'').trim();
       };
