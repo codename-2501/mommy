@@ -2437,16 +2437,20 @@
     "label": "現",
     "items": [
      {
-      "text": "한국 미술인협회 회원"
+      "text": "한국 미술인협회 회원",
+      "textEn": "Member, Korean Fine Arts Association"
      },
      {
-      "text": "한국 기독교 미술인협회 회원"
+      "text": "한국 기독교 미술인협회 회원",
+      "textEn": "Member, Korean Christian Artists Association"
      },
      {
-      "text": "강동 미술인협회 회원"
+      "text": "강동 미술인협회 회원",
+      "textEn": "Member, Gangdong Artists Association"
      },
      {
-      "text": "BARA 미술인선교회 회원"
+      "text": "BARA 미술인선교회 회원",
+      "textEn": "Member, BARA Artists Mission"
      }
     ],
     "gap": "sm",
@@ -2461,12 +2465,14 @@
      {
       "text": "프랑스 루브르 아트페어",
       "date": "2024.10",
-      "place": "루브르박물관"
+      "place": "루브르박물관",
+      "textEn": "Louvre Art Fair, France"
      },
      {
       "text": "프랑스 루브르 아트페어",
       "date": "2024.04",
-      "place": "루브르박물관"
+      "place": "루브르박물관",
+      "textEn": "Louvre Art Fair, France"
      },
      {
       "text": "CharLotte Art Studio",
@@ -2476,22 +2482,26 @@
      {
       "text": "BK 갤러리 초대전",
       "date": "2023.11~12",
-      "place": ""
+      "place": "",
+      "textEn": "BK Gallery Invitational"
      },
      {
       "text": "172G움 개관 초대전",
       "date": "2022",
-      "place": "세종문화회관"
+      "place": "세종문화회관",
+      "textEn": "172G:um Opening Invitational"
      },
      {
       "text": "현대 미술 초대전",
       "date": "2003",
-      "place": "공평아트센터"
+      "place": "공평아트센터",
+      "textEn": "Contemporary Art Invitational"
      },
      {
       "text": "미의식 표상전",
       "date": "2000",
-      "place": "서울시립미술관"
+      "place": "서울시립미술관",
+      "textEn": "Representation of Aesthetic Consciousness"
      }
     ],
     "gap": "sm",
@@ -2504,22 +2514,26 @@
      {
       "text": "한국 조세 재정 연구원",
       "date": "2024.04~06",
-      "place": ""
+      "place": "",
+      "textEn": "Korea Institute of Public Finance"
      },
      {
       "text": "광진교 8번가 갤러리",
       "date": "2020.08",
-      "place": ""
+      "place": "",
+      "textEn": "Gwangjingyo 8th Avenue Gallery"
      },
      {
       "text": "고 갤러리",
       "date": "2018.03",
-      "place": ""
+      "place": "",
+      "textEn": "GO Gallery"
      },
      {
       "text": "강동구청 갤러리",
       "date": "2019.05",
-      "place": ""
+      "place": "",
+      "textEn": "Gangdong-gu Office Gallery"
      }
     ],
     "gap": "sm",
@@ -2532,22 +2546,26 @@
      {
       "text": "BARA 전",
       "date": "2023, 2022, 2021, 2019, 2018",
-      "place": "인사아트 센터"
+      "place": "인사아트 센터",
+      "textEn": "BARA Exhibition"
      },
      {
       "text": "BARA 전",
       "date": "2022",
-      "place": "라메르 갤러리"
+      "place": "라메르 갤러리",
+      "textEn": "BARA Exhibition"
      },
      {
       "text": "한강의 흐름 전",
       "date": "2023, 2022, 2021, 2020",
-      "place": "강동아트센터"
+      "place": "강동아트센터",
+      "textEn": "The Flow of the Han River"
      },
      {
       "text": "강동예술인 전",
       "date": "2018",
-      "place": "강동아트센터"
+      "place": "강동아트센터",
+      "textEn": "Gangdong Artists Exhibition"
      }
     ],
     "gap": "sm",
@@ -2560,27 +2578,32 @@
      {
       "text": "프랑스 루브르 미술관 아트페어 비평가상",
       "date": "2024",
-      "place": "루브르 박물관"
+      "place": "루브르 박물관",
+      "textEn": "Critics' Award, Louvre Art Fair, France"
      },
      {
       "text": "대한민국 기독교 미술대전 특선",
       "date": "2020",
-      "place": "밀알 미술관"
+      "place": "밀알 미술관",
+      "textEn": "Special Selection, Korea Christian Art Grand Exhibition"
      },
      {
       "text": "대한민국 기독교 미술대전 입상",
       "date": "2020",
-      "place": "밀알 미술관"
+      "place": "밀알 미술관",
+      "textEn": "Prize, Korea Christian Art Grand Exhibition"
      },
      {
       "text": "대한민국 여성 미술대전 은상",
       "date": "2006",
-      "place": "세종문화회관"
+      "place": "세종문화회관",
+      "textEn": "Silver Prize, Korea Women's Art Grand Exhibition"
      },
      {
       "text": "대한민국 여성 미술대전 입상",
       "date": "2005",
-      "place": "세종문화회관"
+      "place": "세종문화회관",
+      "textEn": "Prize, Korea Women's Art Grand Exhibition"
      }
     ],
     "gap": "sm",
@@ -2593,12 +2616,14 @@
      {
       "text": "반포미술학원 원장역임",
       "date": "2015",
-      "place": ""
+      "place": "",
+      "textEn": "Director, Banpo Art Academy"
      },
      {
       "text": "Volcano 광고기획 디자이너 팀장",
       "date": "1988",
-      "place": ""
+      "place": "",
+      "textEn": "Design Team Lead, Volcano Advertising"
      }
     ],
     "labelEn": "Former"
