@@ -614,13 +614,24 @@ html.is-resizing .wordmark{transition:none}
 .about__fig{
   max-width:110rem;margin:0 auto 28.5rem;
 }
+/* half fills half the column; the picture's own ratio decides its height either way, so a
+   size never crops it. The alignment says which side the spare half goes to — with margin
+   auto on the free edge, not a transform, so the caption travels with the picture. */
+.about__fig--half{max-width:55rem}
+.about__fig--left{margin-left:0;margin-right:auto}
+.about__fig--right{margin-left:auto;margin-right:0}
+.about__fig--center{margin-left:auto;margin-right:auto}
 .about__fig img{
   display:block;width:100%;height:auto;
   opacity:0;transition:opacity .5s ease-out;
 }
 .about__fig img.ok{opacity:1}
 .about__fig figcaption{margin-top:.8rem;opacity:.6}
-@media (max-width:699px){.about__fig{margin-bottom:15rem}}
+/* a phone column has no room to give away: a half-width picture there is just a small one */
+@media (max-width:699px){
+  .about__fig{margin-bottom:15rem}
+  .about__fig--half{max-width:70%}
+}
 .about__fade{
   opacity:0;transform:translateY(5rem);
   transition:opacity 1.15s var(--ease-rise) 1s,transform 1.15s var(--ease-rise) 1s;

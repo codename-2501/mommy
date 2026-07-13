@@ -409,7 +409,11 @@ function aboutBlock(b) {
 
   if (b.type === 'image') {
     if (!b.src) return null;
-    const fig = el('figure', 'about__fig about__fade');
+    /* size and placement are the admin's: half fills half the column (the picture keeps its
+       own ratio either way), and the alignment decides which edge the spare room goes to */
+    const size = b.size === 'half' ? 'half' : 'full';
+    const align = ['left', 'right'].includes(b.align) ? b.align : 'center';
+    const fig = el('figure', 'about__fig about__fade about__fig--' + size + ' about__fig--' + align);
     const img = el('img');
     img.src = b.src;
     img.alt = b.caption || '';
