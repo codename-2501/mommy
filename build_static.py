@@ -64,6 +64,11 @@ def referenced_images(content):
                 if name:
                     full.add(name)
 
+    # nor is the wordmark's picture logo
+    logo = image_name(((content.get("wordmark") or {}).get("image")) or "")
+    if logo:
+        full.add(logo)
+
     # a page's background is not referenced by any slide either
     for bg in (content.get("backgrounds") or {}).values():
         name = image_name((bg or {}).get("src") or "")

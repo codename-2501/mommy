@@ -191,6 +191,14 @@
     <div style="background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
       <div style="font-weight:600;margin-bottom:4px">로고 / 워드마크 <span style="color:var(--mut);font-weight:400;font-size:12px">(인트로·홈 상단)</span></div>
       <div style="font-size:12px;color:var(--mut);margin-bottom:12px">워드마크 3줄을 편집합니다. 비워두면 기본값(LSE GALLERY)이 표시됩니다.</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <img id="wm-img" style="height:44px;max-width:180px;object-fit:contain;border-radius:6px;background:#101116;border:1px solid var(--line);padding:4px">
+        <div>
+          <div style="font-size:12px;color:var(--mut);margin-bottom:4px">이미지 로고 (선택) — 넣으면 아래 3줄 대신 이 이미지가 쓰입니다</div>
+          <button class="btn ghost btn sm" id="pickLogo">이미지</button>
+          <button class="btn ghost btn sm" id="clearLogo">지움</button>
+        </div>
+      </div>
       <div style="display:flex;flex-direction:column;gap:8px;max-width:min(520px,100%)">
         <input id="wm-l1" placeholder="갤러리명 (예: LSE GALLERY)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
         <input id="wm-l2" placeholder="부제 (선택)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
@@ -348,7 +356,16 @@ $$('.tab').forEach(t=>t.onclick=()=>{
 /* ---------- slides CRUD ---------- */
 function usageCount(name){return cfg.slides.filter(s=>(s.image||'').endsWith('/'+name)).length;}
 /* ---------- 로고 / 워드마크 ---------- */
-function loadWordmark(){ const w=(cfg&&cfg.wordmark)||{}; ['l1','l2','l3'].forEach(k=>{ const el=$('#wm-'+k); if(el) el.value=w[k]||''; }); }
+function loadWordmark(){
+  const w=(cfg&&cfg.wordmark)||{};
+  ['l1','l2','l3'].forEach(k=>{ const el=$('#wm-'+k); if(el) el.value=w[k]||''; });
+  const img=$('#wm-img');
+  if(img){ img.src=w.image||''; img.style.visibility=w.image?'visible':'hidden'; }
+}
+function wmObj(){ if(!cfg.wordmark||typeof cfg.wordmark!=='object') cfg.wordmark={}; return cfg.wordmark; }
+$('#pickLogo').onclick=()=>{ pickMode='logo'; openPicker(); };
+$('#clearLogo').onclick=()=>{ delete wmObj().image; loadWordmark(); dirty(); };
+function setLogo(src){ wmObj().image=src; loadWordmark(); dirty(); }
 ['l1','l2','l3'].forEach(k=>{ const el=$('#wm-'+k); if(el) el.addEventListener('input',()=>{ if(!cfg)return; cfg.wordmark=cfg.wordmark||{}; const v=el.value.trim(); if(v) cfg.wordmark[k]=v; else delete cfg.wordmark[k]; if(!Object.keys(cfg.wordmark).length) delete cfg.wordmark; dirty(); }); });
 
 /* ---------- site meta: favicon + link-preview (content.json → meta) ---------- */
@@ -493,6 +510,7 @@ function openPicker(){
       if(pickMode==='media'){ closePicker(); addMediaImage('/images/'+name); }
       else if(pickMode==='about'){ closePicker(); addAboutImage('/images/'+name); }
       else if(pickMode==='bg'){ closePicker(); setBgImage('/images/'+name); }
+      else if(pickMode==='logo'){ closePicker(); setLogo('/images/'+name); }
       else if(pickMode==='favicon'){ closePicker(); setMetaImage('favicon','/images/'+name); }
       else if(pickMode==='og'){ closePicker(); setMetaImage('ogImage','/images/'+name); }
       else {
