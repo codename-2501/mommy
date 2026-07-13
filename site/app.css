@@ -269,49 +269,45 @@ html.is-resizing .wordmark{transition:none}
 }
 .ruler__label::after{content:" " attr(data-year);opacity:.5}
 
-/* ---------- menu: capsule + round About — white on mix-blend-difference */
+/* ---------- menu: solid buttons, same face as the detail's controls ----------
+   It used to be white type under mix-blend-mode:difference, which inverted whatever was
+   behind it — elegant over the paintings, but a different object from the detail's bottom
+   bar, which is a plain white chip with a black icon. One site, one button: the menu now
+   wears that same face. The selected one inverts (black chip, white icon) so the current
+   page still announces itself without the blend. */
 .menu{
   position:fixed;left:50%;bottom:2.6rem;transform:translate(-50%,180%);
   transition:transform .7s var(--ease-reveal),opacity .5s ease .2s;
   opacity:0;
   z-index:45;display:flex;gap:1.4rem;align-items:center;
-  color:#fff;mix-blend-mode:difference;
+  color:#111;
 }
 .menu.is-in{transform:translate(-50%,0);opacity:1}
-/* the selected face sits 1px inside the outline, so the black pill and the box read as
-   two edges of the same shape rather than one thick border */
 .menu__capsule{
   display:flex;align-items:center;gap:.6rem;
-  border:1.6px solid currentColor;border-radius:999px;padding:1px;
+  background:#fff;border:1px solid #e0e0e0;border-radius:999px;padding:1px;
 }
 .menu__about{
   display:flex;align-items:center;justify-content:center;
   align-self:stretch;aspect-ratio:1;width:auto;height:auto;padding:1px;
-  border:1.6px solid currentColor;border-radius:50%;
+  background:#fff;border:1px solid #e0e0e0;border-radius:50%;
+  transition:background-color .3s var(--ease-reveal);
 }
 .menu__about a{width:100%;height:100%}
-/* Under mix-blend-mode:difference the layer's white reads as the inverse of whatever is
-   behind it — black on the white site. So a solid chip painted in currentColor (white)
-   comes out as a black pill, and an icon painted black inside it comes out white: the
-   selected item is the photographic negative of the others, on any background. */
 .menu a{
   display:inline-flex;align-items:center;justify-content:center;
   width:4.4rem;height:4.4rem;border-radius:999px;
-  transition:background-color .3s var(--ease-reveal),opacity .25s ease;
+  transition:background-color .3s var(--ease-reveal);
 }
-.menu a:not(.active){opacity:1}                               /* every icon reads solid black */
-/* hover is a half-way invert: the face lifts in, the icon has not flipped yet.
-   (scale must not be used here — each icon carries its own optical scale below) */
-.menu a:not(.active):hover{background:rgba(255,255,255,.22)}
-.menu a.active{background:currentColor}                       /* the inverted face */
-.menu a.active .ic,.menu a.active .ic *{fill:#000}            /* …and the icon flips with it */
+.menu a:hover{background:#f5f5f5}                             /* same hover as .dt-ctl */
+.menu a.active{background:#111}                               /* the selected chip inverts */
+.menu a.active .ic,.menu a.active .ic *{fill:#fff}
 /* About sits in its own ring — the whole ring inverts when it is the selected one */
-.menu__about{transition:background-color .3s var(--ease-reveal)}
-.menu__about:has(a.active){background:currentColor}
-.menu__about:has(a.active) .ic,.menu__about:has(a.active) .ic *{fill:#000}
+.menu__about:has(a.active){background:#111;border-color:#111}
+.menu__about:has(a.active) .ic,.menu__about:has(a.active) .ic *{fill:#fff}
 .menu__about a.active{background:none}
-.menu .ic{width:2.8rem;height:2.8rem;min-width:22px;min-height:22px;display:block;fill:currentColor}
-.menu .ic *{fill:currentColor}
+.menu .ic{width:2.8rem;height:2.8rem;min-width:22px;min-height:22px;display:block;fill:#111}
+.menu .ic *{fill:#111}
 .ic--timeline{transform:scale(.90)}
 .ic--flow{transform:scale(.84)}
 .ic--collage{transform:scale(1.08)}
