@@ -346,11 +346,12 @@ html.is-resizing .wordmark{transition:none}
 .dt-head button:hover{opacity:.6}
 /* the phone already carries a Close in the bottom controls — two of them is one too many.
    The desktop keeps this one: there the bottom bar is hidden and only the strip and Esc are
-   left, neither of which announces itself. */
-@media (max-width:699px){.dt-head button{display:none}}
+   left, neither of which announces itself. With the button gone the header holds nothing, so
+   it goes too — and the content's top padding, which existed to clear it, comes down. */
+@media (max-width:699px){.dt-head{display:none}}
 
 .dt-content{padding:13rem 11rem 6rem}
-@media (max-width:699px){.dt-content{padding:8rem 2rem 6rem}}
+@media (max-width:699px){.dt-content{padding:4rem 2rem 6rem}}
 .dt-meta{display:flex;align-items:center;gap:1rem}
 /* .dt-meta prefix outranks the later .dt-reveal>*{display:block} — keeps the
    inline-flex vertical centring (text sat high as a block) */
