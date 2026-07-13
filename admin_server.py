@@ -25,6 +25,44 @@ ALLOWED_IMG = (".jpg", ".jpeg", ".png", ".webp", ".gif")
 KEEP_BACKUPS = 30
 
 
+def image_uses(content, name):
+    """Every place an image is referenced, not just a slide's cover.
+
+    The delete guard used to look only at slides[].image, so an image that was a page's
+    background, the wordmark's logo, the favicon, an About block or a body image inside a
+    slide counted as unused — it was deleted without a word, and its references stayed behind
+    pointing at a file that no longer existed. build_static then refused to build at all.
+    """
+    ref = "/images/" + name
+    hit = lambda v: isinstance(v, str) and v.endswith(ref)
+    uses = []
+
+    for s in content.get("slides") or []:
+        if hit(s.get("image")):
+            uses.append(("slide", s.get("id") or ""))
+        for m in s.get("media") or []:
+            if hit(m.get("src")):
+                uses.append(("slide-body", s.get("id") or ""))
+
+    for page, blocks in (content.get("blocks") or {}).items():
+        for b in blocks or []:
+            if b.get("type") == "image" and hit(b.get("src")):
+                uses.append(("block", page))
+
+    for page, bg in (content.get("backgrounds") or {}).items():
+        if hit((bg or {}).get("src")):
+            uses.append(("background", page))
+
+    if hit((content.get("wordmark") or {}).get("image")):
+        uses.append(("logo", ""))
+    meta = content.get("meta") or {}
+    if hit(meta.get("favicon")):
+        uses.append(("favicon", ""))
+    if hit(meta.get("ogImage")):
+        uses.append(("og", ""))
+    return uses
+
+
 def read_content():
     with open(CONTENT, encoding="utf-8") as fh:
         return json.load(fh)
@@ -474,11 +512,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 target = os.path.join(IMAGES_DIR, name)
                 if not os.path.isfile(target):
                     raise ValueError("no such image")
-                # block deletion if still used by a slide
-                cfg = read_content()
-                used = any((s.get("image") or "").endswith("/" + name) for s in cfg.get("slides", []))
-                if used and qs.get("force", ["0"])[0] != "1":
-                    return self._send_json({"error": "in use", "inUse": True}, 409)
+                # an image in use anywhere — a cover, a body image, a block, a background,
+                # the logo, the favicon — is not deleted unless the caller insists
+                uses = image_uses(read_content(), name)
+                if uses and qs.get("force", ["0"])[0] != "1":
+                    return self._send_json(
+                        {"error": "in use", "inUse": True, "uses": uses}, 409)
                 os.remove(target)
                 return self._send_json({"ok": True, "deleted": name})
             except Exception as e:
