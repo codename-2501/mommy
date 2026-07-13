@@ -467,8 +467,14 @@ function aboutBlock(b) {
       if (it.text) main.appendChild(el('span', 'about__cv-t', it.text));
       if (it.textEn) main.appendChild(el('span', 'about__cv-en', it.textEn));
       row.appendChild(main);
-      if (it.date) row.appendChild(el('span', 'about__cv-d', it.date));
-      if (it.place) row.appendChild(el('span', 'about__cv-n', it.place));
+      /* the year and the place travel together: on a phone they drop to a line of their own
+         rather than each wrapping where it happens to run out of room */
+      if (it.date || it.place) {
+        const meta = el('div', 'about__cv-meta');
+        if (it.date) meta.appendChild(el('span', 'about__cv-d', it.date));
+        if (it.place) meta.appendChild(el('span', 'about__cv-n', it.place));
+        row.appendChild(meta);
+      }
       list.appendChild(row);
     });
     group.appendChild(list);
