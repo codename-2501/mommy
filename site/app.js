@@ -95,6 +95,7 @@ async function loadIcons() {
 function wordmark() {
   const w = (content && content.wordmark) || {};
   return {
+    image: (w.image || '').trim(),      // a logo drawn as a picture, if the admin gave one
     l1: (w.l1 || 'LSE GALLERY').trim(),
     l2: (w.l2 || '').trim(),
     l3: (w.l3 || '').trim(),
@@ -187,6 +188,24 @@ function scrambleIn(node, text, delay, dur) {
 function buildWordmark(revealDelay) {
   const wm = wordmark();
   const node = el('div', 'wordmark');
+
+  /* a picture logo takes the wordmark's place — same slot, same reveal, so the intro and the
+     views that move it do not need to know which one they are carrying. The type stays as the
+     fallback: an archive with no logo still has a name. */
+  if (wm.image) {
+    node.classList.add('wordmark--image');
+    const line = el('div', 'line');
+    const inner = el('div', 'line-in');
+    const img = el('img');
+    img.src = wm.image;
+    img.alt = [wm.l1, wm.l2].filter(Boolean).join(' ');
+    inner.style.setProperty('--ld', revealDelay.toFixed(2) + 's');
+    inner.appendChild(img);
+    line.appendChild(inner);
+    node.appendChild(line);
+    return node;
+  }
+
   [wm.l1, wm.l2, wm.l3].filter(Boolean).forEach((text, i) => {
     const line = el('div', 'line');
     const inner = el('div', 'line-in', text);

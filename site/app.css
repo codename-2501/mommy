@@ -149,6 +149,16 @@ html.is-resizing .wordmark{transition:none}
   will-change:transform;
 }
 .wordmark.is-ready .line-in{transform:translateY(0);clip-path:inset(0 0 -20% 0)}
+/* a picture logo sits in the same slot and rides the same reveal. The difference-blend is for
+   type — it inverts whatever is behind it, which turns a photograph inside out — so a picture
+   logo is drawn plainly, and sized against the wordmark's own em so it scales with everything
+   else on the page. */
+.wordmark--image{mix-blend-mode:normal;color:inherit}
+.wordmark--image .line{font-size:1em;overflow:hidden}
+.wordmark--image img{
+  display:block;width:auto;max-width:100%;
+  height:var(--logo-h,26em);object-fit:contain;
+}
 
 /* month list — centred between the wordmark and the enter button. Three columns: an
    archive spanning several years has ~27 rows, and two columns would run past the fold.
