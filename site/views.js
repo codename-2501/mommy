@@ -413,6 +413,21 @@ function aboutBlock(b) {
     return fig;
   }
 
+  /* a CV block: 연월 + 내용. Awards, shows and schooling are all this same shape, so one
+     block covers them — the section's name is whatever 제목 block sits above it. */
+  if (b.type === 'list') {
+    const items = (b.items || []).filter((it) => it && ((it.date || '').trim() || (it.text || '').trim()));
+    if (!items.length) return null;
+    const dl = el('dl', 'about__cv about__fade');
+    items.forEach((it) => {
+      const row = el('div', 'about__cv-row');
+      row.appendChild(el('dt', null, (it.date || '').trim()));
+      row.appendChild(el('dd', null, (it.text || '').trim()));
+      dl.appendChild(row);
+    });
+    return dl;
+  }
+
   if (!text) return null;   // an empty block leaves no gap behind
 
   if (b.type === 'title') {
