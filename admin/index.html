@@ -89,6 +89,13 @@
   .blk-sel{background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;
     padding:7px 9px;font-size:13px;font-family:inherit;max-width:100%}
   .blk-sel:focus{outline:none;border-color:#4a4d57}
+  /* every block's options read as one row of the same shape: a label of fixed width, then a
+     select of fixed width. Left to size themselves, the labels and the selects took the width
+     of their own words and no two blocks lined up. */
+  .blk-opts{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:8px}
+  .blk-opt{display:flex;align-items:center;gap:6px}
+  .blk-opt > span{font-size:12px;color:var(--mut);white-space:nowrap;flex:none;width:52px;text-align:right}
+  .blk-opt > .blk-sel{flex:none;width:118px}
 
   /* text editor */
   .textlist{display:flex;flex-direction:column;gap:10px;max-width:900px}
@@ -783,29 +790,30 @@ function renderBlocks(){
     /* 아래 여백은 블록 종류를 가리지 않는다 — 글·이미지·이력 모두 같은 컨트롤을 쓴다 */
     const gp=['none','sm','md','lg','xl'].includes(b.gap)?b.gap:'md';
     const gopt=(v,label)=>`<option value="${v}"${v===gp?' selected':''}>${label}</option>`;
-    const gapSel=`<div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap">
-        <span style="font-size:12px;color:var(--mut)">아래 간격</span>
+    const gapOpt=`<label class="blk-opt"><span>아래 간격</span>
         <select class="blk-sel" data-gap="${i}">
           ${gopt('none','없음')}${gopt('sm','좁게')}${gopt('md','보통')}${gopt('lg','넓게')}${gopt('xl','아주 넓게')}
-        </select>
-      </div>`;
+        </select></label>`;
     let body;
     if(b.type==='image'){
       const size=b.size==='half'?'half':'full';
       const align=['left','right'].includes(b.align)?b.align:'center';
       const opt=(v,cur,label)=>`<option value="${v}"${v===cur?' selected':''}>${label}</option>`;
-      body=`<div class="blk__body" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-           <img src="${escAttr(b.src||'')}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;flex:none">
-           <div style="flex:1 1 min(220px,100%);display:flex;flex-direction:column;gap:6px;min-width:0">
+      body=`<div class="blk__body">
+           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+             <img src="${escAttr(b.src||'')}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;flex:none">
              <input class="cv-text" data-cap="${i}" value="${escAttr(b.caption||'')}" placeholder="설명 (선택)">
-             <div style="display:flex;gap:6px;flex-wrap:wrap">
+           </div>
+           <div class="blk-opts">
+             <label class="blk-opt"><span>크기</span>
                <select class="blk-sel" data-size="${i}">
-                 ${opt('full',size,'원본 크기')}${opt('half',size,'절반 크기')}
-               </select>
+                 ${opt('full',size,'원본')}${opt('half',size,'절반')}
+               </select></label>
+             <label class="blk-opt"><span>정렬</span>
                <select class="blk-sel" data-align="${i}">
                  ${opt('left',align,'좌측')}${opt('center',align,'중앙')}${opt('right',align,'우측')}
-               </select>
-             </div>
+               </select></label>
+             ${gapOpt}
            </div>
          </div>`;
     } else if(b.type==='list'){
@@ -828,6 +836,7 @@ function renderBlocks(){
                      style="font-weight:600">
               ${rows||'<div style="font-size:12px;color:var(--mut)">항목이 없습니다. 아래에서 추가하세요.</div>'}
               <div><button class="btn ghost btn sm" data-ladd="${i}">+ 항목 추가</button></div>
+              <div class="blk-opts">${gapOpt}</div>
             </div>`;
     } else {
       /* 정렬·크기를 안 정하면 사이트가 그리던 그대로: 제목은 중앙, 글·맺음말은 좌측, 크기는 보통 */
@@ -838,21 +847,20 @@ function renderBlocks(){
       body=`<div class="blk__body">
            <textarea class="blk-ta" data-text="${i}" rows="${BLOCK_ROWS[b.type]||6}"
              placeholder="${escAttr(BLOCK_HINT[b.type]||'')}">${escHtml(b.text||'')}</textarea>
-           <div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap">
-             <span style="font-size:12px;color:var(--mut)">정렬</span>
-             <select class="blk-sel" data-align="${i}">
-               ${opt('left',al,'좌측')}${opt('center',al,'중앙')}${opt('right',al,'우측')}
-             </select>
-             <span style="font-size:12px;color:var(--mut);margin-left:6px">크기</span>
-             <select class="blk-sel" data-size="${i}">
-               ${opt('sm',sz,'작게')}${opt('md',sz,'보통')}${opt('lg',sz,'크게')}
-             </select>
+           <div class="blk-opts">
+             <label class="blk-opt"><span>정렬</span>
+               <select class="blk-sel" data-align="${i}">
+                 ${opt('left',al,'좌측')}${opt('center',al,'중앙')}${opt('right',al,'우측')}
+               </select></label>
+             <label class="blk-opt"><span>크기</span>
+               <select class="blk-sel" data-size="${i}">
+                 ${opt('sm',sz,'작게')}${opt('md',sz,'보통')}${opt('lg',sz,'크게')}
+               </select></label>
+             ${gapOpt}
            </div>
          </div>`;
     }
     row.innerHTML=grip+tag+body+nav;
-    const bodyEl=row.querySelector('.blk__body');   // 간격 컨트롤은 모든 블록에 공통으로 붙인다
-    if(bodyEl) bodyEl.insertAdjacentHTML('beforeend', gapSel);
     L.appendChild(row);
   });
   $('#countBlocks').textContent=list.length+'개 블록';
