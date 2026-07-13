@@ -781,12 +781,12 @@ function renderBlocks(){
       </div>`;
     const tag=`<div style="flex:none;width:56px;font-size:12px;color:var(--mut);padding-top:8px">${BLOCK_LABEL[b.type]||b.type}</div>`;
     /* 아래 여백은 블록 종류를 가리지 않는다 — 글·이미지·이력 모두 같은 컨트롤을 쓴다 */
-    const gp=['sm','md','lg'].includes(b.gap)?b.gap:'md';
+    const gp=['none','sm','md','lg','xl'].includes(b.gap)?b.gap:'md';
     const gopt=(v,label)=>`<option value="${v}"${v===gp?' selected':''}>${label}</option>`;
     const gapSel=`<div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap">
         <span style="font-size:12px;color:var(--mut)">아래 간격</span>
         <select class="blk-sel" data-gap="${i}">
-          ${gopt('sm','좁게')}${gopt('md','보통')}${gopt('lg','넓게')}
+          ${gopt('none','없음')}${gopt('sm','좁게')}${gopt('md','보통')}${gopt('lg','넓게')}${gopt('xl','아주 넓게')}
         </select>
       </div>`;
     let body;

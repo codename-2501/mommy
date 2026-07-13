@@ -501,7 +501,7 @@ function mountAbout(view, content) {
     if (!node) return;
     /* the space under a block belongs to every kind of block, not just the copy — set it here
        rather than in each branch, so a picture and a CV group answer to the same control */
-    const gap = ['sm', 'md', 'lg'].includes(b.gap) ? b.gap : 'md';
+    const gap = ['none', 'sm', 'md', 'lg', 'xl'].includes(b.gap) ? b.gap : 'md';
     node.classList.add('about__gap--' + gap);
     scroller.appendChild(node);
   });
