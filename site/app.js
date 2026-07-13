@@ -103,12 +103,9 @@ function monthStats(slides) {
   const rows = [];
   const byKey = new Map();
   for (const s of slides || []) {
-    const bottom = String(s.bottom || '');
-    const m = /\(([^)]+)\)\s*$/.exec(bottom);
-    if (!m) continue;
-    const idx = MONTHS.findIndex((x) => x.toLowerCase() === m[1].trim().toLowerCase());
+    const idx = window.LSEData.monthIndex(s);      // date first — see site/data.js
     if (idx < 0) continue;
-    const y = (/^(\d{4})/.exec(String(s.date || '')) || [])[1] || '2026';
+    const y = window.LSEData.year(s) || '2026';
     const key = y + '-' + idx;
     let row = byKey.get(key);
     if (!row) {
@@ -116,8 +113,7 @@ function monthStats(slides) {
       byKey.set(key, row);
       rows.push(row);
     }
-    row.cat = row.cat || String(s.category || '').trim() ||
-      bottom.replace(/\s*\([^)]*\)\s*$/, '').trim();
+    row.cat = row.cat || window.LSEData.category(s);
     row.count += 1;
   }
   return rows;

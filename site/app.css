@@ -91,8 +91,11 @@ img{max-width:100%;display:block}
   /* rest below the ruler (top:4.4rem + height:6rem = 10.4rem) or the ticks run through
      the letters on the timeline view. The intro offset below is derived from this. */
   --rest-top:11.5rem;
+  --rest-shift:0rem;   /* a view may lift the wordmark — see .view--articles below */
   position:fixed;left:50%;top:var(--rest-top);
-  transform:translateX(-50%) scale(.62);transform-origin:top center;
+  /* the move between views rides the transform, which is the one thing here that transitions:
+     shifting `top` instead would snap the logo into place with no travel at all */
+  transform:translateX(-50%) translateY(var(--rest-shift)) scale(.62);transform-origin:top center;
   width:90em;max-width:100vw;
   font-size:.4rem;
   pointer-events:none;user-select:none;
@@ -109,9 +112,10 @@ img{max-width:100%;display:block}
    has nothing to animate to — it simply belongs where the new size puts it. */
 html.is-resizing .wordmark{transition:none}
 /* --rest-top clears the home's ruler. The index has no ruler, and on a phone the wordmark
-   sat low enough to collide with the first month label — there it comes up to its own top. */
+   sat low enough to collide with the first month label — there it rides up, on the transform
+   so the move is a travel and not a jump. */
 @media (max-width:699px){
-  body:has(.view--articles) .wordmark{--rest-top:5rem}
+  body:has(.view--articles) .wordmark{--rest-shift:-6.5rem}
 }
 @media (min-width:700px){.wordmark{font-size:.9rem}}
 /* during the intro the wordmark sits higher than the middle: the month list and the enter
@@ -479,6 +483,7 @@ html.is-resizing .wordmark{transition:none}
   font-size:min(1.5rem,15px);
 }
 .dt-ctl svg{width:1.2rem;min-width:12px}
+.dt-ctl--prev svg{transform:scaleX(-1)}   /* one arrow, pointed the other way */
 .dt-ctl--close svg{width:1.6rem;min-width:14px}
 .dt-ctl:hover{background:#f5f5f5}
 
@@ -518,12 +523,17 @@ html.is-resizing .wordmark{transition:none}
 .flow__label.is-on{opacity:1}
 
 /* ---------- INDEX: 12-per-row collage grid ---------- */
-/* the grid is moved by script, not by the browser: claim the vertical gesture or the
-   browser swallows the drag (and pulls to refresh) before the page ever sees it */
-.agrid{position:fixed;inset:0;z-index:1;overflow:hidden;touch-action:none}
+/* the grid scrolls natively — same as the detail panel, so a finger gets the system's own
+   momentum and the two pages feel like one site. The wheel is still lerped in script. */
+.agrid{
+  position:fixed;inset:0;z-index:1;
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+  scrollbar-width:none;
+}
+.agrid::-webkit-scrollbar{display:none}
 .agrid__in{
   display:flex;flex-direction:column;gap:11.5rem;
-  padding:40rem 2rem 2rem;will-change:transform;
+  padding:40rem 2rem 2rem;
 }
 .agrid__row{
   display:grid;grid-template-columns:repeat(12,1fr);gap:2rem;
@@ -548,10 +558,11 @@ html.is-resizing .wordmark{transition:none}
   transform:translateY(100%);transition:transform 1s var(--ease-travel);
 }
 .about__mask-in{
-  position:absolute;inset:0;background:#000;color:#fff;overflow:hidden;
+  position:absolute;inset:0;background:#000;color:#fff;
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:none;
   transform:translateY(-100%);transition:transform 1s var(--ease-travel);
-  touch-action:none;   /* script-driven scroll — see .agrid */
 }
+.about__mask-in::-webkit-scrollbar{display:none}
 .view--about.is-in .about__mask,.view--about.is-in .about__mask-in{transform:translateY(0)}
 /* about exit: curtains leave the way they came */
 .view--about.is-out .about__mask{transform:translateY(-100%)}
@@ -567,7 +578,7 @@ html.is-resizing .wordmark{transition:none}
    wherever it later lands — a frame that flies between views carries its .ok with it */
 .lse-frame img{opacity:0;transition:opacity .5s ease-out}
 .lse-frame img.ok{opacity:1}
-.about__scroll{padding:0 2rem;will-change:transform}
+.about__scroll{padding:0 2rem}
 /* the head holds the two small labels. It used to stand a full screen tall, so the page
    opened on an empty view and the title only arrived after a scroll — enough height to
    breathe, not enough to hide what the page is. */

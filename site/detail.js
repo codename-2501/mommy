@@ -25,25 +25,14 @@ function slideIdx(slides, id) {
   return i < 0 ? 0 : i;
 }
 
-function category(s) {
-  return String(s.category || '').trim() ||
-    String(s.bottom || '').replace(/\s*\([^)]*\)\s*$/, '').trim();
-}
-
-function month(s) {
-  const m = /\(([^)]+)\)\s*$/.exec(String(s.bottom || ''));
-  return m ? m[1].trim() : '';
-}
-
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'];
+const { month, category } = window.LSEData;   // date first — see site/data.js
 
 /* the work's year and month, as the admin has it: "February 2026" */
 function dated(s) {
-  const m = /^(\d{4})-(\d{2})/.exec(String(s.date || ''));
-  if (!m) return '';
-  const name = MONTHS[parseInt(m[2], 10) - 1] || month(s);
-  return name ? name + ' ' + m[1] : m[1];
+  const y = window.LSEData.year(s);
+  const name = month(s);
+  if (!y) return name;
+  return name ? name + ' ' + y : y;
 }
 
 /* strip media cell: natural aspect, width-bound */
@@ -198,15 +187,24 @@ function buildStrip(s, i, slides, aspects, nav) {
   return strip;
 }
 
-function buildControls(nextId, onNext, onClose) {
+/* Both directions have always worked — the arrow keys call _nav(±1). Only Next was on screen,
+   so a phone, which has no arrow keys, could walk the archive forwards and never back. */
+const ARROW = '<svg viewBox="0 0 12 10" fill="none"><path d="M7.36 9.49 6.34 8.53 9.26 5.42H0V4.05h9.26L6.34.94 7.36 0l4.39 4.74-4.39 4.75Z" fill="currentColor"/></svg>';
+
+function buildControls(nextId, onNext, onClose, onPrev) {
   const nav = el('nav', 'dt-controls');
+  const pv = el('button', 'dt-ctl dt-ctl--prev');
+  pv.innerHTML = ARROW;               // the same arrow, turned around in CSS
+  pv.title = 'Previous';
+  pv.addEventListener('click', onPrev);
   const nx = el('button', 'dt-ctl');
-  nx.innerHTML = '<svg viewBox="0 0 12 10" fill="none"><path d="M7.36 9.49 6.34 8.53 9.26 5.42H0V4.05h9.26L6.34.94 7.36 0l4.39 4.74-4.39 4.75Z" fill="currentColor"/></svg>';
+  nx.innerHTML = ARROW;
   nx.title = 'Next';
   nx.addEventListener('click', onNext);
   const cl = el('button', 'dt-ctl dt-ctl--close');
   cl.innerHTML = '<svg viewBox="0 0 17 17" fill="none"><rect x="3.5" y="4.9" width="2" height="12" transform="rotate(-45 3.5 4.9)" fill="currentColor"/><rect x="12" y="3.5" width="2" height="12" transform="rotate(45 12 3.5)" fill="currentColor"/></svg><span>Close</span>';
   cl.addEventListener('click', onClose);
+  nav.appendChild(pv);
   nav.appendChild(nx);
   nav.appendChild(cl);
   return nav;
@@ -337,7 +335,8 @@ function render(container, opts, id, flip, dir) {
   const oldCtl = container.querySelector('.dt-controls');
   const ctl = buildControls(null,
     () => go(slides[(i + 1) % slides.length].id),
-    () => window.LSEDetail.close());
+    () => window.LSEDetail.close(),
+    () => go(slides[(i - 1 + slides.length) % slides.length].id));
   if (oldCtl) oldCtl.replaceWith(ctl); else container.appendChild(ctl);
 
   /* item→item — role-shift: cur→prev slot and next→cur slot FLY (reverse

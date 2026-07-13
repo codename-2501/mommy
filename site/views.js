@@ -29,18 +29,7 @@ function isSmall() {
   return matchMedia('(max-width:699px)').matches;
 }
 
-function category(s) {
-  return String(s.category || '').trim() ||
-    String(s.bottom || '').replace(/\s*\([^)]*\)\s*$/, '').trim();
-}
-
-function month(s) {
-  const m = /\(([^)]+)\)\s*$/.exec(String(s.bottom || ''));
-  return m ? m[1].trim() : '';
-}
-
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'];
+const { MONTHS, month, category } = window.LSEData;   // date first — see site/data.js
 
 /* month name -> year, exactly as the timeline ruler resolves it: take it from any slide
    dated in that month, and fall back to 2026 for the months nobody dated */
@@ -245,21 +234,28 @@ function mountFlow(view, slides, aspects, onOpen) {
   };
 }
 
-/* -------- smooth scroll: the grid chases the wheel, and its rows tilt with the velocity -------- */
+/* -------- smooth scroll: same machinery as the detail panel, so the pages share one feel.
+   It used to move the content with a transform and hand-roll the drag and the fling, which
+   on a phone meant a scroll that neither carried the system's momentum nor bounced at the
+   ends — beside the detail's native scroll it read as a different page. The container scrolls
+   natively now: the finger gets the OS's own physics, and the wheel gets the same lerp the
+   detail uses. The rows still tilt, driven by the speed the scroll is actually running at. -------- */
 function smoothTilt(outer, content) {
-  let target = 0, cur = 0, max = 0, lastTs = 0, raf = 0;
+  let target = 0, cur = 0, lastTs = 0, raf = 0, applied = -1, prevTop = 0;
+  const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;   // detail.js: same numbers
   const tilts = () => content.querySelectorAll('.lse-row');
-  function measure() {
-    max = Math.max(0, content.getBoundingClientRect().height - outer.clientHeight);
-  }
+  const limit = () => Math.max(0, outer.scrollHeight - outer.clientHeight);
+  function measure() { target = Math.min(target, limit()); }
+
   function onWheel(e) {
     if (window.LSEDetail && window.LSEDetail.isOpen) return;
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
-    target = Math.max(0, Math.min(max, target + raw * WHEEL_MULT));
+    target = Math.max(0, Math.min(limit(), target + raw * mult));
+    e.preventDefault();                     // the lerp owns the wheel, not the browser
   }
   function onKey(e) {
     if (window.LSEDetail && window.LSEDetail.isOpen) return;
-    const wh = innerHeight;
+    const wh = innerHeight, max = limit();
     if (e.key === 'ArrowDown') { e.preventDefault(); target = Math.min(max, target + 100); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); target = Math.max(0, target - 100); }
     else if (e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey)) { e.preventDefault(); target = Math.min(max, target + wh); }
@@ -267,76 +263,45 @@ function smoothTilt(outer, content) {
     else if (e.key === 'Home') { target = 0; }
     else if (e.key === 'End') { target = max; }
   }
-  /* A phone fires no wheel events, so the page moved for a mouse and stood still for a
-     finger. Dragging sets the target directly; releasing carries the fling's velocity on. */
-  let dragging = false, lastY = 0, vel = 0, lastMoveTs = 0;
-  function onDown(e) {
-    if (window.LSEDetail && window.LSEDetail.isOpen) return;
-    if (e.pointerType === 'mouse') return;         // the mouse has the wheel
-    dragging = true; lastY = e.clientY; vel = 0; lastMoveTs = e.timeStamp;
-    target = cur;                                  // catch the page where it is
-  }
-  function onMove(e) {
-    if (!dragging) return;
-    const dy = lastY - e.clientY;
-    lastY = e.clientY;
-    const dt = Math.max(1, e.timeStamp - lastMoveTs);
-    lastMoveTs = e.timeStamp;
-    vel = dy / dt;                                 // px per ms
-    target = Math.max(0, Math.min(max, target + dy));
-  }
-  function onUp() {
-    if (!dragging) return;
-    dragging = false;
-    target = Math.max(0, Math.min(max, target + vel * 220));   // fling
-  }
 
   function frame(ts) {
     const ratio = lastTs ? Math.min(3, (ts - lastTs) / (1000 / 60)) : 1;
     lastTs = ts;
-    const v = cur - target;
-    cur += (target - cur) * 0.13 * ratio;
-    content.style.transform = 'translate3d(0,' + (-cur) + 'px,0)';
-    /* rotateX alone is a no-op without a perspective: the rows carried the angle and drew
-       exactly as before, so the tilt never once appeared. Perspective belongs on the direct
-       parent — a single one on the tall column would put its vanishing point far off screen
-       for every row but the middle, so each row carries its own, centred on itself.
-       The old coefficient bent a row by 1.6° at speed, which even with a perspective is a
-       quarter of a pixel; it takes an angle you can actually see, capped so a hard flick
-       leans the rows rather than folding them over. */
-    const deg = Math.max(-16, Math.min(16, v * -0.12));
+    /* a touch (or any scroll we did not drive) moves scrollTop under us — follow it rather
+       than fight it, exactly as the detail does */
+    if (applied >= 0 && Math.abs(outer.scrollTop - applied) > 1) cur = target = outer.scrollTop;
+    cur += (target - cur) * 0.1 * ratio;    // detail.js: same lerp
+    outer.scrollTop = cur;
+    applied = outer.scrollTop;
+
+    /* the tilt rides the speed the page is actually moving at, so it works the same whether
+       the wheel, a finger or the system's momentum is driving it */
+    const v = outer.scrollTop - prevTop;
+    prevTop = outer.scrollTop;
+    const deg = Math.max(-16, Math.min(16, v * 0.45));
     const ry = 'perspective(600px) rotateX(' + deg + 'deg)';
     tilts().forEach((t) => { t.style.transform = ry; });
     raf = requestAnimationFrame(frame);
   }
-  addEventListener('wheel', onWheel, { passive: true });
+
+  outer.addEventListener('wheel', onWheel, { passive: false });
   addEventListener('keydown', onKey);
   addEventListener('resize', measure);
-  outer.addEventListener('pointerdown', onDown);
-  outer.addEventListener('pointermove', onMove);
-  outer.addEventListener('pointerup', onUp);
-  outer.addEventListener('pointercancel', onUp);
-  /* The scroll limit is the content's height, and that height is not final until the images
-     inside it have loaded — nothing reserves their box beforehand. Measured once on mount,
-     the limit stays at the height of a page whose pictures had not arrived yet, and the last
-     screens simply cannot be reached. Watch the content instead of guessing when it settles. */
-  const ro = new ResizeObserver(measure);
+  const ro = new ResizeObserver(measure);   // images land late; the limit must follow
   ro.observe(content);
-  requestAnimationFrame(() => { measure(); });
   raf = requestAnimationFrame(frame);
   return {
-    scrollTo(y) { target = cur = Math.max(0, Math.min(max, y)); },
+    scrollTo(y) {
+      target = cur = Math.max(0, Math.min(limit(), y));
+      outer.scrollTop = cur; applied = outer.scrollTop; prevTop = outer.scrollTop;
+    },
     measure,
     destroy() {
       cancelAnimationFrame(raf);
       ro.disconnect();
-      removeEventListener('wheel', onWheel);
+      outer.removeEventListener('wheel', onWheel);
       removeEventListener('keydown', onKey);
       removeEventListener('resize', measure);
-      outer.removeEventListener('pointerdown', onDown);
-      outer.removeEventListener('pointermove', onMove);
-      outer.removeEventListener('pointerup', onUp);
-      outer.removeEventListener('pointercancel', onUp);
     },
   };
 }

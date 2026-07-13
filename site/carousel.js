@@ -30,10 +30,7 @@ function isSmall() {
   return matchMedia('(max-width:699px)').matches;
 }
 
-function slideMonth(s) {
-  const m = /\(([^)]+)\)\s*$/.exec(String(s.bottom || ''));
-  return m ? m[1].trim() : '';
-}
+const slideMonth = (s) => window.LSEData.month(s);   // date first — see site/data.js
 
 function buildItem(s, i, ratio) {
   const art = el('article', 'car-item lse-card');
