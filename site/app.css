@@ -347,19 +347,8 @@ html.is-resizing .wordmark{transition:none}
 .detail.is-off .dt-panel__in{transform:translateX(-100%)}
 .dt-scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
 .dt-scroll::-webkit-scrollbar{display:none}
-.dt-head{
-  position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;
-  padding:1.8rem 2rem;z-index:2;color:#fff;mix-blend-mode:difference;
-}
-.dt-head button{font-size:min(1.6rem,16px)}
-.dt-head button:hover{opacity:.6}
-/* the phone already carries a Close in the bottom controls — two of them is one too many.
-   The desktop keeps this one: there the bottom bar is hidden and only the strip and Esc are
-   left, neither of which announces itself. With the button gone the header holds nothing, so
-   it goes too — and the content's top padding, which existed to clear it, comes down. */
-@media (max-width:699px){.dt-head{display:none}}
 
-.dt-content{padding:13rem 11rem 6rem}
+.dt-content{padding:8rem 11rem 6rem}
 @media (max-width:699px){.dt-content{padding:4rem 2rem 6rem}}
 .dt-meta{display:flex;align-items:center;gap:1rem}
 /* .dt-meta prefix outranks the later .dt-reveal>*{display:block} — keeps the
@@ -465,17 +454,15 @@ html.is-resizing .wordmark{transition:none}
 @media (max-width:699px){
   .dt-panel{left:0;border-left:0}
   .dt-strip{display:none}
-  .dt-head{padding:1.4rem 1.6rem}
   .dt-body{max-width:none}
   .dt-fig img{max-width:100%}
 }
 
-/* bottom controls — shows these on MOBILE only (desktop = strip + header Close) */
+/* bottom controls — the panel's one way out (and its prev/next), at every width */
 .dt-controls{
   position:absolute;bottom:2rem;left:0;right:0;
   display:flex;justify-content:center;gap:.8rem;z-index:13;
 }
-@media (min-width:700px){.dt-controls{display:none}}
 .dt-ctl{
   display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
   height:4rem;min-width:4rem;padding:0 1.5rem;

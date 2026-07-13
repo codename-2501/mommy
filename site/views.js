@@ -278,7 +278,10 @@ function smoothTilt(outer, content) {
        the wheel, a finger or the system's momentum is driving it */
     const v = outer.scrollTop - prevTop;
     prevTop = outer.scrollTop;
-    const deg = Math.max(-16, Math.min(16, v * 0.45));
+    /* a phone's rows are a quarter the width, so the same angle bends them a quarter as far
+       across the screen — it takes more angle there to read as the same lean */
+    const k = isSmall() ? 0.9 : 0.45;
+    const deg = Math.max(-22, Math.min(22, v * k));
     const ry = 'perspective(600px) rotateX(' + deg + 'deg)';
     tilts().forEach((t) => { t.style.transform = ry; });
     raf = requestAnimationFrame(frame);

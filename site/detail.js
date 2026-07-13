@@ -430,12 +430,9 @@ function open(parent, opts, id, flip) {
     root.appendChild(el('div', 'dt-bg'));   // home fades under us
     const panel = el('div', 'dt-panel');
     const inn = el('div', 'dt-panel__in');
-    const head = el('header', 'dt-head');
-    const close = el('button', null, 'Close');
-    close.addEventListener('click', () => window.LSEDetail.close());
-    head.appendChild(close);
+    /* the header held nothing but a Close, and the bottom controls carry one — on every
+       width now, so the panel has a single, visible way out instead of two */
     panel.appendChild(inn);
-    panel.appendChild(head);
     root.appendChild(panel);
     parent.appendChild(root);
     root._opts = opts;

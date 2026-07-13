@@ -284,7 +284,13 @@ function mount(view, slides, aspects, years, onOpen) {
       }
     }
     markActive();
-    const rOff = cur * scale;
+    /* The ruler and the paintings were drawn from different origins: the ruler placed its
+       centre line at cur*scale + rulerWidth/2, while the painting under that line sits at
+       cur + viewportWidth/2 — the same journey measured against two different rulers. The
+       two drifted about five works apart, so the month over the line named a month whose
+       paintings were already off the screen. Anchor the ruler on the work the line is over. */
+    const centerSlide = (cur + innerWidth * 0.5 - 2 * rem) / step;
+    const rOff = centerSlide * TICKS_PER_SLIDE * TICK_GAP - ruler.clientWidth * 0.5;
     let lOff = rOff % rulerHalf;
     if (lOff < 0) lOff += rulerHalf;
     labelTrack.style.transform = 'translate3d(' + (-lOff) + 'px,0,0)';
