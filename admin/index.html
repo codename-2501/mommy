@@ -836,6 +836,9 @@ function renderBlocks(){
          </div>`;
     } else if(b.type==='list'){
       const items=Array.isArray(b.items)?b.items:(b.items=[]);
+      const lal=['left','center','right'].includes(b.align)?b.align:'left';
+      const lsz=['sm','md','lg'].includes(b.size)?b.size:'md';
+      const lopt=(v,cur,label)=>`<option value="${v}"${v===cur?' selected':''}>${label}</option>`;
       /* 옛 항목은 {date,text} 였다 — 날짜는 늘 조용한 쪽이었으므로 note 로 읽는다 */
       const noteOf=(it)=> it.note!=null ? it.note : (it.date||'');
       const rows=items.map((it,j)=>`
@@ -854,7 +857,17 @@ function renderBlocks(){
                      style="font-weight:600">
               ${rows||'<div style="font-size:12px;color:var(--mut)">항목이 없습니다. 아래에서 추가하세요.</div>'}
               <div><button class="btn ghost btn sm" data-ladd="${i}">+ 항목 추가</button></div>
-              <div class="blk-opts">${gapOpt}</div>
+              <div class="blk-opts">
+                <label class="blk-opt"><span>정렬</span>
+                  <select class="blk-sel" data-align="${i}">
+                    ${lopt('left',lal,'좌측')}${lopt('center',lal,'중앙')}${lopt('right',lal,'우측')}
+                  </select></label>
+                <label class="blk-opt"><span>크기</span>
+                  <select class="blk-sel" data-size="${i}">
+                    ${lopt('sm',lsz,'작게')}${lopt('md',lsz,'보통')}${lopt('lg',lsz,'크게')}
+                  </select></label>
+                ${gapOpt}
+              </div>
             </div>`;
     } else {
       /* 정렬·크기를 안 정하면 사이트가 그리던 그대로: 제목은 중앙, 글·맺음말은 좌측, 크기는 보통 */

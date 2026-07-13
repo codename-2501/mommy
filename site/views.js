@@ -425,7 +425,9 @@ function aboutBlock(b) {
     const label = (b.label || '').trim();
     if (!items.length && !label) return null;
 
-    const group = el('div', 'about__cv about__fade');
+    const al = ['left', 'center', 'right'].includes(b.align) ? b.align : 'left';
+    const sz = ['sm', 'md', 'lg'].includes(b.size) ? b.size : 'md';
+    const group = el('div', 'about__cv about__fade about__al--' + al + ' about__sz--' + sz);
     const head = el('div', 'about__cv-label label');
     if (label) head.textContent = label;
     group.appendChild(head);
