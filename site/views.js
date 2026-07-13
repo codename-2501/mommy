@@ -297,7 +297,15 @@ function smoothTilt(outer, content) {
     const v = cur - target;
     cur += (target - cur) * 0.13 * ratio;
     content.style.transform = 'translate3d(0,' + (-cur) + 'px,0)';
-    const ry = 'rotateX(' + (v * -0.018) + 'deg)';
+    /* rotateX alone is a no-op without a perspective: the rows carried the angle and drew
+       exactly as before, so the tilt never once appeared. Perspective belongs on the direct
+       parent — a single one on the tall column would put its vanishing point far off screen
+       for every row but the middle, so each row carries its own, centred on itself.
+       The old coefficient bent a row by 1.6° at speed, which even with a perspective is a
+       quarter of a pixel; it takes an angle you can actually see, capped so a hard flick
+       leans the rows rather than folding them over. */
+    const deg = Math.max(-9, Math.min(9, v * -0.06));
+    const ry = 'perspective(900px) rotateX(' + deg + 'deg)';
     tilts().forEach((t) => { t.style.transform = ry; });
     raf = requestAnimationFrame(frame);
   }
