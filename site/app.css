@@ -529,6 +529,27 @@ html.is-resizing .wordmark{transition:none}
   display:grid;grid-template-columns:repeat(12,1fr);gap:2rem;
   align-items:start;transform-origin:top center;
 }
+/* On a phone the tilt is not the script's to draw. iOS runs its momentum scroll on the
+   compositor and the main thread does not get a frame in — the rows kept their angle from
+   the moment the finger left the glass, so the effect existed everywhere except the one
+   place it was asked for. A scroll-driven animation is run by the compositor itself, so it
+   keeps drawing through the glide. It leans on the row's position in the scrollport rather
+   than the scroll's speed: a row arrives tilted, straightens as it crosses the middle, and
+   leans away as it leaves. (views.js stands down where this applies.) */
+@keyframes rowTilt{
+  from{transform:perspective(600px) rotateX(16deg)}
+  50% {transform:perspective(600px) rotateX(0deg)}
+  to  {transform:perspective(600px) rotateX(-16deg)}
+}
+@supports (animation-timeline: view()){
+  @media (max-width:699px){
+    .agrid__row{
+      animation:rowTilt linear both;
+      animation-timeline:view(block);
+      animation-range:entry 0% exit 100%;
+    }
+  }
+}
 @media (max-width:699px){
   .agrid__in{gap:7rem;padding-top:20rem}
   .agrid__row{grid-template-columns:repeat(4,1fr);gap:1rem}
