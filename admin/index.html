@@ -132,8 +132,14 @@
     <input type="search" id="qSlide" placeholder="번호·문구로 검색">
     <span class="count" id="countSlide"></span>
     <span class="sp"></span>
+    <label style="font-size:12px;color:var(--mut)">정렬</label>
+    <select id="orderMode" class="blk-sel">
+      <option value="date">날짜순 (최신 먼저)</option>
+      <option value="manual">수동 (드래그 순서)</option>
+    </select>
     <button class="btn ghost" id="bulkBottom">표시분 아래문구 일괄변경…</button>
   </div>
+  <div class="hint" id="orderHint" style="padding:0 clamp(12px,3vw,20px);margin:10px 0 0"></div>
   <main><div class="grid" id="slideGrid"></div></main>
 </section>
 
@@ -306,6 +312,7 @@ async function load(){
   cfg=c; baseVersion=cfg._version||null; delete cfg._version; images=im.images||[];
   const sel=$('#pageSel'); sel.innerHTML=(pg.pages||['/']).map(p=>`<option value="${p}">${p}</option>`).join('');
   loadWordmark(); loadMeta();
+  $('#orderMode').value=orderMode();
   renderSlides(); renderImages();
   setStatus(cfg.slides.length+'개 슬라이드 · '+images.length+'개 이미지','ok');
 }
@@ -352,19 +359,49 @@ $('#clearFavicon').onclick=()=>{ delete siteMeta().favicon; renderMetaImages(); 
 $('#clearOg').onclick=()=>{ delete siteMeta().ogImage; renderMetaImages(); dirty(); };
 function setMetaImage(kind,src){ siteMeta()[kind]=src; renderMetaImages(); dirty(); }
 
+/* ---------- order: date or manual (content.json → meta.order, read by site/app.js) ---------- */
+function orderMode(){ return siteMeta().order==='manual' ? 'manual' : 'date'; }
+/* the site sorts by date unless the mode says otherwise; in date mode the admin keeps its own
+   array in that same order, so what the editor sees is what the visitor gets */
+function sortByDate(){
+  cfg.slides.sort((a,b)=>{
+    const da=String(a.date||''), db=String(b.date||'');
+    if(da===db) return 0;
+    if(!da) return 1;             // 날짜 없는 작품은 뒤로
+    if(!db) return -1;
+    return da<db ? 1 : -1;        // 최신 먼저
+  });
+}
+function applyOrder(){ if(orderMode()==='date') sortByDate(); }
+$('#orderMode').addEventListener('change',()=>{
+  const v=$('#orderMode').value;
+  if(v==='manual') siteMeta().order='manual'; else delete siteMeta().order;
+  applyOrder(); renderSlides(); dirty();
+});
+function renderOrderHint(){
+  const date=orderMode()==='date';
+  $('#orderHint').textContent = date
+    ? '날짜 내림차순으로 자동 정렬됩니다 (사이트와 동일). 순서를 바꾸려면 작품의 날짜를 바꾸세요 — 드래그는 잠겨 있습니다.'
+    : '드래그로 정한 순서가 사이트에 그대로 나갑니다. 날짜는 표기용으로만 쓰입니다.';
+}
+
 function renumber(){ cfg.slides.forEach((s,i)=>{ s.top=String(i+1); }); }  // 순번은 항상 배열 순서 = 번호
 function renderSlides(){
-  renumber();   // 순서변경/추가/삭제 후 자동 재번호
+  applyOrder();   // 날짜순 모드면 배열 자체를 정렬 — 관리자와 사이트가 같은 순서를 본다
+  renumber();     // 순서변경/추가/삭제 후 자동 재번호
+  renderOrderHint();
+  const manual = orderMode()==='manual';
   const q=($('#qSlide').value||'').toLowerCase().trim();
   const g=$('#slideGrid'); g.innerHTML=''; let shown=0;
   cfg.slides.forEach((s,i)=>{
     const hay=(i+1)+' '+(s.top||'')+' '+(s.bottom||'');
     if(q && !hay.toLowerCase().includes(q)) return; shown++;
-    const c=document.createElement('div'); c.className='card'; c.draggable=true; c.dataset.i=i;
+    const c=document.createElement('div'); c.className='card'; c.draggable=manual; c.dataset.i=i;
+    c.dataset.manual=manual?'1':'';
     c.innerHTML=`
       <div class="thumb" data-pick="${i}">
         <img loading="lazy" src="${s.image||''}" alt="">
-        <span class="badge">#${i+1}</span><span class="grip" title="드래그로 순서변경">⠿</span>
+        <span class="badge">#${i+1}${s.date?' · '+String(s.date).slice(0,7):''}</span>${manual?'<span class="grip" title="드래그로 순서변경">⠿</span>':''}
         <span class="change">이미지 변경</span>
       </div>
       <div class="fields">
@@ -419,10 +456,12 @@ $('#bulkBottom').onclick=()=>{
 };
 /* drag reorder */
 let dragI=null;
-$('#slideGrid').addEventListener('dragstart',e=>{const c=e.target.closest('.card');if(!c)return;dragI=+c.dataset.i;c.classList.add('drag');});
+$('#slideGrid').addEventListener('dragstart',e=>{
+  if(orderMode()!=='manual'){e.preventDefault();return;}   // 날짜순 모드: 순서는 날짜가 정한다
+  const c=e.target.closest('.card');if(!c)return;dragI=+c.dataset.i;c.classList.add('drag');});
 $('#slideGrid').addEventListener('dragend',e=>{const c=e.target.closest('.card');if(c)c.classList.remove('drag');$$('.card.over').forEach(x=>x.classList.remove('over'));});
 $('#slideGrid').addEventListener('dragover',e=>{e.preventDefault();const c=e.target.closest('.card');if(!c)return;$$('.card.over').forEach(x=>x.classList.remove('over'));c.classList.add('over');});
-$('#slideGrid').addEventListener('drop',e=>{e.preventDefault();const c=e.target.closest('.card');if(!c||dragI==null)return;const to=+c.dataset.i;const S=cfg.slides;const[m]=S.splice(dragI,1);S.splice(to,0,m);dragI=null;renderSlides();dirty();});
+$('#slideGrid').addEventListener('drop',e=>{e.preventDefault();if(orderMode()!=='manual')return;const c=e.target.closest('.card');if(!c||dragI==null)return;const to=+c.dataset.i;const S=cfg.slides;const[m]=S.splice(dragI,1);S.splice(to,0,m);dragI=null;renderSlides();dirty();});
 
 /* ---------- image picker ---------- */
 function openPicker(){

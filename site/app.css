@@ -596,6 +596,10 @@ html.is-resizing .wordmark{transition:none}
 .about__head{
   height:40svh;display:flex;align-items:center;justify-content:space-between;
 }
+/* .875 is a Latin display line-height: it packs the caps tight because a cap is short. A
+   Hangul glyph fills 1.26em, so on the Korean lines the type ran into the line above it —
+   42px of overlap on a desktop. The lines need room for the tallest thing that can sit in
+   them, and that is 한글. */
 .about__title{
   font-size:min(11.7rem,117px);font-weight:700;line-height:.875;
   text-transform:uppercase;text-align:center;margin:-10rem 0 22.5rem;
@@ -680,6 +684,12 @@ html.is-resizing .wordmark{transition:none}
 /* the grain is a texture over the paintings; About is type on a flat panel, where it only
    reads as dirt on the screen. The overlay lives on <body>, so the active view turns it off. */
 body:has(.view--about) .noise{display:none}
+/* About scrolls its own type under the fixed wordmark, and the two collided — the page's
+   title ran straight through the logo, and the Korean lines behind it. The page already says
+   LSE GALLERY in letters ten times the size, so the logo stands aside while About is up.
+   (Opacity, not display: it has a transform transition to catch on the way back.) */
+body:has(.view--about) .wordmark{opacity:0;transition:opacity .5s ease}
+.wordmark{opacity:1;transition:transform 1.5s var(--ease-rise),opacity .5s ease}
 .noise::before{
   content:"";position:absolute;top:-10rem;left:-10rem;
   width:calc(100% + 20rem);height:calc(100% + 20rem);
