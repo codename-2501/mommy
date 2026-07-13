@@ -804,6 +804,11 @@ function updateMenu(path) {
 }
 
 function navigate(href) {
+  /* the menu marks where you already are, and tapping that button used to tear the view down
+     and play its arrival again — the paintings flew back in over a page that never left */
+  const to = String(href).replace(/\/+$/, '') || '/';
+  const at = location.pathname.replace(/\/+$/, '') || '/';
+  if (to === at) return;
   history.pushState(null, '', href);
   render();
 }
