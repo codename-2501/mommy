@@ -741,6 +741,11 @@ async function flyDetailHome(detailEl) {
 function render() {
   const path = location.pathname.replace(/\/+$/, '') || '/';
 
+  /* each view carries its own background; a detail keeps the one belonging to the page under it */
+  if (window.LSEBackground && !path.startsWith('/p/')) {
+    window.LSEBackground.apply(((content && content.backgrounds) || {})[path]);
+  }
+
   /* detail = overlay above the (kept) home — no home teardown, no flash */
   if (path.startsWith('/p/')) {
     finalizeLeaving();                       // no half-left view may sit under the detail

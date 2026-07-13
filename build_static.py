@@ -64,6 +64,12 @@ def referenced_images(content):
                 if name:
                     full.add(name)
 
+    # a page's background is not referenced by any slide either
+    for bg in (content.get("backgrounds") or {}).values():
+        name = image_name((bg or {}).get("src") or "")
+        if name:
+            full.add(name)
+
     # the favicon is served from /thumbs, the share thumbnail at full size. Neither is
     # referenced by a slide, so without this the built site links to images it never copied.
     meta = content.get("meta") or {}
