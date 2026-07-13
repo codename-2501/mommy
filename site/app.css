@@ -20,16 +20,23 @@
    - reveal: masked text and curtains. Slightly softer landing than `travel`.
    - curtain: a panel that has to *start* slowly (it is large) and then get out of the way. */
 :root{
-  --size:1500;
+  --size:1500;                                  /* the desktop mock's width */
   --ease-travel:cubic-bezier(.2,.92,.24,1);
   --ease-rise:cubic-bezier(.19,1,.22,1);
   --ease-reveal:cubic-bezier(.24,.94,.32,1);
   --ease-curtain:cubic-bezier(.62,.02,.2,1);
 }
-@media (max-width:699px){:root{--size:390}}
+@media (max-width:699px){:root{--size:390}}     /* …and the phone's */
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{
+  /* The whole page is drawn in rem and the root em tracks the viewport, so the layout is a
+     proportional scale of its design mock: narrow the window and everything shrinks with it.
+     Two mocks, two references — the phone's 390 and the desktop's 1500.
+
+     Holding the root em flat between them (a single "continuous" scale) removes the jump at
+     the crossover but also removes the scaling itself: content would keep its size while the
+     window shrinks. The proportional scale IS the responsiveness here, so it stays. */
   font-size:clamp(1px,calc(10 * 100vw / var(--size)),20px);
   -webkit-text-size-adjust:none;
   -webkit-font-smoothing:antialiased;
@@ -58,13 +65,22 @@ img{max-width:100%;display:block}
   position:fixed;inset:0;z-index:50;
   overflow:hidden;
   display:flex;flex-direction:column;align-items:center;
-  padding-top:calc(44vh + 6rem);gap:3rem;   /* clears the wordmark, which is centred at 27vh */
+  /* The list starts below the wordmark, which is centred at 27vh and whose height grows with
+     the root em — so 44vh alone stops clearing it on a short screen (the two collided at
+     320x568). Take whichever of the two floors is lower down: the vh rule while the window
+     is tall, the wordmark's own half-height in rem once it is not. */
+  padding-top:max(calc(44vh + 6rem),calc(27vh + 12rem));gap:3rem;
 }
 .intro.is-leaving{pointer-events:none}
 /* a short window cannot hold a full-size wordmark, the list and the button with air between
    them — the title gives up some size rather than the layout giving up its spacing */
 @media (max-height:780px){
-  .intro{padding-top:calc(44vh + 3rem);gap:2.2rem}
+  .intro{padding-top:max(calc(44vh + 3rem),calc(27vh + 12rem));gap:2.2rem}
+}
+/* Only the desktop wordmark (.9rem) can afford to give up size on a short window. The phone's
+   is already .4rem — set to .72rem it grows past 100vw, wraps onto extra lines and eats half
+   the screen, which is what pushed the Enter button out of view on a 320x568 phone. */
+@media (max-height:780px) and (min-width:700px){
   .wordmark.at-intro{font-size:.72rem}
 }
 
@@ -87,6 +103,11 @@ img{max-width:100%;display:block}
   transition:transform 1.5s var(--ease-rise);
   will-change:transform;
 }
+/* That 1.5s transition is for the intro→home move. During a resize the wordmark's target is
+   recomputed from vh/rem, so the same transition fires on every frame of the drag and the
+   logo crawls after the window instead of tracking it. While the window is being resized it
+   has nothing to animate to — it simply belongs where the new size puts it. */
+html.is-resizing .wordmark{transition:none}
 @media (min-width:700px){.wordmark{font-size:.9rem}}
 /* during the intro the wordmark sits higher than the middle: the month list and the enter
    button live underneath it, and they need the room */
@@ -109,9 +130,15 @@ img{max-width:100%;display:block}
 .wordmark.is-ready .line-in{transform:translateY(0);clip-path:inset(0 0 -20% 0)}
 
 /* month list — centred between the wordmark and the enter button. Three columns: an
-   archive spanning several years has ~27 rows, and two columns would run past the fold. */
+   archive spanning several years has ~27 rows, and two columns would run past the fold.
+
+   The rows never wrap (a month must read as one line), so the three columns can only fit a
+   phone if the type and the gutters shrink with the viewport. Left at the desktop's 5rem
+   gutter and 14px type the block came to 714px on a 360px screen and was cut in half by the
+   intro's overflow — invisible, because the clipping happens inside a fixed overlay. */
 .intro-months{
-  display:grid;grid-template-columns:repeat(3,auto);gap:0 5rem;
+  display:grid;grid-template-columns:repeat(3,auto);
+  gap:0 min(5rem,4vw);
   text-align:left;z-index:5;line-height:1.9;   /* under the wordmark: it blends over us */
 }
 .intro-months .col{display:flex;flex-direction:column}
@@ -119,6 +146,12 @@ img{max-width:100%;display:block}
 .intro-months .row .in{display:block;min-height:1.5em}
 .intro-months .row .n{opacity:.5;margin-left:.4em}
 .intro-months .row .c{margin-left:1.2em}
+/* A phone cannot hold month + year + category + count three times over: the category is the
+   one field the timeline itself repeats, so it stands down and the rest stays legible. */
+@media (max-width:699px){
+  .intro-months{font-size:min(1.4rem,2.3vw);gap:0 1.6vw}
+  .intro-months .row .c{display:none}
+}
 
 /* enter gate — one button, centred under the list */
 .intro-gate{

@@ -815,12 +815,21 @@ document.addEventListener('click', (e) => {
 });
 window.addEventListener('popstate', render);
 
+/* While the window is being dragged, elements whose transform is derived from the viewport
+   (the wordmark) would animate to each intermediate size — the logo lags behind the edge of
+   the window. Mark the resize so those transitions sit out, and lift the mark once it stops. */
+let resizeEnd = 0;
+addEventListener('resize', () => {
+  document.documentElement.classList.add('is-resizing');
+  clearTimeout(resizeEnd);
+  resizeEnd = setTimeout(() => document.documentElement.classList.remove('is-resizing'), 160);
+});
+
 /* ---------- boot ---------- */
 
 Promise.all([loadContent(), loadAspects(), loadIcons()]).then(([c, a]) => {
   content = c;
   aspects = a;
-  if (matchMedia('(max-width:699px)').matches) entered = true;   // : no gate on mobile
   /* the intro gate belongs to the timeline. Land straight on /surf, /articles, /about or a
      painting and there is no gate to pass — so the wordmark and menu must already be up. */
   if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') entered = true;
