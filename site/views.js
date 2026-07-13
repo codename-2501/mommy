@@ -487,6 +487,23 @@ function mountAbout(view, content) {
   view.appendChild(page);
 
   const sc = smoothTilt(maskInner, scroller);
+
+  /* The wordmark is fixed and About scrolls its own type under it, so the two ran through each
+     other. Hiding it outright left the top of the page bare — it belongs there while the page
+     is at rest. It steps aside only once the copy starts climbing towards it. */
+  const onScroll = () => {
+    document.body.classList.toggle('about-scrolled', maskInner.scrollTop > 24);
+  };
+  maskInner.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  const destroy = sc.destroy;
+  sc.destroy = () => {
+    maskInner.removeEventListener('scroll', onScroll);
+    document.body.classList.remove('about-scrolled');
+    destroy();
+  };
+
   requestAnimationFrame(() => requestAnimationFrame(() => {
     view.classList.add('is-in');
     setTimeout(() => sc.measure(), 600);
