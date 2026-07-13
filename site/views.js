@@ -385,6 +385,32 @@ function mountIndex(view, slides, aspects, onOpen) {
   return { ready, destroy: sc.destroy, measure: sc.measure, scrollTo: sc.scrollTo };
 }
 
+/* One CV entry, whichever shape the admin saved it in.
+
+     v1  {date:'2025.03', text:'…'}                  date and text, no group
+     v2  {text:'…', note:'2024.10, 루브르박물관'}      the year and the place, run together
+     v3  {text:'…', date:'2024.10', place:'루브르박물관'}
+
+   The year and the place were one field, so a date could not be read, sorted or set apart from
+   the venue it happened to sit beside. They part here, and the old rows part with them: a note
+   splits at its first comma — the half that reads as a date is the date. */
+function cvItem(it) {
+  const o = it || {};
+  const text = String(o.text ?? '').trim();
+  let date = String(o.date ?? '').trim();
+  let place = String(o.place ?? '').trim();
+
+  if (!date && !place && o.note) {
+    const note = String(o.note).trim();
+    const cut = note.indexOf(',');
+    const head = (cut < 0 ? note : note.slice(0, cut)).trim();
+    const tail = cut < 0 ? '' : note.slice(cut + 1).trim();
+    if (/\d/.test(head)) { date = head; place = tail; }   // "2024.10, 루브르박물관"
+    else { place = note; }                                //  no year in it: it is all a place
+  }
+  return { text, date, place };
+}
+
 /* ---------------- ABOUT: black page, big lines, credits ---------------- */
 /* One About block -> one element. The page is whatever list the admin composed, in that
    order: copy and pictures interleave freely, so nothing here may assume a fixed shape. */
@@ -410,24 +436,22 @@ function aboutBlock(b) {
 
   /* a CV block, the shape a painter's profile actually has: a group (초대 개인전, 수상, 現…)
      naming a column of entries, each entry a line of its own — the work, then the year and
-     the place set quietly beside it.
-
-     The first version of this block had one date column and one text column, which could not
-     say which group an entry belonged to. Those entries still read: an old {date, text} pair
-     becomes {text, note} — the date was always the quiet half. */
+     the place set quietly beside it. */
   if (b.type === 'list') {
-    const items = (b.items || [])
-      .map((it) => ({
-        text: String((it && (it.text ?? '')) || '').trim(),
-        note: String((it && (it.note ?? it.date ?? '')) || '').trim(),
-      }))
-      .filter((it) => it.text || it.note);
+    const items = (b.items || []).map(cvItem).filter((it) => it.text || it.date || it.place);
     const label = (b.label || '').trim();
     if (!items.length && !label) return null;
 
     const al = ['left', 'center', 'right'].includes(b.align) ? b.align : 'left';
-    const sz = ['sm', 'md', 'lg'].includes(b.size) ? b.size : 'md';
-    const group = el('div', 'about__cv about__fade about__al--' + al + ' about__sz--' + sz);
+    const group = el('div', 'about__cv about__fade about__al--' + al);
+    /* each field carries its own size, set as a multiple so the page's scale still holds. The
+       block's old single `size` becomes the entry's — that is what it used to move. */
+    const F = { sm: 0.72, md: 1, lg: 1.4 };
+    const pick = (v, fallback) => F[v] || F[fallback] || 1;
+    group.style.setProperty('--sz-label', pick(b.sizeLabel, 'md'));
+    group.style.setProperty('--sz-t', pick(b.sizeText, b.size || 'md'));
+    group.style.setProperty('--sz-n', pick(b.sizeNote, 'md'));
+
     const head = el('div', 'about__cv-label label');
     if (label) head.textContent = label;
     group.appendChild(head);
@@ -436,7 +460,8 @@ function aboutBlock(b) {
     items.forEach((it) => {
       const row = el('div', 'about__cv-row');
       if (it.text) row.appendChild(el('span', 'about__cv-t', it.text));
-      if (it.note) row.appendChild(el('span', 'about__cv-n', it.note));
+      if (it.date) row.appendChild(el('span', 'about__cv-d', it.date));
+      if (it.place) row.appendChild(el('span', 'about__cv-n', it.place));
       list.appendChild(row);
     });
     group.appendChild(list);

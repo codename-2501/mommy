@@ -668,13 +668,16 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
 }
 .about__cv-label{
   text-align:right;opacity:.75;padding-top:.5rem;white-space:nowrap;
+  font-size:calc(min(1.4rem,14px) * var(--sz-label,1));
 }
 .about__cv-items{display:flex;flex-direction:column;gap:1.4rem}
 .about__cv-row{
   display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap;
 }
-.about__cv-t{font-size:calc(min(2.4rem,24px) * var(--sz,1));line-height:1.45}
-.about__cv-n{font-size:calc(min(1.6rem,16px) * var(--sz,1));opacity:.55;line-height:1.45}
+.about__cv-t{font-size:calc(min(2.4rem,24px) * var(--sz-t,1));line-height:1.45}
+.about__cv-d{font-size:calc(min(1.6rem,16px) * var(--sz-n,1));opacity:.75;line-height:1.45;
+  font-family:mono,ui-monospace,monospace;white-space:nowrap}
+.about__cv-n{font-size:calc(min(1.6rem,16px) * var(--sz-n,1));opacity:.5;line-height:1.45}
 /* the group's alignment moves its entries within their column. The group's name keeps its own
    side of the gutter — it is the spine the entries hang from, and swinging it about would
    just break the column. */
@@ -685,8 +688,8 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
     grid-template-columns:1fr;gap:.8rem;margin-bottom:calc(8rem * var(--gap,1));
   }
   .about__cv-label{text-align:left;padding-top:0}
-  .about__cv-t{font-size:calc(1.9rem * var(--sz,1))}
-  .about__cv-n{font-size:calc(1.4rem * var(--sz,1))}
+  .about__cv-t{font-size:calc(1.9rem * var(--sz-t,1))}
+  .about__cv-d,.about__cv-n{font-size:calc(1.4rem * var(--sz-n,1))}
 }
 .about__fig{
   max-width:110rem;margin:0 auto calc(28.5rem * var(--gap,1));
