@@ -837,20 +837,31 @@ function renderBlocks(){
     } else if(b.type==='list'){
       const items=Array.isArray(b.items)?b.items:(b.items=[]);
       const lal=['left','center','right'].includes(b.align)?b.align:'left';
-      const lsz=['sm','md','lg'].includes(b.size)?b.size:'md';
+      const V=(x,d)=>['sm','md','lg'].includes(x)?x:d;
+      const lszL=V(b.sizeLabel,'md'), lszT=V(b.sizeText, V(b.size,'md')), lszN=V(b.sizeNote,'md');
       const lopt=(v,cur,label)=>`<option value="${v}"${v===cur?' selected':''}>${label}</option>`;
-      /* 옛 항목은 {date,text} 였다 — 날짜는 늘 조용한 쪽이었으므로 note 로 읽는다 */
-      const noteOf=(it)=> it.note!=null ? it.note : (it.date||'');
-      const rows=items.map((it,j)=>`
+      /* 옛 형식 호환: {date,text} 와 {text,note:'2024.10, 루브르'} 를 제목/연월/장소로 읽는다 */
+      const cv=(it)=>{
+        let date=(it.date||'').trim(), place=(it.place||'').trim();
+        if(!date && !place && it.note){
+          const n=String(it.note).trim(), c=n.indexOf(',');
+          const head=(c<0?n:n.slice(0,c)).trim(), tail=c<0?'':n.slice(c+1).trim();
+          if(/\d/.test(head)){ date=head; place=tail; } else { place=n; }
+        }
+        return {text:it.text||'', date, place};
+      };
+      const rows=items.map((it,j)=>{ const v=cv(it); return `
         <div class="cv-row">
-          <input class="cv-text" data-li="${i}" data-lj="${j}" data-lk="text" value="${escAttr(it.text||'')}"
+          <input class="cv-text" data-li="${i}" data-lj="${j}" data-lk="text" value="${escAttr(v.text)}"
                  placeholder="항목 (예: 프랑스 루브르 아트페어)">
-          <input class="cv-date" data-li="${i}" data-lj="${j}" data-lk="note" value="${escAttr(noteOf(it))}"
-                 placeholder="2024.10, 루브르박물관" style="flex:1 1 min(190px,100%)">
+          <input class="cv-date" data-li="${i}" data-lj="${j}" data-lk="date" value="${escAttr(v.date)}"
+                 placeholder="2024.10">
+          <input class="cv-text" data-li="${i}" data-lj="${j}" data-lk="place" value="${escAttr(v.place)}"
+                 placeholder="장소 (예: 루브르박물관)" style="flex:1 1 min(160px,100%)">
           <button class="btn ghost btn sm" data-lup="${i}" data-lj="${j}" ${j===0?'disabled':''}>↑</button>
           <button class="btn ghost btn sm" data-ldown="${i}" data-lj="${j}" ${j===items.length-1?'disabled':''}>↓</button>
           <button class="btn ghost btn sm" data-ldel="${i}" data-lj="${j}">×</button>
-        </div>`).join('');
+        </div>`; }).join('');
       body=`<div class="blk__body" style="display:flex;flex-direction:column;gap:8px">
               <input class="cv-text" data-label="${i}" value="${escAttr(b.label||'')}"
                      placeholder="그룹명 (예: 초대 개인전 / 개인전 / 단체전 / 수상 / 現 / 前)"
@@ -862,9 +873,17 @@ function renderBlocks(){
                   <select class="blk-sel" data-align="${i}">
                     ${lopt('left',lal,'좌측')}${lopt('center',lal,'중앙')}${lopt('right',lal,'우측')}
                   </select></label>
-                <label class="blk-opt"><span>크기</span>
-                  <select class="blk-sel" data-size="${i}">
-                    ${lopt('sm',lsz,'작게')}${lopt('md',lsz,'보통')}${lopt('lg',lsz,'크게')}
+                <label class="blk-opt"><span>그룹명</span>
+                  <select class="blk-sel" data-szlabel="${i}">
+                    ${lopt('sm',lszL,'작게')}${lopt('md',lszL,'보통')}${lopt('lg',lszL,'크게')}
+                  </select></label>
+                <label class="blk-opt"><span>항목</span>
+                  <select class="blk-sel" data-sztext="${i}">
+                    ${lopt('sm',lszT,'작게')}${lopt('md',lszT,'보통')}${lopt('lg',lszT,'크게')}
+                  </select></label>
+                <label class="blk-opt"><span>연월·장소</span>
+                  <select class="blk-sel" data-sznote="${i}">
+                    ${lopt('sm',lszN,'작게')}${lopt('md',lszN,'보통')}${lopt('lg',lszN,'크게')}
                   </select></label>
                 ${gapOpt}
               </div>
@@ -929,7 +948,7 @@ function addAboutImage(src){ pageBlocks().push({type:'image',src:src,caption:''}
 $$('[data-add]').forEach(btn=>btn.onclick=()=>{
   const t=btn.dataset.add;
   if(t==='image'){ pickMode='about'; openPicker(); return; }
-  if(t==='list'){ pageBlocks().push({type:'list',label:'',items:[{text:'',note:''}]}); renderBlocks(); dirty(); return; }
+  if(t==='list'){ pageBlocks().push({type:'list',label:'',items:[{text:'',date:'',place:''}]}); renderBlocks(); dirty(); return; }
   pageBlocks().push({type:t,text:''}); renderBlocks(); dirty();
 });
 $('#blockList').addEventListener('input',e=>{
@@ -952,6 +971,9 @@ $('#blockList').addEventListener('change',e=>{
   if(t.dataset.size!=null){ list[+t.dataset.size].size=t.value; dirty(); }
   else if(t.dataset.align!=null){ list[+t.dataset.align].align=t.value; dirty(); }
   else if(t.dataset.gap!=null){ list[+t.dataset.gap].gap=t.value; dirty(); }
+  else if(t.dataset.szlabel!=null){ list[+t.dataset.szlabel].sizeLabel=t.value; dirty(); }
+  else if(t.dataset.sztext!=null){ const b2=list[+t.dataset.sztext]; b2.sizeText=t.value; delete b2.size; dirty(); }
+  else if(t.dataset.sznote!=null){ list[+t.dataset.sznote].sizeNote=t.value; dirty(); }
 });
 $('#blockList').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return;
@@ -962,7 +984,7 @@ $('#blockList').addEventListener('click',e=>{
   const li=b.dataset.ladd ?? b.dataset.ldel ?? b.dataset.lup ?? b.dataset.ldown;
   if(li!=null){
     const items=list[+li].items, j=+b.dataset.lj;
-    if(b.dataset.ladd!=null) items.push({text:'',note:''});
+    if(b.dataset.ladd!=null) items.push({text:'',date:'',place:''});
     else if(b.dataset.ldel!=null) items.splice(j,1);
     else if(b.dataset.lup!=null) swap(items,j,j-1);
     else if(b.dataset.ldown!=null) swap(items,j,j+1);
@@ -988,7 +1010,7 @@ $('#save').onclick=async()=>{
       const filled=b=>{
         if(b.type==='image') return !!b.src;
         if(b.type==='list'){
-          b.items=(b.items||[]).filter(it=>(it.text||'').trim()||(it.note||'').trim()||(it.date||'').trim());
+          b.items=(b.items||[]).filter(it=>(it.text||'').trim()||(it.date||'').trim()||(it.place||'').trim()||(it.note||'').trim());
           return b.items.length>0 || (b.label||'').trim().length>0;
         }
         return (b.text||'').trim();
