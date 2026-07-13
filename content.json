@@ -2401,7 +2401,9 @@
    {
     "type": "image",
     "src": "/images/02ece5a890247.png",
-    "caption": "ㅋㅋ"
+    "caption": "ㅋㅋ",
+    "size": "half",
+    "align": "center"
    },
    {
     "type": "title",
