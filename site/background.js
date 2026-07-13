@@ -78,8 +78,12 @@ function apply(bg) {
 
   if (!cfg.src || cfg.motion === 'none') {
     if (layer) { layer.style.opacity = '0'; layer.style.backgroundImage = ''; }
+    document.body.classList.remove('has-bg');
     return;
   }
+  /* a page that paints its own ground (About is black) has to know a picture is behind it,
+     or it simply covers the picture up */
+  document.body.classList.add('has-bg');
 
   const el = ensureLayer();
   el.style.backgroundImage = 'url("' + cfg.src + '")';
