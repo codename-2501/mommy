@@ -16,7 +16,8 @@ CONTENT = os.path.join(ROOT, "content.json")
 BACKUP_DIR = os.path.join(ROOT, ".backups")
 IMAGES_DIR = os.path.join(ROOT, "images")
 SITE_DIR = os.path.join(ROOT, "site")
-SITE_ROUTES = ("/", "/surf", "/articles", "/about")   # SPA shell routes (+ /p/<id>)
+SITE_ROUTES = ("/", "/flow", "/articles", "/about")   # SPA shell routes (+ /p/<id>)
+LEGACY_ROUTES = {"/surf": "/flow"}                    # renamed — keep old links alive
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8082
 
 ALLOWED_IMG = (".jpg", ".jpeg", ".png", ".webp", ".gif")
@@ -333,6 +334,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         # new frontend (site/): SPA shell for all app routes
         clean_route = path.rstrip("/") or "/"
+
+        # /surf was renamed to /flow: a link someone already has must not land on a 404
+        if clean_route in LEGACY_ROUTES:
+            self.send_response(301)
+            self.send_header("Location", LEGACY_ROUTES[clean_route])
+            self.end_headers()
+            return
+
         if clean_route in SITE_ROUTES or clean_route.startswith("/p/"):
             shell = os.path.join(SITE_DIR, "index.html")
             if os.path.isfile(shell):
