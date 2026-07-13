@@ -200,6 +200,11 @@
         <input id="wm-l3" placeholder="연도 표기 (선택)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
       </div>
     </div>
+    <div style="background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
+      <div style="font-weight:600;margin-bottom:4px">배경 <span style="color:var(--mut);font-weight:400;font-size:12px">(페이지별)</span></div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:12px">페이지마다 배경 이미지와 움직임을 따로 정합니다. 배경 없음이 기본입니다 — 그림이 주인공인 페이지는 비워두는 편이 낫습니다.</div>
+      <div id="bgList" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
     <div class="hint">블록을 쌓아 페이지를 구성합니다. 위에서 아래 순서 그대로 사이트에 렌더됩니다. ↑↓ 로 글과 이미지를 섞어 배치하세요. 빈 블록은 렌더되지 않습니다.</div>
     <div class="blk-add">
       <button class="btn ghost" data-add="title">+ 제목</button>
@@ -311,7 +316,7 @@ async function load(){
   ]);
   cfg=c; baseVersion=cfg._version||null; delete cfg._version; images=im.images||[];
   const sel=$('#pageSel'); sel.innerHTML=(pg.pages||['/']).map(p=>`<option value="${p}">${p}</option>`).join('');
-  loadWordmark(); loadMeta();
+  loadWordmark(); loadMeta(); renderBg();
   $('#orderMode').value=orderMode();
   renderSlides(); renderImages();
   setStatus(cfg.slides.length+'개 슬라이드 · '+images.length+'개 이미지','ok');
@@ -472,6 +477,7 @@ function openPicker(){
     d.onclick=()=>{
       if(pickMode==='media'){ closePicker(); addMediaImage('/images/'+name); }
       else if(pickMode==='about'){ closePicker(); addAboutImage('/images/'+name); }
+      else if(pickMode==='bg'){ closePicker(); setBgImage('/images/'+name); }
       else if(pickMode==='favicon'){ closePicker(); setMetaImage('favicon','/images/'+name); }
       else if(pickMode==='og'){ closePicker(); setMetaImage('ogImage','/images/'+name); }
       else {
@@ -678,6 +684,64 @@ async function doUpload(e,after){
   }
   const im=await fetch('/api/images?t='+Date.now()).then(r=>r.json()); images=im.images||[];
   renderImages(); setStatus(files.length+'개 업로드 완료','ok'); e.target.value=''; if(after)after();
+}
+
+/* ---------- backgrounds: one per page (content.json → backgrounds[path]) ---------- */
+const BG_PAGES=[['/','홈 (타임라인 캐러셀)'],['/flow','Flow'],['/articles','인덱스'],['/about','About']];
+const BG_MOTION=[['none','배경 없음'],['fixed','고정'],['follow','마우스 따라 (같은 방향)'],
+                 ['invert','마우스 반대 방향'],['parallax','스크롤 패럴랙스']];
+function backgrounds(){ if(!cfg.backgrounds||typeof cfg.backgrounds!=='object') cfg.backgrounds={}; return cfg.backgrounds; }
+function renderBg(){
+  const L=$('#bgList'); if(!L) return;
+  const bgs=backgrounds();
+  L.innerHTML=BG_PAGES.map(([path,label])=>{
+    const b=bgs[path]||{};
+    const motion=BG_MOTION.some(([v])=>v===b.motion)?b.motion:'none';
+    const op=b.opacity!=null?b.opacity:1;
+    return `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#101116;border:1px solid var(--line);border-radius:10px;padding:10px">
+      <div style="flex:none;width:120px;font-size:13px">${label}</div>
+      <img src="${escAttr(b.src||'')}" style="width:64px;height:40px;object-fit:cover;border-radius:6px;background:var(--panel);border:1px solid var(--line);${b.src?'':'visibility:hidden'}">
+      <button class="btn ghost btn sm" data-bgpick="${path}">이미지</button>
+      <button class="btn ghost btn sm" data-bgclear="${path}">지움</button>
+      <select class="blk-sel" data-bgmotion="${path}">
+        ${BG_MOTION.map(([v,l])=>`<option value="${v}"${v===motion?' selected':''}>${l}</option>`).join('')}
+      </select>
+      <label style="font-size:12px;color:var(--mut)">투명도</label>
+      <input type="range" min="0.1" max="1" step="0.05" value="${op}" data-bgop="${path}" style="width:110px">
+      <span style="font-size:12px;color:var(--mut);width:34px">${Number(op).toFixed(2)}</span>
+    </div>`;
+  }).join('');
+}
+$('#bgList').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const bgs=backgrounds();
+  if(b.dataset.bgpick!=null){ pickMode='bg'; bgTarget=b.dataset.bgpick; openPicker(); }
+  else if(b.dataset.bgclear!=null){ delete bgs[b.dataset.bgclear]; renderBg(); dirty(); }
+});
+$('#bgList').addEventListener('change',e=>{
+  const t=e.target, bgs=backgrounds();
+  if(t.dataset.bgmotion!=null){
+    const p=t.dataset.bgmotion;
+    bgs[p]=bgs[p]||{};
+    if(t.value==='none') delete bgs[p].motion; else bgs[p].motion=t.value;
+    if(!bgs[p].src && t.value==='none') delete bgs[p];
+    renderBg(); dirty();
+  }
+});
+$('#bgList').addEventListener('input',e=>{
+  const t=e.target, bgs=backgrounds();
+  if(t.dataset.bgop!=null){
+    const p=t.dataset.bgop; bgs[p]=bgs[p]||{}; bgs[p].opacity=parseFloat(t.value);
+    t.nextElementSibling.textContent=Number(t.value).toFixed(2); dirty();
+  }
+});
+let bgTarget=null;
+function setBgImage(src){
+  const bgs=backgrounds();
+  bgs[bgTarget]=bgs[bgTarget]||{};
+  bgs[bgTarget].src=src;
+  if(!bgs[bgTarget].motion) bgs[bgTarget].motion='fixed';   // 이미지를 골랐는데 '없음' 이면 보이지 않는다
+  renderBg(); dirty();
 }
 
 /* ---------- block editor: the page IS this list (content.json → blocks[page]) ---------- */
