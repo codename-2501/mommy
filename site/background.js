@@ -19,6 +19,7 @@ const DRIFT = 28;          // px the picture may travel from centre for a cursor
 const PARALLAX = 0.25;     // how much of the scroll the background takes
 
 let layer = null;
+let token = 0;             // the route this background belongs to; a later one wins
 let cfg = { src: '', motion: 'none', opacity: 1 };
 let mx = 0, my = 0;        // where the pointer wants it (-1..1)
 let cx = 0, cy = 0;        // where it actually is — eased, so a jerk of the mouse is not one
@@ -76,27 +77,48 @@ function apply(bg) {
   };
   stop();
 
+  const el = ensureLayer();
+  token += 1;                                  // a route change mid-load must not be overtaken
+  const mine = token;
+
   if (!cfg.src || cfg.motion === 'none') {
-    if (layer) { layer.style.opacity = '0'; layer.style.backgroundImage = ''; }
+    el.style.opacity = '0';
     document.body.classList.remove('has-bg');
+    /* let the fade finish before the picture is dropped, or it vanishes instead of fading */
+    setTimeout(() => { if (token === mine) el.style.backgroundImage = ''; }, 600);
     return;
   }
   /* a page that paints its own ground (About is black) has to know a picture is behind it,
      or it simply covers the picture up */
   document.body.classList.add('has-bg');
 
-  const el = ensureLayer();
-  el.style.backgroundImage = 'url("' + cfg.src + '")';
-  el.style.opacity = String(Math.max(0, Math.min(1, cfg.opacity)));
-  el.style.transform = 'translate3d(0,0,0)';
+  /* The background used to appear in the same frame it was asked for: the layer was created,
+     given its picture and its final opacity at once, so the browser had no earlier value to
+     ease from and the picture arrived undecoded — it snapped in, whole, over a page that was
+     still sliding into place. Decode first, and only then fade, on the frame after. */
+  const pre = new Image();
+  pre.src = cfg.src;
+  const show = () => {
+    if (token !== mine) return;                // a later route already took over
+    el.style.backgroundImage = 'url("' + cfg.src + '")';
+    el.style.transform = 'translate3d(0,0,0)';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (token !== mine) return;
+      el.style.opacity = String(Math.max(0, Math.min(1, cfg.opacity)));
+    }));
 
-  if (cfg.motion === 'fixed') return;         // nothing to drive: it simply sits there
-
-  mx = my = cx = cy = 0;
-  scrollY = currentScroll();
-  addEventListener('pointermove', onPointer, { passive: true });
-  raf = requestAnimationFrame(frame);
+    if (cfg.motion === 'fixed') return;        // nothing to drive: it simply sits there
+    mx = my = cx = cy = 0;
+    scrollY = currentScroll();
+    addEventListener('pointermove', onPointer, { passive: true });
+    raf = requestAnimationFrame(frame);
+  };
+  (pre.decode ? pre.decode().catch(() => {}) : Promise.resolve()).then(show);
 }
+
+/* the layer exists from the start, transparent: a transition needs something to ease from */
+if (document.body) ensureLayer();
+else addEventListener('DOMContentLoaded', ensureLayer, { once: true });
 
 window.LSEBackground = { apply, MOTIONS };
 })();

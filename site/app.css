@@ -603,6 +603,8 @@ html.is-resizing .wordmark{transition:none}
    veil: enough dark to keep white type legible over a photograph, not so much that the
    photograph is gone. (background.js marks the body while a background is up.) */
 body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
+/* the veil eases with the picture behind it, so the page does not switch colour in one frame */
+.about__mask-in{transition:transform 1s var(--ease-travel),background-color .6s ease}
 .about__mask-in::-webkit-scrollbar{display:none}
 .view--about.is-in .about__mask,.view--about.is-in .about__mask-in{transform:translateY(0)}
 /* about exit: curtains leave the way they came */
