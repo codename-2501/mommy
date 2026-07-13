@@ -304,8 +304,8 @@ function smoothTilt(outer, content) {
        The old coefficient bent a row by 1.6° at speed, which even with a perspective is a
        quarter of a pixel; it takes an angle you can actually see, capped so a hard flick
        leans the rows rather than folding them over. */
-    const deg = Math.max(-9, Math.min(9, v * -0.06));
-    const ry = 'perspective(900px) rotateX(' + deg + 'deg)';
+    const deg = Math.max(-16, Math.min(16, v * -0.12));
+    const ry = 'perspective(600px) rotateX(' + deg + 'deg)';
     tilts().forEach((t) => { t.style.transform = ry; });
     raf = requestAnimationFrame(frame);
   }
