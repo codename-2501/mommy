@@ -252,18 +252,6 @@
 </div>
 
 <!-- media manager modal -->
-<div class="modal" id="mediaModal">
-  <div class="sheet">
-    <div class="shead"><strong>미디어 (상세 본문)</strong><span id="mediaSub" style="color:var(--mut);font-size:12px;margin-left:8px"></span><div class="sp"></div>
-      <button class="btn ghost sm" id="mAddImg">+ 이미지</button>
-      <button class="btn ghost sm" id="mAddVid">+ 영상(유튜브)</button>
-      <button class="btn ghost sm" id="mediaClose">닫기</button></div>
-    <div class="sbody"><div id="mediaList" style="display:flex;flex-direction:column;gap:10px"></div>
-      <div class="hint" style="margin-top:12px">상세 클릭 시 이 순서대로 이미지·영상이 원본 양식으로 표시됩니다. 비워두면 대표 이미지 1장만 나옵니다.</div>
-    </div>
-  </div>
-</div>
-
 <!-- slide edit modal (roomy) -->
 <div class="modal" id="editModal">
   <div class="sheet">
@@ -354,7 +342,40 @@ $$('.tab').forEach(t=>t.onclick=()=>{
 });
 
 /* ---------- slides CRUD ---------- */
-function usageCount(name){return cfg.slides.filter(s=>(s.image||'').endsWith('/'+name)).length;}
+/* 이미지가 쓰이는 모든 자리 — 대표 이미지만 보던 탓에 배경·로고·파비콘·About 블록·
+   상세 본문에 쓰인 이미지는 '사용 안 함'으로 보여 경고 없이 지워졌다. */
+function imageUses(name){
+  const ref='/images/'+name, hit=v=>typeof v==='string'&&v.endsWith(ref), out=[];
+  (cfg.slides||[]).forEach(s=>{
+    if(hit(s.image)) out.push(['슬라이드 대표', s.id||'']);
+    (s.media||[]).forEach(m=>{ if(hit(m.src)) out.push(['상세 본문', s.id||'']); });
+  });
+  Object.entries(cfg.blocks||{}).forEach(([page,bs])=>(bs||[]).forEach(b=>{
+    if(b.type==='image'&&hit(b.src)) out.push(['페이지 블록', page]);
+  }));
+  Object.entries(cfg.backgrounds||{}).forEach(([page,bg])=>{ if(hit(bg&&bg.src)) out.push(['배경', page]); });
+  if(hit((cfg.wordmark||{}).image)) out.push(['로고','']);
+  if(hit((cfg.meta||{}).favicon)) out.push(['파비콘','']);
+  if(hit((cfg.meta||{}).ogImage)) out.push(['공유 썸네일','']);
+  return out;
+}
+function usageCount(name){ return imageUses(name).length; }
+/* 강제 삭제하면 남은 참조는 전부 끊는다 — 남겨두면 사이트에 깨진 이미지가 뜨고
+   정적 빌드는 아예 실패한다 */
+function clearImageRefs(name){
+  const ref='/images/'+name, hit=v=>typeof v==='string'&&v.endsWith(ref);
+  (cfg.slides||[]).forEach(s=>{
+    if(hit(s.image)) s.image='';
+    if(Array.isArray(s.media)) s.media=s.media.filter(m=>!hit(m.src));
+  });
+  Object.keys(cfg.blocks||{}).forEach(p=>{
+    cfg.blocks[p]=(cfg.blocks[p]||[]).filter(b=>!(b.type==='image'&&hit(b.src)));
+  });
+  Object.keys(cfg.backgrounds||{}).forEach(p=>{ if(hit(cfg.backgrounds[p].src)) delete cfg.backgrounds[p]; });
+  if(hit((cfg.wordmark||{}).image)) delete cfg.wordmark.image;
+  if(hit((cfg.meta||{}).favicon)) delete cfg.meta.favicon;
+  if(hit((cfg.meta||{}).ogImage)) delete cfg.meta.ogImage;
+}
 /* ---------- 로고 / 워드마크 ---------- */
 function loadWordmark(){
   const w=(cfg&&cfg.wordmark)||{};
@@ -446,7 +467,6 @@ function renderSlides(){
         <div style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em">${esc(s.bottom)||'—'} · 🎞 ${(s.media&&s.media.length)||1}</div>
         <div class="rowbtns" style="margin-top:6px">
           <button class="btn sm primary" data-act="edit" data-i="${i}" style="flex:1">편집</button>
-          <button class="btn sm" data-act="media" data-i="${i}">🎞</button>
         </div>
         <div class="rowbtns">
           <button class="btn sm" data-act="up" data-i="${i}">↑</button>
@@ -472,7 +492,6 @@ $('#slideGrid').addEventListener('click',e=>{
   const b=e.target.closest('button[data-act]'); if(!b)return;
   const i=+b.dataset.i, S=cfg.slides;
   if(b.dataset.act==='edit'){openEditModal(i);return;}
-  if(b.dataset.act==='media'){openMediaModal(i);return;}
   if(b.dataset.act==='up'&&i>0){[S[i-1],S[i]]=[S[i],S[i-1]];}
   if(b.dataset.act==='down'&&i<S.length-1){[S[i+1],S[i]]=[S[i],S[i+1]];}
   if(b.dataset.act==='dup'){const n={...S[i],id:'n'+Date.now()+'_'+(nid++)};S.splice(i+1,0,n);}
@@ -541,7 +560,6 @@ function ytId(url){
   return m?m[1]:(/^[A-Za-z0-9_-]{6,}$/.test(url)?url:'');
 }
 /* media lives inside the edit modal (mediaTarget === editTarget) */
-function openMediaModal(i){ openEditModal(i); }   // card 🎞 shortcut → edit modal
 function descParas(i){
   const d=(cfg.slides[i]&&cfg.slides[i].desc)||'';
   return d.split(/\n+/).map(x=>x.trim()).filter(Boolean);
@@ -695,14 +713,17 @@ function renderImages(){
 }
 $('#imgGrid').addEventListener('click',async e=>{
   const b=e.target.closest('[data-del]'); if(!b)return;
-  const name=b.dataset.del, u=usageCount(name);
-  if(u>0 && !confirm(name+' 은(는) '+u+'개 슬라이드에서 사용 중입니다. 그래도 삭제할까요? (해당 슬라이드 이미지는 비게 됩니다)'))return;
-  if(u===0 && !confirm(name+' 을(를) 삭제할까요?'))return;
-  const r=await fetch('/api/images?name='+encodeURIComponent(name)+(u>0?'&force=1':''),{method:'DELETE'}).then(r=>r.json());
+  const name=b.dataset.del, uses=imageUses(name);
+  if(uses.length){
+    const where=uses.map(([k,w])=>w?`${k}(${w})`:k).join(', ');
+    if(!confirm(`${name} 은(는) ${uses.length}곳에서 사용 중입니다:\n\n${where}\n\n삭제하면 그 자리의 이미지도 함께 제거됩니다. 계속할까요?`)) return;
+  } else if(!confirm(name+' 을(를) 삭제할까요?')) return;
+  const r=await fetch('/api/images?name='+encodeURIComponent(name)+(uses.length?'&force=1':''),{method:'DELETE'}).then(r=>r.json());
   if(r.error){setStatus('삭제 실패: '+r.error,'err');return;}
   images=images.filter(n=>n!==name);
-  if(u>0){cfg.slides.forEach(s=>{if((s.image||'').endsWith('/'+name))s.image='';});}
-  renderImages(); renderSlides(); setStatus(name+' 삭제됨','ok');
+  if(uses.length){ clearImageRefs(name); dirty(); }   // 참조를 끊고, 저장이 필요함을 알린다
+  renderImages(); renderSlides(); renderBlocks(); renderBg(); loadWordmark(); loadMeta();
+  setStatus(name+' 삭제됨'+(uses.length?` · ${uses.length}곳의 참조 제거 (저장 필요)`:''), 'ok');
 });
 $('#uploader').onchange=e=>doUpload(e);
 async function doUpload(e,after){
