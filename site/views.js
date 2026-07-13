@@ -1,5 +1,5 @@
-/* LSE GALLERY — Surf (3D card deck), Index (collage grid), About.
-   Surf: sine-bobbing deck with a rotateY tilt. Index: smooth-scrolled 12-column grid
+/* LSE GALLERY — Flow (3D card deck), Index (collage grid), About.
+   Flow: sine-bobbing deck with a rotateY tilt. Index: smooth-scrolled 12-column grid
    whose rows tilt with the scroll velocity. About: curtain page with line reveals. */
 (() => {
 'use strict';
@@ -55,21 +55,21 @@ function yearsByMonth(slides) {
   return out;
 }
 
-/* ---------------- SURF: floating card deck ---------------- */
-function mountSurf(view, slides, aspects, onOpen) {
-  const wrap = el('div', 'surf');
-  const inner = el('div', 'surf__inner');
-  const deck = el('div', 'surf__deck');
+/* ---------------- FLOW: floating card deck ---------------- */
+function mountFlow(view, slides, aspects, onOpen) {
+  const wrap = el('div', 'flow');
+  const inner = el('div', 'flow__inner');
+  const deck = el('div', 'flow__deck');
   inner.appendChild(deck);
   wrap.appendChild(inner);
-  const hoverLbl = el('div', 'surf__label label');
+  const hoverLbl = el('div', 'flow__label label');
   wrap.appendChild(hoverLbl);
   view.appendChild(wrap);
 
   const items = slides.map((s, i) => {
-    const it = el('article', 'surf-item lse-card');
-    const media = el('div', 'surf-item__media');
-    const box = el('div', 'surf-item__box lse-slot');
+    const it = el('article', 'flow-item lse-card');
+    const media = el('div', 'flow-item__media');
+    const box = el('div', 'flow-item__box lse-slot');
     box.dataset.id = s.id || '';
     const name = String(s.image || '').split('/').pop();
     box.style.aspectRatio = String(aspects[name] || 1);
@@ -87,7 +87,7 @@ function mountSurf(view, slides, aspects, onOpen) {
     /* the painting slides 75% aside on hover — out from under the cursor. This layer stays
        put over the card's spot, so the hover (and the click) has something stable
        to land on instead of flickering onto whichever neighbour moves in underneath. */
-    it.appendChild(el('div', 'surf-item__hit'));
+    it.appendChild(el('div', 'flow-item__hit'));
     it.addEventListener('mouseenter', () => {
       hoverLbl.textContent = '(' + (i + 1) + ') ' + [category(s), month(s)].filter(Boolean).join(' / ');
       hoverLbl.classList.add('is-on');
@@ -201,7 +201,7 @@ function mountSurf(view, slides, aspects, onOpen) {
   });
   raf = requestAnimationFrame(frame);
 
-  /* : the deck angle only eases in once the transition says so (surf-unfreeze) */
+  /* : the deck angle only eases in once the transition says so (flow-unfreeze) */
   let unfrozen = false;
   function unfreeze() {
     if (unfrozen) return;
@@ -500,5 +500,5 @@ function mountAbout(view, content) {
   return sc;
 }
 
-window.LSEViews = { mountSurf, mountIndex, mountAbout };
+window.LSEViews = { mountFlow, mountIndex, mountAbout };
 })();

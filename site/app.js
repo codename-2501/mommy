@@ -12,7 +12,7 @@ let entered = false;          // intro gate passed this page-load
 let carousel = null;          // active carousel instance
 let pendingFlip = null;       // clicked painting rect/src for the detail FLIP
 let flipSources = [];         // home media hidden while their ghosts are in the detail
-let activeView = null;        // surf/index/about instance (destroy on route change)
+let activeView = null;        // flow/index/about instance (destroy on route change)
 let lastViewPath = '/';       // where the detail Close returns to
 let viewEl = null;            // the view that is CURRENT — never the one on its way out
 let leaving = null;           // {el, inst, car, timers} still animating out
@@ -23,7 +23,7 @@ let menuEl = null;            // persistent menu
 /* menu icons — Noun Project, CC BY 3.0 (credits inside each SVG file) */
 const MENU = [
   { href: '/',         icon: '/icons/timeline.svg', key: 'timeline', title: 'Timeline' },
-  { href: '/surf',     icon: '/icons/flow.svg',     key: 'flow',     title: 'Surf' },
+  { href: '/flow',     icon: '/icons/flow.svg',     key: 'flow',     title: 'Flow' },
   { href: '/articles', icon: '/icons/collage.svg',  key: 'collage',  title: 'Index' },
 ];
 const ABOUT = { href: '/about', icon: '/icons/profile.svg', key: 'profile', title: 'About' };
@@ -384,7 +384,7 @@ function renderStub(name) {
   return view;
 }
 
-/* surf/index/about — the persistent wordmark + menu stay; only the view swaps */
+/* flow/index/about — the persistent wordmark + menu stay; only the view swaps */
 function renderView(name, mount) {
   const frag = document.createDocumentFragment();
   const view = el('main', 'view view--' + name);
@@ -422,8 +422,8 @@ function renderView(name, mount) {
 function buildView(path) {
   const slides = content.slides || [];
   if (path === '/') return renderHome();
-  if (path === '/surf') {
-    return renderView('surf', (v, open) => window.LSEViews.mountSurf(v, slides, aspects, open));
+  if (path === '/flow') {
+    return renderView('flow', (v, open) => window.LSEViews.mountFlow(v, slides, aspects, open));
   }
   if (path === '/articles') {
     return renderView('articles', (v, open) => window.LSEViews.mountIndex(v, slides, aspects, open));
@@ -440,7 +440,7 @@ function buildView(path) {
    screen (the eye follows it); slots that merely arrive rise faster, and the page it left
    fades out well before either lands. */
 const FLIP = { dur: 900, stagger: 40 };                              // a painting in flight
-const RISE = { dur: 1100, stagger: 40, start: 220, fromSurf: 540 };  // slots arriving
+const RISE = { dur: 1100, stagger: 40, start: 220, fromFlow: 540 };  // slots arriving
 const FADE = 320;                                                    // the page leaving
 
 function nextFrame() {
@@ -481,7 +481,7 @@ function handOverIndex(fromPath, toArticles, oldCar, oldEl) {
 
 /* pair the leaving paintings with the incoming slots by work id. Only what the viewer can
    actually see takes part — plus the centred carousel slide, which may sit off screen. */
-function measureFlips(oldEl, newEl, fromSurf) {
+function measureFlips(oldEl, newEl, fromFlow) {
   const bind = (node) => ({ el: node, bounds: node.getBoundingClientRect() });
   const targetEls = [...newEl.querySelectorAll('.lse-slot')];
   const flipEls = oldEl ? [...oldEl.querySelectorAll('.lse-frame')] : [];
@@ -502,14 +502,14 @@ function measureFlips(oldEl, newEl, fromSurf) {
   ids = new Set(toFlips.map((t) => t.el.dataset.id));
   const paired = new Set(toFlips.map((t) => t.el));
   const rest = targetEls.filter((node) => !paired.has(node)).map(bind);
-  /* leaving surf nothing flips (the paintings fly out instead) — every slot rises, top row first */
-  const targets = fromSurf
+  /* leaving flow nothing flips (the paintings fly out instead) — every slot rises, top row first */
+  const targets = fromFlow
     ? [...toFlips, ...rest].sort((a, b) => (Math.abs(a.bounds.top - b.bounds.top) > 1
       ? a.bounds.top - b.bounds.top
       : a.bounds.left - b.bounds.left))
     : rest;
   return {
-    fromFlips: fromSurf ? seen : seen.filter((f) => ids.has(f.el.dataset.id)),
+    fromFlips: fromFlow ? seen : seen.filter((f) => ids.has(f.el.dataset.id)),
     toFlips,
     targets,
   };
@@ -564,13 +564,13 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
 }
 
 /* slots with no painting of their own coming in rise from below the fold */
-function prepareRise(targets, fromSurf, toSurf) {
-  const start = fromSurf ? RISE.fromSurf : RISE.start;
+function prepareRise(targets, fromFlow, toFlow) {
+  const start = fromFlow ? RISE.fromFlow : RISE.start;
   const risers = [];
   for (const t of targets) {
     const b = t.bounds;
     if (b.bottom < 0 || b.top > innerHeight || b.right < -100 || b.left > innerWidth + 100) continue;
-    const y = -((b.top - innerHeight) * (toSurf ? 1.25 : 1));
+    const y = -((b.top - innerHeight) * (toFlow ? 1.25 : 1));
     t.el.style.transition = 'none';
     t.el.style.transform = 'translate3d(0,' + y + 'px,0) scale(.9)';
     risers.push({ el: t.el, delay: start + (risers.length + 1) * RISE.stagger });
@@ -617,11 +617,11 @@ function freezeEntrance(viewNode) {
 
 function leave(oldEl, oldInst, oldCar, flags) {
   if (!oldEl) return;
-  const { fromSurf, fromAbout, toAbout } = flags;
+  const { fromFlow, fromAbout, toAbout } = flags;
   const done = () => { if (leaving && leaving.el === oldEl) finalizeLeaving(); };
   freezeEntrance(oldEl);
 
-  if (fromSurf && !toAbout && oldInst && oldInst.exit) {
+  if (fromFlow && !toAbout && oldInst && oldInst.exit) {
     leaving = { el: oldEl, inst: null, car: oldCar, timer: 0 };   // exit() already destroyed it
     oldInst.exit(done);                                  // the paintings fly out
     return;
@@ -634,18 +634,18 @@ function leave(oldEl, oldInst, oldCar, flags) {
     leaving = { el: oldEl, timer: setTimeout(done, 1050) };
     return;
   }
-  if (!fromSurf) oldEl.classList.add('is-exit');         // autoAlpha 0, .35s
-  leaving = { el: oldEl, timer: setTimeout(done, fromSurf ? 1050 : FADE + 50) };
+  if (!fromFlow) oldEl.classList.add('is-exit');         // autoAlpha 0, .35s
+  leaving = { el: oldEl, timer: setTimeout(done, fromFlow ? 1050 : FADE + 50) };
 }
 
 async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
   const flags = {
-    fromSurf: oldPath === '/surf',
+    fromFlow: oldPath === '/flow',
     fromAbout: oldPath === '/about',
-    toSurf: path === '/surf',
+    toFlow: path === '/flow',
     toAbout: path === '/about',
   };
-  const toCarousel = path === '/' || path === '/surf';   // the views that jump to an index
+  const toCarousel = path === '/' || path === '/flow';   // the views that jump to an index
 
   handOverIndex(oldPath, path === '/articles', oldCar, oldEl);
   if (oldCar) oldCar.freeze();          // hold the paintings still while they are measured
@@ -672,14 +672,14 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
     return;
   }
 
-  const { fromFlips, toFlips, targets } = measureFlips(oldEl, view, flags.fromSurf);
-  if (inst && inst.unfreeze) inst.unfreeze();           // surf: the deck angle eases in
+  const { fromFlips, toFlips, targets } = measureFlips(oldEl, view, flags.fromFlow);
+  if (inst && inst.unfreeze) inst.unfreeze();           // flow: the deck angle eases in
 
-  const skipFlip = flags.fromSurf && !flags.toAbout;    // surf leaves by flying its paintings out
+  const skipFlip = flags.fromFlow && !flags.toAbout;    // flow leaves by flying its paintings out
   const playFlip = fromFlips.length && !skipFlip
-    ? prepareFlip(fromFlips, toFlips, flags.toSurf)
+    ? prepareFlip(fromFlips, toFlips, flags.toFlow)
     : null;
-  const playRise = prepareRise(targets, flags.fromSurf, flags.toSurf);
+  const playRise = prepareRise(targets, flags.fromFlow, flags.toFlow);
 
   leave(oldEl, oldInst, oldCar, flags);
   view.classList.remove('is-pre');
@@ -830,7 +830,7 @@ addEventListener('resize', () => {
 Promise.all([loadContent(), loadAspects(), loadIcons()]).then(([c, a]) => {
   content = c;
   aspects = a;
-  /* the intro gate belongs to the timeline. Land straight on /surf, /articles, /about or a
+  /* the intro gate belongs to the timeline. Land straight on /flow, /articles, /about or a
      painting and there is no gate to pass — so the wordmark and menu must already be up. */
   if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') entered = true;
   const wm = wordmark();

@@ -475,33 +475,33 @@ html.is-resizing .wordmark{transition:none}
 .dt-strip--out *{pointer-events:none !important}
 .dt-strip--out .dt-media{transition:transform 1s var(--ease-travel)}
 
-/* ---------- SURF: floating card deck ---------- */
-.surf{position:fixed;inset:0;z-index:1;overflow:hidden;user-select:none;cursor:grab}
-.surf:active{cursor:grabbing}
-.surf__inner{position:relative;display:flex;align-items:center;height:100%}
-.surf__deck{
+/* ---------- FLOW: floating card deck ---------- */
+.flow{position:fixed;inset:0;z-index:1;overflow:hidden;user-select:none;cursor:grab}
+.flow:active{cursor:grabbing}
+.flow__inner{position:relative;display:flex;align-items:center;height:100%}
+.flow__deck{
   display:grid;place-items:end;min-width:20rem;max-width:20rem;
-  perspective:1000px;transform-style:preserve-3d;   /* .surf-carousel */
+  perspective:1000px;transform-style:preserve-3d;   /* .flow-carousel */
 }
-.surf__deck>*{grid-area:1/1}
+.flow__deck>*{grid-area:1/1}
 /* no will-change per card: a compositing layer for each of the 195 cards takes them out
    of the deck's 3D depth sorting, so a hovered card draws on the wrong side of its
    neighbours until something forces a restack */
-.surf-item{position:relative;cursor:pointer}
-.surf-item__media{position:relative}
+.flow-item{position:relative;cursor:pointer}
+.flow-item__media{position:relative}
 /* stable hover/click target: it covers the card's own spot and never moves */
-.surf-item__hit{position:absolute;inset:0}
+.flow-item__hit{position:absolute;inset:0}
 @media (hover:hover) and (pointer:fine){
-  .surf-item__media{transition:transform .75s var(--ease-rise)}
-  .surf-item:hover .surf-item__media{transform:translate(75%) rotate(10deg)}
+  .flow-item__media{transition:transform .75s var(--ease-rise)}
+  .flow-item:hover .flow-item__media{transform:translate(75%) rotate(10deg)}
 }
-.surf-item__box{width:20rem}
-.surf-item__box img{width:100%;height:100%;object-fit:cover;pointer-events:none}
-.surf__label{
+.flow-item__box{width:20rem}
+.flow-item__box img{width:100%;height:100%;object-fit:cover;pointer-events:none}
+.flow__label{
   position:fixed;right:2rem;bottom:1.8rem;z-index:3;text-align:right;
   opacity:0;transition:opacity .25s ease;
 }
-.surf__label.is-on{opacity:1}
+.flow__label.is-on{opacity:1}
 
 /* ---------- INDEX: 12-per-row collage grid ---------- */
 /* the grid is moved by script, not by the browser: claim the vertical gesture or the
@@ -630,6 +630,9 @@ html.is-resizing .wordmark{transition:none}
 
 /* ---------- film-grain noise overlay) ---------- */
 .noise{position:fixed;inset:0;pointer-events:none;will-change:transform;z-index:9999;overflow:hidden}
+/* the grain is a texture over the paintings; About is type on a flat panel, where it only
+   reads as dirt on the screen. The overlay lives on <body>, so the active view turns it off. */
+body:has(.view--about) .noise{display:none}
 .noise::before{
   content:"";position:absolute;top:-10rem;left:-10rem;
   width:calc(100% + 20rem);height:calc(100% + 20rem);

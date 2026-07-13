@@ -163,10 +163,12 @@ def main():
          "'/thumbs/600/' + encodeURIComponent(file) + '.webp'"),
     ])
 
-    # SPA shell: admin_server served site/index.html for /, /surf, /articles,
+    # SPA shell: admin_server served site/index.html for /, /flow, /articles,
     # /about and /p/<id>. Static hosts serve real files first, so a catch-all is
     # safe and keeps deep links and refreshes working.
     with open(os.path.join(DIST, "_redirects"), "w", encoding="utf-8") as fh:
+        for old, new in admin_server.LEGACY_ROUTES.items():   # renamed routes, old links alive
+            fh.write(f"{old}  {new}  301\n")
         fh.write("/*  /index.html  200\n")
 
     total = sum(
