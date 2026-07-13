@@ -301,7 +301,7 @@ html.is-resizing .wordmark{transition:none}
 .menu .ic{width:2.8rem;height:2.8rem;min-width:22px;min-height:22px;display:block;fill:currentColor}
 .menu .ic *{fill:currentColor}
 .ic--timeline{transform:scale(.90)}
-.ic--flow{transform:scale(.94)}
+.ic--flow{transform:scale(.84)}
 .ic--collage{transform:scale(1.08)}
 .ic--profile{transform:scale(.90)}
 .menu__txt{display:none}
@@ -344,6 +344,10 @@ html.is-resizing .wordmark{transition:none}
 }
 .dt-head button{font-size:min(1.6rem,16px)}
 .dt-head button:hover{opacity:.6}
+/* the phone already carries a Close in the bottom controls — two of them is one too many.
+   The desktop keeps this one: there the bottom bar is hidden and only the strip and Esc are
+   left, neither of which announces itself. */
+@media (max-width:699px){.dt-head button{display:none}}
 
 .dt-content{padding:13rem 11rem 6rem}
 @media (max-width:699px){.dt-content{padding:8rem 2rem 6rem}}
@@ -415,7 +419,7 @@ html.is-resizing .wordmark{transition:none}
 .dt-cur__media{transition:transform 1s var(--ease-travel)}
 /* leaving strip: labels fade; the images slide/fly at full opacity */
 .dt-strip--out .dt-reveal,
-.detail.is-off .dt-strip,.detail.is-off .dt-controls{
+.detail.is-off .dt-strip{
   opacity:0;transition:opacity .35s ease;
 }
 
@@ -442,6 +446,10 @@ html.is-resizing .wordmark{transition:none}
 /* controls fade in with the content */
 .dt-controls{opacity:0;transition:opacity .35s ease .3s}
 .detail.is-rev .dt-controls{opacity:1}
+/* …and out on close. This must follow the .is-rev rule: both weigh the same, so the earlier
+   one loses and the controls used to sit at full opacity until the panel was ripped out —
+   the one piece of the detail that left with no exit at all. No delay: it leads the exit. */
+.detail.is-off .dt-controls{opacity:0;transition:opacity .35s ease}
 
 /* mobile detail: no strip, full-width panel, bottom controls */
 @media (max-width:699px){
