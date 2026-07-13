@@ -407,19 +407,37 @@ function aboutBlock(b) {
     return fig;
   }
 
-  /* a CV block: 연월 + 내용. Awards, shows and schooling are all this same shape, so one
-     block covers them — the section's name is whatever 제목 block sits above it. */
+  /* a CV block, the shape a painter's profile actually has: a group (초대 개인전, 수상, 現…)
+     naming a column of entries, each entry a line of its own — the work, then the year and
+     the place set quietly beside it.
+
+     The first version of this block had one date column and one text column, which could not
+     say which group an entry belonged to. Those entries still read: an old {date, text} pair
+     becomes {text, note} — the date was always the quiet half. */
   if (b.type === 'list') {
-    const items = (b.items || []).filter((it) => it && ((it.date || '').trim() || (it.text || '').trim()));
-    if (!items.length) return null;
-    const dl = el('dl', 'about__cv about__fade');
+    const items = (b.items || [])
+      .map((it) => ({
+        text: String((it && (it.text ?? '')) || '').trim(),
+        note: String((it && (it.note ?? it.date ?? '')) || '').trim(),
+      }))
+      .filter((it) => it.text || it.note);
+    const label = (b.label || '').trim();
+    if (!items.length && !label) return null;
+
+    const group = el('div', 'about__cv about__fade');
+    const head = el('div', 'about__cv-label label');
+    if (label) head.textContent = label;
+    group.appendChild(head);
+
+    const list = el('div', 'about__cv-items');
     items.forEach((it) => {
       const row = el('div', 'about__cv-row');
-      row.appendChild(el('dt', null, (it.date || '').trim()));
-      row.appendChild(el('dd', null, (it.text || '').trim()));
-      dl.appendChild(row);
+      if (it.text) row.appendChild(el('span', 'about__cv-t', it.text));
+      if (it.note) row.appendChild(el('span', 'about__cv-n', it.note));
+      list.appendChild(row);
     });
-    return dl;
+    group.appendChild(list);
+    return group;
   }
 
   if (!text) return null;   // an empty block leaves no gap behind
