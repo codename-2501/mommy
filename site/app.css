@@ -597,10 +597,10 @@ html.is-resizing .wordmark{transition:none}
    42px of overlap on a desktop. The lines need room for the tallest thing that can sit in
    them, and that is 한글. */
 .about__title{
-  font-size:min(11.7rem,117px);font-weight:700;line-height:1.1;
+  font-size:calc(min(11.7rem,117px) * var(--sz,1));font-weight:700;line-height:1.1;
   text-transform:uppercase;text-align:center;margin:-10rem 0 22.5rem;
 }
-@media (max-width:699px){.about__title{font-size:3.6rem;margin:-2.5rem 0 15rem}}
+@media (max-width:699px){.about__title{font-size:calc(3.6rem * var(--sz,1));margin:-2.5rem 0 15rem}}
 .about__line{overflow:hidden}
 .about__line-in{
   display:block;transform:translateY(105%);
@@ -617,10 +617,10 @@ html.is-resizing .wordmark{transition:none}
    wraps onto many lines, ran into itself: 앉은 sat on 습니다. The lines get room for the
    tallest thing they can hold. */
 .about__intro{
-  font-size:min(4rem,40px);font-weight:700;line-height:1.35;text-transform:uppercase;
+  font-size:calc(min(4rem,40px) * var(--sz,1));font-weight:700;line-height:1.35;text-transform:uppercase;
   max-width:110rem;margin:0 auto 28.5rem;display:flex;flex-direction:column;gap:6rem;
 }
-@media (max-width:699px){.about__intro{font-size:2.8rem;margin-bottom:15rem}}
+@media (max-width:699px){.about__intro{font-size:calc(2.8rem * var(--sz,1));margin-bottom:15rem}}
 /* an image block: it shares the copy's column so pictures and paragraphs line up, and it
    carries the same bottom margin as a text block so any block order keeps one rhythm.
    Each picture keeps its own aspect ratio rather than being cropped to a fixed cell. */
@@ -672,6 +672,11 @@ html.is-resizing .wordmark{transition:none}
 }
 /* a copy block's alignment, set in the admin. These sit after .about__title's own centring so
    they can override it — until now the title was centred and nothing else could be moved. */
+/* size is a multiple of what the block already was, never a fixed px: the page is drawn on a
+   scale that tracks the viewport, and a hard size would opt one block out of it. */
+.about__sz--sm{--sz:.72}
+.about__sz--md{--sz:1}
+.about__sz--lg{--sz:1.4}
 .about__al--left{text-align:left}
 .about__al--center{text-align:center}
 .about__al--right{text-align:right}
@@ -683,10 +688,10 @@ html.is-resizing .wordmark{transition:none}
 /* month labels on the grid use the shared reveal mask */
 .view--articles.is-in .dt-reveal>*{transform:translateY(0)}
 .about__thanks{
-  font-size:min(11.7rem,117px);font-weight:700;line-height:1.1;text-transform:uppercase;
+  font-size:calc(min(11.7rem,117px) * var(--sz,1));font-weight:700;line-height:1.1;text-transform:uppercase;
   margin-bottom:5rem;
 }
-@media (max-width:699px){.about__thanks{font-size:3.6rem}}
+@media (max-width:699px){.about__thanks{font-size:calc(3.6rem * var(--sz,1))}}
 .about__thanks div:nth-child(even){text-align:right}
 .about__credits{opacity:.5;padding-bottom:6rem;display:flex;flex-direction:column;gap:.6rem}
 

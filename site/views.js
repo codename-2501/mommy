@@ -446,7 +446,12 @@ function aboutBlock(b) {
      drawn: the title centred over the page, the body and the sign-off ranged left. */
   const ALIGN_DEFAULT = { title: 'center', text: 'left', thanks: 'left' };
   const al = ['left', 'center', 'right'].includes(b.align) ? b.align : ALIGN_DEFAULT[b.type];
-  const aligned = (node) => { node.classList.add('about__al--' + al); return node; };
+  /* size is a multiple of the block's own size, so the page's scale still holds */
+  const sz = ['sm', 'md', 'lg'].includes(b.size) ? b.size : 'md';
+  const aligned = (node) => {
+    node.classList.add('about__al--' + al, 'about__sz--' + sz);
+    return node;
+  };
 
   if (b.type === 'title') {
     const h1 = el('h1', 'about__title');
