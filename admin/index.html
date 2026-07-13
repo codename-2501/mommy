@@ -729,17 +729,22 @@ function renderBlocks(){
          </div>`;
     } else if(b.type==='list'){
       const items=Array.isArray(b.items)?b.items:(b.items=[]);
+      /* 옛 항목은 {date,text} 였다 — 날짜는 늘 조용한 쪽이었으므로 note 로 읽는다 */
+      const noteOf=(it)=> it.note!=null ? it.note : (it.date||'');
       const rows=items.map((it,j)=>`
         <div class="cv-row">
-          <input class="cv-date" data-li="${i}" data-lj="${j}" data-lk="date" value="${escAttr(it.date||'')}"
-                 placeholder="2025.03">
           <input class="cv-text" data-li="${i}" data-lj="${j}" data-lk="text" value="${escAttr(it.text||'')}"
-                 placeholder="내용 (예: ○○공모전 입선 / 개인전 ○○)">
+                 placeholder="항목 (예: 프랑스 루브르 아트페어)">
+          <input class="cv-date" data-li="${i}" data-lj="${j}" data-lk="note" value="${escAttr(noteOf(it))}"
+                 placeholder="2024.10, 루브르박물관" style="flex:1 1 min(190px,100%)">
           <button class="btn ghost btn sm" data-lup="${i}" data-lj="${j}" ${j===0?'disabled':''}>↑</button>
           <button class="btn ghost btn sm" data-ldown="${i}" data-lj="${j}" ${j===items.length-1?'disabled':''}>↓</button>
           <button class="btn ghost btn sm" data-ldel="${i}" data-lj="${j}">×</button>
         </div>`).join('');
       body=`<div class="blk__body" style="display:flex;flex-direction:column;gap:8px">
+              <input class="cv-text" data-label="${i}" value="${escAttr(b.label||'')}"
+                     placeholder="그룹명 (예: 초대 개인전 / 개인전 / 단체전 / 수상 / 現 / 前)"
+                     style="font-weight:600">
               ${rows||'<div style="font-size:12px;color:var(--mut)">항목이 없습니다. 아래에서 추가하세요.</div>'}
               <div><button class="btn ghost btn sm" data-ladd="${i}">+ 항목 추가</button></div>
             </div>`;
@@ -787,13 +792,19 @@ function addAboutImage(src){ pageBlocks().push({type:'image',src:src,caption:''}
 $$('[data-add]').forEach(btn=>btn.onclick=()=>{
   const t=btn.dataset.add;
   if(t==='image'){ pickMode='about'; openPicker(); return; }
-  if(t==='list'){ pageBlocks().push({type:'list',items:[{date:'',text:''}]}); renderBlocks(); dirty(); return; }
+  if(t==='list'){ pageBlocks().push({type:'list',label:'',items:[{text:'',note:''}]}); renderBlocks(); dirty(); return; }
   pageBlocks().push({type:t,text:''}); renderBlocks(); dirty();
 });
 $('#blockList').addEventListener('input',e=>{
   const t=e.target, list=pageBlocks();
-  if(t.dataset.li!=null){                       // 이력 항목의 연월/내용
-    list[+t.dataset.li].items[+t.dataset.lj][t.dataset.lk]=t.value; dirty();
+  if(t.dataset.li!=null){                       // 이력 항목의 제목/부가정보
+    const it=list[+t.dataset.li].items[+t.dataset.lj];
+    it[t.dataset.lk]=t.value;
+    if(t.dataset.lk==='note') delete it.date;    // 옛 필드는 note 로 흡수된다
+    dirty();
+  }
+  else if(t.dataset.label!=null){                // 이력 그룹명
+    list[+t.dataset.label].label=t.value; dirty();
   }
   else if(t.dataset.text!=null){ list[+t.dataset.text].text=t.value; dirty(); }
   else if(t.dataset.cap!=null){ list[+t.dataset.cap].caption=t.value; dirty(); }
@@ -813,7 +824,7 @@ $('#blockList').addEventListener('click',e=>{
   const li=b.dataset.ladd ?? b.dataset.ldel ?? b.dataset.lup ?? b.dataset.ldown;
   if(li!=null){
     const items=list[+li].items, j=+b.dataset.lj;
-    if(b.dataset.ladd!=null) items.push({date:'',text:''});
+    if(b.dataset.ladd!=null) items.push({text:'',note:''});
     else if(b.dataset.ldel!=null) items.splice(j,1);
     else if(b.dataset.lup!=null) swap(items,j,j-1);
     else if(b.dataset.ldown!=null) swap(items,j,j+1);
@@ -839,8 +850,8 @@ $('#save').onclick=async()=>{
       const filled=b=>{
         if(b.type==='image') return !!b.src;
         if(b.type==='list'){
-          b.items=(b.items||[]).filter(it=>(it.date||'').trim()||(it.text||'').trim());
-          return b.items.length>0;
+          b.items=(b.items||[]).filter(it=>(it.text||'').trim()||(it.note||'').trim()||(it.date||'').trim());
+          return b.items.length>0 || (b.label||'').trim().length>0;
         }
         return (b.text||'').trim();
       };

@@ -624,24 +624,30 @@ html.is-resizing .wordmark{transition:none}
 /* an image block: it shares the copy's column so pictures and paragraphs line up, and it
    carries the same bottom margin as a text block so any block order keeps one rhythm.
    Each picture keeps its own aspect ratio rather than being cropped to a fixed cell. */
-/* CV rows: the year column is fixed so the entries line up as a column of dates, and the
-   text wraps in its own. On a phone there is no room for two columns — the date sits above. */
+/* A CV group as a painter's profile has it: the group's name (초대 개인전, 수상, 現…) stands
+   in its own column, right-aligned against the entries it heads, and each entry is the work
+   followed by the year and the place, set quiet and small beside it. On a phone there is no
+   second column to give: the group's name sits above its entries. */
 .about__cv{
-  max-width:110rem;margin:0 auto 28.5rem;
-  display:flex;flex-direction:column;gap:2.4rem;
+  max-width:110rem;margin:0 auto 12rem;
+  display:grid;grid-template-columns:16rem 1fr;gap:0 3rem;align-items:start;
 }
+.about__cv-label{
+  text-align:right;opacity:.75;padding-top:.5rem;white-space:nowrap;
+}
+.about__cv-items{display:flex;flex-direction:column;gap:1.4rem}
 .about__cv-row{
-  display:grid;grid-template-columns:16rem 1fr;gap:2rem;align-items:baseline;
-  padding-bottom:2.4rem;border-bottom:1px solid rgba(255,255,255,.14);
+  display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap;
 }
-.about__cv-row:last-child{border-bottom:0;padding-bottom:0}
-.about__cv dt{font-size:min(1.8rem,18px);opacity:.55;white-space:nowrap}
-.about__cv dd{margin:0;font-size:min(2.4rem,24px);line-height:1.45}
+.about__cv-t{font-size:min(2.4rem,24px);line-height:1.45}
+.about__cv-n{font-size:min(1.6rem,16px);opacity:.55;line-height:1.45}
 @media (max-width:699px){
-  .about__cv{margin-bottom:15rem;gap:2rem}
-  .about__cv-row{grid-template-columns:1fr;gap:.6rem;padding-bottom:2rem}
-  .about__cv dt{font-size:1.4rem}
-  .about__cv dd{font-size:1.8rem}
+  .about__cv{
+    grid-template-columns:1fr;gap:.8rem;margin-bottom:8rem;
+  }
+  .about__cv-label{text-align:left;padding-top:0}
+  .about__cv-t{font-size:1.9rem}
+  .about__cv-n{font-size:1.4rem}
 }
 .about__fig{
   max-width:110rem;margin:0 auto 28.5rem;
