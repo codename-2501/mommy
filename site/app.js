@@ -54,7 +54,12 @@ async function loadContent() {
     const r = await fetch('/api/content');
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const c = await r.json();
-    c.slides = byDateDesc(c.slides);
+    /* Two ways to order the archive, and the admin picks which (meta.order):
+         date   — newest first, and the date field is the only thing that moves a work
+         manual — the order the admin dragged the slides into; the date is then just a label
+       Sorting here regardless would have made the manual order a lie: the admin would show
+       one sequence and the site another. */
+    if ((c.meta || {}).order !== 'manual') c.slides = byDateDesc(c.slides);
     return c;
   } catch (err) {
     console.error('content load failed:', err);
