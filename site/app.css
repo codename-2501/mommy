@@ -617,9 +617,9 @@ html.is-resizing .wordmark{transition:none}
    them, and that is 한글. */
 .about__title{
   font-size:calc(min(11.7rem,117px) * var(--sz,1));font-weight:700;line-height:1.1;
-  text-transform:uppercase;text-align:center;margin:-10rem 0 calc(22.5rem * var(--gap,1));
+  text-transform:uppercase;text-align:center;margin:0 0 calc(22.5rem * var(--gap,1));
 }
-@media (max-width:699px){.about__title{font-size:calc(3.6rem * var(--sz,1));margin:-2.5rem 0 15rem}}
+@media (max-width:699px){.about__title{font-size:calc(3.6rem * var(--sz,1));margin-bottom:calc(15rem * var(--gap,1))}}
 .about__line{overflow:hidden}
 .about__line-in{
   display:block;transform:translateY(105%);
@@ -694,10 +694,18 @@ html.is-resizing .wordmark{transition:none}
 /* size is a multiple of what the block already was, never a fixed px: the page is drawn on a
    scale that tracks the viewport, and a hard size would opt one block out of it. */
 /* the gap under a block, as a multiple of the gap it already had — same reason as the size:
-   a fixed px would step outside the page's scale */
-.about__gap--sm{--gap:.5}
+   a fixed px would step outside the page's scale. The steps run wide: a CV group's own gap is
+   only 12rem, so a half-and-a-half range moved it by a few dozen pixels and read as nothing. */
+/* the title used to pull itself up by 10rem, which quietly ate the gap the block above it had
+   been given: a 274px setting drew as 178px. Only the title that opens the page — the one right
+   after the head — still does that; anywhere else a title honours the space above it. */
+.about__head + .about__title{margin-top:-10rem}
+@media (max-width:699px){.about__head + .about__title{margin-top:-2.5rem}}
+.about__gap--none{--gap:0}
+.about__gap--sm{--gap:.35}
 .about__gap--md{--gap:1}
-.about__gap--lg{--gap:1.6}
+.about__gap--lg{--gap:2}
+.about__gap--xl{--gap:3.2}
 .about__sz--sm{--sz:.72}
 .about__sz--md{--sz:1}
 .about__sz--lg{--sz:1.4}
