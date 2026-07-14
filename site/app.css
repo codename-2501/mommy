@@ -311,21 +311,18 @@ html.is-resizing .wordmark{transition:none}
   color:#111;
   --btn:4.4rem;                  /* one size drives the chip and the mark inside it */
 }
-/* the drop and its trail, drawn through the gooey filter: they sit over the white capsule and
-   under the marks, so an icon is never hidden by the thing that is meant to be behind it */
-.menu__goo{
+/* the drop: over the white capsule, under the marks, so an icon is never hidden by the thing
+   that is meant to be behind it */
+.menu__drop{
   position:absolute;inset:0;z-index:1;pointer-events:none;
-  filter:url(#menu-goo);
   transition:opacity .3s ease;
 }
-.menu__goo.is-off{opacity:0}       /* a detail view is open: nothing here is current */
+.menu__drop.is-off{opacity:0}       /* a detail view is open: nothing here is current */
 .menu__blob{
   position:absolute;left:0;top:0;width:var(--btn);height:var(--btn);
   border-radius:50%;background:#111;transform-origin:50% 50%;
   will-change:transform;
 }
-.menu__blob--trail{opacity:.92}
-.menu__filter{position:absolute;width:0;height:0;overflow:hidden}
 .menu.is-in{transform:translate(-50%,0);opacity:1}
 /* no z-index here. Giving the capsule one made it a stacking context, and its buttons — set
    above the drop — were sealed inside it, so the whole capsule sank under the drop and the
