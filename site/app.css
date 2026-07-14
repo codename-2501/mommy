@@ -21,12 +21,21 @@
    - curtain: a panel that has to *start* slowly (it is large) and then get out of the way. */
 :root{
   --size:1500;                                  /* the desktop mock's width */
+  /* How big the reading copy on About is set, per device — and it cannot be one number.
+     A phone is held at arm's length and a monitor sits twice as far away, so type that reads
+     well in the hand is small on a desk at the same proportion. The layout scales with the
+     viewport; how close the reader's eye is does not, and that is what this carries. */
+  --at:1.4;
   --ease-travel:cubic-bezier(.2,.92,.24,1);
   --ease-rise:cubic-bezier(.19,1,.22,1);
   --ease-reveal:cubic-bezier(.24,.94,.32,1);
   --ease-curtain:cubic-bezier(.62,.02,.2,1);
 }
-@media (max-width:699px){:root{--size:390}}     /* …and the phone's */
+/* There was no tablet: 700–1199px was handed the desktop drawing and shrunk to fit it, so at
+   820px the whole page ran at 55% and a CV date came out 8.7px — technically proportional,
+   and unreadable. A tablet is its own width, and now it is drawn at its own. */
+@media (min-width:700px) and (max-width:1199px){:root{--size:1024;--at:1.15}}
+@media (max-width:699px){:root{--size:390;--at:1}}     /* …and the phone's */
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{
@@ -658,10 +667,10 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
    wraps onto many lines, ran into itself: 앉은 sat on 습니다. The lines get room for the
    tallest thing they can hold. */
 .about__intro{
-  font-size:calc(4rem * var(--sz,1));font-weight:700;line-height:1.35;text-transform:uppercase;
+  font-size:calc(4rem * var(--sz,1) * var(--at,1));font-weight:700;line-height:1.35;text-transform:uppercase;
   max-width:110rem;margin:0 auto calc(28.5rem * var(--gap,1));display:flex;flex-direction:column;gap:6rem;
 }
-@media (max-width:699px){.about__intro{font-size:calc(2.8rem * var(--sz,1));margin-bottom:calc(15rem * var(--gap,1))}}
+@media (max-width:699px){.about__intro{font-size:calc(2.8rem * var(--sz,1) * var(--at,1));margin-bottom:calc(15rem * var(--gap,1))}}
 /* an image block: it shares the copy's column so pictures and paragraphs line up, and it
    carries the same bottom margin as a text block so any block order keeps one rhythm.
    Each picture keeps its own aspect ratio rather than being cropped to a fixed cell. */
@@ -671,11 +680,13 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
    second column to give: the group's name sits above its entries. */
 .about__cv{
   max-width:110rem;margin:0 auto calc(12rem * var(--gap,1));
-  display:grid;grid-template-columns:16rem 1fr;gap:0 3rem;align-items:start;
+  /* the group's column widens with the type it holds — a name set larger in a column that
+     stayed put is a name broken across four lines */
+  display:grid;grid-template-columns:calc(16rem * var(--at,1)) 1fr;gap:0 3rem;align-items:start;
 }
 .about__cv-label{
   text-align:right;opacity:.75;padding-top:.5rem;white-space:nowrap;
-  font-size:calc(1.4rem * var(--sz-label,1));
+  font-size:calc(1.4rem * var(--sz-label,1) * var(--at,1));
 }
 .about__cv-items{display:flex;flex-direction:column;gap:1.4rem}
 .about__cv-row{
@@ -686,13 +697,13 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
    size control, so the pair keeps its proportion whatever size the group is set to. */
 .about__cv-main{display:flex;flex-direction:column;gap:.2rem;min-width:0}
 .about__cv-meta{display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap}
-.about__cv-t{font-size:calc(2.4rem * var(--sz-t,1));line-height:1.45}
-.about__cv-en{font-size:calc(1.6rem * var(--sz-t,1));opacity:.5;line-height:1.35}
+.about__cv-t{font-size:calc(2.4rem * var(--sz-t,1) * var(--at,1));line-height:1.45}
+.about__cv-en{font-size:calc(1.6rem * var(--sz-t,1) * var(--at,1));opacity:.5;line-height:1.35}
 .about__cv-label-ko{line-height:1.3}
 .about__cv-label-en{opacity:.55;font-size:.85em;line-height:1.3}
-.about__cv-d{font-size:calc(1.6rem * var(--sz-n,1));opacity:.75;line-height:1.45;
+.about__cv-d{font-size:calc(1.6rem * var(--sz-n,1) * var(--at,1));opacity:.75;line-height:1.45;
   font-family:mono,ui-monospace,monospace;white-space:nowrap}
-.about__cv-n{font-size:calc(1.6rem * var(--sz-n,1));opacity:.5;line-height:1.45}
+.about__cv-n{font-size:calc(1.6rem * var(--sz-n,1) * var(--at,1));opacity:.5;line-height:1.45}
 /* the group's alignment moves its entries within their column. The group's name keeps its own
    side of the gutter — it is the spine the entries hang from, and swinging it about would
    just break the column. */
@@ -715,8 +726,8 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
   /* the entry stacks: its name, its English, then the year and the place on one line under */
   .about__cv-row{flex-direction:column;align-items:stretch;gap:.4rem}
   .about__cv-meta{gap:.8rem}
-  .about__cv-t{font-size:calc(1.9rem * var(--sz-t,1))}
-  .about__cv-d,.about__cv-n{font-size:calc(1.4rem * var(--sz-n,1))}
+  .about__cv-t{font-size:calc(1.9rem * var(--sz-t,1) * var(--at,1))}
+  .about__cv-d,.about__cv-n{font-size:calc(1.4rem * var(--sz-n,1) * var(--at,1))}
 }
 .about__fig{
   max-width:110rem;margin:0 auto calc(28.5rem * var(--gap,1));
