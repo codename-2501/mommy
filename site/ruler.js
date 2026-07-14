@@ -16,6 +16,7 @@
 const TICKS_PER_SLIDE = 8;      // ruler resolution: ticks between one painting and the next
 const TICK_GAP = 12;            // px between ruler ticks
 const TICK_MH = 11, TICK_MJH = 24, TICK_ALPHA = 0.22;   // minor / month tick, resting opacity
+const LIVE_ALPHA = 0.62;        // the ticks of the month you are standing in
 const HOVER_NEAR = 9 * TICK_GAP, HOVER_BOOST = 20, HOVER_FALL = 0.5;   // cursor swells the ruler
 const CENTER_H = 50;            // how tall the tick under the centre line stands
 
@@ -32,6 +33,10 @@ const CENTER_H = 50;            // how tall the tick under the centre line stand
    sit beside its neighbours to say anything, and a tick needs room to be read as eight. */
 const WORK_W = { ticks: TICKS_PER_SLIDE * TICK_GAP, colors: 34, bars: 44, dots: 30 };
 const MODES = Object.keys(WORK_W);
+
+function rootPx() {
+  return parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
+}
 
 function el(tag, cls) {
   const n = document.createElement(tag);
@@ -78,6 +83,12 @@ function create(view, slides, opts) {
   const groups = monthGroups(slides, monthOf);
   for (const g of groups) majors[g.startSlide * TICKS_PER_SLIDE] = 1;
   const maxMonth = groups.reduce((m, g) => Math.max(m, g.slides), 1);
+  /* which month each work belongs to — the ruler needs to know not just where a month begins
+     but everything that is inside it */
+  const groupOf = new Int32Array(slides.length);
+  groups.forEach((g, gi) => {
+    for (let i = g.startSlide; i < g.startSlide + g.slides; i++) groupOf[i] = gi;
+  });
   /* the colour of a work, kept as it is looked up often and never changes */
   const tone = slides.map((s) => colors[String(s.image || '').split('/').pop()] || '#c9c9c9');
   /* how full the month each work belongs to was — the bars are drawn per work, so the work
@@ -94,29 +105,50 @@ function create(view, slides, opts) {
      and the names collide into each other — FEBRUARY 2026 printed through JUNE 2026. Where a
      month has not earned the room to be named, it goes unnamed: the ticks below it still say
      it is there. */
-  const MIN_LABEL_PX = 118;
+  /* A month is written where it begins, and a month is as wide as the number of paintings in
+     it: June 2026 holds one, so its name and March's start 96px apart while the words themselves
+     want 110. Short months collide — that is not a bug in the layout, it is what the archive is.
+
+     How wide a word actually is depends on the screen: the labels are set in rem, so the same
+     name is 110px on a 1500px display and nearly 190px on a 2560px one. A constant threshold
+     would be right at one width and wrong at every other. Nothing is assumed: the names are
+     laid out, measured as the browser actually drew them, and given a second line above when
+     they will not fit beside the one before. Re-measured whenever the page is resized, since
+     that is when the type changes size. */
+  const LABEL_PAD = 10;              // breathing room between two names, in the drawn scale
+
   function buildLabels() {
     labelTrack.replaceChildren();
     labelTrack.style.width = (rulerHalf * 2) + 'px';
-    let lastX = -Infinity;
+    const made = [];
     for (let copy = 0; copy < 2; copy++) {
       for (const g of groups) {
         if (!g.text) continue;
         const at = copy * rulerHalf + g.startSlide * workW;
-        if (at - lastX < MIN_LABEL_PX) continue;
-        lastX = at;
         const l = el('span', 'ruler__label label');
         l.textContent = g.text;
         const d = String(slides[g.startSlide].date || '');
         const y = /^(\d{4})/.exec(d);
         l.dataset.year = (y && y[1]) || years[g.text] || '2026';
-        l.style.left = (copy * rulerHalf + g.startSlide * workW) + 'px';
+        l.style.left = at + 'px';
+        l.dataset.g = String(groups.indexOf(g));
         labelTrack.appendChild(l);
+        made.push({ el: l, at });
       }
+    }
+    /* one read of the layout for all of them, after they are all in the document */
+    const pad = LABEL_PAD * (rootPx() / 10);
+    const rowEnd = [-Infinity, -Infinity];
+    for (const m of made) {
+      const w = m.el.offsetWidth;                 // as the browser drew it, at this size
+      const row = m.at >= rowEnd[0] + pad ? 0 : (m.at >= rowEnd[1] + pad ? 1 : 0);
+      rowEnd[row] = m.at + w;
+      m.el.classList.toggle('is-up', row === 1);  // a line of its own, above the row
     }
   }
 
   /* ---------- the ticks, drawn on a canvas ---------- */
+  let litGroup = -1;             // the month whose name is lit
   let ctx = null, cw = 0, ch = 0, dpr = 1;
   let heights = new Float32Array(0);
   let baseIdx = null;
@@ -133,6 +165,7 @@ function create(view, slides, opts) {
     ctx.lineWidth = 1;
     heights = new Float32Array(Math.ceil(cw / TICK_GAP) + 4);
     buildLabels();
+    litGroup = -1;         // the labels are new: whatever was lit is gone with them
   }
 
   function fall(t) {                       // falloff: pow(1-t, 1/fall)
@@ -161,6 +194,12 @@ function create(view, slides, opts) {
     ctx.stroke();
   }
 
+  const n = slides.length;
+  const workOfTick = (t) => {
+    const w = Math.floor(t / TICKS_PER_SLIDE);
+    return ((w % n) + n) % n;
+  };
+
   function drawSticks(U, ratio) {
     if (!ctx || cw <= 0) return;
     ctx.clearRect(0, 0, cw, ch);
@@ -168,6 +207,12 @@ function create(view, slides, opts) {
     if (v < 0) v += TICK_GAP;
     const q = Math.floor((U - v) / TICK_GAP);
     const centerIdx = Math.round((U + cw * 0.5) / TICK_GAP);   // the tick under the centre line
+    /* the month you are standing in, and not just the work: every tick of it is inked, so the
+       month's name above has a body under it. Without this the ruler named the months but drew
+       them as one undifferentiated run of grey — the name floated over the boundary and said
+       nothing about which side of itself it owned. */
+    const liveGroup = groupOf[workOfTick(centerIdx)];
+    markLive(liveGroup);
     shiftHeights(q);
     const ease = 0.12 * ratio, easeC = 0.2 * ratio;
     for (let ox = -v, e = 0; ox <= cw + TICK_GAP; ox += TICK_GAP, e++) {
@@ -182,10 +227,10 @@ function create(view, slides, opts) {
       }
       heights[e] += (boost - heights[e]) * (t === centerIdx ? easeC : ease);
       const h = base + heights[e];
-      let alpha = TICK_ALPHA;
+      let alpha = groupOf[workOfTick(t)] === liveGroup ? LIVE_ALPHA : TICK_ALPHA;
       if (t === centerIdx) {
         const p = Math.max(0, Math.min(1, (h - base) / Math.max(1, CENTER_H - base)));
-        alpha = TICK_ALPHA + p * (1 - TICK_ALPHA);
+        alpha = alpha + p * (1 - alpha);
       }
       drawTick(ox, h, alpha);
     }
@@ -302,6 +347,15 @@ function create(view, slides, opts) {
     });
     ctx.globalAlpha = 1;
     centreLine();
+  }
+
+  /* the name of the month you are in is lit with its ticks — the two are one statement */
+  function markLive(gi) {
+    if (gi === litGroup) return;
+    litGroup = gi;
+    labelTrack.querySelectorAll('.ruler__label').forEach((l) => {
+      l.classList.toggle('is-live', +l.dataset.g === gi);
+    });
   }
 
   function onEnter() { hover = true; }
