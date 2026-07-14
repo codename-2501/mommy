@@ -284,13 +284,21 @@ _COLORS = None
 def image_colors():
     """{filename: "#rrggbb"} — one colour standing for each painting.
 
-    Read at a glance, the archive is a run of colours before it is a run of dates: the year the
-    flowers came, the winter of grey water. Averaging a whole picture would wash every one of
-    them to the same mud, so each is shrunk to 8x8 first and the most saturated of those 64
-    cells is taken — the colour the painting is actually *of*, not the colour of its canvas.
+    Read at a glance, the archive is a run of colours before it is a run of dates: the spring
+    the yellows came, the winter of grey water.
 
-    It costs a read of every image, so it is cached on disk and only the images that are new
-    since last time are looked at."""
+    Averaging a painting is useless — the colours on opposite sides of the wheel cancel and
+    every canvas comes back the same mud. Shrinking it first is nearly as bad: each cell is
+    already an average, so the strongest cell of an 8x8 is a washed-out version of the colour
+    that was actually there, and the strip came out in pastels a painter would not recognise.
+
+    The picture is sampled at 32x32 instead — small enough to read 45 images quickly, fine
+    enough that a cell still holds one colour rather than a blend. The top tenth by saturation
+    is taken and averaged among themselves: one loud pixel cannot speak for the painting, but
+    the hundred loudest together are what the painting is of.
+
+    It costs a read of every image, so it is cached on disk; only images new since last time
+    are looked at."""
     global _COLORS
     if _COLORS is not None:
         return _COLORS
@@ -311,15 +319,17 @@ def image_colors():
                 out[f] = cache[f]
                 continue
             try:
-                im = Image.open(os.path.join(IMAGES_DIR, f)).convert("RGB").resize((8, 8))
-                best, score = (128, 128, 128), -1
-                for px in im.getdata():
-                    mx, mn = max(px), min(px)
-                    sat = (mx - mn) / mx if mx else 0
-                    s2 = sat * 2 + (mx / 255) * 0.5      # colourful first, then bright
-                    if s2 > score:
-                        score, best = s2, px
-                out[f] = "#%02x%02x%02x" % best
+                im = Image.open(os.path.join(IMAGES_DIR, f)).convert("RGB").resize((32, 32))
+                px = list(im.getdata())
+                def sat(p):
+                    mx, mn = max(p), min(p)
+                    return (mx - mn) / mx if mx else 0
+                px.sort(key=sat, reverse=True)
+                top = px[: max(1, len(px) // 10)]          # the loudest tenth of the canvas
+                r = sum(p[0] for p in top) // len(top)
+                g = sum(p[1] for p in top) // len(top)
+                b = sum(p[2] for p in top) // len(top)
+                out[f] = "#%02x%02x%02x" % (r, g, b)
                 fresh = True
             except Exception:
                 pass

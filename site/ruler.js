@@ -30,7 +30,7 @@ const CENTER_H = 50;            // how tall the tick under the centre line stand
 
    They differ in how much room a painting is given, so each sets its own — a colour needs to
    sit beside its neighbours to say anything, and a tick needs room to be read as eight. */
-const WORK_W = { ticks: TICKS_PER_SLIDE * TICK_GAP, colors: 22, bars: 34, dots: 22 };
+const WORK_W = { ticks: TICKS_PER_SLIDE * TICK_GAP, colors: 34, bars: 44, dots: 30 };
 const MODES = Object.keys(WORK_W);
 
 function el(tag, cls) {
@@ -89,12 +89,22 @@ function create(view, slides, opts) {
 
   /* two copies of the labels, laid end to end: the track is shifted by the offset modulo one
      copy, so whichever way the archive is running there is always a copy under the viewport */
+  /* A month is written where it begins. At the ruler's scale a month is 700px of track and
+     the names sit clear of one another; at a colour band's scale a short month is 100px wide
+     and the names collide into each other — FEBRUARY 2026 printed through JUNE 2026. Where a
+     month has not earned the room to be named, it goes unnamed: the ticks below it still say
+     it is there. */
+  const MIN_LABEL_PX = 118;
   function buildLabels() {
     labelTrack.replaceChildren();
     labelTrack.style.width = (rulerHalf * 2) + 'px';
+    let lastX = -Infinity;
     for (let copy = 0; copy < 2; copy++) {
       for (const g of groups) {
         if (!g.text) continue;
+        const at = copy * rulerHalf + g.startSlide * workW;
+        if (at - lastX < MIN_LABEL_PX) continue;
+        lastX = at;
         const l = el('span', 'ruler__label label');
         l.textContent = g.text;
         const d = String(slides[g.startSlide].date || '');
@@ -182,20 +192,52 @@ function create(view, slides, opts) {
     ctx.globalAlpha = 1;
   }
 
-  /* the three that are not the ruler share one shape: walk the works under the window, draw
-     each in its place, and let the one under the centre line come forward. Only what is drawn
-     for a work differs — a band of its colour, a bar of its month, or a dot. */
-  function eachWork(U, draw) {
+  /* What makes the ruler feel like something rather than a chart is not the ticks: it is that
+     every tick keeps its own height between frames and eases towards where it should be, that
+     the swell falls off with distance instead of switching on, and that the cursor drags a
+     wave through it. The other three had none of it — they stamped rectangles and turned the
+     middle one on. They share the ruler's machinery now.
+
+     `lift` is what each work is reaching for: 1 under the centre line, falling away over a few
+     works, plus whatever the cursor is pulling up around it. `swell` is where it actually is —
+     it chases `lift` a little each frame, so nothing snaps. */
+  let swell = new Float32Array(0);
+  let swellBase = null;
+
+  function shiftSwell(first) {
+    if (swellBase === null) { swellBase = first; return; }
+    const d = first - swellBase, p = swell.length;
+    if (d === 0) return;
+    if (Math.abs(d) >= p) swell.fill(0);
+    else if (d > 0) { swell.copyWithin(0, d, p); swell.fill(0, p - d, p); }
+    else { swell.copyWithin(-d, 0, p + d); swell.fill(0, 0, -d); }
+    swellBase = first;
+  }
+
+  const REACH = 5;                    // works either side of the line that still feel it
+
+  function eachWork(U, ratio, draw) {
     const n = slides.length;
     const first = Math.floor(U / workW) - 1;
     const count = Math.ceil(cw / workW) + 3;
-    const centre = (U + cw * 0.5) / workW;          // the work under the line, fractional
+    const centre = (U + cw * 0.5) / workW - 0.5;    // the work under the line, fractional
+    if (swell.length < count) swell = new Float32Array(count + 8);
+    shiftSwell(first);
+    const ease = 0.14 * ratio;
     for (let k = 0; k < count; k++) {
       const at = first + k;
       const i = ((at % n) + n) % n;
       const x = at * workW - U;
-      const near = Math.abs(at - centre + 0.5);     // 0 at the line, 1 a work away
-      draw(i, x, near);
+      /* smooth, not a switch: the work on the line is fully lifted and its neighbours are
+         lifted a little less, so passing over them is a wave and not a row of light switches */
+      const d = Math.abs(at - centre);
+      let lift = d >= REACH ? 0 : Math.pow(1 - d / REACH, 2.2);
+      if (hover && hoverX >= 0) {
+        const hx = Math.abs(x + workW * 0.5 - hoverX);
+        if (hx < HOVER_NEAR) lift = Math.max(lift, 0.55 * fall(hx / HOVER_NEAR));
+      }
+      swell[k] += (lift - swell[k]) * ease;
+      draw(i, x, swell[k], d);
     }
   }
 
@@ -208,42 +250,54 @@ function create(view, slides, opts) {
     ctx.globalAlpha = 1;
   }
 
-  function drawColors(U) {
+  /* the colours hang from the top edge as the ticks do, and swell into the room below them:
+     at rest a quiet seam of colour, and where you are standing, the painting's colour full */
+  function drawColors(U, ratio) {
     ctx.clearRect(0, 0, cw, ch);
-    const h = ch * 0.62;
-    eachWork(U, (i, x, near) => {
-      const on = near < 0.5;                        // this is the work you are standing on
-      ctx.globalAlpha = on ? 1 : 0.42;
+    const rest = ch * 0.24, reach = ch - rest;
+    const gap = workW > 26 ? 2 : 1;
+    eachWork(U, ratio, (i, x, s) => {
+      /* the colour is the point of this one, so it is not faded to make room for the swell:
+         a band held at a third of its opacity is not the painting's colour any more, it is
+         that colour mixed with the paper. Height carries the emphasis; the colour stays true. */
+      ctx.globalAlpha = 0.78 + 0.22 * s;
       ctx.fillStyle = tone[i];
-      const hh = on ? ch : h;
-      ctx.fillRect(Math.round(x), 0, Math.ceil(workW) - 1, hh);
+      ctx.fillRect(Math.round(x), 0, Math.ceil(workW) - gap, rest + reach * s);
     });
     ctx.globalAlpha = 1;
     centreLine();
   }
 
-  function drawBars(U) {
+  /* the month's fullness is the bar's own height; the swell lifts it off the line and darkens
+     it, so the shape of the archive stays readable while the place you are in stands out */
+  function drawBars(U, ratio) {
     ctx.clearRect(0, 0, cw, ch);
-    eachWork(U, (i, x, near) => {
-      const on = near < 0.5;
-      ctx.globalAlpha = on ? 0.9 : 0.22;
+    const gap = 3;
+    eachWork(U, ratio, (i, x, s) => {
+      const h = (0.18 + 0.62 * weight[i]) * ch * (0.72 + 0.28 * s);
+      ctx.globalAlpha = 0.16 + 0.74 * s;
       ctx.fillStyle = '#111';
-      const h = Math.max(3, weight[i] * (ch - 6));  // as tall as that month was full
-      ctx.fillRect(Math.round(x), 0, Math.ceil(workW) - 2, h);
+      ctx.fillRect(Math.round(x), 0, Math.ceil(workW) - gap, Math.max(3, h));
     });
     ctx.globalAlpha = 1;
     centreLine();
   }
 
-  function drawDots(U) {
+  /* a dot a painting, on a hairline. The dot grows and drops as it comes under the line —
+     the row reads as one strand being plucked rather than a bulb switching on */
+  function drawDots(U, ratio) {
     ctx.clearRect(0, 0, cw, ch);
-    const y = ch * 0.42;
-    eachWork(U, (i, x, near) => {
-      const on = near < 0.5;
-      ctx.globalAlpha = on ? 1 : 0.26;
+    const y0 = ch * 0.3;
+    ctx.globalAlpha = 0.12;                        // the strand the dots sit on
+    ctx.beginPath();
+    ctx.moveTo(0, Math.round(y0) + 0.5);
+    ctx.lineTo(cw, Math.round(y0) + 0.5);
+    ctx.stroke();
+    eachWork(U, ratio, (i, x, s) => {
+      ctx.globalAlpha = 0.22 + 0.78 * s;
       ctx.fillStyle = '#111';
       ctx.beginPath();
-      ctx.arc(Math.round(x + workW * 0.5), y, on ? 5 : 2.5, 0, Math.PI * 2);
+      ctx.arc(Math.round(x + workW * 0.5), y0 + s * ch * 0.3, 2.2 + s * 3.4, 0, Math.PI * 2);
       ctx.fill();
     });
     ctx.globalAlpha = 1;
@@ -269,10 +323,11 @@ function create(view, slides, opts) {
       let lOff = off % rulerHalf;
       if (lOff < 0) lOff += rulerHalf;
       labelTrack.style.transform = 'translate3d(' + (-lOff) + 'px,0,0)';
-      if (mode === 'ticks') drawSticks(off, ratio || 1);
-      else if (mode === 'colors') drawColors(off);
-      else if (mode === 'bars') drawBars(off);
-      else drawDots(off);
+      const r = ratio || 1;
+      if (mode === 'ticks') drawSticks(off, r);
+      else if (mode === 'colors') drawColors(off, r);
+      else if (mode === 'bars') drawBars(off, r);
+      else drawDots(off, r);
     },
     destroy() {
       removeEventListener('resize', resize);
