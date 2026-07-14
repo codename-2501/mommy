@@ -572,14 +572,19 @@ html.is-resizing .wordmark{transition:none}
 /* mobile detail: no strip, full-width panel, bottom controls */
 @media (max-width:699px){
   .dt-panel{left:0;border-left:0}
+  .dt-controls{left:0}          /* the panel is the whole screen here, so its middle is too */
   .dt-strip{display:none}
   .dt-body{max-width:none}
   .dt-fig img{max-width:100%}
 }
 
-/* bottom controls — the panel's one way out (and its prev/next), at every width */
+/* bottom controls — the panel's one way out (and its prev/next), at every width.
+   They belong to the panel, so they are centred in the panel. Stretched across the whole screen
+   they centred on the screen instead, and the screen's middle is not the panel's: the panel
+   begins at 41%, so the row of buttons sat straddling the seam with its left half out on the
+   strip, at every width. */
 .dt-controls{
-  position:absolute;bottom:2rem;left:0;right:0;
+  position:absolute;bottom:2rem;left:41%;right:0;
   display:flex;justify-content:center;gap:.8rem;z-index:13;
 }
 .dt-ctl{
