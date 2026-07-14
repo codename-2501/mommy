@@ -38,7 +38,15 @@
    moved. A unit that everything is measured in cannot be changed for the sake of one thing that
    is measured in it. The type on About is what wanted to be larger, so that is what is larger. */
 @media (min-width:700px) and (max-width:1199px){:root{--at:1.55}}
-@media (max-width:699px){:root{--size:390;--at:1;--rem-min:1px;--rem-max:10px}}   /* …and the phone's */
+/* The phone's scale walks down to meet the desktop's instead of dropping onto it.
+   A phone at 390 gets 10px, exactly what it always got. As the window widens the phone's drawing
+   does not grow — it has more room, it does not need to be bigger — and by 699 it has eased to
+   8px, which is the floor the desktop's scale sits on at 700. The two bands now meet at the same
+   number: rem is continuous across the breakpoint, and nothing snaps. What still changes there is
+   the drawing itself (seven paintings abreast become sixteen), and no amount of scaling can ease
+   that: it is a different composition, not a different size.
+   12.5243 - 0.64725vw is the line through (390, 10px) and (699, 8px). */
+@media (max-width:699px){:root{--size:390;--at:1;--rem-min:8px;--rem-max:10px}}
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{
@@ -58,6 +66,17 @@ html{
   -webkit-font-smoothing:antialiased;
   background:#fff;color:#000;
   overscroll-behavior:none;width:100%;
+}
+/* The phone's scale walks down to meet the desktop's instead of dropping onto it.
+   A phone at 390 gets 10px, exactly what it always got. As the window widens the phone's drawing
+   does not grow — it has more room, it does not need to be bigger — and by 699 it has eased to
+   8px, which is the floor the desktop's scale rests on at 700. The two bands meet at the same
+   number, so rem is continuous across the breakpoint and nothing snaps. What still changes there
+   is the drawing itself — seven paintings abreast become sixteen — and no easing reaches that:
+   it is a different composition, not a different size.
+   12.5243 - 0.64725vw is the line through (390, 10px) and (699, 8px). */
+@media (max-width:699px){
+  html{font-size:clamp(8px,calc(12.5243px - 0.64725vw),10px)}
 }
 body{font-family:sans,system-ui,sans-serif;font-weight:400;line-height:1.5}
 body.lock{overflow:hidden}
