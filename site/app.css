@@ -346,7 +346,15 @@ html.is-resizing .wordmark{transition:none}
   width:var(--btn);height:var(--btn);border-radius:999px;
   transition:background-color .3s var(--ease-reveal);
 }
-.menu a:hover{background:#f5f5f5}                             /* same hover as .dt-ctl */
+/* The button paints over the drop — it has to, or the drop would swallow its mark. So the
+   hover tint painted over it too: click a button and the cursor stays on it, and #f5f5f5 went
+   down on top of the black body. The drop was never grey; it was buried under a hover.
+   The current button is already marked by the drop and wants no tint of its own, and a finger
+   does not hover — a phone that keeps :hover stuck after a tap would grey the button it just
+   left standing on. */
+@media (hover:hover){
+  .menu a:not(.active):hover{background:#f5f5f5}             /* same hover as .dt-ctl */
+}
 /* the black chip is gone: the drop is the black. The mark turns white as the drop lands on it
    and black the moment it leaves — flipped on arrival, not on the click, or a white icon would
    sit on a white capsule for the length of the journey. */
