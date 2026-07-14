@@ -264,7 +264,12 @@ function create(view, slides, opts) {
     swellBase = first;
   }
 
-  const REACH = 5;                    // works either side of the line that still feel it
+  /* how far the pull is felt, and how sharply it falls away. The ruler wants a broad, soft
+     swell — it is a hillside of ticks. A string wants the opposite: the pull is concentrated
+     near the finger and the tension snaps it back, so the dots take a narrower reach and a
+     steeper curve, which is what makes the dip read as tension rather than as a dent. */
+  const REACH = mode === 'dots' ? 3.6 : 5;
+  const FALL_POW = mode === 'dots' ? 2.9 : 2.2;
 
   function eachWork(U, ratio, draw) {
     const n = slides.length;
@@ -281,7 +286,7 @@ function create(view, slides, opts) {
       /* smooth, not a switch: the work on the line is fully lifted and its neighbours are
          lifted a little less, so passing over them is a wave and not a row of light switches */
       const d = Math.abs(at - centre);
-      let lift = d >= REACH ? 0 : Math.pow(1 - d / REACH, 2.2);
+      let lift = d >= REACH ? 0 : Math.pow(1 - d / REACH, FALL_POW);
       if (hover && hoverX >= 0) {
         const hx = Math.abs(x + workW * 0.5 - hoverX);
         if (hx < HOVER_NEAR) lift = Math.max(lift, 0.55 * fall(hx / HOVER_NEAR));
@@ -340,60 +345,83 @@ function create(view, slides, opts) {
      through the midpoints between neighbours, so the line arrives at each dot without a corner. */
   const DOT_INK = '#111';        // one ink: the line and the beads on it are the same material
   const DOT_REST = 0.3;          // …and at rest they are the same weight of it
+  const SUB = 4;                 // beads strung between one painting and the next
+  const DOT_DROP = 0.66;         // how far the string is pulled down where you are standing
 
+  /* A painting is a bead, and between two paintings the string is not empty: it carries small
+     ones, the way the ruler carries its minor ticks between the months. They are what makes the
+     line read as a strung thing rather than a polyline — and they are what a pull acts on, so
+     the dip lands as a curve of beads and not as three dots that happen to be lower.
+
+     The string is pulled harder than it was, too: the drop is deep enough now that the works
+     around the one you are on are visibly dragged toward it. */
   function drawDots(U, ratio) {
     ctx.clearRect(0, 0, cw, ch);
-    const y0 = ch * 0.28, drop = ch * 0.34;
-    /* the month you are standing in, as the ruler marks it — here it is the beads themselves
-       that carry it: the works of that month are inked black, and the rest of the string stays
-       grey. With the month written black above them there is nothing left for a centre line to
-       say, so the dots do without one. */
+    const y0 = ch * 0.26, drop = ch * DOT_DROP;
+
     const centreWork = ((Math.round((U + cw * 0.5) / workW - 0.5) % n) + n) % n;
     const liveGroup = groupOf[centreWork];
     markLive(liveGroup);
-    const pts = [];
-    eachWork(U, ratio, (i, x, s) => {
-      pts.push({ x: x + workW * 0.5, y: y0 + s * drop, s, live: groupOf[i] === liveGroup });
-    });
-    if (pts.length > 1) {
-      /* the strand was stroked in #000 at .30 and the dots filled in #111 at .28 — near enough
-         to be a mistake and far enough to be seen as one: the beads read as a different colour
-         from the string they hang on. They are the same ink at the same weight now, and only
-         the swell parts them. */
-      /* A disc fills its pixels; a hairline is spread across two rows and half-covers each, so
-         the same ink at the same alpha still reads lighter as a line than as a bead — 191
-         against 166 on white. The thread is given the width that makes its density match. */
-      ctx.strokeStyle = DOT_INK;
-      ctx.lineWidth = 1.6;
-      ctx.globalAlpha = DOT_REST;
-      ctx.beginPath();
-      ctx.moveTo(pts[0].x, pts[0].y);
-      for (let k = 1; k < pts.length; k++) {
-        const a = pts[k - 1], b = pts[k];
-        ctx.quadraticCurveTo(a.x, a.y, (a.x + b.x) / 2, (a.y + b.y) / 2);
-      }
-      const last = pts[pts.length - 1];
-      ctx.lineTo(last.x, last.y);
-      ctx.stroke();
-    }
 
-    /* Same ink, same weight, and the dots still came out darker than the string: they are drawn
-       over it, so the two coats stack and a bead reads at twice the density of the line it sits
-       on (134 against 190 on white). The line is cut away under each bead before the bead is
-       laid down — one coat everywhere, and the swell is the only thing that darkens anything. */
-    const radius = (p) => 2.2 + p.s * 3.4;
+    /* the works under the window, each with the height it has eased to */
+    const works = [];
+    eachWork(U, ratio, (i, x, s) => {
+      works.push({ x: x + workW * 0.5, s, live: groupOf[i] === liveGroup });
+    });
+    if (works.length < 2) return;
+
+    /* and the beads between them: the string's height is carried across the gap with a smooth
+       step rather than a straight line, so it leaves and arrives at a bead without a kink */
+    const pts = [];
+    for (let k = 0; k < works.length - 1; k++) {
+      const a = works[k], b = works[k + 1];
+      pts.push({ x: a.x, y: y0 + a.s * drop, s: a.s, major: true, live: a.live });
+      for (let j = 1; j < SUB; j++) {
+        const t = j / SUB;
+        const e = t * t * (3 - 2 * t);                       // smoothstep
+        const sv = a.s + (b.s - a.s) * e;
+        pts.push({
+          x: a.x + (b.x - a.x) * t,
+          y: y0 + sv * drop,
+          s: sv,
+          major: false,
+          live: t < 0.5 ? a.live : b.live,
+        });
+      }
+    }
+    const last = works[works.length - 1];
+    pts.push({ x: last.x, y: y0 + last.s * drop, s: last.s, major: true, live: last.live });
+
+    /* the thread, drawn through every bead it carries */
+    ctx.strokeStyle = DOT_INK;
+    ctx.lineWidth = 1.6;          // a disc fills its pixels and a hairline half-covers two rows:
+    ctx.globalAlpha = DOT_REST;   // this is the width at which the two read as the same ink
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let k = 1; k < pts.length; k++) {
+      const a = pts[k - 1], b = pts[k];
+      ctx.quadraticCurveTo(a.x, a.y, (a.x + b.x) / 2, (a.y + b.y) / 2);
+    }
+    ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+    ctx.stroke();
+
+    const radius = (p) => (p.major ? 2.2 + p.s * 3.6 : 1 + p.s * 1.4);
+
+    /* nothing is painted twice: the thread is cut away under each bead before it is laid down,
+       or the two coats stack and a bead reads at twice the density of the string it hangs on */
     ctx.globalCompositeOperation = 'destination-out';
     ctx.globalAlpha = 1;
     for (const p of pts) {
       ctx.beginPath();
-      ctx.arc(p.x, p.y, radius(p) + 1.4, 0, Math.PI * 2);   // clear of the stroke's own edge
+      ctx.arc(p.x, p.y, radius(p) + 1.4, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalCompositeOperation = 'source-over';
 
     ctx.fillStyle = DOT_INK;
     for (const p of pts) {
-      ctx.globalAlpha = p.live ? 1 : DOT_REST + (1 - DOT_REST) * p.s;
+      const base = p.major ? DOT_REST : DOT_REST * 0.62;   // the small ones sit quieter
+      ctx.globalAlpha = p.live ? (p.major ? 1 : 0.55) : base + (1 - base) * p.s;
       ctx.beginPath();
       ctx.arc(p.x, p.y, radius(p), 0, Math.PI * 2);
       ctx.fill();

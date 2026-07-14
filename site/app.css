@@ -297,6 +297,11 @@ html.is-resizing .wordmark{transition:none}
   position:fixed;top:4.4rem;left:0;right:0;height:6rem;
   z-index:10;   /* pointer events ON: boosts ticks near the mouse */
 }
+/* the string needs room to be pulled — a pluck with nowhere to travel is a wobble — and it has
+   exactly as much as there is above the wordmark, which begins 7.1rem below the ruler's top.
+   The deepest bead falls at the centre of the screen, which is precisely where the wordmark is,
+   so this is not room that can be borrowed. */
+.ruler--dots{height:7rem}
 .ruler__canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .ruler__labels{position:absolute;left:0;bottom:100%;margin-bottom:.5rem;height:2rem;pointer-events:none;overflow:visible}
 .ruler__track{position:absolute;inset-block:0;left:0;will-change:transform}
