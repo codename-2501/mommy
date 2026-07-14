@@ -265,11 +265,16 @@ function create(view, slides, opts) {
   }
 
   /* how far the pull is felt, and how sharply it falls away. The ruler wants a broad, soft
-     swell — it is a hillside of ticks. A string wants the opposite: the pull is concentrated
-     near the finger and the tension snaps it back, so the dots take a narrower reach and a
-     steeper curve, which is what makes the dip read as tension rather than as a dent. */
-  const REACH = mode === 'dots' ? 3.6 : 5;
-  const FALL_POW = mode === 'dots' ? 2.9 : 2.2;
+     swell — it is a hillside of ticks.
+
+     A string is not a hillside and it is not a rope, either. Pulled deep and wide it stops
+     reading as a string under tension and starts reading as one hanging slack — a heavy line
+     sagging under its own weight, which is the opposite of what a plucked one does. The dots
+     take a short reach and a steep fall: the works right beside the one you are on are drawn
+     in sharply, and two works away the line is already flat again. Taut, and pinched, not
+     hung. */
+  const REACH = mode === 'dots' ? 2.3 : 5;
+  const FALL_POW = mode === 'dots' ? 3.4 : 2.2;
 
   function eachWork(U, ratio, draw) {
     const n = slides.length;
@@ -346,7 +351,7 @@ function create(view, slides, opts) {
   const DOT_INK = '#111';        // one ink: the line and the beads on it are the same material
   const DOT_REST = 0.3;          // …and at rest they are the same weight of it
   const SUB = 4;                 // beads strung between one painting and the next
-  const DOT_DROP = 0.66;         // how far the string is pulled down where you are standing
+  const DOT_DROP = 0.4;          // how far the string is pulled down where you are standing
 
   /* A painting is a bead, and between two paintings the string is not empty: it carries small
      ones, the way the ruler carries its minor ticks between the months. They are what makes the
