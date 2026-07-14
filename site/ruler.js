@@ -31,7 +31,12 @@ const CENTER_H = 50;            // how tall the tick under the centre line stand
 
    They differ in how much room a painting is given, so each sets its own — a colour needs to
    sit beside its neighbours to say anything, and a tick needs room to be read as eight. */
-const WORK_W = { ticks: TICKS_PER_SLIDE * TICK_GAP, colors: 34, bars: 44, dots: 30 };
+const TRACK_W = TICKS_PER_SLIDE * TICK_GAP;   // the room a painting gets on the ruler: 96px
+/* The dots were given a third of that, and the months came round three times as fast — the
+   names crowded, spilled onto a second line and still touched. A dot is one work and so is a
+   tick: give them the same ground and the names fall exactly where the ruler puts them. The
+   colours want to sit close enough to be read as a run, so those keep a narrower stride. */
+const WORK_W = { ticks: TRACK_W, colors: 34, bars: 44, dots: TRACK_W };
 const MODES = Object.keys(WORK_W);
 
 function rootPx() {
