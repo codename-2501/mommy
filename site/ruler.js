@@ -20,6 +20,7 @@ const LIVE_ALPHA = 0.62;        // the ticks of the month you are standing in
 const HOVER_NEAR = 9 * TICK_GAP, HOVER_BOOST = 20, HOVER_FALL = 0.5;   // cursor swells the ruler
 const CENTER_H = 50;            // how tall the tick under the centre line stands
 const PULL_TICKS = TICKS_PER_SLIDE * 1.5;   // how far along the string a pull is felt (dots)
+const BAR_FILL = 0.35;          // how much of a painting's room its bar fills
 
 /* Four ways to draw the same fact — where in the archive's time you are standing.
 
@@ -37,7 +38,7 @@ const TRACK_W = TICKS_PER_SLIDE * TICK_GAP;   // the room a painting gets on the
    names crowded, spilled onto a second line and still touched. A dot is one work and so is a
    tick: give them the same ground and the names fall exactly where the ruler puts them. The
    colours want to sit close enough to be read as a run, so those keep a narrower stride. */
-const WORK_W = { ticks: TRACK_W, colors: 34, bars: 30, dots: TRACK_W };
+const WORK_W = { ticks: TRACK_W, colors: 34, bars: TRACK_W, dots: TRACK_W };
 const MODES = Object.keys(WORK_W);
 
 function rootPx() {
@@ -397,13 +398,19 @@ function create(view, slides, opts) {
   function drawBars(U, ratio) {
     ctx.clearRect(0, 0, cw, ch);
     liveAt(U);
-    const w = Math.max(2, Math.ceil(workW) - 3);
+    /* the bar stands in the middle of the room a painting is given, and that room is the ruler's
+       own: a painting has to sit at the same place on the timeline whichever way it is drawn, or
+       the months come round at one speed under the ticks and three times as fast under the bars,
+       and the same name lands somewhere else. The bar itself is narrow — it is a mark, not a
+       block, and its neighbours have to be told apart at a glance. */
+    const w = Math.max(3, Math.round(workW * BAR_FILL));
+    const inset = (workW - w) / 2;
     ctx.fillStyle = '#111';
     eachWork(U, ratio, (i, x, s) => {
       const live = groupOf[i] === liveHere;
       const base = live ? LIVE_ALPHA : TICK_ALPHA;
       ctx.globalAlpha = base + (1 - base) * s;
-      ctx.fillRect(Math.round(x), 0, w, Math.max(2, (0.12 + 0.88 * bright[i]) * ch));
+      ctx.fillRect(Math.round(x + inset), 0, w, Math.max(2, (0.12 + 0.88 * bright[i]) * ch));
     });
     ctx.globalAlpha = 1;
     centreLine();
