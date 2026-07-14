@@ -7,6 +7,14 @@ const MONTHS = ['January','February','March','April','May','June',
 const app = document.getElementById('app');
 let content = null;
 let aspects = {};             // image filename -> width/height
+let tones = {};               // image filename -> the colour that painting is of
+
+/* which timeline to draw. Four are built; they are compared by hand before one is chosen, so
+   the choice lives in the URL (?tl=colors) rather than in a setting nobody has decided yet. */
+function timelineMode() {
+  const m = new URLSearchParams(location.search).get('tl');
+  return ['ticks', 'colors', 'bars', 'dots'].includes(m) ? m : 'ticks';
+}
 let icons = {};               // path -> inline svg markup
 let entered = false;          // intro gate passed this page-load
 let carousel = null;          // active carousel instance
@@ -64,6 +72,16 @@ async function loadContent() {
   } catch (err) {
     console.error('content load failed:', err);
     return { slides: [], wordmark: {}, texts: {} };
+  }
+}
+
+async function loadColors() {
+  try {
+    const r = await fetch('/api/colors');
+    const j = await r.json();
+    return j.colors || {};
+  } catch (err) {
+    return {};                  // no colours: the strip falls back to a neutral grey
   }
 }
 
@@ -355,6 +373,7 @@ function buildMenu() {
 }
 
 let blobAt = null;              // where the drop is now, so a move knows where it left from
+let blobAnim = null;            // the journey it is on, if any
 
 const stillMotion = () =>
   matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -380,6 +399,12 @@ function placeBlob(animate) {
   blobAt = to;
 
   const blob = layer.querySelector('.menu__blob');
+  /* A finished animation with fill:'both' does not let go of what it animated: its last value
+     outranks the element's own style for as long as it exists. So the drop landed, the window was
+     resized, the buttons moved — and the drop stayed at the pixel it had landed on, because the
+     transform being written here was being overruled by a journey that had ended seconds ago. The
+     journey is dismissed once it is over, and before a new position is written. */
+  if (blobAnim) { blobAnim.cancel(); blobAnim = null; }
   blob.style.width = to.w + 'px';
   blob.style.height = to.h + 'px';
   const rest = 'translate3d(' + to.x + 'px,' + to.y + 'px,0) scale(1,1)';
@@ -395,8 +420,8 @@ function placeBlob(animate) {
      disc sliding along a rail. It does not bounce at the end: it arrives and it is round. */
   const stretch = 1 + Math.min(Math.abs(dx) / 260, 0.55);
 
-  blob.style.transform = rest;
-  blob.animate(
+  blob.style.transform = rest;      // where it is going, held in the element's own style
+  blobAnim = blob.animate(
     [
       { transform: 'translate3d(' + from.x + 'px,' + from.y + 'px,0) scale(1,1)' },
       { transform: 'translate3d(' + mid + 'px,' + to.y + 'px,0) scale(' + stretch + ',.8)',
@@ -405,6 +430,9 @@ function placeBlob(animate) {
     ],
     { duration: 500, easing: 'cubic-bezier(.32,.9,.24,1)', fill: 'both' }
   );
+  /* it ends where the style already says it is, so letting go changes nothing on screen —
+     except that the style is once more the thing that decides */
+  blobAnim.onfinish = () => { if (blobAnim) { blobAnim.cancel(); blobAnim = null; } };
 }
 
 /* month name -> year, for the ruler labels */
@@ -425,7 +453,8 @@ function renderHome() {
 
   if (carousel) { carousel.destroy(); carousel = null; }
   carousel = window.LSECarousel.mount(
-    view, content.slides || [], aspects, yearsByName(),
+    view, content.slides || [], aspects,
+    { years: yearsByName(), colors: tones, mode: timelineMode() },
     (s, item) => {
       carousel.freeze();   // stop the lerp drift so the flip source stays put
       const grab = (it) => {
@@ -504,7 +533,10 @@ function buildView(path) {
   const slides = content.slides || [];
   if (path === '/') return renderHome();
   if (path === '/flow') {
-    return renderView('flow', (v, open) => window.LSEViews.mountFlow(v, slides, aspects, open));
+    return renderView('flow', (v, open) =>
+      window.LSEViews.mountFlow(v, slides, aspects, open, {
+        years: yearsByName(), colors: tones, mode: timelineMode(),
+      }));
   }
   if (path === '/articles') {
     return renderView('articles', (v, open) => window.LSEViews.mountIndex(v, slides, aspects, open));
@@ -919,9 +951,10 @@ addEventListener('resize', () => {
 
 /* ---------- boot ---------- */
 
-Promise.all([loadContent(), loadAspects(), loadIcons()]).then(([c, a]) => {
+Promise.all([loadContent(), loadAspects(), loadIcons(), loadColors()]).then(([c, a, , t]) => {
   content = c;
   aspects = a;
+  tones = t || {};
   /* the intro gate belongs to the timeline. Land straight on /flow, /articles, /about or a
      painting and there is no gate to pass — so the wordmark and menu must already be up. */
   if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') entered = true;

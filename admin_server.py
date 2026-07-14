@@ -277,6 +277,75 @@ def _slide_by_id(sid):
 _ASPECTS = None
 
 
+COLORS_CACHE = os.path.join(ROOT, ".colors.json")
+_COLORS = None
+
+
+def image_colors():
+    """{filename: "#rrggbb"} — one colour standing for each painting.
+
+    Read at a glance, the archive is a run of colours before it is a run of dates: the spring
+    the yellows came, the winter of grey water.
+
+    Averaging a painting is useless — the colours on opposite sides of the wheel cancel and
+    every canvas comes back the same mud. Shrinking it first is nearly as bad: each cell is
+    already an average, so the strongest cell of an 8x8 is a washed-out version of the colour
+    that was actually there, and the strip came out in pastels a painter would not recognise.
+
+    The picture is sampled at 32x32 instead — small enough to read 45 images quickly, fine
+    enough that a cell still holds one colour rather than a blend. The top tenth by saturation
+    is taken and averaged among themselves: one loud pixel cannot speak for the painting, but
+    the hundred loudest together are what the painting is of.
+
+    It costs a read of every image, so it is cached on disk; only images new since last time
+    are looked at."""
+    global _COLORS
+    if _COLORS is not None:
+        return _COLORS
+    cache = {}
+    try:
+        with open(COLORS_CACHE) as fh:
+            cache = json.load(fh)
+    except Exception:
+        cache = {}
+
+    out, fresh = {}, False
+    try:
+        from PIL import Image
+        for f in sorted(os.listdir(IMAGES_DIR)):
+            if not f.lower().endswith(ALLOWED_IMG):
+                continue
+            if f in cache:
+                out[f] = cache[f]
+                continue
+            try:
+                im = Image.open(os.path.join(IMAGES_DIR, f)).convert("RGB").resize((32, 32))
+                px = list(im.getdata())
+                def sat(p):
+                    mx, mn = max(p), min(p)
+                    return (mx - mn) / mx if mx else 0
+                px.sort(key=sat, reverse=True)
+                top = px[: max(1, len(px) // 10)]          # the loudest tenth of the canvas
+                r = sum(p[0] for p in top) // len(top)
+                g = sum(p[1] for p in top) // len(top)
+                b = sum(p[2] for p in top) // len(top)
+                out[f] = "#%02x%02x%02x" % (r, g, b)
+                fresh = True
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    if fresh or len(out) != len(cache):
+        try:
+            with open(COLORS_CACHE, "w") as fh:
+                json.dump(out, fh)
+        except Exception:
+            pass
+    _COLORS = out
+    return _COLORS
+
+
 def image_aspects():
     """{filename: width/height} for every image, so thumbnails keep their ratio."""
     global _ASPECTS
@@ -487,6 +556,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         if path == "/api/aspects":
             return self._send_json({"aspects": image_aspects()})
+
+        if path == "/api/colors":
+            return self._send_json({"colors": image_colors()})
 
         # resized image cache: /thumbs/<width>/<name> -> webp (carousel-size assets;
         # the originals are multi-MB and stall the scroll while decoding)

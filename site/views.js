@@ -25,8 +25,18 @@ function gateLoad(img) {
   else img.addEventListener('load', () => img.classList.add('ok'), { once: true });
 }
 
-function isSmall() {
-  return matchMedia('(max-width:699px)').matches;
+/* The page has two drawings, a phone's and a desktop's, and it used to switch between their
+   numbers at a single pixel of window: seven paintings abreast became sixteen, a card 20rem wide
+   became 28.1rem, a drag that travelled 3.6x became 2.2x. Nothing about a 701px window is twice
+   as wide as a 699px one, so nothing about it should be drawn twice as loosely.
+   `span` is where the window stands between the two drawings, 0 at the phone's width and 1 at the
+   desktop's, and every number that differed between them is read off it. Counts land on whole
+   numbers, so they step one at a time, at the width where one more actually fits. */
+function span() {
+  return Math.max(0, Math.min(1, (innerWidth - 390) / (1500 - 390)));
+}
+function tween(small, large) {
+  return small + (large - small) * span();
 }
 
 const { MONTHS, month, category } = window.LSEData;   // date first — see site/data.js
@@ -45,7 +55,7 @@ function yearsByMonth(slides) {
 }
 
 /* ---------------- FLOW: floating card deck ---------------- */
-function mountFlow(view, slides, aspects, onOpen) {
+function mountFlow(view, slides, aspects, onOpen, opts) {
   const wrap = el('div', 'flow');
   const inner = el('div', 'flow__inner');
   const deck = el('div', 'flow__deck');
@@ -54,6 +64,12 @@ function mountFlow(view, slides, aspects, onOpen) {
   const hoverLbl = el('div', 'flow__label label');
   wrap.appendChild(hoverLbl);
   view.appendChild(wrap);
+
+  /* the same timeline the carousel carries. The deck runs the same works in the same order,
+     so the question the ruler asks — which work is under the centre line — has an answer here
+     too; it simply had no one to ask it. */
+  const ruler = window.LSERuler.create(view, slides, Object.assign({ monthOf: month }, opts || {}));
+  requestAnimationFrame(() => ruler.el.classList.add('is-on'));
 
   const items = slides.map((s, i) => {
     const it = el('article', 'flow-item lse-card');
@@ -94,12 +110,13 @@ function mountFlow(view, slides, aspects, onOpen) {
   /* the deck: cards are spread across the viewport width, bob on a sine wave as they pass,
      and stand at an angle that eases open when the view arrives */
   let bounds = [], total = 0, rest = 0, time = 0;
+  let cardGap = 0, lapWorks = 0;         // px between cards, and works in one lap of the deck
   let target = 0, cur = 0, vel = 0, deckK = 0;
   let dragging = false, moved = false, sx = 0, sy = 0, st = 0, raf = 0, lastTs = 0;
   let hoverIdx = -1;              // the card the cursor is lifting (see mouseenter above)
 
   function measure() {
-    const P = isSmall() ? 7 : 16;   // cards abreast across the viewport
+    const P = Math.round(tween(7, 16));   // cards abreast across the viewport
     const spread = innerWidth / P;
     rest = (innerHeight / (P * 1.5)) * 0.4;   // bob amplitude
     bounds = items.map((it, i) => {
@@ -112,6 +129,15 @@ function mountFlow(view, slides, aspects, onOpen) {
     });
     const last = bounds[bounds.length - 1];
     total = Math.max(0, last ? last.end - bounds[0].width : 0);
+    /* The deck loops every `total` px, and that is not exactly one work per card-width: the
+       first card's offset and its own width ride along in it. Measured in works, a lap is
+       `lapWorks`, which is a little more than the archive holds. The ruler is given the lap as
+       a fraction and stretched over the archive, so the timeline comes round exactly when the
+       deck does — feed it the raw count instead and the ruler would jump back a work or so
+       every time the deck crossed its seam. */
+    cardGap = bounds.length > 1 ? bounds[1].left - bounds[0].left : innerWidth;
+    lapWorks = cardGap > 0 ? total / cardGap : slides.length;
+    ruler.resize();
   }
 
   function place(i, wrapped) {
@@ -146,6 +172,10 @@ function mountFlow(view, slides, aspects, onOpen) {
         w += b.end - total;
         place(i, w);
       }
+      const f = (cur + innerWidth * 0.5 - bounds[0].left) / cardGap;   // work under the line
+      let lap = f % lapWorks;
+      if (lap < 0) lap += lapWorks;
+      ruler.update(lap * (slides.length / lapWorks), ratio);
     }
     raf = requestAnimationFrame(frame);
   }
@@ -155,7 +185,7 @@ function mountFlow(view, slides, aspects, onOpen) {
     if (!dragging) return;
     const dx = e.clientX - sx;
     if (Math.abs(dx) > 10) moved = true;
-    target = st - dx * (isSmall() ? 3.6 : 2.2);   // drag travel
+    target = st - dx * tween(3.6, 2.2);   // drag travel
   }
   function onUp() { dragging = false; }
   function onWheel(e) {
@@ -210,6 +240,7 @@ function mountFlow(view, slides, aspects, onOpen) {
     removeEventListener('wheel', onWheel);
     removeEventListener('keydown', onKey);
     removeEventListener('resize', measure);
+    ruler.destroy();          // it listens for resize of its own
   }
 
   return {
@@ -324,12 +355,17 @@ function mountIndex(view, slides, aspects, onOpen) {
   outer.appendChild(content);
   view.appendChild(outer);
 
-  const perRow = isSmall() ? 4 : 12;
+  const perRow = Math.round(tween(4, 12));
   const years = yearsByMonth(slides);
   let row = null, seenMonth = '';
   slides.forEach((s, i) => {
     if (i % perRow === 0) {
       row = el('div', 'agrid__row lse-row');
+      /* the row is as many columns wide as it holds. It used to be twelve in the stylesheet and
+         four on a phone, while the count of cells put in it was decided here — so the moment the
+         count became a continuous thing, the two stopped agreeing and a row of seven was laid out
+         across twelve columns. One of them has to own the number, and it is this one. */
+      row.style.gridTemplateColumns = 'repeat(' + perRow + ',1fr)';
       content.appendChild(row);
     }
     const cell = el('article', 'agrid__cell lse-card');
