@@ -37,7 +37,7 @@ const TRACK_W = TICKS_PER_SLIDE * TICK_GAP;   // the room a painting gets on the
    names crowded, spilled onto a second line and still touched. A dot is one work and so is a
    tick: give them the same ground and the names fall exactly where the ruler puts them. The
    colours want to sit close enough to be read as a run, so those keep a narrower stride. */
-const WORK_W = { ticks: TRACK_W, colors: 34, bars: 44, dots: TRACK_W };
+const WORK_W = { ticks: TRACK_W, colors: 34, bars: 30, dots: TRACK_W };
 const MODES = Object.keys(WORK_W);
 
 function rootPx() {
@@ -89,6 +89,30 @@ function create(view, slides, opts) {
   const groups = monthGroups(slides, monthOf);
   for (const g of groups) majors[g.startSlide * TICKS_PER_SLIDE] = 1;
   const maxMonth = groups.reduce((m, g) => Math.max(m, g.slides), 1);
+
+  /* What the bars are for.
+
+     They were the fullness of each month, and the archive will not have it: of 28 months, 21
+     hold between 7 and 9 paintings. The row came out a flat run of near-equal blocks, and no
+     amount of drawing puts a shape into a number that does not move. Aggregating by month
+     flattens anything, in fact — the monthly mean brightness only travels between 104 and 125.
+
+     A painting is 62 to 166. A bar is one painting and stands for how light it is, so the row
+     draws a rhythm the archive actually has: the stretches she worked bright, and the ones where
+     the paintings go dark and low. */
+  const lumOf = (hex) => {
+    const v = String(hex || '').replace('#', '');
+    if (v.length !== 6) return 0.5;
+    const r = parseInt(v.slice(0, 2), 16);
+    const g = parseInt(v.slice(2, 4), 16);
+    const b = parseInt(v.slice(4, 6), 16);
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  };
+  const light = slides.map((sl) => lumOf(colors[String(sl.image || '').split('/').pop()]));
+  const loL = Math.min.apply(null, light), hiL = Math.max.apply(null, light);
+  /* stretched over the range the archive occupies: in absolute terms the whole row sits in the
+     middle of the scale and a dark painting stands a few pixels shorter than a bright one */
+  const bright = light.map((v) => (v - loL) / Math.max(0.001, hiL - loL));
   /* which month each work belongs to — the ruler needs to know not just where a month begins
      but everything that is inside it */
   const groupOf = new Int32Array(slides.length);
@@ -280,6 +304,109 @@ function create(view, slides, opts) {
       drawTick(p.x, p.h, alpha);
     }
     ctx.globalAlpha = 1;
+  }
+
+  /* The machinery the ruler moves with, for the shapes that are not made of ticks.
+
+     What makes the ruler feel like something rather than a chart is not that it has ticks: every
+     tick keeps its own height between frames and eases towards where it should be, the swell
+     falls away with distance instead of switching on, and the cursor drags a wave through it.
+     A row of coloured bands or of bars gets the same, or it is a bar chart with a highlight. */
+  let swell = new Float32Array(0);
+  let swellBase = null;
+
+  function shiftSwell(first) {
+    if (swellBase === null) { swellBase = first; return; }
+    const d = first - swellBase, p = swell.length;
+    if (d === 0) return;
+    if (Math.abs(d) >= p) swell.fill(0);
+    else if (d > 0) { swell.copyWithin(0, d, p); swell.fill(0, p - d, p); }
+    else { swell.copyWithin(-d, 0, p + d); swell.fill(0, 0, -d); }
+    swellBase = first;
+  }
+
+  const REACH = 5;              // works either side of the line that still feel the swell
+  const FALL_POW = 2.2;
+
+  function eachWork(U, ratio, draw) {
+    const first = Math.floor(U / workW) - 1;
+    const count = Math.ceil(cw / workW) + 3;
+    const centre = (U + cw * 0.5) / workW - 0.5;
+    if (swell.length < count) swell = new Float32Array(count + 8);
+    shiftSwell(first);
+    const ease = 0.14 * ratio;
+    for (let k = 0; k < count; k++) {
+      const at = first + k;
+      const i = ((at % n) + n) % n;
+      const x = at * workW - U;
+      /* smooth, not a switch: the work on the line is fully lifted and its neighbours a little
+         less, so passing over them is a wave and not a row of light switches */
+      const d = Math.abs(at - centre);
+      let lift = d >= REACH ? 0 : Math.pow(1 - d / REACH, FALL_POW);
+      if (hover && hoverX >= 0) {
+        const hx = Math.abs(x + workW * 0.5 - hoverX);
+        if (hx < HOVER_NEAR) lift = Math.max(lift, 0.55 * fall(hx / HOVER_NEAR));
+      }
+      swell[k] += (lift - swell[k]) * ease;
+      draw(i, x, swell[k]);
+    }
+  }
+
+  function centreLine() {
+    ctx.globalAlpha = 0.55;
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(Math.round(cw * 0.5) + 0.5, 0);
+    ctx.lineTo(Math.round(cw * 0.5) + 0.5, ch);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  /* which month the middle of the screen is standing in — the colours and the bars mark it the
+     way the ticks do, and the month's name above is lit with it */
+  let liveHere = -1;
+  function liveAt(U) {
+    const centreWork = ((Math.round((U + cw * 0.5) / workW - 0.5) % n) + n) % n;
+    liveHere = groupOf[centreWork];
+    markLive(liveHere);
+  }
+
+  /* the colours hang from the top edge as the ticks do, and swell into the room below them: at
+     rest a quiet seam of colour, and where you are standing, the painting's colour at full */
+  function drawColors(U, ratio) {
+    ctx.clearRect(0, 0, cw, ch);
+    liveAt(U);
+    const rest = ch * 0.24, reach = ch - rest;
+    const gap = workW > 26 ? 2 : 1;
+    eachWork(U, ratio, (i, x, s) => {
+      /* the colour is the point of this one, so it is not faded to make room for the swell: a
+         band held at a third of its opacity is not the painting's colour any more, it is that
+         colour mixed with the paper. Height carries the emphasis; the colour stays true. */
+      ctx.globalAlpha = 0.78 + 0.22 * s;
+      ctx.fillStyle = tone[i];
+      ctx.fillRect(Math.round(x), 0, Math.ceil(workW) - gap, rest + reach * s);
+    });
+    ctx.globalAlpha = 1;
+    centreLine();
+  }
+
+  /* one bar, one painting, as long as that painting is light. The month you are standing in is
+     inked and the rest is quiet, so the row says both what the archive looked like and where in
+     it you are. */
+  function drawBars(U, ratio) {
+    ctx.clearRect(0, 0, cw, ch);
+    liveAt(U);
+    const w = Math.max(2, Math.ceil(workW) - 3);
+    ctx.fillStyle = '#111';
+    eachWork(U, ratio, (i, x, s) => {
+      const live = groupOf[i] === liveHere;
+      const base = live ? LIVE_ALPHA : TICK_ALPHA;
+      ctx.globalAlpha = base + (1 - base) * s;
+      ctx.fillRect(Math.round(x), 0, w, Math.max(2, (0.12 + 0.88 * bright[i]) * ch));
+    });
+    ctx.globalAlpha = 1;
+    centreLine();
   }
 
   const DOT_INK = '#111';        // one ink: the line and the beads on it are the same material
