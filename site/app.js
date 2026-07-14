@@ -365,11 +365,16 @@ function gooFilter() {
   const svg = document.createElementNS(ns, 'svg');
   svg.setAttribute('class', 'menu__filter');
   svg.setAttribute('aria-hidden', 'true');
+  /* colour-interpolation-filters must be sRGB. Left at its default the blur is computed in
+     linear light, and a black drop blurred in linear light comes back grey — which is exactly
+     what it did the moment it stretched: thin enough for the blur to reach through it, the
+     alpha never climbed back to solid and the body washed out to 82,82,82 mid-flight. The
+     matrix is steeper too, so a stretched drop stays as black as a resting one. */
   svg.innerHTML =
-    '<defs><filter id="menu-goo">' +
-    '<feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>' +
+    '<defs><filter id="menu-goo" color-interpolation-filters="sRGB">' +
+    '<feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>' +
     '<feColorMatrix in="blur" type="matrix"' +
-    ' values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -11"/>' +
+    ' values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 32 -14"/>' +
     '</filter></defs>';
   document.body.appendChild(svg);
 }
