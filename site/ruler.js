@@ -21,6 +21,10 @@ const HOVER_NEAR = 9 * TICK_GAP, HOVER_BOOST = 20, HOVER_FALL = 0.5;   // cursor
 const CENTER_H = 50;            // how tall the tick under the centre line stands
 const PULL_TICKS = TICKS_PER_SLIDE * 1.5;   // how far along the string a pull is felt (dots)
 const BAR_FILL = 0.35;          // how much of a painting's room its bar fills
+/* how much of a bar's length is the painting's own brightness, and how much is simply the bar
+   being a bar. At 1 the row is all information and no rhythm — a reader cannot tell why the
+   third mark is short, so it reads as noise. At 0 it is all rhythm and says nothing. */
+const BAR_VAR = 1;
 
 /* Four ways to draw the same fact — where in the archive's time you are standing.
 
@@ -169,12 +173,14 @@ function create(view, slides, opts) {
     }
     /* one read of the layout for all of them, after they are all in the document */
     const pad = LABEL_PAD * (rootPx() / 10);
-    const rowEnd = [-Infinity, -Infinity];
+    const rowEnd = [-Infinity];
     for (const m of made) {
       const w = m.el.offsetWidth;                 // as the browser drew it, at this size
-      const row = m.at >= rowEnd[0] + pad ? 0 : (m.at >= rowEnd[1] + pad ? 1 : 0);
-      rowEnd[row] = m.at + w;
-      m.el.classList.toggle('is-up', row === 1);  // a line of its own, above the row
+      /* with the label's size capped, the shortest month on the ruler (June, one painting, 96px
+         of track) still has room for its name at every width — so nothing has to be moved out of
+         anything's way, and nothing is hidden. Measured, not assumed: the check below is what
+         tells us that stays true. */
+      rowEnd[0] = m.at + w;
     }
   }
 
@@ -410,7 +416,8 @@ function create(view, slides, opts) {
       const live = groupOf[i] === liveHere;
       const base = live ? LIVE_ALPHA : TICK_ALPHA;
       ctx.globalAlpha = base + (1 - base) * s;
-      ctx.fillRect(Math.round(x + inset), 0, w, Math.max(2, (0.12 + 0.88 * bright[i]) * ch));
+      const lit = (1 - BAR_VAR) + BAR_VAR * bright[i];
+      ctx.fillRect(Math.round(x + inset), 0, w, Math.max(2, (0.12 + 0.88 * lit) * ch));
     });
     ctx.globalAlpha = 1;
     centreLine();

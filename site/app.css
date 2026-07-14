@@ -309,14 +309,21 @@ html.is-resizing .wordmark{transition:none}
 .ruler__canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .ruler__labels{position:absolute;left:0;bottom:100%;margin-bottom:.5rem;height:2rem;pointer-events:none;overflow:visible}
 .ruler__track{position:absolute;inset-block:0;left:0;will-change:transform}
-/* the name sat centred on the tick where its month begins — straddling the boundary, saying
-   nothing about which side of itself it owned. It is set from that tick and runs the way its
-   month runs, so a name and the inked ticks beneath it are plainly the same stretch of time. */
+/* The name is set from the tick where its month begins and runs the way its month runs, so a
+   name and the inked ticks beneath it are plainly the same stretch of time.
+
+   Its size is capped. June 2026 holds a single painting, so its name and March's start 96px
+   apart on the ruler however wide the screen is — that gap is made of paintings, not pixels. The
+   labels are set in rem, so on a 2560 screen the same name is 24px tall and half again as wide,
+   and it no longer fits in the 96px it has. I had been lifting the loser onto a second line,
+   which reads as a name that has climbed on top of its neighbour. A ruler's labels are not
+   reading copy — they do not have to grow with the page, and if they do not grow they do not
+   collide. */
 .ruler__label{
   position:absolute;transform:translateX(0);white-space:nowrap;padding-left:.6rem;
+  font-size:min(1.4rem,15px);
   opacity:.42;transition:opacity .35s ease;
 }
-.ruler__label.is-up{transform:translateY(-1.25em)}  /* it would not fit beside its neighbour */
 .ruler__label.is-live{opacity:1}                    /* the month you are standing in */
 .ruler__label::after{content:" " attr(data-year);opacity:.5}
 
