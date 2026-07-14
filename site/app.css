@@ -38,7 +38,7 @@
    moved. A unit that everything is measured in cannot be changed for the sake of one thing that
    is measured in it. The type on About is what wanted to be larger, so that is what is larger. */
 @media (min-width:700px) and (max-width:1199px){:root{--at:1.55}}
-@media (max-width:699px){:root{--size:390;--at:1}}     /* …and the phone's */
+@media (max-width:699px){:root{--size:390;--at:1;--rem-max:13px}}   /* …and the phone's */
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{
@@ -49,7 +49,11 @@ html{
      Holding the root em flat between them (a single "continuous" scale) removes the jump at
      the crossover but also removes the scaling itself: content would keep its size while the
      window shrinks. The proportional scale IS the responsiveness here, so it stays. */
-  font-size:clamp(1px,calc(10 * 100vw / var(--size)),20px);
+  /* the page is drawn at its mock's width and scaled to the screen — that scaling IS the
+     responsiveness. But a phone's drawing, scaled up, is still a phone's drawing: at 699px the
+     390 mock ran at 1.79x and the menu's buttons came out 79px across, bigger than they are on
+     any phone. It grows with the screen and then it stops. */
+  font-size:clamp(1px,calc(10 * 100vw / var(--size)),var(--rem-max,20px));
   -webkit-text-size-adjust:none;
   -webkit-font-smoothing:antialiased;
   background:#fff;color:#000;
