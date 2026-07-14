@@ -205,24 +205,29 @@ function create(view, slides, opts) {
     return ((w % n) + n) % n;
   };
 
-  function drawSticks(U, ratio) {
-    if (!ctx || cw <= 0) return;
-    ctx.clearRect(0, 0, cw, ch);
+  /* The ruler's shape, worked out once and drawn twice.
+
+     The ticks and the string are not two shapes: the string is what you get if you join the
+     ends of the ticks. Its dip was invented separately before, with a reach and a falloff of
+     its own, and it hung like a slack rope because it was never the ruler's shape to begin
+     with — it was a curve I had made up next to one. There is one shape now. The ticks draw it
+     as marks and the string draws it as a line through their tips, and the swell at the centre,
+     the wave under the cursor and the taller marks where a month turns are the same events in
+     both. */
+  function tickShape(U, ratio) {
     let v = U % TICK_GAP;
     if (v < 0) v += TICK_GAP;
     const q = Math.floor((U - v) / TICK_GAP);
     const centerIdx = Math.round((U + cw * 0.5) / TICK_GAP);   // the tick under the centre line
-    /* the month you are standing in, and not just the work: every tick of it is inked, so the
-       month's name above has a body under it. Without this the ruler named the months but drew
-       them as one undifferentiated run of grey — the name floated over the boundary and said
-       nothing about which side of itself it owned. */
     const liveGroup = groupOf[workOfTick(centerIdx)];
     markLive(liveGroup);
     shiftHeights(q);
     const ease = 0.12 * ratio, easeC = 0.2 * ratio;
+    const out = [];
     for (let ox = -v, e = 0; ox <= cw + TICK_GAP; ox += TICK_GAP, e++) {
       const t = q + e;
-      const mj = majors[((t % tickLen) + tickLen) % tickLen] === 1;
+      const idx = ((t % tickLen) + tickLen) % tickLen;
+      const mj = majors[idx] === 1;
       const base = mj ? TICK_MJH : TICK_MH;
       let boost = 0;
       if (t === centerIdx) boost = CENTER_H - base;
@@ -231,204 +236,79 @@ function create(view, slides, opts) {
         if (dx < HOVER_NEAR) boost = HOVER_BOOST * fall(dx / HOVER_NEAR);
       }
       heights[e] += (boost - heights[e]) * (t === centerIdx ? easeC : ease);
-      const h = base + heights[e];
-      let alpha = groupOf[workOfTick(t)] === liveGroup ? LIVE_ALPHA : TICK_ALPHA;
-      if (t === centerIdx) {
-        const p = Math.max(0, Math.min(1, (h - base) / Math.max(1, CENTER_H - base)));
-        alpha = alpha + p * (1 - alpha);
+      out.push({
+        x: ox,
+        h: base + heights[e],
+        base,
+        major: mj,                                   // a month begins here
+        work: idx % TICKS_PER_SLIDE === 0,           // a painting begins here
+        live: groupOf[workOfTick(t)] === liveGroup,
+        centre: t === centerIdx,
+      });
+    }
+    return out;
+  }
+
+  function drawSticks(U, ratio) {
+    if (!ctx || cw <= 0) return;
+    ctx.clearRect(0, 0, cw, ch);
+    for (const p of tickShape(U, ratio)) {
+      let alpha = p.live ? LIVE_ALPHA : TICK_ALPHA;
+      if (p.centre) {
+        const g = Math.max(0, Math.min(1, (p.h - p.base) / Math.max(1, CENTER_H - p.base)));
+        alpha = alpha + g * (1 - alpha);
       }
-      drawTick(ox, h, alpha);
+      drawTick(p.x, p.h, alpha);
     }
     ctx.globalAlpha = 1;
   }
 
-  /* What makes the ruler feel like something rather than a chart is not the ticks: it is that
-     every tick keeps its own height between frames and eases towards where it should be, that
-     the swell falls off with distance instead of switching on, and that the cursor drags a
-     wave through it. The other three had none of it — they stamped rectangles and turned the
-     middle one on. They share the ruler's machinery now.
-
-     `lift` is what each work is reaching for: 1 under the centre line, falling away over a few
-     works, plus whatever the cursor is pulling up around it. `swell` is where it actually is —
-     it chases `lift` a little each frame, so nothing snaps. */
-  let swell = new Float32Array(0);
-  let swellBase = null;
-
-  function shiftSwell(first) {
-    if (swellBase === null) { swellBase = first; return; }
-    const d = first - swellBase, p = swell.length;
-    if (d === 0) return;
-    if (Math.abs(d) >= p) swell.fill(0);
-    else if (d > 0) { swell.copyWithin(0, d, p); swell.fill(0, p - d, p); }
-    else { swell.copyWithin(-d, 0, p + d); swell.fill(0, 0, -d); }
-    swellBase = first;
-  }
-
-  /* how far the pull is felt, and how sharply it falls away. The ruler wants a broad, soft
-     swell — it is a hillside of ticks.
-
-     A string is not a hillside and it is not a rope, either. Pulled deep and wide it stops
-     reading as a string under tension and starts reading as one hanging slack — a heavy line
-     sagging under its own weight, which is the opposite of what a plucked one does. The dots
-     take a short reach and a steep fall: the works right beside the one you are on are drawn
-     in sharply, and two works away the line is already flat again. Taut, and pinched, not
-     hung. */
-  const REACH = mode === 'dots' ? 2.3 : 5;
-  const FALL_POW = mode === 'dots' ? 3.4 : 2.2;
-
-  function eachWork(U, ratio, draw) {
-    const n = slides.length;
-    const first = Math.floor(U / workW) - 1;
-    const count = Math.ceil(cw / workW) + 3;
-    const centre = (U + cw * 0.5) / workW - 0.5;    // the work under the line, fractional
-    if (swell.length < count) swell = new Float32Array(count + 8);
-    shiftSwell(first);
-    const ease = 0.14 * ratio;
-    for (let k = 0; k < count; k++) {
-      const at = first + k;
-      const i = ((at % n) + n) % n;
-      const x = at * workW - U;
-      /* smooth, not a switch: the work on the line is fully lifted and its neighbours are
-         lifted a little less, so passing over them is a wave and not a row of light switches */
-      const d = Math.abs(at - centre);
-      let lift = d >= REACH ? 0 : Math.pow(1 - d / REACH, FALL_POW);
-      if (hover && hoverX >= 0) {
-        const hx = Math.abs(x + workW * 0.5 - hoverX);
-        if (hx < HOVER_NEAR) lift = Math.max(lift, 0.55 * fall(hx / HOVER_NEAR));
-      }
-      swell[k] += (lift - swell[k]) * ease;
-      draw(i, x, swell[k], d);
-    }
-  }
-
-  function centreLine() {
-    ctx.globalAlpha = 0.55;
-    ctx.beginPath();
-    ctx.moveTo(Math.round(cw * 0.5) + 0.5, 0);
-    ctx.lineTo(Math.round(cw * 0.5) + 0.5, ch);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-
-  /* the colours hang from the top edge as the ticks do, and swell into the room below them:
-     at rest a quiet seam of colour, and where you are standing, the painting's colour full */
-  function drawColors(U, ratio) {
-    ctx.clearRect(0, 0, cw, ch);
-    const rest = ch * 0.24, reach = ch - rest;
-    const gap = workW > 26 ? 2 : 1;
-    eachWork(U, ratio, (i, x, s) => {
-      /* the colour is the point of this one, so it is not faded to make room for the swell:
-         a band held at a third of its opacity is not the painting's colour any more, it is
-         that colour mixed with the paper. Height carries the emphasis; the colour stays true. */
-      ctx.globalAlpha = 0.78 + 0.22 * s;
-      ctx.fillStyle = tone[i];
-      ctx.fillRect(Math.round(x), 0, Math.ceil(workW) - gap, rest + reach * s);
-    });
-    ctx.globalAlpha = 1;
-    centreLine();
-  }
-
-  /* the month's fullness is the bar's own height; the swell lifts it off the line and darkens
-     it, so the shape of the archive stays readable while the place you are in stands out */
-  function drawBars(U, ratio) {
-    ctx.clearRect(0, 0, cw, ch);
-    const gap = 3;
-    eachWork(U, ratio, (i, x, s) => {
-      const h = (0.18 + 0.62 * weight[i]) * ch * (0.72 + 0.28 * s);
-      ctx.globalAlpha = 0.16 + 0.74 * s;
-      ctx.fillStyle = '#111';
-      ctx.fillRect(Math.round(x), 0, Math.ceil(workW) - gap, Math.max(3, h));
-    });
-    ctx.globalAlpha = 1;
-    centreLine();
-  }
-
-  /* A dot a painting, strung on a line. The line used to run straight while the dots dropped
-     away from it — a strand and some beads that had come off it. It is drawn through the dots'
-     own centres now, so lifting one bends the line around it: the row reads as a string being
-     plucked, which is the thing the swelling was always trying to say. The curve is carried
-     through the midpoints between neighbours, so the line arrives at each dot without a corner. */
   const DOT_INK = '#111';        // one ink: the line and the beads on it are the same material
   const DOT_REST = 0.3;          // …and at rest they are the same weight of it
-  const SUB = 4;                 // beads strung between one painting and the next
-  const DOT_DROP = 0.4;          // how far the string is pulled down where you are standing
 
-  /* A painting is a bead, and between two paintings the string is not empty: it carries small
-     ones, the way the ruler carries its minor ticks between the months. They are what makes the
-     line read as a strung thing rather than a polyline — and they are what a pull acts on, so
-     the dip lands as a curve of beads and not as three dots that happen to be lower.
-
-     The string is pulled harder than it was, too: the drop is deep enough now that the works
-     around the one you are on are visibly dragged toward it. */
+  /* the string: the ruler's ticks with their ends joined. A bead sits at the end of every tick
+     — a big one where a painting begins, a small one on the ticks between — so the line is not
+     a curve with dots near it but a thing the beads are strung on. Nothing here is invented:
+     the dip at the centre, the wave under the cursor and the deeper beads where a month turns
+     are the ticks' own heights, read as a line. */
   function drawDots(U, ratio) {
     ctx.clearRect(0, 0, cw, ch);
-    const y0 = ch * 0.26, drop = ch * DOT_DROP;
+    const pts = tickShape(U, ratio);
+    if (pts.length < 2) return;
 
-    const centreWork = ((Math.round((U + cw * 0.5) / workW - 0.5) % n) + n) % n;
-    const liveGroup = groupOf[centreWork];
-    markLive(liveGroup);
-
-    /* the works under the window, each with the height it has eased to */
-    const works = [];
-    eachWork(U, ratio, (i, x, s) => {
-      works.push({ x: x + workW * 0.5, s, live: groupOf[i] === liveGroup });
-    });
-    if (works.length < 2) return;
-
-    /* and the beads between them: the string's height is carried across the gap with a smooth
-       step rather than a straight line, so it leaves and arrives at a bead without a kink */
-    const pts = [];
-    for (let k = 0; k < works.length - 1; k++) {
-      const a = works[k], b = works[k + 1];
-      pts.push({ x: a.x, y: y0 + a.s * drop, s: a.s, major: true, live: a.live });
-      for (let j = 1; j < SUB; j++) {
-        const t = j / SUB;
-        const e = t * t * (3 - 2 * t);                       // smoothstep
-        const sv = a.s + (b.s - a.s) * e;
-        pts.push({
-          x: a.x + (b.x - a.x) * t,
-          y: y0 + sv * drop,
-          s: sv,
-          major: false,
-          live: t < 0.5 ? a.live : b.live,
-        });
-      }
-    }
-    const last = works[works.length - 1];
-    pts.push({ x: last.x, y: y0 + last.s * drop, s: last.s, major: true, live: last.live });
-
-    /* the thread, drawn through every bead it carries */
     ctx.strokeStyle = DOT_INK;
     ctx.lineWidth = 1.6;          // a disc fills its pixels and a hairline half-covers two rows:
     ctx.globalAlpha = DOT_REST;   // this is the width at which the two read as the same ink
     ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
+    ctx.moveTo(pts[0].x, pts[0].h);
     for (let k = 1; k < pts.length; k++) {
       const a = pts[k - 1], b = pts[k];
-      ctx.quadraticCurveTo(a.x, a.y, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      ctx.quadraticCurveTo(a.x, a.h, (a.x + b.x) / 2, (a.h + b.h) / 2);
     }
-    ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+    const last = pts[pts.length - 1];
+    ctx.lineTo(last.x, last.h);
     ctx.stroke();
 
-    const radius = (p) => (p.major ? 2.2 + p.s * 3.6 : 1 + p.s * 1.4);
+    /* how far a tick has been lifted above its resting height, 0..1 — the swell, recovered from
+       the shape rather than computed a second time */
+    const rise = (p) => Math.max(0, Math.min(1, (p.h - p.base) / (CENTER_H - TICK_MH)));
+    const radius = (p) => (p.work ? 2.2 + rise(p) * 3.6 : 1 + rise(p) * 1.4);
 
-    /* nothing is painted twice: the thread is cut away under each bead before it is laid down,
-       or the two coats stack and a bead reads at twice the density of the string it hangs on */
     ctx.globalCompositeOperation = 'destination-out';
     ctx.globalAlpha = 1;
     for (const p of pts) {
       ctx.beginPath();
-      ctx.arc(p.x, p.y, radius(p) + 1.4, 0, Math.PI * 2);
+      ctx.arc(p.x, p.h, radius(p) + 1.4, 0, Math.PI * 2);   // no bead is painted over the string
       ctx.fill();
     }
     ctx.globalCompositeOperation = 'source-over';
 
     ctx.fillStyle = DOT_INK;
     for (const p of pts) {
-      const base = p.major ? DOT_REST : DOT_REST * 0.62;   // the small ones sit quieter
-      ctx.globalAlpha = p.live ? (p.major ? 1 : 0.55) : base + (1 - base) * p.s;
+      const base = p.work ? DOT_REST : DOT_REST * 0.62;     // the small ones sit quieter
+      ctx.globalAlpha = p.live ? (p.work ? 1 : 0.55) : base + (1 - base) * rise(p);
       ctx.beginPath();
-      ctx.arc(p.x, p.y, radius(p), 0, Math.PI * 2);
+      ctx.arc(p.x, p.h, radius(p), 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
