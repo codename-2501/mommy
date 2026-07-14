@@ -333,15 +333,34 @@ function create(view, slides, opts) {
      own centres now, so lifting one bends the line around it: the row reads as a string being
      plucked, which is the thing the swelling was always trying to say. The curve is carried
      through the midpoints between neighbours, so the line arrives at each dot without a corner. */
+  const DOT_INK = '#111';        // one ink: the line and the beads on it are the same material
+  const DOT_REST = 0.3;          // …and at rest they are the same weight of it
+
   function drawDots(U, ratio) {
     ctx.clearRect(0, 0, cw, ch);
     const y0 = ch * 0.28, drop = ch * 0.34;
+    /* the month you are standing in, as the ruler marks it — here it is the beads themselves
+       that carry it: the works of that month are inked black, and the rest of the string stays
+       grey. With the month written black above them there is nothing left for a centre line to
+       say, so the dots do without one. */
+    const centreWork = ((Math.round((U + cw * 0.5) / workW - 0.5) % n) + n) % n;
+    const liveGroup = groupOf[centreWork];
+    markLive(liveGroup);
     const pts = [];
     eachWork(U, ratio, (i, x, s) => {
-      pts.push({ x: x + workW * 0.5, y: y0 + s * drop, s });
+      pts.push({ x: x + workW * 0.5, y: y0 + s * drop, s, live: groupOf[i] === liveGroup });
     });
     if (pts.length > 1) {
-      ctx.globalAlpha = 0.3;
+      /* the strand was stroked in #000 at .30 and the dots filled in #111 at .28 — near enough
+         to be a mistake and far enough to be seen as one: the beads read as a different colour
+         from the string they hang on. They are the same ink at the same weight now, and only
+         the swell parts them. */
+      /* A disc fills its pixels; a hairline is spread across two rows and half-covers each, so
+         the same ink at the same alpha still reads lighter as a line than as a bead — 191
+         against 166 on white. The thread is given the width that makes its density match. */
+      ctx.strokeStyle = DOT_INK;
+      ctx.lineWidth = 1.6;
+      ctx.globalAlpha = DOT_REST;
       ctx.beginPath();
       ctx.moveTo(pts[0].x, pts[0].y);
       for (let k = 1; k < pts.length; k++) {
@@ -352,15 +371,41 @@ function create(view, slides, opts) {
       ctx.lineTo(last.x, last.y);
       ctx.stroke();
     }
+
+    /* Same ink, same weight, and the dots still came out darker than the string: they are drawn
+       over it, so the two coats stack and a bead reads at twice the density of the line it sits
+       on (134 against 190 on white). The line is cut away under each bead before the bead is
+       laid down — one coat everywhere, and the swell is the only thing that darkens anything. */
+    const radius = (p) => 2.2 + p.s * 3.4;
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.globalAlpha = 1;
     for (const p of pts) {
-      ctx.globalAlpha = 0.28 + 0.72 * p.s;
-      ctx.fillStyle = '#111';
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 2.2 + p.s * 3.4, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, radius(p) + 1.4, 0, Math.PI * 2);   // clear of the stroke's own edge
+      ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+
+    ctx.fillStyle = DOT_INK;
+    for (const p of pts) {
+      ctx.globalAlpha = p.live ? 1 : DOT_REST + (1 - DOT_REST) * p.s;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, radius(p), 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
-    centreLine();
+    ctx.strokeStyle = '#000';     // the ruler's own ink and weight, for whoever draws next
+    ctx.lineWidth = 1;
+  }
+
+  /* the name of the month you are in is lit with whatever marks it below — ticks or beads.
+     The two are one statement, so they are turned on together. */
+  function markLive(gi) {
+    if (gi === litGroup) return;
+    litGroup = gi;
+    labelTrack.querySelectorAll('.ruler__label').forEach((l) => {
+      l.classList.toggle('is-live', +l.dataset.g === gi);
+    });
   }
 
   function onEnter() { hover = true; }
