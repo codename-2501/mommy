@@ -295,7 +295,7 @@ function create(view, slides, opts) {
       m.push(dl * dr <= 0 ? 0 : (Math.abs(dl) < Math.abs(dr) ? dl : dr));
     }
     ctx.strokeStyle = DOT_INK;
-    ctx.lineWidth = 1.6;          // a disc fills its pixels and a hairline half-covers two rows:
+    ctx.lineWidth = 1.8;          // a disc fills its pixels and a hairline half-covers two rows:
     ctx.globalAlpha = DOT_REST;   // this is the width at which the two read as the same ink
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].h);
@@ -309,7 +309,7 @@ function create(view, slides, opts) {
     /* how far a tick has been lifted above its resting height, 0..1 — the swell, recovered from
        the shape rather than computed a second time */
     const rise = (p) => Math.max(0, Math.min(1, (p.h - p.base) / (CENTER_H - TICK_MH)));
-    const radius = (p) => (p.work ? 2.2 + rise(p) * 3.6 : 1 + rise(p) * 1.4);
+    const radius = (p) => (p.work ? 3.1 + rise(p) * 4 : 1.5 + rise(p) * 1.8);
 
     /* the string is cleared only where the bead will cover it — exactly, not with room to
        spare. A margin here rings every bead in white and the string appears to stop short of
