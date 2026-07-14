@@ -218,7 +218,15 @@ function create(view, slides, opts) {
     let v = U % TICK_GAP;
     if (v < 0) v += TICK_GAP;
     const q = Math.floor((U - v) / TICK_GAP);
-    const centerIdx = Math.round((U + cw * 0.5) / TICK_GAP);   // the tick under the centre line
+    let centerIdx = Math.round((U + cw * 0.5) / TICK_GAP);     // the tick under the centre line
+    /* The ruler pulls whichever tick happens to lie under the line, and between two paintings
+       that is one of the small ones. Drawn as marks it makes no odds — a tick is a tick. Drawn
+       as a string it does: the line was hauled all the way down to a speck of grain, and what
+       you are standing on is not a speck, it is a painting. For the string the pull is taken by
+       the nearest painting's bead, so the bottom of the dip is always the work you are on. */
+    if (mode === 'dots') {
+      centerIdx = Math.round(centerIdx / TICKS_PER_SLIDE) * TICKS_PER_SLIDE;
+    }
     const liveGroup = groupOf[workOfTick(centerIdx)];
     markLive(liveGroup);
     shiftHeights(q);
@@ -309,7 +317,17 @@ function create(view, slides, opts) {
     /* how far a tick has been lifted above its resting height, 0..1 — the swell, recovered from
        the shape rather than computed a second time */
     const rise = (p) => Math.max(0, Math.min(1, (p.h - p.base) / (CENTER_H - TICK_MH)));
-    const radius = (p) => (p.work ? 3.1 + rise(p) * 4 : 1.5 + rise(p) * 1.8);
+    /* A painting's bead grows where you stand on it, but not by much: swollen to nearly three
+       times its resting size it stopped being a bead on a string and became a blob the string
+       ran into. It is the deepest point of the dip that says where you are — the size only has
+       to agree with it.
+
+       The small beads are the thread's own grain, and grain must be even. Sized by the swell
+       they bulged and shrank along the line and the string looked lumpy, as if it had been
+       badly spun. They hold their size and answer in weight instead: they darken as the dip
+       reaches them and fade back out of it, so the string tells you where you are by how deeply
+       it is inked, not by being fatter in places. */
+    const radius = (p) => (p.work ? 3.1 + rise(p) * 1.9 : 1.6 + rise(p) * 0.4);
 
     /* the string is cleared only where the bead will cover it — exactly, not with room to
        spare. A margin here rings every bead in white and the string appears to stop short of
@@ -325,8 +343,16 @@ function create(view, slides, opts) {
 
     ctx.fillStyle = DOT_INK;
     for (const p of pts) {
-      const base = p.work ? DOT_REST : DOT_REST * 0.62;     // the small ones sit quieter
-      ctx.globalAlpha = p.live ? (p.work ? 1 : 0.55) : base + (1 - base) * rise(p);
+      let a;
+      if (p.work) {
+        a = p.live ? 1 : DOT_REST + (1 - DOT_REST) * rise(p);
+      } else {
+        /* the grain: quiet at rest, drawn up as the dip reaches it, and never as loud as the
+           painting it sits beside — it is the thread, not what hangs from it */
+        const quiet = DOT_REST * 0.55;
+        a = Math.min(0.72, (p.live ? 0.46 : quiet) + (0.72 - quiet) * rise(p));
+      }
+      ctx.globalAlpha = a;
       ctx.beginPath();
       ctx.arc(p.x, p.h, radius(p), 0, Math.PI * 2);
       ctx.fill();
