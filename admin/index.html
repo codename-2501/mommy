@@ -360,6 +360,17 @@ function imageUses(name){
   return out;
 }
 function usageCount(name){ return imageUses(name).length; }
+/* 크기는 작게/보통/크게 세 칸뿐이라, 한 단계가 28% 였다. 사이 값을 못 잡으니 원하는 크기에
+   닿을 수가 없었다. 이제 %, 그리고 행간은 아예 없던 조절이다. */
+const SIZE_STEPS=[60,70,80,90,100,110,120,130,140,160,180,200];
+const LH_STEPS=[1,1.1,1.2,1.3,1.4,1.5,1.6,1.8,2];
+const SZ_WORD={sm:72,md:100,lg:140};
+function sizePct(v){
+  if(SZ_WORD[v]!=null) return SZ_WORD[v];
+  const n=parseFloat(v);
+  if(!isFinite(n)||n<=0) return 100;
+  return n>5?Math.round(n):Math.round(n*100);
+}
 /* 강제 삭제하면 남은 참조는 전부 끊는다 — 남겨두면 사이트에 깨진 이미지가 뜨고
    정적 빌드는 아예 실패한다 */
 function clearImageRefs(name){
@@ -919,8 +930,11 @@ function renderBlocks(){
       /* 정렬·크기를 안 정하면 사이트가 그리던 그대로: 제목은 중앙, 글·맺음말은 좌측, 크기는 보통 */
       const def={title:'center',text:'left',thanks:'left'}[b.type]||'left';
       const al=['left','center','right'].includes(b.align)?b.align:def;
-      const sz=['sm','md','lg'].includes(b.size)?b.size:'md';
+      const sz=sizePct(b.size);          // 옛 작게/보통/크게 → 72/100/140 으로 읽는다
+      const lh=b.lh?String(b.lh):'';
       const opt=(v,cur,label)=>`<option value="${v}"${v===cur?' selected':''}>${label}</option>`;
+      const szOpts=SIZE_STEPS.map(v=>opt(String(v),String(sz),v+'%')).join('');
+      const lhOpts=opt('',lh,'기본')+LH_STEPS.map(v=>opt(String(v),lh,String(v))).join('');
       body=`<div class="blk__body">
            <textarea class="blk-ta" data-text="${i}" rows="${BLOCK_ROWS[b.type]||6}"
              placeholder="${escAttr(BLOCK_HINT[b.type]||'')}">${escHtml(b.text||'')}</textarea>
@@ -930,9 +944,9 @@ function renderBlocks(){
                  ${opt('left',al,'좌측')}${opt('center',al,'중앙')}${opt('right',al,'우측')}
                </select></label>
              <label class="blk-opt"><span>크기</span>
-               <select class="blk-sel" data-size="${i}">
-                 ${opt('sm',sz,'작게')}${opt('md',sz,'보통')}${opt('lg',sz,'크게')}
-               </select></label>
+               <select class="blk-sel" data-size="${i}">${szOpts}</select></label>
+             <label class="blk-opt"><span>행간</span>
+               <select class="blk-sel" data-lh="${i}">${lhOpts}</select></label>
              ${gapOpt}
            </div>
          </div>`;
@@ -998,7 +1012,17 @@ $('#blockList').addEventListener('input',e=>{
 /* a <select> fires change, not input — hung on the wrong event it would never save */
 $('#blockList').addEventListener('change',e=>{
   const t=e.target, list=pageBlocks();
-  if(t.dataset.size!=null){ list[+t.dataset.size].size=t.value; dirty(); }
+  if(t.dataset.size!=null){
+    const b2=list[+t.dataset.size];
+    /* 이미지는 size 가 원본/절반이라 숫자로 바꾸면 안 된다 */
+    b2.size = b2.type==='image' ? t.value : Number(t.value);
+    dirty();
+  }
+  else if(t.dataset.lh!=null){
+    const b2=list[+t.dataset.lh];
+    if(t.value) b2.lh=Number(t.value); else delete b2.lh;   // 기본은 값을 두지 않는다
+    dirty();
+  }
   else if(t.dataset.align!=null){ list[+t.dataset.align].align=t.value; dirty(); }
   else if(t.dataset.gap!=null){ list[+t.dataset.gap].gap=t.value; dirty(); }
   else if(t.dataset.szlabel!=null){ list[+t.dataset.szlabel].sizeLabel=t.value; dirty(); }

@@ -647,7 +647,7 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
    42px of overlap on a desktop. The lines need room for the tallest thing that can sit in
    them, and that is 한글. */
 .about__title{
-  font-size:calc(11.7rem * var(--sz,1));font-weight:700;line-height:1.1;
+  font-size:calc(11.7rem * var(--sz,1));font-weight:700;line-height:var(--lh,1.1);
   text-transform:uppercase;text-align:center;margin:0 0 calc(22.5rem * var(--gap,1));
 }
 @media (max-width:699px){.about__title{font-size:calc(3.6rem * var(--sz,1));margin-bottom:calc(15rem * var(--gap,1))}}
@@ -667,7 +667,7 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
    wraps onto many lines, ran into itself: 앉은 sat on 습니다. The lines get room for the
    tallest thing they can hold. */
 .about__intro{
-  font-size:calc(4rem * var(--sz,1) * var(--at,1));font-weight:700;line-height:1.35;text-transform:uppercase;
+  font-size:calc(4rem * var(--sz,1) * var(--at,1));font-weight:700;line-height:var(--lh,1.35);text-transform:uppercase;
   max-width:110rem;margin:0 auto calc(28.5rem * var(--gap,1));display:flex;flex-direction:column;gap:6rem;
 }
 @media (max-width:699px){.about__intro{font-size:calc(2.8rem * var(--sz,1) * var(--at,1));margin-bottom:calc(15rem * var(--gap,1))}}
@@ -767,9 +767,6 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
 .about__gap--md{--gap:1}
 .about__gap--lg{--gap:2}
 .about__gap--xl{--gap:3.2}
-.about__sz--sm{--sz:.72}
-.about__sz--md{--sz:1}
-.about__sz--lg{--sz:1.4}
 .about__al--left{text-align:left}
 .about__al--center{text-align:center}
 .about__al--right{text-align:right}
@@ -781,7 +778,7 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
 /* month labels on the grid use the shared reveal mask */
 .view--articles.is-in .dt-reveal>*{transform:translateY(0)}
 .about__thanks{
-  font-size:calc(11.7rem * var(--sz,1));font-weight:700;line-height:1.1;text-transform:uppercase;
+  font-size:calc(11.7rem * var(--sz,1));font-weight:700;line-height:var(--lh,1.1);text-transform:uppercase;
   margin-bottom:calc(5rem * var(--gap,1));
 }
 @media (max-width:699px){.about__thanks{font-size:calc(3.6rem * var(--sz,1))}}
