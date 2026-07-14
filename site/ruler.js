@@ -276,17 +276,34 @@ function create(view, slides, opts) {
     const pts = tickShape(U, ratio);
     if (pts.length < 2) return;
 
+    /* The curve has to pass through the beads, not near them. Drawn as quadratics with the
+       points as control handles it went through the midpoints between them instead — it took the
+       beads as suggestions and cut the corners, so wherever the shape turned sharply (which is
+       exactly where you are standing) the bead was left sitting off the line.
+
+       A Catmull-Rom does land on every point, but it overshoots them: before a tick dropped, the
+       line rose above the ones either side of it and drew a little hill that is not in the ruler
+       — an invention of the curve, not a fact of the archive. The tangents are the monotone ones
+       (Fritsch–Carlson): where three beads descend, the curve between them only descends. It
+       lands on every bead and adds nothing between them. */
+    const m = [];                                  // the slope the curve leaves each bead with
+    for (let k = 0; k < pts.length; k++) {
+      const prev = pts[k - 1], cur = pts[k], next = pts[k + 1];
+      const dl = prev ? (cur.h - prev.h) / (cur.x - prev.x) : 0;
+      const dr = next ? (next.h - cur.h) / (next.x - cur.x) : 0;
+      /* a bead that is a turning point is flat: that is what stops the line sailing past it */
+      m.push(dl * dr <= 0 ? 0 : (Math.abs(dl) < Math.abs(dr) ? dl : dr));
+    }
     ctx.strokeStyle = DOT_INK;
     ctx.lineWidth = 1.6;          // a disc fills its pixels and a hairline half-covers two rows:
     ctx.globalAlpha = DOT_REST;   // this is the width at which the two read as the same ink
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].h);
-    for (let k = 1; k < pts.length; k++) {
-      const a = pts[k - 1], b = pts[k];
-      ctx.quadraticCurveTo(a.x, a.h, (a.x + b.x) / 2, (a.h + b.h) / 2);
+    for (let k = 0; k < pts.length - 1; k++) {
+      const a = pts[k], b = pts[k + 1];
+      const dx = (b.x - a.x) / 3;
+      ctx.bezierCurveTo(a.x + dx, a.h + m[k] * dx, b.x - dx, b.h - m[k + 1] * dx, b.x, b.h);
     }
-    const last = pts[pts.length - 1];
-    ctx.lineTo(last.x, last.h);
     ctx.stroke();
 
     /* how far a tick has been lifted above its resting height, 0..1 — the swell, recovered from
@@ -294,11 +311,14 @@ function create(view, slides, opts) {
     const rise = (p) => Math.max(0, Math.min(1, (p.h - p.base) / (CENTER_H - TICK_MH)));
     const radius = (p) => (p.work ? 2.2 + rise(p) * 3.6 : 1 + rise(p) * 1.4);
 
+    /* the string is cleared only where the bead will cover it — exactly, not with room to
+       spare. A margin here rings every bead in white and the string appears to stop short of
+       the very thing it is carrying. */
     ctx.globalCompositeOperation = 'destination-out';
     ctx.globalAlpha = 1;
     for (const p of pts) {
       ctx.beginPath();
-      ctx.arc(p.x, p.h, radius(p) + 1.4, 0, Math.PI * 2);   // no bead is painted over the string
+      ctx.arc(p.x, p.h, radius(p), 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalCompositeOperation = 'source-over';
