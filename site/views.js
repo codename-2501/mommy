@@ -512,8 +512,19 @@ function aboutBlock(b) {
     return aligned(t);
   }
 
+  /* What was typed is what is shown. Splitting on /\n+/ made one newline and three mean the
+     same thing — every break became a new paragraph, and paragraphs are set 6rem apart, so a
+     line simply carried onto the next line opened a gap the width of an empty line. A blank
+     line between paragraphs is a paragraph break; a single newline is a break within one. */
   const p = aligned(el('div', 'about__intro about__fade'));   // 'text'
-  text.split(/\n+/).forEach((para) => p.appendChild(el('p', null, para)));
+  text.split(/\n\s*\n+/).forEach((para) => {
+    const node = el('p');
+    para.split('\n').forEach((line, i) => {
+      if (i) node.appendChild(document.createElement('br'));
+      node.appendChild(document.createTextNode(line));
+    });
+    p.appendChild(node);
+  });
   return p;
 }
 
