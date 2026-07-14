@@ -411,7 +411,7 @@ function placeBlob(animate) {
   const dx = to.x - from.x;
   const mid = from.x + dx * 0.5;
   /* the farther it has to go, the thinner it draws itself out — a drop crossing a gap, not a
-     disc sliding along a rail */
+     disc sliding along a rail. It does not bounce at the end: it arrives and it is round. */
   const stretch = 1 + Math.min(Math.abs(dx) / 260, 0.55);
 
   blobs.forEach((b, i) => {
@@ -422,12 +422,11 @@ function placeBlob(animate) {
         { transform: 'translate3d(' + from.x + 'px,' + from.y + 'px,0) scale(1,1)' },
         { transform: 'translate3d(' + mid + 'px,' + to.y + 'px,0) scale(' +
             stretch + ',' + (trail ? 0.72 : 0.8) + ')', offset: 0.42 },
-        { transform: 'translate3d(' + to.x + 'px,' + to.y + 'px,0) scale(.88,1.13)', offset: 0.76 },
         { transform: rest },
       ],
-      { duration: trail ? 700 : 560,
+      { duration: trail ? 620 : 500,
         delay: trail ? 70 : 0,           // it leaves late, so a neck opens between the two
-        easing: 'cubic-bezier(.34,1.22,.4,1)',
+        easing: 'cubic-bezier(.32,.9,.24,1)',
         fill: 'both' }
     );
   });
