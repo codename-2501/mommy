@@ -1,6 +1,7 @@
-/* LSE GALLERY — timeline carousel + ruler.
-   Per-slide wrap (the track is never one huge moving layer), lerp-smoothed position,
-   a canvas ruler of 8 ticks per painting, and a hover boost around the cursor. */
+/* LSE GALLERY — timeline carousel.
+   Per-slide wrap (the track is never one huge moving layer) and a lerp-smoothed position.
+   The ruler beneath it is not this view's own any more: it is a piece of its own (ruler.js),
+   told once a frame which work sits under the centre line. The flow deck carries the same one. */
 (() => {
 'use strict';
 
@@ -10,10 +11,6 @@
 const LERP = 0.12;              // how far the drawn position closes on the target, per frame
 const CLICK_SLOP = 8;           // px: a pointerup that moved less than this is a click
 const KEY_STEP = 140;           // ArrowUp/Down travel
-const TICKS_PER_SLIDE = 8;      // ruler resolution: ticks between one painting and the next
-const TICK_GAP = 12;            // px between ruler ticks
-const TICK_MH = 11, TICK_MJH = 24, TICK_ALPHA = 0.22;   // minor / month tick, resting opacity
-const HOVER_NEAR = 9 * TICK_GAP, HOVER_BOOST = 20, HOVER_FALL = 0.5;   // cursor swells the ruler
 const WHEEL_MULT = /Win/.test(navigator.platform) ? 1 : 0.45;          // wheel feels lighter on mac
 
 function el(tag, cls) {
@@ -69,32 +66,14 @@ function buildItem(s, i, ratio) {
 }
 
 /* consecutive-month groups: [{text, startSlide, slides}] */
-function monthGroups(slides) {
-  const groups = [];
-  slides.forEach((s, i) => {
-    const mo = slideMonth(s);
-    const last = groups[groups.length - 1];
-    if (last && last.text === mo) { last.slides += 1; return; }
-    groups.push({ text: mo, startSlide: i, slides: 1 });
-  });
-  return groups;
-}
-
 function mount(view, slides, aspects, years, onOpen) {
   if (!slides.length) return null;
 
   const wrap = el('div', 'carousel');
   const track = el('div', 'carousel__track');
   wrap.appendChild(track);
-  const ruler = el('div', 'ruler');
-  const canvas = el('canvas', 'ruler__canvas');
-  const labels = el('div', 'ruler__labels');
-  const labelTrack = el('div', 'ruler__track');
-  labels.appendChild(labelTrack);
-  ruler.appendChild(canvas);
-  ruler.appendChild(labels);
   view.appendChild(wrap);
-  view.appendChild(ruler);
+  const ruler = window.LSERuler.create(view, slides, { monthOf: slideMonth, years });
 
   const ratios = slides.map((s) => {
     const name = String(s.image || '').split('/').pop();
@@ -117,105 +96,7 @@ function mount(view, slides, aspects, years, onOpen) {
 
   /* ---------- geometry ---------- */
   let rem = rootPx();
-  let step = 0, half = 0, scale = 1;
-  const tickLen = slides.length * TICKS_PER_SLIDE;          // total ruler ticks (one copy)
-  const rulerHalf = tickLen * TICK_GAP;
-  const majors = new Uint8Array(tickLen);
-  const groups = monthGroups(slides);
-  for (const g of groups) majors[g.startSlide * TICKS_PER_SLIDE] = 1;
-
-  function buildLabels() {
-    labelTrack.replaceChildren();
-    labelTrack.style.width = (rulerHalf * 2) + 'px';
-    for (let copy = 0; copy < 2; copy++) {
-      for (const g of groups) {
-        if (!g.text) continue;
-        const l = el('span', 'ruler__label label');
-        l.textContent = g.text;
-        const d = String(slides[g.startSlide].date || '');
-        const y = /^(\d{4})/.exec(d);
-        l.dataset.year = (y && y[1]) || years[g.text] || '2026';
-        l.style.left = (copy * rulerHalf + g.startSlide * TICKS_PER_SLIDE * TICK_GAP) + 'px';
-        labelTrack.appendChild(l);
-      }
-    }
-  }
-
-  /* ---------- the ruler's ticks, drawn on a canvas ---------- */
-  let ctx = null, cw = 0, ch = 0, dpr = 1;
-  let heights = new Float32Array(0);
-  let baseIdx = null;
-  let hover = false, hoverX = -1;
-
-  function resizeCanvas() {
-    cw = ruler.clientWidth; ch = ruler.clientHeight;
-    dpr = Math.min(2, devicePixelRatio || 1);
-    canvas.width = Math.floor(cw * dpr);
-    canvas.height = Math.floor(ch * dpr);
-    ctx = canvas.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 1;
-    heights = new Float32Array(Math.ceil(cw / TICK_GAP) + 4);
-  }
-
-  function fall(t) {                       // falloff: pow(1-t, 1/fall)
-    const v = 1 - t;
-    return v <= 0 ? 0 : Math.pow(v, 1 / HOVER_FALL);
-  }
-
-  function shiftHeights(q) {
-    if (baseIdx === null) { baseIdx = q; return; }
-    if (q === baseIdx) return;
-    const d = q - baseIdx, p = heights.length;
-    if (Math.abs(d) >= p) heights.fill(0);
-    else if (d > 0) { heights.copyWithin(0, d, p); heights.fill(0, p - d, p); }
-    else { heights.copyWithin(-d, 0, p + d); heights.fill(0, 0, -d); }
-    baseIdx = q;
-  }
-
-  function drawTick(x, h, baseY, alpha) {
-    ctx.globalAlpha = alpha;
-    const px = Math.round(x) + 0.5;
-    ctx.beginPath();
-    /* flipped ruler (our layout): line hangs from the top edge */
-    ctx.moveTo(px, baseY);
-    ctx.lineTo(px, baseY + h);
-    ctx.stroke();
-  }
-
-  function drawSticks(U, ratio) {
-    if (!ctx || cw <= 0) return;
-    ctx.clearRect(0, 0, cw, ch);
-    let v = U % TICK_GAP;
-    if (v < 0) v += TICK_GAP;
-    const q = Math.floor((U - v) / TICK_GAP);
-    const center = cw * 0.5;
-    const centerIdx = Math.round((U + center) / TICK_GAP);   // the tick under the cursor line
-    shiftHeights(q);
-    const ease = LERP * ratio, easeC = 0.2 * ratio;
-    for (let ox = -v, e = 0; ox <= cw + TICK_GAP; ox += TICK_GAP, e++) {
-      const t = q + e;
-      let mj = majors[((t % tickLen) + tickLen) % tickLen] === 1;
-      const base = mj ? TICK_MJH : TICK_MH;
-      let boost = 0;
-      if (t === centerIdx) boost = 50 - base;
-      else if (hover && hoverX >= 0) {
-        const dx = Math.abs(ox - hoverX);
-        if (dx < HOVER_NEAR) boost = HOVER_BOOST * fall(dx / HOVER_NEAR);
-      }
-      heights[e] += ((boost) - heights[e]) * (t === centerIdx ? easeC : ease);
-      const h = base + heights[e];
-      let alpha = TICK_ALPHA;
-      if (t === centerIdx) {
-        const p = Math.max(0, Math.min(1, (h - base) / Math.max(1, 50 - base)));
-        alpha = TICK_ALPHA + p * (1 - TICK_ALPHA);
-      }
-      drawTick(ox, h, 0, alpha);
-    }
-    ctx.globalAlpha = 1;
-  }
-
+  let step = 0, half = 0;
   /* ---------- motion ---------- */
   let target = 0, cur = 0, diff = 0;
   let dragging = false, startX = 0, startY = 0, startTarget = 0, raf = 0;
@@ -244,9 +125,7 @@ function mount(view, slides, aspects, years, onOpen) {
     step = slideW + gap;
     half = slides.length * step;
     if (prevStep) { const k = step / prevStep; target *= k; cur *= k; }
-    scale = rulerHalf / half;               // ruler moves at ~1/3 carousel speed
-    resizeCanvas();
-    buildLabels();
+    ruler.resize();
   }
 
   function frame(ts) {
@@ -291,13 +170,8 @@ function mount(view, slides, aspects, years, onOpen) {
        centre line at cur*scale + rulerWidth/2, while the painting under that line sits at
        cur + viewportWidth/2 — the same journey measured against two different rulers. The
        two drifted about five works apart, so the month over the line named a month whose
-       paintings were already off the screen. Anchor the ruler on the work the line is over. */
-    const centerSlide = (cur + innerWidth * 0.5 - 2 * rem) / step;
-    const rOff = centerSlide * TICKS_PER_SLIDE * TICK_GAP - ruler.clientWidth * 0.5;
-    let lOff = rOff % rulerHalf;
-    if (lOff < 0) lOff += rulerHalf;
-    labelTrack.style.transform = 'translate3d(' + (-lOff) + 'px,0,0)';
-    drawSticks(rOff, ratio);
+       paintings were already off the screen. The ruler is told the work the line is over. */
+    ruler.update((cur + innerWidth * 0.5 - 2 * rem) / step, ratio);
     raf = requestAnimationFrame(frame);
   }
   raf = requestAnimationFrame(frame);
@@ -336,10 +210,6 @@ function mount(view, slides, aspects, years, onOpen) {
     else if (e.key === 'ArrowRight') { e.preventDefault(); target = (nearestIdx() + 1) * step; }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); target = (nearestIdx() - 1) * step; }
   }
-  function onRulerEnter() { hover = true; }
-  function onRulerLeave() { hover = false; hoverX = -1; }
-  function onRulerMove(e) { hoverX = e.offsetX; }
-
   wrap.addEventListener('pointerdown', onDown);
   addEventListener('pointermove', onMove);   // window-level: no dead zone over the ruler
   addEventListener('pointerup', onUp);
@@ -347,9 +217,6 @@ function mount(view, slides, aspects, years, onOpen) {
   addEventListener('wheel', onWheel, { passive: true });
   addEventListener('keydown', onKey);
   addEventListener('resize', resize);
-  ruler.addEventListener('mouseenter', onRulerEnter);
-  ruler.addEventListener('mouseleave', onRulerLeave);
-  ruler.addEventListener('mousemove', onRulerMove);
   /* the incoming view jumps to the work the last one was on, THEN reports
      "page-done" — the transition only measures the flip once that jump has landed */
   let markReady;
@@ -379,6 +246,7 @@ function mount(view, slides, aspects, years, onOpen) {
     itemAt(i) { return items[i] || null; },
     destroy() {
       cancelAnimationFrame(raf);
+      ruler.destroy();
       removeEventListener('pointermove', onMove);
       removeEventListener('pointerup', onUp);
       removeEventListener('pointercancel', onUp);

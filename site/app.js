@@ -504,7 +504,7 @@ function buildView(path) {
   const slides = content.slides || [];
   if (path === '/') return renderHome();
   if (path === '/flow') {
-    return renderView('flow', (v, open) => window.LSEViews.mountFlow(v, slides, aspects, open));
+    return renderView('flow', (v, open) => window.LSEViews.mountFlow(v, slides, aspects, open, yearsByName()));
   }
   if (path === '/articles') {
     return renderView('articles', (v, open) => window.LSEViews.mountIndex(v, slides, aspects, open));

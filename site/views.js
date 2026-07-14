@@ -45,7 +45,7 @@ function yearsByMonth(slides) {
 }
 
 /* ---------------- FLOW: floating card deck ---------------- */
-function mountFlow(view, slides, aspects, onOpen) {
+function mountFlow(view, slides, aspects, onOpen, years) {
   const wrap = el('div', 'flow');
   const inner = el('div', 'flow__inner');
   const deck = el('div', 'flow__deck');
@@ -54,6 +54,12 @@ function mountFlow(view, slides, aspects, onOpen) {
   const hoverLbl = el('div', 'flow__label label');
   wrap.appendChild(hoverLbl);
   view.appendChild(wrap);
+
+  /* the same timeline the carousel carries. The deck runs the same works in the same order,
+     so the question the ruler asks — which work is under the centre line — has an answer here
+     too; it simply had no one to ask it. */
+  const ruler = window.LSERuler.create(view, slides, { monthOf: month, years: years || {} });
+  requestAnimationFrame(() => ruler.el.classList.add('is-on'));
 
   const items = slides.map((s, i) => {
     const it = el('article', 'flow-item lse-card');
@@ -94,6 +100,7 @@ function mountFlow(view, slides, aspects, onOpen) {
   /* the deck: cards are spread across the viewport width, bob on a sine wave as they pass,
      and stand at an angle that eases open when the view arrives */
   let bounds = [], total = 0, rest = 0, time = 0;
+  let cardGap = 0, lapWorks = 0;         // px between cards, and works in one lap of the deck
   let target = 0, cur = 0, vel = 0, deckK = 0;
   let dragging = false, moved = false, sx = 0, sy = 0, st = 0, raf = 0, lastTs = 0;
   let hoverIdx = -1;              // the card the cursor is lifting (see mouseenter above)
@@ -112,6 +119,15 @@ function mountFlow(view, slides, aspects, onOpen) {
     });
     const last = bounds[bounds.length - 1];
     total = Math.max(0, last ? last.end - bounds[0].width : 0);
+    /* The deck loops every `total` px, and that is not exactly one work per card-width: the
+       first card's offset and its own width ride along in it. Measured in works, a lap is
+       `lapWorks`, which is a little more than the archive holds. The ruler is given the lap as
+       a fraction and stretched over the archive, so the timeline comes round exactly when the
+       deck does — feed it the raw count instead and the ruler would jump back a work or so
+       every time the deck crossed its seam. */
+    cardGap = bounds.length > 1 ? bounds[1].left - bounds[0].left : innerWidth;
+    lapWorks = cardGap > 0 ? total / cardGap : slides.length;
+    ruler.resize();
   }
 
   function place(i, wrapped) {
@@ -146,6 +162,10 @@ function mountFlow(view, slides, aspects, onOpen) {
         w += b.end - total;
         place(i, w);
       }
+      const f = (cur + innerWidth * 0.5 - bounds[0].left) / cardGap;   // work under the line
+      let lap = f % lapWorks;
+      if (lap < 0) lap += lapWorks;
+      ruler.update(lap * (slides.length / lapWorks), ratio);
     }
     raf = requestAnimationFrame(frame);
   }
@@ -210,6 +230,7 @@ function mountFlow(view, slides, aspects, onOpen) {
     removeEventListener('wheel', onWheel);
     removeEventListener('keydown', onKey);
     removeEventListener('resize', measure);
+    ruler.destroy();          // it listens for resize of its own
   }
 
   return {

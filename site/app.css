@@ -286,8 +286,11 @@ html.is-resizing .wordmark{transition:none}
 .view--home.no-trans .car-entr,.view--home.no-trans .ruler{transition:none !important}
 /* items receiving a reverse flip stay in place (the ghost flies to them) */
 .view--home .car-item.flip-back .car-entr{transform:translateY(0) !important;transition:none !important}
-.view--home .ruler{opacity:0;transition:opacity .5s ease 1.1s}   /* .5s power1 */
-.view--home.is-in .ruler{opacity:1}
+/* the home marks its arrival with .is-in and the ruler rides that. The flow deck does not —
+   its cards carry their own entrance — so its ruler is turned on by hand once the deck is up,
+   and the delay in the transition keeps the two views' timelines appearing at the same beat. */
+.view--home .ruler,.view--flow .ruler{opacity:0;transition:opacity .5s ease 1.1s}   /* .5s power1 */
+.view--home.is-in .ruler,.view--flow .ruler.is-on{opacity:1}
 
 /* ---------- top timeline ruler (flipped: line on top, ticks hang down) ---------- */
 .ruler{
