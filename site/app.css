@@ -327,8 +327,12 @@ html.is-resizing .wordmark{transition:none}
 .menu__blob--trail{opacity:.92}
 .menu__filter{position:absolute;width:0;height:0;overflow:hidden}
 .menu.is-in{transform:translate(-50%,0);opacity:1}
+/* no z-index here. Giving the capsule one made it a stacking context, and its buttons — set
+   above the drop — were sealed inside it, so the whole capsule sank under the drop and the
+   black body swallowed the mark it was supposed to sit behind. Left alone, the capsule's
+   background paints below the drop and its buttons paint above it, which is the whole idea. */
 .menu__capsule{
-  position:relative;z-index:0;
+  position:relative;
   display:flex;align-items:center;gap:.6rem;
   background:#fff;border:1px solid #e0e0e0;border-radius:999px;padding:1px;
 }
