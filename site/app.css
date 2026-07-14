@@ -21,11 +21,6 @@
    - curtain: a panel that has to *start* slowly (it is large) and then get out of the way. */
 :root{
   --size:1500;                                  /* the desktop mock's width */
-  /* How big the reading copy on About is set, per device — and it cannot be one number.
-     A phone is held at arm's length and a monitor sits twice as far away, so type that reads
-     well in the hand is small on a desk at the same proportion. The layout scales with the
-     viewport; how close the reader's eye is does not, and that is what this carries. */
-  --at:1.4;
   --ease-travel:cubic-bezier(.2,.92,.24,1);
   --ease-rise:cubic-bezier(.19,1,.22,1);
   --ease-reveal:cubic-bezier(.24,.94,.32,1);
@@ -37,7 +32,6 @@
    zoomed. The detail's painting swelled, its neighbours were squeezed to make room, the controls
    moved. A unit that everything is measured in cannot be changed for the sake of one thing that
    is measured in it. The type on About is what wanted to be larger, so that is what is larger. */
-@media (min-width:700px) and (max-width:1199px){:root{--at:1.55}}
 /* The phone's scale walks down to meet the desktop's instead of dropping onto it.
    A phone at 390 gets 10px, exactly what it always got. As the window widens the phone's drawing
    does not grow — it has more room, it does not need to be bigger — and by 699 it has eased to
@@ -46,7 +40,7 @@
    the drawing itself (seven paintings abreast become sixteen), and no amount of scaling can ease
    that: it is a different composition, not a different size.
    12.5243 - 0.64725vw is the line through (390, 10px) and (699, 8px). */
-@media (max-width:699px){:root{--size:390;--at:1;--rem-min:8px;--rem-max:10px}}
+@media (max-width:699px){:root{--size:390;--rem-min:8px;--rem-max:10px}}
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{
@@ -149,7 +143,7 @@ img{max-width:100%;display:block}
      shifting `top` instead would snap the logo into place with no travel at all */
   transform:translateX(-50%) translateY(var(--rest-shift)) scale(.62);transform-origin:top center;
   width:90em;max-width:100vw;
-  font-size:.4rem;
+  font-size:min(calc(2.244px + 0.45045vw),.9rem);
   pointer-events:none;user-select:none;
   z-index:20;   /* above the ruler so difference-blend inverts the ticks through the letters */
   display:flex;flex-direction:column;align-items:center;
@@ -169,7 +163,8 @@ html.is-resizing .wordmark{transition:none}
 @media (max-width:699px){
   body:has(.view--articles) .wordmark{--rest-shift:-6.5rem}
 }
-@media (min-width:700px){.wordmark{font-size:.9rem}}
+/* the wordmark had two sizes with a wall between them — .4rem on the phone and .9rem past 700px,
+   which is 3.2px and 7.2px on either side of a single pixel of window. One line through both. */
 /* during the intro the wordmark sits higher than the middle: the month list and the enter
    button live underneath it, and they need the room */
 .wordmark.at-intro{
@@ -647,7 +642,7 @@ html.is-resizing .wordmark{transition:none}
   padding:40rem 2rem 2rem;
 }
 .agrid__row{
-  display:grid;grid-template-columns:repeat(12,1fr);gap:2rem;
+  display:grid;gap:2rem;   /* the column count is the cell count — set in views.js */
   align-items:start;transform-origin:top center;
 }
 /* On a phone the tilt is not the script's to draw. iOS runs its momentum scroll on the
@@ -683,7 +678,7 @@ html.is-resizing .wordmark{transition:none}
 }
 @media (max-width:699px){
   .agrid__in{gap:7rem;padding-top:20rem}
-  .agrid__row{grid-template-columns:repeat(4,1fr);gap:1rem}
+  .agrid__row{gap:1rem}
 }
 .agrid__cell{position:relative;cursor:pointer}
 .agrid__media{position:relative;width:100%}
@@ -727,7 +722,8 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
    wherever it later lands — a frame that flies between views carries its .ok with it */
 .lse-frame img{opacity:0;transition:opacity .5s ease-out}
 .lse-frame img.ok{opacity:1}
-.about__scroll{padding:0 2rem}
+.about__scroll{
+  container-type:inline-size;   /* the CV asks this column how wide it is, not the window */padding:0 2rem}
 /* the head holds the two small labels. It used to stand a full screen tall, so the page
    opened on an empty view and the title only arrived after a scroll — enough height to
    breathe, not enough to hide what the page is. */
@@ -739,10 +735,10 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
    42px of overlap on a desktop. The lines need room for the tallest thing that can sit in
    them, and that is 한글. */
 .about__title{
-  font-size:calc(11.7rem * var(--sz,1));font-weight:700;line-height:var(--lh,1.1);
+  font-size:calc(min(calc(7.541px + 7.2973vw),11.7rem) * var(--sz,1));font-weight:700;line-height:var(--lh,1.1);
   text-transform:uppercase;text-align:center;margin:0 0 calc(22.5rem * var(--gap,1));
 }
-@media (max-width:699px){.about__title{font-size:calc(3.6rem * var(--sz,1));margin-bottom:calc(15rem * var(--gap,1))}}
+@media (max-width:699px){.about__title{margin-bottom:calc(15rem * var(--gap,1))}}
 .about__line{overflow:hidden}
 .about__line-in{
   display:block;transform:translateY(105%);
@@ -759,10 +755,10 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
    wraps onto many lines, ran into itself: 앉은 sat on 습니다. The lines get room for the
    tallest thing they can hold. */
 .about__intro{
-  font-size:calc(4rem * var(--sz,1) * var(--at,1));font-weight:700;line-height:var(--lh,1.35);text-transform:uppercase;
+  font-size:calc(min(calc(18.161px + 2.5225vw),5.6rem) * var(--sz,1));font-weight:700;line-height:var(--lh,1.35);text-transform:uppercase;
   max-width:110rem;margin:0 auto calc(28.5rem * var(--gap,1));display:flex;flex-direction:column;gap:6rem;
 }
-@media (max-width:699px){.about__intro{font-size:calc(2.8rem * var(--sz,1) * var(--at,1));margin-bottom:calc(15rem * var(--gap,1))}}
+@media (max-width:699px){.about__intro{margin-bottom:calc(15rem * var(--gap,1))}}
 /* an image block: it shares the copy's column so pictures and paragraphs line up, and it
    carries the same bottom margin as a text block so any block order keeps one rhythm.
    Each picture keeps its own aspect ratio rather than being cropped to a fixed cell. */
@@ -774,11 +770,11 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
   max-width:110rem;margin:0 auto calc(12rem * var(--gap,1));
   /* the group's column widens with the type it holds — a name set larger in a column that
      stayed put is a name broken across four lines */
-  display:grid;grid-template-columns:calc(16rem * var(--at,1)) 1fr;gap:0 3rem;align-items:start;
+  display:grid;grid-template-columns:22.4rem 1fr;gap:0 3rem;align-items:start;
 }
 .about__cv-label{
   text-align:right;opacity:.75;padding-top:.5rem;white-space:nowrap;
-  font-size:calc(1.4rem * var(--sz-label,1) * var(--at,1));
+  font-size:calc(min(calc(12.032px + 0.5045vw),1.96rem) * var(--sz-label,1));
 }
 .about__cv-items{display:flex;flex-direction:column;gap:1.4rem}
 .about__cv-row{
@@ -789,19 +785,24 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
    size control, so the pair keeps its proportion whatever size the group is set to. */
 .about__cv-main{display:flex;flex-direction:column;gap:.2rem;min-width:0}
 .about__cv-meta{display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap}
-.about__cv-t{font-size:calc(2.4rem * var(--sz-t,1) * var(--at,1));line-height:1.45}
-.about__cv-en{font-size:calc(1.6rem * var(--sz-t,1) * var(--at,1));opacity:.5;line-height:1.35}
+.about__cv-t{font-size:calc(min(calc(13.87px + 1.3153vw),3.36rem) * var(--sz-t,1));line-height:1.45}
+.about__cv-en{font-size:calc(min(calc(13.751px + 0.5766vw),2.24rem) * var(--sz-t,1));opacity:.5;line-height:1.35}
 .about__cv-label-ko{line-height:1.3}
 .about__cv-label-en{opacity:.55;font-size:.85em;line-height:1.3}
-.about__cv-d{font-size:calc(1.6rem * var(--sz-n,1) * var(--at,1));opacity:.75;line-height:1.45;
+.about__cv-d{font-size:calc(min(calc(11.049px + 0.7568vw),2.24rem) * var(--sz-n,1));opacity:.75;line-height:1.45;
   font-family:mono,sans,ui-monospace,monospace;white-space:nowrap}
-.about__cv-n{font-size:calc(1.6rem * var(--sz-n,1) * var(--at,1));opacity:.5;line-height:1.45}
+.about__cv-n{font-size:calc(min(calc(11.049px + 0.7568vw),2.24rem) * var(--sz-n,1));opacity:.5;line-height:1.45}
 /* the group's alignment moves its entries within their column. The group's name keeps its own
    side of the gutter — it is the spine the entries hang from, and swinging it about would
    just break the column. */
 .about__cv.about__al--center .about__cv-row{justify-content:center}
 .about__cv.about__al--right .about__cv-row{justify-content:flex-end}
-@media (max-width:699px){
+/* The CV stacks when the CV has no room, not when the window crosses a number somebody chose.
+   The group's name needs a column of 22.4rem beside the entries; where the copy is narrower than
+   about 560px there is no such column to give, and the name goes above its entries instead. It is
+   the copy's own width that decides — so a page whose text column is narrow stacks even on a wide
+   screen, and the switch happens where it is actually needed. */
+@container (max-width:560px){
   .about__cv{
     grid-template-columns:1fr;gap:.8rem;margin-bottom:calc(8rem * var(--gap,1));
   }
@@ -818,8 +819,6 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
   /* the entry stacks: its name, its English, then the year and the place on one line under */
   .about__cv-row{flex-direction:column;align-items:stretch;gap:.4rem}
   .about__cv-meta{gap:.8rem}
-  .about__cv-t{font-size:calc(1.9rem * var(--sz-t,1) * var(--at,1))}
-  .about__cv-d,.about__cv-n{font-size:calc(1.4rem * var(--sz-n,1) * var(--at,1))}
 }
 .about__fig{
   max-width:110rem;margin:0 auto calc(28.5rem * var(--gap,1));
@@ -870,10 +869,10 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
 /* month labels on the grid use the shared reveal mask */
 .view--articles.is-in .dt-reveal>*{transform:translateY(0)}
 .about__thanks{
-  font-size:calc(11.7rem * var(--sz,1));font-weight:700;line-height:var(--lh,1.1);text-transform:uppercase;
+  font-size:calc(min(calc(7.541px + 7.2973vw),11.7rem) * var(--sz,1));font-weight:700;line-height:var(--lh,1.1);text-transform:uppercase;
   margin-bottom:calc(5rem * var(--gap,1));
 }
-@media (max-width:699px){.about__thanks{font-size:calc(3.6rem * var(--sz,1))}}
+
 .about__thanks div:nth-child(even){text-align:right}
 .about__credits{opacity:.5;padding-bottom:6rem;display:flex;flex-direction:column;gap:.6rem}
 

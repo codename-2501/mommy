@@ -23,8 +23,18 @@ function rootPx() {
   return parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
 }
 
-function isSmall() {
-  return matchMedia('(max-width:699px)').matches;
+/* The page has two drawings, a phone's and a desktop's, and it used to switch between their
+   numbers at a single pixel of window: seven paintings abreast became sixteen, a card 20rem wide
+   became 28.1rem, a drag that travelled 3.6x became 2.2x. Nothing about a 701px window is twice
+   as wide as a 699px one, so nothing about it should be drawn twice as loosely.
+   `span` is where the window stands between the two drawings, 0 at the phone's width and 1 at the
+   desktop's, and every number that differed between them is read off it. Counts land on whole
+   numbers, so they step one at a time, at the width where one more actually fits. */
+function span() {
+  return Math.max(0, Math.min(1, (innerWidth - 390) / (1500 - 390)));
+}
+function tween(small, large) {
+  return small + (large - small) * span();
 }
 
 const slideMonth = (s) => window.LSEData.month(s);   // date first — see site/data.js
@@ -103,7 +113,7 @@ function mount(view, slides, aspects, opts, onOpen) {
   let lastTs = 0;
   let active = -1;                          // centred slide
 
-  function mult() { return isSmall() ? 3.6 : 2.2; }   // drag travel per pixel dragged
+  function mult() { return tween(3.6, 2.2); }   // drag travel per pixel dragged
 
   function wrapIdx(i) { const n = items.length; return ((i % n) + n) % n; }
 
@@ -119,8 +129,8 @@ function mount(view, slides, aspects, opts, onOpen) {
 
   function resize() {
     rem = rootPx();
-    const slideW = (isSmall() ? 20 : 28.1) * rem;
-    const gap = (isSmall() ? 1.2 : 2) * rem;
+    const slideW = tween(20, 28.1) * rem;
+    const gap = tween(1.2, 2) * rem;
     const prevStep = step;
     step = slideW + gap;
     half = slides.length * step;
@@ -137,11 +147,11 @@ function mount(view, slides, aspects, opts, onOpen) {
     /* per-slide wrap: d = wrap(end - total, end, cur); x = -d */
     if (step) {
       const pad = 2 * rem;
-      const slideW = step - ((isSmall() ? 1.2 : 2) * rem);
+      const slideW = step - (tween(1.2, 2) * rem);
       /* skew with velocity. The phone used to be left out of it — but the carousel runs on its
          own lerp, not the system's scroll, so its frames keep coming there too. A phone's cards
          are smaller, so the same lean needs a little more angle to read. */
-      const ry = 'rotateY(' + (diff * (isSmall() ? 0.07 : 0.045)) + 'deg)';
+      const ry = 'rotateY(' + (diff * tween(0.07, 0.045)) + 'deg)';
       for (let k = 0; k < items.length; k++) {
         const left = pad + k * step;
         const end = left + slideW;

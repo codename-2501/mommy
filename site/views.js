@@ -25,8 +25,18 @@ function gateLoad(img) {
   else img.addEventListener('load', () => img.classList.add('ok'), { once: true });
 }
 
-function isSmall() {
-  return matchMedia('(max-width:699px)').matches;
+/* The page has two drawings, a phone's and a desktop's, and it used to switch between their
+   numbers at a single pixel of window: seven paintings abreast became sixteen, a card 20rem wide
+   became 28.1rem, a drag that travelled 3.6x became 2.2x. Nothing about a 701px window is twice
+   as wide as a 699px one, so nothing about it should be drawn twice as loosely.
+   `span` is where the window stands between the two drawings, 0 at the phone's width and 1 at the
+   desktop's, and every number that differed between them is read off it. Counts land on whole
+   numbers, so they step one at a time, at the width where one more actually fits. */
+function span() {
+  return Math.max(0, Math.min(1, (innerWidth - 390) / (1500 - 390)));
+}
+function tween(small, large) {
+  return small + (large - small) * span();
 }
 
 const { MONTHS, month, category } = window.LSEData;   // date first — see site/data.js
@@ -106,7 +116,7 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
   let hoverIdx = -1;              // the card the cursor is lifting (see mouseenter above)
 
   function measure() {
-    const P = isSmall() ? 7 : 16;   // cards abreast across the viewport
+    const P = Math.round(tween(7, 16));   // cards abreast across the viewport
     const spread = innerWidth / P;
     rest = (innerHeight / (P * 1.5)) * 0.4;   // bob amplitude
     bounds = items.map((it, i) => {
@@ -175,7 +185,7 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     if (!dragging) return;
     const dx = e.clientX - sx;
     if (Math.abs(dx) > 10) moved = true;
-    target = st - dx * (isSmall() ? 3.6 : 2.2);   // drag travel
+    target = st - dx * tween(3.6, 2.2);   // drag travel
   }
   function onUp() { dragging = false; }
   function onWheel(e) {
@@ -345,12 +355,17 @@ function mountIndex(view, slides, aspects, onOpen) {
   outer.appendChild(content);
   view.appendChild(outer);
 
-  const perRow = isSmall() ? 4 : 12;
+  const perRow = Math.round(tween(4, 12));
   const years = yearsByMonth(slides);
   let row = null, seenMonth = '';
   slides.forEach((s, i) => {
     if (i % perRow === 0) {
       row = el('div', 'agrid__row lse-row');
+      /* the row is as many columns wide as it holds. It used to be twelve in the stylesheet and
+         four on a phone, while the count of cells put in it was decided here — so the moment the
+         count became a continuous thing, the two stopped agreeing and a row of seven was laid out
+         across twelve columns. One of them has to own the number, and it is this one. */
+      row.style.gridTemplateColumns = 'repeat(' + perRow + ',1fr)';
       content.appendChild(row);
     }
     const cell = el('article', 'agrid__cell lse-card');
