@@ -31,10 +31,13 @@
   --ease-reveal:cubic-bezier(.24,.94,.32,1);
   --ease-curtain:cubic-bezier(.62,.02,.2,1);
 }
-/* There was no tablet: 700–1199px was handed the desktop drawing and shrunk to fit it, so at
-   820px the whole page ran at 55% and a CV date came out 8.7px — technically proportional,
-   and unreadable. A tablet is its own width, and now it is drawn at its own. */
-@media (min-width:700px) and (max-width:1199px){:root{--size:1024;--at:1.15}}
+/* A tablet gets its own reading scale, and nothing else.
+   It was given its own drawing width (1024 instead of 1500), which changes the unit the whole
+   page is built from: every rem grew by 1.47x while the screen did not, so the page was simply
+   zoomed. The detail's painting swelled, its neighbours were squeezed to make room, the controls
+   moved. A unit that everything is measured in cannot be changed for the sake of one thing that
+   is measured in it. The type on About is what wanted to be larger, so that is what is larger. */
+@media (min-width:700px) and (max-width:1199px){:root{--at:1.55}}
 @media (max-width:699px){:root{--size:390;--at:1}}     /* …and the phone's */
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
