@@ -328,34 +328,39 @@ function create(view, slides, opts) {
     centreLine();
   }
 
-  /* a dot a painting, on a hairline. The dot grows and drops as it comes under the line —
-     the row reads as one strand being plucked rather than a bulb switching on */
+  /* A dot a painting, strung on a line. The line used to run straight while the dots dropped
+     away from it — a strand and some beads that had come off it. It is drawn through the dots'
+     own centres now, so lifting one bends the line around it: the row reads as a string being
+     plucked, which is the thing the swelling was always trying to say. The curve is carried
+     through the midpoints between neighbours, so the line arrives at each dot without a corner. */
   function drawDots(U, ratio) {
     ctx.clearRect(0, 0, cw, ch);
-    const y0 = ch * 0.3;
-    ctx.globalAlpha = 0.12;                        // the strand the dots sit on
-    ctx.beginPath();
-    ctx.moveTo(0, Math.round(y0) + 0.5);
-    ctx.lineTo(cw, Math.round(y0) + 0.5);
-    ctx.stroke();
+    const y0 = ch * 0.28, drop = ch * 0.34;
+    const pts = [];
     eachWork(U, ratio, (i, x, s) => {
-      ctx.globalAlpha = 0.22 + 0.78 * s;
+      pts.push({ x: x + workW * 0.5, y: y0 + s * drop, s });
+    });
+    if (pts.length > 1) {
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let k = 1; k < pts.length; k++) {
+        const a = pts[k - 1], b = pts[k];
+        ctx.quadraticCurveTo(a.x, a.y, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      }
+      const last = pts[pts.length - 1];
+      ctx.lineTo(last.x, last.y);
+      ctx.stroke();
+    }
+    for (const p of pts) {
+      ctx.globalAlpha = 0.28 + 0.72 * p.s;
       ctx.fillStyle = '#111';
       ctx.beginPath();
-      ctx.arc(Math.round(x + workW * 0.5), y0 + s * ch * 0.3, 2.2 + s * 3.4, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, 2.2 + p.s * 3.4, 0, Math.PI * 2);
       ctx.fill();
-    });
+    }
     ctx.globalAlpha = 1;
     centreLine();
-  }
-
-  /* the name of the month you are in is lit with its ticks — the two are one statement */
-  function markLive(gi) {
-    if (gi === litGroup) return;
-    litGroup = gi;
-    labelTrack.querySelectorAll('.ruler__label').forEach((l) => {
-      l.classList.toggle('is-live', +l.dataset.g === gi);
-    });
   }
 
   function onEnter() { hover = true; }
