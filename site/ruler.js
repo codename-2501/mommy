@@ -19,6 +19,7 @@ const TICK_MH = 11, TICK_MJH = 24, TICK_ALPHA = 0.22;   // minor / month tick, r
 const LIVE_ALPHA = 0.62;        // the ticks of the month you are standing in
 const HOVER_NEAR = 9 * TICK_GAP, HOVER_BOOST = 20, HOVER_FALL = 0.5;   // cursor swells the ruler
 const CENTER_H = 50;            // how tall the tick under the centre line stands
+const PULL_TICKS = TICKS_PER_SLIDE * 1.5;   // how far along the string a pull is felt (dots)
 
 /* Four ways to draw the same fact — where in the archive's time you are standing.
 
@@ -238,8 +239,18 @@ function create(view, slides, opts) {
       const mj = majors[idx] === 1;
       const base = mj ? TICK_MJH : TICK_MH;
       let boost = 0;
-      if (t === centerIdx) boost = CENTER_H - base;
-      else if (hover && hoverX >= 0) {
+      if (t === centerIdx) {
+        boost = CENTER_H - base;
+      } else if (mode === 'dots' && Math.abs(t - centerIdx) < PULL_TICKS) {
+        /* The ruler lifts one tick and leaves its neighbours where they were. As marks that is
+           right — a tick stands up, the ones beside it do not. As a string it is wrong: pull a
+           thread at one point and the beads either side come with it. They stayed put, so the
+           line fell to the bead you were on and climbed straight back, and the grain around it
+           hung in the air as if the thread had been cut. The pull carries along the string now,
+           strongest at the finger and easing out over a work and a half. */
+        const d = Math.abs(t - centerIdx) / PULL_TICKS;
+        boost = (CENTER_H - base) * Math.pow(1 - d, 2.4);
+      } else if (hover && hoverX >= 0) {
         const dx = Math.abs(ox - hoverX);
         if (dx < HOVER_NEAR) boost = HOVER_BOOST * fall(dx / HOVER_NEAR);
       }
