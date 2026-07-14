@@ -487,10 +487,25 @@ function aboutBlock(b) {
      drawn: the title centred over the page, the body and the sign-off ranged left. */
   const ALIGN_DEFAULT = { title: 'center', text: 'left', thanks: 'left' };
   const al = ['left', 'center', 'right'].includes(b.align) ? b.align : ALIGN_DEFAULT[b.type];
-  /* size is a multiple of the block's own size, so the page's scale still holds */
-  const sz = ['sm', 'md', 'lg'].includes(b.size) ? b.size : 'md';
+  /* Size and leading are multiples of what the block is already set at, so the page's own
+     scale — which is what makes it responsive — still holds underneath them. Size used to be
+     three steps (작게 / 보통 / 크게); a headline that wanted to be a shade smaller had to jump
+     28% to get there. It is a number now, and the leading, which could not be set at all, is
+     one too: a title set large with a phrase on each line needs its lines closer than a title
+     of one line does, and nothing in the admin could say so. */
+  const SZ_WORD = { sm: 0.72, md: 1, lg: 1.4 };   // the three steps it had, kept readable
+  const scale = (v) => {
+    if (SZ_WORD[v] != null) return SZ_WORD[v];
+    const n = parseFloat(v);
+    if (!isFinite(n) || n <= 0) return null;
+    return n > 5 ? n / 100 : n;                   // 110 means 110%
+  };
   const aligned = (node) => {
-    node.classList.add('about__al--' + al, 'about__sz--' + sz);
+    node.classList.add('about__al--' + al);
+    const s = scale(b.size);
+    if (s != null) node.style.setProperty('--sz', String(s));
+    const lh = parseFloat(b.lh);
+    if (isFinite(lh) && lh > 0) node.style.setProperty('--lh', String(lh));
     return node;
   };
 
