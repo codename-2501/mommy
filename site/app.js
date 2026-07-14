@@ -734,7 +734,11 @@ function leave(oldEl, oldInst, oldCar, flags) {
   const done = () => { if (leaving && leaving.el === oldEl) finalizeLeaving(); };
   freezeEntrance(oldEl);
 
-  if (fromFlow && !toAbout && oldInst && oldInst.exit) {
+  /* The deck flies its paintings out when it leaves — except it did not when it left for About,
+     where they simply stood still until the curtain covered them and then were gone. The curtain
+     hides the fact rather than making it: a view that leaves with no motion of its own has not
+     left, it has been taken away. It flies them out wherever it is going. */
+  if (fromFlow && oldInst && oldInst.exit) {
     leaving = { el: oldEl, inst: null, car: oldCar, timer: 0 };   // exit() already destroyed it
     oldInst.exit(done);                                  // the paintings fly out
     return;
