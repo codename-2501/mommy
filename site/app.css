@@ -408,8 +408,13 @@ html.is-resizing .wordmark{transition:none}
    must be visible immediately */
 .detail.is-off .dt-bg{opacity:0;transition:opacity .15s ease}
 /* right panel: outer mask slides from +100%, inner from -100% */
+/* The split is a fraction of the screen, so it is written as one. It used to say 61.5rem, which
+   equals 41% of the viewport — but only while rem is 1/150th of it. The moment a band scales the
+   unit (the tablet draws at 1024, so its rem is 1.47x what the desktop's would be at that width)
+   61.5rem stopped meaning 41% and started meaning 60%: on a 778px window the panel closed from
+   59% of the screen to 40%. Type belongs in rem. A proportion of the viewport does not. */
 .dt-panel{
-  position:absolute;top:0;right:0;bottom:0;left:61.5rem;
+  position:absolute;top:0;right:0;bottom:0;left:41%;
   border-left:1px solid rgba(0,0,0,.1);background:#fff;overflow:hidden;
   z-index:12;   /* s:z-[12] — the strip images slide UNDER this panel */
   transform:translateX(100%);
@@ -472,9 +477,12 @@ html.is-resizing .wordmark{transition:none}
 .dt-video{position:relative;width:100%;aspect-ratio:16/9}
 .dt-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 
-/* left strip: prev / current / next */
+/* left strip: prev / current / next.
+   Its width is the panel's edge, and the same fraction of the screen — written as one, for the
+   same reason: 61.5rem is 41% of the viewport only while rem is 1/150th of it, and it is not
+   on a tablet. The strip and the panel would have parted company and left a seam between them. */
 .dt-strip{
-  position:absolute;top:0;bottom:0;left:0;width:61.5rem;
+  position:absolute;top:0;bottom:0;left:0;width:41%;
   display:flex;align-items:center;z-index:2;
 }
 .dt-strip__row{
