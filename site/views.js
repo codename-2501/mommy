@@ -45,7 +45,7 @@ function yearsByMonth(slides) {
 }
 
 /* ---------------- FLOW: floating card deck ---------------- */
-function mountFlow(view, slides, aspects, onOpen, years) {
+function mountFlow(view, slides, aspects, onOpen, opts) {
   const wrap = el('div', 'flow');
   const inner = el('div', 'flow__inner');
   const deck = el('div', 'flow__deck');
@@ -58,7 +58,7 @@ function mountFlow(view, slides, aspects, onOpen, years) {
   /* the same timeline the carousel carries. The deck runs the same works in the same order,
      so the question the ruler asks — which work is under the centre line — has an answer here
      too; it simply had no one to ask it. */
-  const ruler = window.LSERuler.create(view, slides, { monthOf: month, years: years || {} });
+  const ruler = window.LSERuler.create(view, slides, Object.assign({ monthOf: month }, opts || {}));
   requestAnimationFrame(() => ruler.el.classList.add('is-on'));
 
   const items = slides.map((s, i) => {

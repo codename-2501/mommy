@@ -66,14 +66,14 @@ function buildItem(s, i, ratio) {
 }
 
 /* consecutive-month groups: [{text, startSlide, slides}] */
-function mount(view, slides, aspects, years, onOpen) {
+function mount(view, slides, aspects, opts, onOpen) {
   if (!slides.length) return null;
 
   const wrap = el('div', 'carousel');
   const track = el('div', 'carousel__track');
   wrap.appendChild(track);
   view.appendChild(wrap);
-  const ruler = window.LSERuler.create(view, slides, { monthOf: slideMonth, years });
+  const ruler = window.LSERuler.create(view, slides, Object.assign({ monthOf: slideMonth }, opts || {}));
 
   const ratios = slides.map((s) => {
     const name = String(s.image || '').split('/').pop();

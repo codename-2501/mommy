@@ -7,6 +7,14 @@ const MONTHS = ['January','February','March','April','May','June',
 const app = document.getElementById('app');
 let content = null;
 let aspects = {};             // image filename -> width/height
+let tones = {};               // image filename -> the colour that painting is of
+
+/* which timeline to draw. Four are built; they are compared by hand before one is chosen, so
+   the choice lives in the URL (?tl=colors) rather than in a setting nobody has decided yet. */
+function timelineMode() {
+  const m = new URLSearchParams(location.search).get('tl');
+  return ['ticks', 'colors', 'bars', 'dots'].includes(m) ? m : 'ticks';
+}
 let icons = {};               // path -> inline svg markup
 let entered = false;          // intro gate passed this page-load
 let carousel = null;          // active carousel instance
@@ -64,6 +72,16 @@ async function loadContent() {
   } catch (err) {
     console.error('content load failed:', err);
     return { slides: [], wordmark: {}, texts: {} };
+  }
+}
+
+async function loadColors() {
+  try {
+    const r = await fetch('/api/colors');
+    const j = await r.json();
+    return j.colors || {};
+  } catch (err) {
+    return {};                  // no colours: the strip falls back to a neutral grey
   }
 }
 
@@ -425,7 +443,8 @@ function renderHome() {
 
   if (carousel) { carousel.destroy(); carousel = null; }
   carousel = window.LSECarousel.mount(
-    view, content.slides || [], aspects, yearsByName(),
+    view, content.slides || [], aspects,
+    { years: yearsByName(), colors: tones, mode: timelineMode() },
     (s, item) => {
       carousel.freeze();   // stop the lerp drift so the flip source stays put
       const grab = (it) => {
@@ -504,7 +523,10 @@ function buildView(path) {
   const slides = content.slides || [];
   if (path === '/') return renderHome();
   if (path === '/flow') {
-    return renderView('flow', (v, open) => window.LSEViews.mountFlow(v, slides, aspects, open, yearsByName()));
+    return renderView('flow', (v, open) =>
+      window.LSEViews.mountFlow(v, slides, aspects, open, {
+        years: yearsByName(), colors: tones, mode: timelineMode(),
+      }));
   }
   if (path === '/articles') {
     return renderView('articles', (v, open) => window.LSEViews.mountIndex(v, slides, aspects, open));
@@ -919,9 +941,10 @@ addEventListener('resize', () => {
 
 /* ---------- boot ---------- */
 
-Promise.all([loadContent(), loadAspects(), loadIcons()]).then(([c, a]) => {
+Promise.all([loadContent(), loadAspects(), loadIcons(), loadColors()]).then(([c, a, , t]) => {
   content = c;
   aspects = a;
+  tones = t || {};
   /* the intro gate belongs to the timeline. Land straight on /flow, /articles, /about or a
      painting and there is no gate to pass — so the wordmark and menu must already be up. */
   if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') entered = true;

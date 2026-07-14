@@ -277,6 +277,65 @@ def _slide_by_id(sid):
 _ASPECTS = None
 
 
+COLORS_CACHE = os.path.join(ROOT, ".colors.json")
+_COLORS = None
+
+
+def image_colors():
+    """{filename: "#rrggbb"} — one colour standing for each painting.
+
+    Read at a glance, the archive is a run of colours before it is a run of dates: the year the
+    flowers came, the winter of grey water. Averaging a whole picture would wash every one of
+    them to the same mud, so each is shrunk to 8x8 first and the most saturated of those 64
+    cells is taken — the colour the painting is actually *of*, not the colour of its canvas.
+
+    It costs a read of every image, so it is cached on disk and only the images that are new
+    since last time are looked at."""
+    global _COLORS
+    if _COLORS is not None:
+        return _COLORS
+    cache = {}
+    try:
+        with open(COLORS_CACHE) as fh:
+            cache = json.load(fh)
+    except Exception:
+        cache = {}
+
+    out, fresh = {}, False
+    try:
+        from PIL import Image
+        for f in sorted(os.listdir(IMAGES_DIR)):
+            if not f.lower().endswith(ALLOWED_IMG):
+                continue
+            if f in cache:
+                out[f] = cache[f]
+                continue
+            try:
+                im = Image.open(os.path.join(IMAGES_DIR, f)).convert("RGB").resize((8, 8))
+                best, score = (128, 128, 128), -1
+                for px in im.getdata():
+                    mx, mn = max(px), min(px)
+                    sat = (mx - mn) / mx if mx else 0
+                    s2 = sat * 2 + (mx / 255) * 0.5      # colourful first, then bright
+                    if s2 > score:
+                        score, best = s2, px
+                out[f] = "#%02x%02x%02x" % best
+                fresh = True
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    if fresh or len(out) != len(cache):
+        try:
+            with open(COLORS_CACHE, "w") as fh:
+                json.dump(out, fh)
+        except Exception:
+            pass
+    _COLORS = out
+    return _COLORS
+
+
 def image_aspects():
     """{filename: width/height} for every image, so thumbnails keep their ratio."""
     global _ASPECTS
@@ -487,6 +546,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         if path == "/api/aspects":
             return self._send_json({"aspects": image_aspects()})
+
+        if path == "/api/colors":
+            return self._send_json({"colors": image_colors()})
 
         # resized image cache: /thumbs/<width>/<name> -> webp (carousel-size assets;
         # the originals are multi-MB and stall the scroll while decoding)

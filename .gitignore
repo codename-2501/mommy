@@ -10,3 +10,4 @@ dist/
 .backups/
 .content-*.tmp
 .admin_token
+.colors.json

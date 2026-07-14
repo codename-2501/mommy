@@ -19,6 +19,20 @@ const TICK_MH = 11, TICK_MJH = 24, TICK_ALPHA = 0.22;   // minor / month tick, r
 const HOVER_NEAR = 9 * TICK_GAP, HOVER_BOOST = 20, HOVER_FALL = 0.5;   // cursor swells the ruler
 const CENTER_H = 50;            // how tall the tick under the centre line stands
 
+/* Four ways to draw the same fact — where in the archive's time you are standing.
+
+   ticks   the ruler: eight marks to a painting, a taller one where a month turns
+   colors  one band a painting, in the colour that painting is of: the archive's palette,
+           running. It is a record of what she painted, not of when
+   bars    one bar a month, as tall as that month was full: the months she worked in a rush
+           and the months she did not
+   dots    one dot a painting. The plainest of them: you can count where you are
+
+   They differ in how much room a painting is given, so each sets its own — a colour needs to
+   sit beside its neighbours to say anything, and a tick needs room to be read as eight. */
+const WORK_W = { ticks: TICKS_PER_SLIDE * TICK_GAP, colors: 22, bars: 34, dots: 22 };
+const MODES = Object.keys(WORK_W);
+
 function el(tag, cls) {
   const n = document.createElement(tag);
   if (cls) n.className = cls;
@@ -45,8 +59,11 @@ function monthGroups(slides, monthOf) {
 function create(view, slides, opts) {
   const monthOf = (opts && opts.monthOf) || (() => '');
   const years = (opts && opts.years) || {};
+  const colors = (opts && opts.colors) || {};
+  const mode = MODES.includes(opts && opts.mode) ? opts.mode : 'ticks';
+  const workW = WORK_W[mode];
 
-  const ruler = el('div', 'ruler');
+  const ruler = el('div', 'ruler ruler--' + mode);
   const canvas = el('canvas', 'ruler__canvas');
   const labels = el('div', 'ruler__labels');
   const labelTrack = el('div', 'ruler__track');
@@ -56,10 +73,19 @@ function create(view, slides, opts) {
   view.appendChild(ruler);
 
   const tickLen = slides.length * TICKS_PER_SLIDE;          // total ruler ticks (one copy)
-  const rulerHalf = tickLen * TICK_GAP;
+  const rulerHalf = slides.length * workW;                  // one copy of the archive, in px
   const majors = new Uint8Array(tickLen);
   const groups = monthGroups(slides, monthOf);
   for (const g of groups) majors[g.startSlide * TICKS_PER_SLIDE] = 1;
+  const maxMonth = groups.reduce((m, g) => Math.max(m, g.slides), 1);
+  /* the colour of a work, kept as it is looked up often and never changes */
+  const tone = slides.map((s) => colors[String(s.image || '').split('/').pop()] || '#c9c9c9');
+  /* how full the month each work belongs to was — the bars are drawn per work, so the work
+     carries its month's weight rather than the ruler having to look the group up again */
+  const weight = new Float32Array(slides.length);
+  for (const g of groups) {
+    for (let i = g.startSlide; i < g.startSlide + g.slides; i++) weight[i] = g.slides / maxMonth;
+  }
 
   /* two copies of the labels, laid end to end: the track is shifted by the offset modulo one
      copy, so whichever way the archive is running there is always a copy under the viewport */
@@ -74,7 +100,7 @@ function create(view, slides, opts) {
         const d = String(slides[g.startSlide].date || '');
         const y = /^(\d{4})/.exec(d);
         l.dataset.year = (y && y[1]) || years[g.text] || '2026';
-        l.style.left = (copy * rulerHalf + g.startSlide * TICKS_PER_SLIDE * TICK_GAP) + 'px';
+        l.style.left = (copy * rulerHalf + g.startSlide * workW) + 'px';
         labelTrack.appendChild(l);
       }
     }
@@ -156,6 +182,74 @@ function create(view, slides, opts) {
     ctx.globalAlpha = 1;
   }
 
+  /* the three that are not the ruler share one shape: walk the works under the window, draw
+     each in its place, and let the one under the centre line come forward. Only what is drawn
+     for a work differs — a band of its colour, a bar of its month, or a dot. */
+  function eachWork(U, draw) {
+    const n = slides.length;
+    const first = Math.floor(U / workW) - 1;
+    const count = Math.ceil(cw / workW) + 3;
+    const centre = (U + cw * 0.5) / workW;          // the work under the line, fractional
+    for (let k = 0; k < count; k++) {
+      const at = first + k;
+      const i = ((at % n) + n) % n;
+      const x = at * workW - U;
+      const near = Math.abs(at - centre + 0.5);     // 0 at the line, 1 a work away
+      draw(i, x, near);
+    }
+  }
+
+  function centreLine() {
+    ctx.globalAlpha = 0.55;
+    ctx.beginPath();
+    ctx.moveTo(Math.round(cw * 0.5) + 0.5, 0);
+    ctx.lineTo(Math.round(cw * 0.5) + 0.5, ch);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawColors(U) {
+    ctx.clearRect(0, 0, cw, ch);
+    const h = ch * 0.62;
+    eachWork(U, (i, x, near) => {
+      const on = near < 0.5;                        // this is the work you are standing on
+      ctx.globalAlpha = on ? 1 : 0.42;
+      ctx.fillStyle = tone[i];
+      const hh = on ? ch : h;
+      ctx.fillRect(Math.round(x), 0, Math.ceil(workW) - 1, hh);
+    });
+    ctx.globalAlpha = 1;
+    centreLine();
+  }
+
+  function drawBars(U) {
+    ctx.clearRect(0, 0, cw, ch);
+    eachWork(U, (i, x, near) => {
+      const on = near < 0.5;
+      ctx.globalAlpha = on ? 0.9 : 0.22;
+      ctx.fillStyle = '#111';
+      const h = Math.max(3, weight[i] * (ch - 6));  // as tall as that month was full
+      ctx.fillRect(Math.round(x), 0, Math.ceil(workW) - 2, h);
+    });
+    ctx.globalAlpha = 1;
+    centreLine();
+  }
+
+  function drawDots(U) {
+    ctx.clearRect(0, 0, cw, ch);
+    const y = ch * 0.42;
+    eachWork(U, (i, x, near) => {
+      const on = near < 0.5;
+      ctx.globalAlpha = on ? 1 : 0.26;
+      ctx.fillStyle = '#111';
+      ctx.beginPath();
+      ctx.arc(Math.round(x + workW * 0.5), y, on ? 5 : 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    centreLine();
+  }
+
   function onEnter() { hover = true; }
   function onLeave() { hover = false; hoverX = -1; }
   function onMove(e) { hoverX = e.offsetX; }
@@ -170,11 +264,15 @@ function create(view, slides, opts) {
     /* called once a frame with the work under the centre line, and how long that frame was
        against a 60Hz one, so the swell eases at the same speed on any display */
     update(centerSlide, ratio) {
-      const off = centerSlide * TICKS_PER_SLIDE * TICK_GAP - ruler.clientWidth * 0.5;
+      if (!ctx || cw <= 0) return;
+      const off = centerSlide * workW - ruler.clientWidth * 0.5;
       let lOff = off % rulerHalf;
       if (lOff < 0) lOff += rulerHalf;
       labelTrack.style.transform = 'translate3d(' + (-lOff) + 'px,0,0)';
-      drawSticks(off, ratio || 1);
+      if (mode === 'ticks') drawSticks(off, ratio || 1);
+      else if (mode === 'colors') drawColors(off);
+      else if (mode === 'bars') drawBars(off);
+      else drawDots(off);
     },
     destroy() {
       removeEventListener('resize', resize);
