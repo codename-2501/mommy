@@ -346,37 +346,12 @@ function buildMenu() {
 
   /* The mark of where you are used to be a background colour: it switched on under the button
      you pressed and off under the one you left, so nothing ever travelled. It is a body now —
-     a drop that leaves, stretches thin as it crosses the gap, and lands with a wobble. A
-     second, slower drop follows it, and the two are drawn through a gooey filter, so they part
-     and rejoin the way a bead of water does instead of sliding as a rigid disc. */
-  const goo = el('div', 'menu__goo');
-  goo.setAttribute('aria-hidden', 'true');
-  goo.appendChild(el('div', 'menu__blob'));
-  goo.appendChild(el('div', 'menu__blob menu__blob--trail'));
-  menu.insertBefore(goo, menu.firstChild);
+     one drop that leaves, draws itself thin as it crosses, and rounds out where it lands. */
+  const layer = el('div', 'menu__drop');
+  layer.setAttribute('aria-hidden', 'true');
+  layer.appendChild(el('div', 'menu__blob'));
+  menu.insertBefore(layer, menu.firstChild);
   return menu;
-}
-
-/* the filter itself: blur the drops together, then throw the alpha back to hard edges — what
-   was two soft clouds becomes one body with a neck between them */
-function gooFilter() {
-  if (document.getElementById('menu-goo')) return;
-  const ns = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(ns, 'svg');
-  svg.setAttribute('class', 'menu__filter');
-  svg.setAttribute('aria-hidden', 'true');
-  /* colour-interpolation-filters must be sRGB. Left at its default the blur is computed in
-     linear light, and a black drop blurred in linear light comes back grey — which is exactly
-     what it did the moment it stretched: thin enough for the blur to reach through it, the
-     alpha never climbed back to solid and the body washed out to 82,82,82 mid-flight. The
-     matrix is steeper too, so a stretched drop stays as black as a resting one. */
-  svg.innerHTML =
-    '<defs><filter id="menu-goo" color-interpolation-filters="sRGB">' +
-    '<feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>' +
-    '<feColorMatrix in="blur" type="matrix"' +
-    ' values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 32 -14"/>' +
-    '</filter></defs>';
-  document.body.appendChild(svg);
 }
 
 let blobAt = null;              // where the drop is now, so a move knows where it left from
@@ -387,15 +362,15 @@ const stillMotion = () =>
 /* put the drop under the button that is current — travelling there if it was somewhere else */
 function placeBlob(animate) {
   if (!menuEl) return;
-  const goo = menuEl.querySelector('.menu__goo');
-  if (!goo) return;
+  const layer = menuEl.querySelector('.menu__drop');
+  if (!layer) return;
   const a = menuEl.querySelector('a.active');
   if (!a) {                     // a detail view is open: no button is current, so no drop
-    goo.classList.add('is-off');
+    layer.classList.add('is-off');
     blobAt = null;
     return;
   }
-  goo.classList.remove('is-off');
+  layer.classList.remove('is-off');
 
   const mr = menuEl.getBoundingClientRect();
   const ar = a.getBoundingClientRect();
@@ -404,12 +379,13 @@ function placeBlob(animate) {
   const from = blobAt;
   blobAt = to;
 
-  const blobs = goo.querySelectorAll('.menu__blob');
-  blobs.forEach((b) => { b.style.width = to.w + 'px'; b.style.height = to.h + 'px'; });
+  const blob = layer.querySelector('.menu__blob');
+  blob.style.width = to.w + 'px';
+  blob.style.height = to.h + 'px';
   const rest = 'translate3d(' + to.x + 'px,' + to.y + 'px,0) scale(1,1)';
 
   if (!animate || !from || stillMotion()) {
-    blobs.forEach((b) => { b.style.transform = rest; });
+    blob.style.transform = rest;
     return;
   }
 
@@ -419,22 +395,16 @@ function placeBlob(animate) {
      disc sliding along a rail. It does not bounce at the end: it arrives and it is round. */
   const stretch = 1 + Math.min(Math.abs(dx) / 260, 0.55);
 
-  blobs.forEach((b, i) => {
-    const trail = i === 1;
-    b.style.transform = rest;
-    b.animate(
-      [
-        { transform: 'translate3d(' + from.x + 'px,' + from.y + 'px,0) scale(1,1)' },
-        { transform: 'translate3d(' + mid + 'px,' + to.y + 'px,0) scale(' +
-            stretch + ',' + (trail ? 0.72 : 0.8) + ')', offset: 0.42 },
-        { transform: rest },
-      ],
-      { duration: trail ? 620 : 500,
-        delay: trail ? 70 : 0,           // it leaves late, so a neck opens between the two
-        easing: 'cubic-bezier(.32,.9,.24,1)',
-        fill: 'both' }
-    );
-  });
+  blob.style.transform = rest;
+  blob.animate(
+    [
+      { transform: 'translate3d(' + from.x + 'px,' + from.y + 'px,0) scale(1,1)' },
+      { transform: 'translate3d(' + mid + 'px,' + to.y + 'px,0) scale(' + stretch + ',.8)',
+        offset: 0.42 },
+      { transform: rest },
+    ],
+    { duration: 500, easing: 'cubic-bezier(.32,.9,.24,1)', fill: 'both' }
+  );
 }
 
 /* month name -> year, for the ruler labels */
@@ -961,7 +931,6 @@ Promise.all([loadContent(), loadAspects(), loadIcons()]).then(([c, a]) => {
   wmEl = buildWordmark(entered ? 0 : introLogoStart(content.slides));
   if (entered) wmEl.classList.add('is-ready');
   document.body.appendChild(wmEl);
-  gooFilter();
   menuEl = buildMenu();
   if (entered) menuEl.classList.add('is-in');
   document.body.appendChild(menuEl);
