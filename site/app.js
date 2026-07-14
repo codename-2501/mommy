@@ -343,7 +343,94 @@ function buildMenu() {
   const about = el('div', 'menu__about');
   about.appendChild(menuLink(ABOUT));
   menu.appendChild(about);
+
+  /* The mark of where you are used to be a background colour: it switched on under the button
+     you pressed and off under the one you left, so nothing ever travelled. It is a body now —
+     a drop that leaves, stretches thin as it crosses the gap, and lands with a wobble. A
+     second, slower drop follows it, and the two are drawn through a gooey filter, so they part
+     and rejoin the way a bead of water does instead of sliding as a rigid disc. */
+  const goo = el('div', 'menu__goo');
+  goo.setAttribute('aria-hidden', 'true');
+  goo.appendChild(el('div', 'menu__blob'));
+  goo.appendChild(el('div', 'menu__blob menu__blob--trail'));
+  menu.insertBefore(goo, menu.firstChild);
   return menu;
+}
+
+/* the filter itself: blur the drops together, then throw the alpha back to hard edges — what
+   was two soft clouds becomes one body with a neck between them */
+function gooFilter() {
+  if (document.getElementById('menu-goo')) return;
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('class', 'menu__filter');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.innerHTML =
+    '<defs><filter id="menu-goo">' +
+    '<feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>' +
+    '<feColorMatrix in="blur" type="matrix"' +
+    ' values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -11"/>' +
+    '</filter></defs>';
+  document.body.appendChild(svg);
+}
+
+let blobAt = null;              // where the drop is now, so a move knows where it left from
+
+const stillMotion = () =>
+  matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* put the drop under the button that is current — travelling there if it was somewhere else */
+function placeBlob(animate) {
+  if (!menuEl) return;
+  const goo = menuEl.querySelector('.menu__goo');
+  if (!goo) return;
+  const a = menuEl.querySelector('a.active');
+  if (!a) {                     // a detail view is open: no button is current, so no drop
+    goo.classList.add('is-off');
+    blobAt = null;
+    return;
+  }
+  goo.classList.remove('is-off');
+
+  const mr = menuEl.getBoundingClientRect();
+  const ar = a.getBoundingClientRect();
+  if (!ar.width) return;        // measured before the menu was laid out
+  const to = { x: ar.left - mr.left, y: ar.top - mr.top, w: ar.width, h: ar.height };
+  const from = blobAt;
+  blobAt = to;
+
+  const blobs = goo.querySelectorAll('.menu__blob');
+  blobs.forEach((b) => { b.style.width = to.w + 'px'; b.style.height = to.h + 'px'; });
+  const rest = 'translate3d(' + to.x + 'px,' + to.y + 'px,0) scale(1,1)';
+
+  if (!animate || !from || stillMotion()) {
+    blobs.forEach((b) => { b.style.transform = rest; });
+    return;
+  }
+
+  const dx = to.x - from.x;
+  const mid = from.x + dx * 0.5;
+  /* the farther it has to go, the thinner it draws itself out — a drop crossing a gap, not a
+     disc sliding along a rail */
+  const stretch = 1 + Math.min(Math.abs(dx) / 260, 0.55);
+
+  blobs.forEach((b, i) => {
+    const trail = i === 1;
+    b.style.transform = rest;
+    b.animate(
+      [
+        { transform: 'translate3d(' + from.x + 'px,' + from.y + 'px,0) scale(1,1)' },
+        { transform: 'translate3d(' + mid + 'px,' + to.y + 'px,0) scale(' +
+            stretch + ',' + (trail ? 0.72 : 0.8) + ')', offset: 0.42 },
+        { transform: 'translate3d(' + to.x + 'px,' + to.y + 'px,0) scale(.88,1.13)', offset: 0.76 },
+        { transform: rest },
+      ],
+      { duration: trail ? 700 : 560,
+        delay: trail ? 70 : 0,           // it leaves late, so a neck opens between the two
+        easing: 'cubic-bezier(.34,1.22,.4,1)',
+        fill: 'both' }
+    );
+  });
 }
 
 /* month name -> year, for the ruler labels */
@@ -825,6 +912,7 @@ function updateMenu(path) {
   menuEl.querySelectorAll('a').forEach((a) => {
     a.classList.toggle('active', a.getAttribute('href') === path);
   });
+  placeBlob(true);
 }
 
 function navigate(href) {
@@ -869,9 +957,13 @@ Promise.all([loadContent(), loadAspects(), loadIcons()]).then(([c, a]) => {
   wmEl = buildWordmark(entered ? 0 : introLogoStart(content.slides));
   if (entered) wmEl.classList.add('is-ready');
   document.body.appendChild(wmEl);
+  gooFilter();
   menuEl = buildMenu();
   if (entered) menuEl.classList.add('is-in');
   document.body.appendChild(menuEl);
+  /* the first placement is not a journey — it is simply where the drop already is */
+  requestAnimationFrame(() => placeBlob(false));
+  addEventListener('resize', () => placeBlob(false));
   document.body.appendChild(el('div', 'noise'));   // film grain, above everything
   render();
 });
