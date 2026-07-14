@@ -2415,14 +2415,20 @@
    {
     "type": "title",
     "text": "LSE \nDIGITAL GALLERY\nARCHIVE",
-    "align": "right"
+    "align": "right",
+    "gap": "lg",
+    "size": "lg"
+   },
+   {
+    "type": "text",
+    "text": "캔버스 앞에 앉은 날들을 모았습니다. \n꽃과 풍경, 정물과 실험적인 화면까지 그린 순서대로 월별 타임라인에 놓았습니다. \n한 점씩 눌러 크게 보고, 그림이 놓인 자리와 시간을 함께 읽어주세요.",
+    "size": "sm",
+    "gap": "sm"
    },
    {
     "type": "image",
-    "src": "/images/02ece5a890247.png",
-    "caption": "ㅋㅋ",
-    "size": "full",
-    "align": "center",
+    "src": "/images/IMG_8558.jpeg",
+    "caption": "",
     "gap": "sm"
    },
    {
@@ -2453,9 +2459,9 @@
       "textEn": "Member, BARA Artists Mission"
      }
     ],
-    "gap": "sm",
+    "gap": "md",
     "sizeLabel": "lg",
-    "sizeText": "md",
+    "sizeText": "sm",
     "labelEn": "Current"
    },
    {
@@ -2504,8 +2510,10 @@
       "textEn": "Representation of Aesthetic Consciousness"
      }
     ],
-    "gap": "sm",
-    "labelEn": "Invited Solo Exhibitions"
+    "gap": "md",
+    "labelEn": "Invited Solo Exhibitions",
+    "sizeLabel": "lg",
+    "sizeText": "sm"
    },
    {
     "type": "list",
@@ -2536,8 +2544,10 @@
       "textEn": "Gangdong-gu Office Gallery"
      }
     ],
-    "gap": "sm",
-    "labelEn": "Solo Exhibitions"
+    "gap": "md",
+    "labelEn": "Solo Exhibitions",
+    "sizeLabel": "lg",
+    "sizeText": "sm"
    },
    {
     "type": "list",
@@ -2568,8 +2578,10 @@
       "textEn": "Gangdong Artists Exhibition"
      }
     ],
-    "gap": "sm",
-    "labelEn": "Group Exhibitions"
+    "gap": "md",
+    "labelEn": "Group Exhibitions",
+    "sizeLabel": "lg",
+    "sizeText": "sm"
    },
    {
     "type": "list",
@@ -2606,8 +2618,10 @@
       "textEn": "Prize, Korea Women's Art Grand Exhibition"
      }
     ],
-    "gap": "sm",
-    "labelEn": "Awards"
+    "gap": "md",
+    "labelEn": "Awards",
+    "sizeLabel": "lg",
+    "sizeText": "sm"
    },
    {
     "type": "list",
@@ -2626,7 +2640,9 @@
       "textEn": "Design Team Lead, Volcano Advertising"
      }
     ],
-    "labelEn": "Former"
+    "labelEn": "Former",
+    "sizeLabel": "lg",
+    "sizeText": "sm"
    },
    {
     "type": "image",
@@ -2635,8 +2651,12 @@
     "size": "full"
    },
    {
-    "type": "text",
-    "text": "캔버스 앞에 앉은 날들을 모았습니다. \n꽃과 풍경, 정물과 실험적인 화면까지— 그린 순서대로 월별 타임라인에 놓았습니다. 한 점씩 눌러 크게 보고, 그림이 놓인 자리와 시간을 함께 읽어주세요."
+    "type": "image",
+    "src": "/images/02ece5a890247.png",
+    "caption": "ㅋㅋ",
+    "size": "full",
+    "align": "center",
+    "gap": "sm"
    },
    {
     "type": "image",
@@ -2645,15 +2665,15 @@
    },
    {
     "type": "thanks",
-    "text": "즐겁게~ 좋은것만~ 행복하게~ 선물~"
+    "text": "즐겁게~ 좋은것만~ 행복하게~ 선물~ 건강하게~"
    }
   ]
  },
  "backgrounds": {
   "/": {
    "src": "/images/photo_2026-07-13_14.52.42.jpeg",
-   "motion": "follow",
-   "opacity": 0.25
+   "motion": "invert",
+   "opacity": 0.45
   },
   "/about": {
    "src": "/images/photo_2026-07-13_15.31.26.jpeg",
