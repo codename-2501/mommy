@@ -130,6 +130,7 @@
   <div class="sp"></div>
   <button class="btn ghost" id="openSite">사이트 열기 ↗</button>
   <button class="btn primary" id="save">저장</button>
+  <button class="btn ghost" id="publish" title="저장된 내용을 공개 사이트(GitHub Pages)에 반영합니다">게시 ↑</button>
   <div class="status" id="status">불러오는 중…</div>
 </header>
 
@@ -315,7 +316,22 @@
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 let cfg=null, images=[], pickTarget=null, curPage='/about', nid=0, baseVersion=null;
 function setStatus(m,c=''){const e=$('#status');e.textContent=m;e.className='status '+c;}
-function dirty(){setStatus('저장되지 않은 변경 있음','err');}
+/* 게시: 저장된 content.json + 이미지를 커밋·푸시하면 배포 워크플로우가 공개 사이트를 다시 빌드한다.
+   편집은 저장 시점에 로컬에만 반영되고, 게시가 그것을 인터넷으로 올린다. */
+$('#publish').addEventListener('click',async()=>{
+  if(dirtyState){ setStatus('먼저 저장하세요','err'); return; }
+  const b=$('#publish'); b.disabled=true; const label=b.textContent; b.textContent='게시 중…';
+  setStatus('공개 사이트에 게시 중… (빌드까지 1~2분)','');
+  try{
+    const r=await fetch('/api/publish',{method:'POST'}).then(r=>r.json());
+    if(r.error){ setStatus('게시 실패: '+r.error,'err'); }
+    else if(r.nothing){ setStatus('게시할 변경이 없습니다 (이미 최신)','ok'); }
+    else { setStatus('게시됨 · 1~2분 뒤 공개 사이트에 반영됩니다','ok'); }
+  }catch(e){ setStatus('게시 실패: '+e.message,'err'); }
+  b.disabled=false; b.textContent=label;
+});
+let dirtyState=false;
+function dirty(){dirtyState=true;setStatus('저장되지 않은 변경 있음 (게시하려면 먼저 저장)','err');}
 
 async function load(){
   const [c,im,pg]=await Promise.all([
@@ -1082,7 +1098,8 @@ $('#save').onclick=async()=>{
     if(r.stale){ setStatus('다른 곳에서 변경됨 — 새로고침 후 다시 편집하세요','err'); return; }
     if(r.error)throw new Error(r.error);
     baseVersion=r.version||null;
-    setStatus('저장 완료 · 사이트 새로고침 시 반영','ok');
+    dirtyState=false;
+    setStatus('저장 완료 · 게시하면 공개 사이트에 반영','ok');
   }catch(err){setStatus('저장 실패: '+err.message,'err');}
 };
 $('#openSite').onclick=()=>window.open('/','_blank');

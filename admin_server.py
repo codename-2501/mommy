@@ -14,7 +14,7 @@ to .admin_token and prints the single link that carries it. Whoever holds that l
 the archive, so it is the whole lock: hand it out as you would a key, and `--forget-remote`
 throws it away — every link minted from it dies with it.
 """
-import sys, os, json, re, time, glob, shutil, hashlib, hmac, secrets, tempfile, urllib.parse, http.server, socketserver, socket
+import sys, os, json, re, time, glob, shutil, hashlib, hmac, secrets, subprocess, tempfile, urllib.parse, http.server, socketserver, socket
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 CONTENT = os.path.join(ROOT, "content.json")
@@ -599,6 +599,52 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         return super().do_GET()
 
     # ---------------- POST ----------------
+    def _publish(self):
+        """Commit the archive as it stands and push it, so the deploy workflow rebuilds the
+        public site. The site on GitHub Pages is a build of content.json and the images it
+        references; editing here changes only the local copy until this carries it up."""
+        def git(*args):
+            return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True)
+
+        # every image content.json points at has to travel with it, or the build fails on a
+        # reference to a file that is not in the repository
+        refs = set()
+        for s2 in read_content().get("slides", []) or []:
+            for cand in [s2.get("image")] + [m.get("src") for m in (s2.get("media") or [])]:
+                if isinstance(cand, str) and "/images/" in cand:
+                    refs.add("images/" + cand.split("/images/")[-1])
+        cfg = read_content()
+        for page, blocks in (cfg.get("blocks") or {}).items():
+            for b in blocks or []:
+                v = b.get("src")
+                if isinstance(v, str) and "/images/" in v:
+                    refs.add("images/" + v.split("/images/")[-1])
+        for bg in (cfg.get("backgrounds") or {}).values():
+            v = (bg or {}).get("src")
+            if isinstance(v, str) and "/images/" in v:
+                refs.add("images/" + v.split("/images/")[-1])
+        for key in ("favicon", "ogImage"):
+            v = (cfg.get("meta") or {}).get(key)
+            if isinstance(v, str) and "/images/" in v:
+                refs.add("images/" + v.split("/images/")[-1])
+        wm = (cfg.get("wordmark") or {}).get("image")
+        if isinstance(wm, str) and "/images/" in wm:
+            refs.add("images/" + wm.split("/images/")[-1])
+
+        paths = ["content.json"] + sorted(r for r in refs if os.path.isfile(os.path.join(ROOT, r)))
+        git("add", *paths)
+        status = git("status", "--porcelain", "--", *paths)
+        if not status.stdout.strip():
+            return {"ok": True, "nothing": True}
+
+        commit = git("commit", "-m", "content: 관리자에서 게시")
+        if commit.returncode != 0:
+            return {"error": "commit 실패: " + (commit.stderr or commit.stdout)[:300]}
+        push = git("push", "origin", "HEAD:main")
+        if push.returncode != 0:
+            return {"error": "push 실패: " + (push.stderr or push.stdout)[:300]}
+        return {"ok": True, "pushed": True}
+
     def do_POST(self):
         path = urllib.parse.urlparse(self.path).path
         length = int(self.headers.get("Content-Length", 0))
@@ -607,6 +653,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # every write is local-only
         if self._deny_public_write():
             return
+
+        if path == "/api/publish":
+            try:
+                return self._send_json(self._publish())
+            except Exception as e:
+                return self._send_json({"error": str(e)}, 500)
 
         if path == "/api/content":
             try:
