@@ -6,6 +6,7 @@ const MONTHS = ['January','February','March','April','May','June',
   'July','August','September','October','November','December'];
 const app = document.getElementById('app');
 let content = null;
+const { asset, route, toHref, base: BASE } = window.LSEData;
 let aspects = {};             // image filename -> width/height
 let tones = {};               // image filename -> the colour that painting is of
 
@@ -59,7 +60,7 @@ function byDateDesc(slides) {
 
 async function loadContent() {
   try {
-    const r = await fetch('/api/content');
+    const r = await fetch(asset('/api/content'));
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const c = await r.json();
     /* Two ways to order the archive, and the admin picks which (meta.order):
@@ -77,7 +78,7 @@ async function loadContent() {
 
 async function loadColors() {
   try {
-    const r = await fetch('/api/colors');
+    const r = await fetch(asset('/api/colors'));
     const j = await r.json();
     return j.colors || {};
   } catch (err) {
@@ -87,7 +88,7 @@ async function loadColors() {
 
 async function loadAspects() {
   try {
-    const r = await fetch('/api/aspects');
+    const r = await fetch(asset('/api/aspects'));
     const j = await r.json();
     return j.aspects || {};
   } catch (err) {
@@ -100,7 +101,7 @@ async function loadIcons() {
   const all = [...MENU, ABOUT];
   await Promise.all(all.map(async (m) => {
     try {
-      const r = await fetch(m.icon);
+      const r = await fetch(asset(m.icon));
       const txt = await r.text();
       icons[m.icon] = txt.replace(/<svg\b/,
         '<svg class="ic ic--' + m.key + '" aria-hidden="true" fill="currentColor"');
@@ -215,7 +216,7 @@ function buildWordmark(revealDelay) {
     const line = el('div', 'line');
     const inner = el('div', 'line-in');
     const img = el('img');
-    img.src = wm.image;
+    img.src = asset(wm.image);
     img.alt = [wm.l1, wm.l2].filter(Boolean).join(' ');
     inner.style.setProperty('--ld', revealDelay.toFixed(2) + 's');
     inner.appendChild(img);
@@ -342,12 +343,12 @@ function enterSite(intro) {
 
 function menuLink(m) {
   const a = el('a', null);
-  a.href = m.href;
+  a.href = toHref(m.href);
   a.title = m.title;
   a.setAttribute('data-nav', '');
   a.innerHTML = icons[m.icon] || '';
   a.appendChild(el('span', 'menu__txt', m.title));   // mobile: text buttons
-  const cur = location.pathname.replace(/\/+$/, '') || '/';
+  const cur = route();
   if (cur === m.href) a.classList.add('active');
   return a;
 }
@@ -816,7 +817,7 @@ function restoreSlot(f) {
     const frame = el('div', 'lse-frame');
     frame.dataset.id = f.box.dataset.id || '';
     const img = document.createElement('img');
-    img.src = f.src;
+    img.src = asset(f.src);
     img.className = 'ok';
     img.draggable = false;
     frame.appendChild(img);
@@ -855,7 +856,7 @@ async function flyDetailHome(detailEl) {
 }
 
 function render() {
-  const path = location.pathname.replace(/\/+$/, '') || '/';
+  const path = route();
 
   /* each view carries its own background; a detail keeps the one belonging to the page under it */
   if (window.LSEBackground && !path.startsWith('/p/')) {
@@ -928,10 +929,14 @@ function updateMenu(path) {
 function navigate(href) {
   /* the menu marks where you already are, and tapping that button used to tear the view down
      and play its arrival again — the paintings flew back in over a page that never left */
-  const to = String(href).replace(/\/+$/, '') || '/';
-  const at = location.pathname.replace(/\/+$/, '') || '/';
+  /* the link already carries the mount (its href was written with toHref); strip it back off
+     before normalising, or the mount is added a second time and /flow becomes /mommy/mommy/flow */
+  let to = String(href);
+  if (BASE && to.indexOf(BASE) === 0) to = to.slice(BASE.length);
+  to = to.replace(/\/+$/, '') || '/';
+  const at = route();
   if (to === at) return;
-  history.pushState(null, '', href);
+  history.pushState(null, '', toHref(to));
   render();
 }
 
@@ -961,7 +966,7 @@ Promise.all([loadContent(), loadAspects(), loadIcons(), loadColors()]).then(([c,
   tones = t || {};
   /* the intro gate belongs to the timeline. Land straight on /flow, /articles, /about or a
      painting and there is no gate to pass — so the wordmark and menu must already be up. */
-  if ((location.pathname.replace(/\/+$/, '') || '/') !== '/') entered = true;
+  if (route() !== '/') entered = true;
   const wm = wordmark();
   document.title = [wm.l2, wm.l1].filter(Boolean).join(' — ');
   /* persistent chrome: wordmark + menu live outside the router */

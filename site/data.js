@@ -46,5 +46,27 @@ function category(s) {
     String(s.bottom || '').replace(/\s*\([^)]*\)\s*/, ' ').trim();
 }
 
-window.LSEData = { MONTHS, month, monthIndex, year, category };
+/* Where the site is mounted. A project on GitHub Pages lives under /<repo>/, not at the root,
+   so every root-absolute path the app was written with (/site, /images, /thumbs, /flow) has to
+   be read and written through this prefix. It is injected into the page at build time; empty
+   when the site is served from the root, which is what the local admin server does — so nothing
+   below changes anything at all in development. */
+const SITE_BASE = (window.__SITE_BASE__ || '').replace(/\/+$/, '');
+/* a root-absolute asset path, moved under the mount */
+function asset(p) {
+  return SITE_BASE && typeof p === 'string' && p.charAt(0) === '/' ? SITE_BASE + p : p;
+}
+/* the current route with the mount taken off the front — what the router matches against */
+function route() {
+  let p = location.pathname;
+  if (SITE_BASE && p.indexOf(SITE_BASE) === 0) p = p.slice(SITE_BASE.length);
+  return p.replace(/\/+$/, '') || '/';
+}
+/* a route turned back into a real URL under the mount, for links and pushState */
+function toHref(path) {
+  const p = String(path);
+  return SITE_BASE + (p.charAt(0) === '/' ? p : '/' + p);
+}
+
+window.LSEData = { MONTHS, month, monthIndex, year, category, base: SITE_BASE, asset, route, toHref };
 })();

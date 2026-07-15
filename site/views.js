@@ -16,7 +16,7 @@ function el(tag, cls, text) {
 
 function thumb(src, w) {
   const f = String(src || '').split('/').pop();
-  return f ? '/thumbs/' + w + '/' + encodeURIComponent(f) : '';
+  return f ? window.LSEData.asset('/thumbs/' + w + '/' + encodeURIComponent(f)) : '';
 }
 
 /* every framed painting fades in when it loads, and keeps that .ok wherever it flies to */
@@ -461,7 +461,7 @@ function aboutBlock(b) {
     const align = ['left', 'right'].includes(b.align) ? b.align : 'center';
     const fig = el('figure', 'about__fig about__fade about__fig--' + size + ' about__fig--' + align);
     const img = el('img');
-    img.src = b.src;
+    img.src = window.LSEData.asset(b.src);
     img.alt = b.caption || '';
     img.loading = 'lazy';
     img.addEventListener('load', () => img.classList.add('ok'));

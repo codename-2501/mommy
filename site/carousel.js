@@ -55,8 +55,8 @@ function buildItem(s, i, ratio) {
   const img = el('img');
   /* carousel-size webp */
   const file = String(s.image || '').split('/').pop();
-  img.src = file ? '/thumbs/600/' + encodeURIComponent(file) : '';
-  img.addEventListener('error', () => { img.src = s.image || ''; }, { once: true });
+  img.src = file ? window.LSEData.asset('/thumbs/600/' + encodeURIComponent(file)) : '';
+  img.addEventListener('error', () => { img.src = window.LSEData.asset(s.image) || ''; }, { once: true });
   img.alt = s.title || s.bottom || '';
   img.loading = i < 8 ? 'eager' : 'lazy';
   img.decoding = 'async';

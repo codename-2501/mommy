@@ -17,7 +17,7 @@ function el(tag, cls, text) {
 
 function thumb(src, w) {
   const f = String(src || '').split('/').pop();
-  return f ? '/thumbs/' + w + '/' + encodeURIComponent(f) : '';
+  return f ? window.LSEData.asset('/thumbs/' + w + '/' + encodeURIComponent(f)) : '';
 }
 
 function slideIdx(slides, id) {

@@ -97,10 +97,10 @@ function apply(bg) {
      ease from and the picture arrived undecoded — it snapped in, whole, over a page that was
      still sliding into place. Decode first, and only then fade, on the frame after. */
   const pre = new Image();
-  pre.src = cfg.src;
+  pre.src = window.LSEData.asset(cfg.src);
   const show = () => {
     if (token !== mine) return;                // a later route already took over
-    el.style.backgroundImage = 'url("' + cfg.src + '")';
+    el.style.backgroundImage = 'url("' + window.LSEData.asset(cfg.src) + '")';
     el.style.transform = 'translate3d(0,0,0)';
     requestAnimationFrame(() => requestAnimationFrame(() => {
       if (token !== mine) return;
