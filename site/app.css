@@ -463,7 +463,11 @@ html.is-resizing .wordmark{transition:none}
 .dt-scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
 .dt-scroll::-webkit-scrollbar{display:none}
 
-.dt-content{padding:8rem 11rem 6rem}
+/* the side margins are a share of the panel, not a fixed rem. While rem tracks the viewport the
+   two are the same thing — 11rem is 12.4% of the panel — but below 1200px rem is floored and the
+   margins stopped shrinking with the panel, so they ate a growing share of it (12.4% out to 16.6%
+   at 900px) and the reading column was pinched. As a percentage they hold their share at any width. */
+.dt-content{padding:8rem 12.4% 6rem}
 @media (max-width:699px){.dt-content{padding:4rem 2rem 6rem}}
 .dt-meta{display:flex;align-items:center;gap:1rem}
 /* .dt-meta prefix outranks the later .dt-reveal>*{display:block} — keeps the
