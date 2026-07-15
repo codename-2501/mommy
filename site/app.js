@@ -344,6 +344,7 @@ function enterSite(intro) {
 function menuLink(m) {
   const a = el('a', null);
   a.href = toHref(m.href);
+  a.dataset.route = m.href;          // the route without the mount, for matching the active one
   a.title = m.title;
   a.setAttribute('data-nav', '');
   a.innerHTML = icons[m.icon] || '';
@@ -921,7 +922,10 @@ function render() {
 function updateMenu(path) {
   if (!menuEl) return;
   menuEl.querySelectorAll('a').forEach((a) => {
-    a.classList.toggle('active', a.getAttribute('href') === path);
+    /* match the mount-free route, not the href attribute — under a project page the href is
+       /mommy/flow while path is /flow, so they never matched, nothing was marked current, and
+       the indicator had no button to sit on and stayed hidden */
+    a.classList.toggle('active', a.dataset.route === path);
   });
   placeBlob(true);
 }
