@@ -21,6 +21,7 @@ import json
 import os
 import re
 import shutil
+import sys
 
 from PIL import Image
 
@@ -108,6 +109,13 @@ def patch(path, replacements):
 
 
 def main():
+    # where the site will be mounted: '' for a root domain, '/mommy' for a GitHub project page.
+    base = ""
+    for a in sys.argv[1:]:
+        if a.startswith("--base="):
+            base = "/" + a.split("=", 1)[1].strip("/")
+    base = base.rstrip("/")
+
     with open(os.path.join(ROOT, "content.json"), encoding="utf-8") as fh:
         content = json.load(fh)
 
@@ -132,7 +140,18 @@ def main():
     site_url = (meta.get("siteUrl") or "").rstrip("/")
     with open(os.path.join(ROOT, "site", "index.html"), encoding="utf-8") as fh:
         shell = admin_server.inject_head(fh.read(), meta, site_url, thumb_ext=".webp")
+    # tell the frontend where it lives, before any of its scripts run, and move the scripts and
+    # any other root-absolute href/src in the shell under the mount
+    if base:
+        shell = shell.replace("<head>",
+                              '<head><script>window.__SITE_BASE__=%r;</script>' % base, 1)
+        shell = re.sub(r'((?:src|href)=")(/(?!/))', r'\1' + base + r'\2', shell)
     with open(os.path.join(DIST, "index.html"), "w", encoding="utf-8") as fh:
+        fh.write(shell)
+    # GitHub Pages has no rewrite rules: a deep link or refresh to /mommy/flow hits a file that
+    # is not there. Its 404 page, though, is served for exactly those misses — so the shell IS
+    # the 404 page, and the router takes it from there.
+    with open(os.path.join(DIST, "404.html"), "w", encoding="utf-8") as fh:
         fh.write(shell)
     if not site_url:
         print("  경고: meta.siteUrl 이 비어 있어 og:image 절대 URL 을 만들 수 없습니다 "
@@ -145,6 +164,10 @@ def main():
         aspects[name] = round(w / h, 4) if h else 1
     with open(os.path.join(DIST, "aspects.json"), "w", encoding="utf-8") as fh:
         json.dump({"aspects": aspects}, fh, ensure_ascii=False)
+
+    # /api/colors -> colors.json (the palette timeline; without it that mode falls back to grey)
+    with open(os.path.join(DIST, "colors.json"), "w", encoding="utf-8") as fh:
+        json.dump({"colors": admin_server.image_colors()}, fh, ensure_ascii=False)
 
     # /thumbs/<w>/<name> -> dist/thumbs/<w>/<name>.webp
     for width in THUMB_WIDTHS:
@@ -161,8 +184,9 @@ def main():
 
     # point the frontend at the materialised files
     patch(os.path.join(DIST, "site", "app.js"), [
-        ("fetch('/api/content')", "fetch('/content.json')"),
-        ("fetch('/api/aspects')", "fetch('/aspects.json')"),
+        ("'/api/content'", "'/content.json'"),
+        ("'/api/aspects'", "'/aspects.json'"),
+        ("'/api/colors'", "'/colors.json'"),
     ])
     for js in ("views.js", "detail.js"):
         patch(os.path.join(DIST, "site", js), [
@@ -173,6 +197,16 @@ def main():
         ("'/thumbs/600/' + encodeURIComponent(file)",
          "'/thumbs/600/' + encodeURIComponent(file) + '.webp'"),
     ])
+
+    # CSS url() paths are root-absolute (fonts, the noise texture) and the frontend's asset()
+    # cannot reach inside a stylesheet — so the mount is applied to them here, at build time.
+    if base:
+        css = os.path.join(DIST, "site", "app.css")
+        with open(css, encoding="utf-8") as fh:
+            text = fh.read()
+        text = re.sub(r'url\((/(?!/))', r'url(' + base + r'\1', text)
+        with open(css, "w", encoding="utf-8") as fh:
+            fh.write(text)
 
     # SPA shell: admin_server served site/index.html for /, /flow, /articles,
     # /about and /p/<id>. Static hosts serve real files first, so a catch-all is
