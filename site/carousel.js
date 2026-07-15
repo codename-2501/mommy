@@ -58,7 +58,12 @@ function buildItem(s, i, ratio) {
   img.src = file ? window.LSEData.asset('/thumbs/600/' + encodeURIComponent(file)) : '';
   img.addEventListener('error', () => { img.src = window.LSEData.asset(s.image) || ''; }, { once: true });
   img.alt = s.title || s.bottom || '';
-  img.loading = i < 8 ? 'eager' : 'lazy';
+  /* not lazy: the carousel moves its slides with a transform, and the browser's lazy loader
+     judges an image by where it sits in the document, not where a transform has carried it — so
+     a lazy slide past the first screen was never seen to enter the viewport and never loaded,
+     and the timeline emptied out as you scrolled. There are only a few dozen unique thumbnails
+     across the whole archive; they are all fetched. */
+  img.loading = 'eager';
   img.decoding = 'async';
   img.draggable = false;
   if (img.complete) img.classList.add('ok');
@@ -134,6 +139,10 @@ function mount(view, slides, aspects, opts, onOpen) {
     const prevStep = step;
     step = slideW + gap;
     half = slides.length * step;
+    /* the DOM lays the cards out from these two — the same two the step above is made of, so the
+       flex position of card k is exactly pad + k*step and the wrap lands where it computes */
+    track.style.setProperty('--car-w', slideW + 'px');
+    track.style.setProperty('--car-gap', gap + 'px');
     if (prevStep) { const k = step / prevStep; target *= k; cur *= k; }
     ruler.resize();
   }

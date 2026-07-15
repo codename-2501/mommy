@@ -83,7 +83,7 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     const img = el('img');
     img.src = thumb(s.image, 600);
     img.draggable = false;
-    img.loading = i < 10 ? 'eager' : 'lazy';
+    img.loading = 'eager';   // the deck moves cards by transform; lazy never fires (see carousel)
     gateLoad(img);
     frame.appendChild(img);
     box.appendChild(frame);

@@ -261,13 +261,17 @@ html.is-resizing .wordmark{transition:none}
   display:flex;align-items:center;
   padding-bottom:16vh;padding-left:2rem;
 }
+/* the card's width and the gap after it are set by the carousel in JS (resize), because JS
+   builds the scroll step from the same two numbers. Read from the stylesheet as a fixed 28.1rem
+   while JS had moved to a width that scales continuously with the viewport, the two agreed only
+   at the exact widths each was written for, and everywhere else the strip drifted itself apart
+   as it scrolled — the left of it emptying out. One source now. */
 .car-item{
-  position:relative;flex:0 0 28.1rem;max-width:28.1rem;margin-right:2rem;
-  cursor:pointer;
+  position:relative;flex:0 0 var(--car-w,28.1rem);max-width:var(--car-w,28.1rem);
+  margin-right:var(--car-gap,2rem);cursor:pointer;
 }
 /* perspective must sit on the DIRECT parent of the rotated .car-content */
 .car-entr{perspective:1000px;transform-style:preserve-3d}
-@media (max-width:699px){.car-item{flex-basis:20rem;max-width:20rem;margin-right:1.2rem}}
 /* motion skew (rotateY) is applied inline by JS to VISIBLE items only —
    a CSS var here would restyle all 390 items every frame and drop frames */
 .car-content{position:relative}

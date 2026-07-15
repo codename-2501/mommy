@@ -88,7 +88,7 @@ function buildBody(s) {
         const src = m.src || m.image;
         if (!src) continue;
         const img = el('img');
-        img.src = src;                                 // body images: full quality
+        img.src = window.LSEData.asset(src);           // body images: full quality
         img.loading = 'lazy';
         img.alt = m.caption || '';
         img.classList.add('dt-zoomable');
@@ -266,7 +266,7 @@ function flyLive(fromSlot, toSlot) {
 function lightbox(src, caption) {
   const lb = el('div', 'dt-lightbox');
   const img = el('img');
-  img.src = src;
+  img.src = window.LSEData.asset(src);
   lb.appendChild(img);
   if (caption) lb.appendChild(el('div', 'label dt-lightbox__cap', caption));
   lb.addEventListener('click', () => {
