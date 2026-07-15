@@ -521,12 +521,17 @@ html.is-resizing .wordmark{transition:none}
   position:relative;display:flex;align-items:center;gap:2rem;
   margin:0 -5rem;width:calc(100% + 10rem);
 }
-.dt-side{position:relative;flex:1;cursor:pointer;min-width:0}
+/* the three read as one proportion: the current painting 1.86× the width of each neighbour, at
+   every viewport. It used to be a fixed 32.5rem in the middle with the neighbours filling what
+   was left — fine while rem tracked the viewport, but below 1200px rem is floored and the centre
+   stopped shrinking while the strip did, so the neighbours were crushed (the ratio ran from 1.86
+   out to 3.3 at 900px). Sizing all three by flex holds the proportion wherever the strip goes. */
+.dt-side{position:relative;flex:1 1 0;cursor:pointer;min-width:0}
 .dt-side .dt-media{transition:opacity .25s ease}
 .dt-side:hover .dt-media{opacity:.7}
 .dt-cur{
   display:flex;flex-direction:column;gap:1.2rem;
-  min-width:32.5rem;max-width:32.5rem;
+  flex:1.86 1.86 0;min-width:0;
 }
 /* the detail's slot does not clip either — its .lse-frame does, and that frame
    is what flies home when the detail closes */
