@@ -245,7 +245,7 @@ html.is-resizing .wordmark{transition:none}
   background:#000;color:#fff;
   clip-path:inset(0 100% 0 0);pointer-events:none;
 }
-.intro-gate .btn.counting .btn__reveal{animation:btn-sweep 10s linear forwards}
+.intro-gate .btn.counting .btn__reveal{animation:btn-sweep 10s cubic-bezier(.65,0,.35,1) forwards}
 @keyframes btn-sweep{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
 .intro-gate .alt{font-size:1.5rem;font-weight:500;opacity:.35}
 .intro-gate .alt:hover{opacity:.7;transition:opacity .25s ease}
