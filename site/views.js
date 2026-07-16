@@ -260,14 +260,16 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
       removeEventListener('resize', measure);
       target = cur;                                    // no drift while it closes
       const t0 = performance.now();
-      const DUR = 640, startK = deckK;
-      view.style.willChange = 'transform, opacity';
+      const DUR = 720, startK = deckK;
+      view.style.willChange = 'opacity';
       (function close() {
         const t = Math.min(1, (performance.now() - t0) / DUR);
-        const e = t * t;                               // ease-in: the open's ease-out, reversed
-        deckK = startK * (1 - e);                       // the fan folds shut
-        view.style.transform = 'translateY(' + (e * innerHeight * 0.6) + 'px)';   // sinks down
-        view.style.opacity = String(1 - e);
+        /* the open runs deckK 0→1 as 1-(1-t)^4; this is that played backwards in time, 1→0 as
+           1-t^4 — the same fan, the same curve, only shutting. No sink: the arrival did not lift
+           the deck, so its leaving does not drop it. It folds flat and the view fades as the next
+           one takes its place, the mirror of the deck fanning open over the view that was there. */
+        deckK = startK * (1 - Math.pow(t, 4));
+        view.style.opacity = String(1 - t * t);
         if (t < 1) requestAnimationFrame(close);
         else { destroy(); done(); }
       })();
