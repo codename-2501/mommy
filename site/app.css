@@ -112,13 +112,13 @@ img{max-width:100%;display:block}
      the root em — so 44vh alone stops clearing it on a short screen (the two collided at
      320x568). Take whichever of the two floors is lower down: the vh rule while the window
      is tall, the wordmark's own half-height in rem once it is not. */
-  padding-top:max(calc(44vh + 6rem),calc(27vh + 12rem));gap:3rem;
+  padding-top:max(calc(44vh + 3rem),calc(27vh + 12rem));gap:3rem;   /* the list sits a little higher */
 }
 .intro.is-leaving{pointer-events:none}
 /* a short window cannot hold a full-size wordmark, the list and the button with air between
    them — the title gives up some size rather than the layout giving up its spacing */
 @media (max-height:780px){
-  .intro{padding-top:max(calc(44vh + 3rem),calc(27vh + 12rem));gap:2.2rem}
+  .intro{padding-top:max(calc(44vh + 1rem),calc(27vh + 12rem));gap:2.2rem}
 }
 /* A short desktop window makes the intro's wordmark give up a fifth of its size. That used to
    be a font-size (.9rem -> .72rem), and font-size does not transition: the moment the intro
@@ -609,6 +609,8 @@ html.is-resizing .wordmark{transition:none}
 .dt-ctl--prev svg{transform:scaleX(-1)}   /* one arrow, pointed the other way */
 .dt-ctl--close svg{width:1.6rem;min-width:14px}
 .dt-ctl:hover{background:#f5f5f5}
+/* on a phone the controls take the site's capsule shape — the middle (next) chip rounds too */
+@media (max-width:699px){.dt-ctl{border-radius:999px}}
 
 /* live flight (reparented img, way): the slot frees its clipping */
 .is-flying{overflow:visible !important;background:transparent !important}
