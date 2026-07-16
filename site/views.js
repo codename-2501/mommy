@@ -523,6 +523,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
 
   /* the sort control: a small row of labels above the grid, the chosen one lit */
   const bar = el('div', 'agrid-sort');
+  bar.appendChild(el('span', 'agrid-sort__cap label', '정렬'));
   const btns = INDEX_SORTS.map(([mode, lbl]) => {
     const b = el('button', 'agrid-sort__btn label', lbl);
     b.type = 'button';
