@@ -295,9 +295,15 @@ function renderIntro(logoStart) {
      sound; there is no music here, so the choice was empty and the site enters silent. */
   const gate = el('div', 'intro-gate');
   gate.style.transitionDelay = (logoStart + 0.6).toFixed(2) + 's';
-  const enter = el('button', 'btn', 'Enter →');
-  const autoEnter = setTimeout(() => enterSite(intro), 10000);   // enters on its own after 10s
-  enter.addEventListener('click', () => { clearTimeout(autoEnter); enterSite(intro); });
+  /* the ten-second countdown to auto-enter is drawn as a bar filling the button left to right; when
+     it reaches the far side it enters. A click enters at once and stops the fill. */
+  const enter = el('button', 'btn');
+  const fill = el('span', 'btn__fill');
+  enter.appendChild(fill);
+  enter.appendChild(el('span', 'btn__label', 'Enter →'));
+  fill.addEventListener('animationend', () => enterSite(intro));   // the bar reached the end
+  enter.addEventListener('click', () => { enter.classList.remove('counting'); enterSite(intro); });
+  setTimeout(() => enter.classList.add('counting'), Math.round((logoStart + 1.2) * 1000));   // once the button has arrived
   gate.appendChild(enter);
   intro.appendChild(gate);
 
