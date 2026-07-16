@@ -243,11 +243,10 @@ function mount(view, slides, aspects, opts, onOpen) {
   requestAnimationFrame(() => {
     resize();                                       // measure after the view is in the document
     const idx = parseInt(document.body.dataset.index, 10);
-    /* land so the ruler reads the handed-over work. The ruler's centre formula carries an
-       (innerWidth/2 - 2rem) offset, so cur = idx*step would leave it reading a couple of works on —
-       a different month at a month's edge. Subtracting the offset lands the ruler exactly on idx, so
-       it agrees with the ruler the deck handed off from. */
-    if (idx > 0) { target = cur = idx * step - (innerWidth * 0.5 - 2 * rem); }
+    /* land the handed-over work in the actual centre of the screen (and its ruler reads it too). The
+       centre a slide sits at is innerWidth/2 - pad - slideW/2 back from cur; subtracting exactly that
+       puts the work under the middle rather than a slide-width to one side. */
+    if (idx > 0) { const slideW = step - tween(1.2, 2) * rem; target = cur = idx * step - (innerWidth * 0.5 - 2 * rem - slideW / 2); }
     markActive();
     /* entrance offsets — each item enters from y = viewportBottom - itemTop.
        item rects are safe to read: only children carry the entrance/wrap transforms */
@@ -261,7 +260,7 @@ function mount(view, slides, aspects, opts, onOpen) {
   return {
     ready,
     activeIndex() { return ruler && ruler.liveWork ? ruler.liveWork() : (step ? wrapIdx(Math.round(target / step)) : 0); },
-    goTo(i) { target = cur = i * step - (innerWidth * 0.5 - 2 * rem); },   // instant jump (detail close sync), ruler-aligned
+    goTo(i) { const slideW = step - tween(1.2, 2) * rem; target = cur = i * step - (innerWidth * 0.5 - 2 * rem - slideW / 2); },   // instant jump (detail close sync), centred
     freeze() {                                      // halt drift + clear skew (flip measure)
       target = cur;
       for (let k = 0; k < contents.length; k++) contents[k].style.transform = '';
