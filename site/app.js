@@ -261,6 +261,7 @@ function renderIntro(logoStart) {
   const cols = Array.from({ length: COLS }, () => el('div', 'col'));
   const perCol = Math.ceil(stats.length / COLS);
   const step = introStep(stats.length);
+  const LIST_START = 0.9;   // the title reveals first; the month list follows it in
   const scrambles = [];
   /* one line per month — the stacked the category under the month name, but the
      list now sits between the wordmark and the button, where 27 two-line rows would not
@@ -280,7 +281,7 @@ function renderIntro(logoStart) {
     line.appendChild(inn);
     block.appendChild(line);
     cols[Math.min(COLS - 1, Math.floor(si / perCol))].appendChild(block);
-    const delay = si * step;
+    const delay = Math.round(LIST_START * 1000 + si * step);
     scrambles.push(() => {
       scrambleIn(monthName, s.month.toUpperCase(), delay, 500);
       scrambleIn(yearEl, s.year, delay, 500);
@@ -294,7 +295,7 @@ function renderIntro(logoStart) {
   /* enter gate — one button. The second button existed only to opt out of the
      sound; there is no music here, so the choice was empty and the site enters silent. */
   const gate = el('div', 'intro-gate');
-  gate.style.transitionDelay = (logoStart + 0.6).toFixed(2) + 's';
+  gate.style.transitionDelay = (LIST_START + logoStart + 0.7).toFixed(2) + 's';   // after the list has settled
   /* the ten-second countdown to auto-enter is drawn as a bar filling the button left to right; when
      it reaches the far side it enters. A click enters at once and stops the fill. */
   const enter = el('button', 'btn');
@@ -307,7 +308,7 @@ function renderIntro(logoStart) {
   let stopWave = null;
   enter.addEventListener('click', () => { if (stopWave) stopWave(); enterSite(intro); });
   setTimeout(() => { stopWave = waveFill(reveal, grey, 10000, () => enterSite(intro)); },
-    Math.round((logoStart + 1.2) * 1000));   // once the button has arrived, the tide starts
+    Math.round((LIST_START + logoStart + 1.3) * 1000));   // once the button has arrived, the tide starts
   gate.appendChild(enter);
   intro.appendChild(gate);
 
@@ -1042,7 +1043,7 @@ Promise.all([loadContent(), loadAspects(), loadIcons(), loadColors()]).then(([c,
   const wm = wordmark();
   document.title = [wm.l2, wm.l1].filter(Boolean).join(' — ');
   /* persistent chrome: wordmark + menu live outside the router */
-  wmEl = buildWordmark(entered ? 0 : introLogoStart(content.slides));
+  wmEl = buildWordmark(0);   // the title reveals first — the list and button are timed after it
   if (entered) wmEl.classList.add('is-ready');
   document.body.appendChild(wmEl);
   menuEl = buildMenu();
