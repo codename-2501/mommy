@@ -235,15 +235,17 @@ html.is-resizing .wordmark{transition:none}
   transition:background .25s ease,color .25s ease;
 }
 .intro-gate .btn:hover{background:#000;color:#fff}
-/* the countdown, drawn as a bar sweeping left to right across the button over ten seconds */
+/* the countdown, drawn as a black bar sweeping left to right across the button over ten seconds */
 .intro-gate .btn__fill{
   position:absolute;left:0;top:0;bottom:0;width:100%;
   transform:scaleX(0);transform-origin:left;
-  background:rgba(0,0,0,.13);pointer-events:none;
+  background:#000;pointer-events:none;
 }
 .intro-gate .btn.counting .btn__fill{animation:btn-fill 10s linear forwards}
 @keyframes btn-fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-.intro-gate .btn__label{position:relative}   /* the text rides over the fill */
+/* the label reads over both sides of the sweep — white where the black bar has passed, dark where
+   it has not — by taking the difference of the two */
+.intro-gate .btn__label{position:relative;color:#fff;mix-blend-mode:difference}
 .intro-gate .alt{font-size:1.5rem;font-weight:500;opacity:.35}
 .intro-gate .alt:hover{opacity:.7;transition:opacity .25s ease}
 
@@ -618,15 +620,16 @@ html.is-resizing .wordmark{transition:none}
 .dt-ctl{
   display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
   height:4rem;min-width:4rem;padding:0 1.5rem;
-  background:#fff;border:1px solid #e0e0e0;border-radius:.4rem;
+  background:#fff;border:1px solid #e0e0e0;border-radius:999px;   /* the site's capsule, at every width */
   font-size:1.5rem;
 }
 .dt-ctl svg{width:1.2rem;min-width:12px}
 .dt-ctl--prev svg{transform:scaleX(-1)}   /* one arrow, pointed the other way */
 .dt-ctl--close svg{width:1.6rem;min-width:14px}
 .dt-ctl:hover{background:#f5f5f5}
-/* on a phone the controls take the site's capsule shape — the middle (next) chip rounds too */
-@media (max-width:699px){.dt-ctl{border-radius:999px}}
+/* on a phone there is no strip, so the controls centre on the whole screen — this has to sit after
+   the base left:41% above to win it */
+@media (max-width:699px){.dt-controls{left:0}}
 
 /* live flight (reparented img, way): the slot frees its clipping */
 .is-flying{overflow:visible !important;background:transparent !important}
