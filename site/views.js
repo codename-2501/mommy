@@ -400,6 +400,7 @@ function smoothTilt(outer, content) {
    coming back. date-desc (newest first) is the archive's own order — the default. */
 let indexSort = 'date-desc';
 let indexColor = null;   // a chosen colour in Color mode (a bucket key), or null for the whole spectrum
+let indexSizeDir = 'desc';   // Size: 'desc' large first, 'asc' small first — clicking Size again flips it
 const INDEX_SORTS = [
   ['date-desc', 'Latest'],
   ['date-asc', 'Oldest'],
@@ -458,14 +459,20 @@ function hoOf(s) {
 
 /* return the slides as {s, oi} pairs (oi = the work's place in the archive's own order, which the
    deck and the hand-over both count in — so it must ride along, sorted or not) in the chosen order */
-function orderIndex(slides, colors, mode) {
+function orderIndex(slides, colors, mode, sizeDir) {
   const pairs = slides.map((s, oi) => ({ s, oi }));
   if (mode === 'date-asc') {
     return pairs.sort((a, b) =>
       String(a.s.date || '').localeCompare(String(b.s.date || '')) || a.oi - b.oi);
   }
   if (mode === 'size') {
-    return pairs.sort((a, b) => hoOf(b.s) - hoOf(a.s) || a.oi - b.oi);   // large works first
+    return pairs.sort((a, b) => {
+      const ha = hoOf(a.s), hb = hoOf(b.s);
+      const am = ha < 0, bm = hb < 0;            // a work with no 호 sits at the end, either way
+      if (am !== bm) return am ? 1 : -1;
+      const cmp = sizeDir === 'asc' ? ha - hb : hb - ha;   // small first, or large first
+      return cmp || a.oi - b.oi;
+    });
   }
   if (mode === 'color') {
     const lit = pairs.map((p) => {
@@ -499,7 +506,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     return colorBucket(hslOf(c));
   }
   function buildGrid() {
-    let pairs = orderIndex(slides, colors, indexSort);
+    let pairs = orderIndex(slides, colors, indexSort, indexSizeDir);
     if (indexSort === 'color' && indexColor) pairs = pairs.filter((p) => bucketOfPair(p) === indexColor);
     const withLabels = indexSort.slice(0, 4) === 'date';
     content.replaceChildren();
@@ -571,16 +578,13 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   });
   bar.appendChild(row1);
 
-  /* the swatches: only the buckets that hold at least one work, in wheel order, plus All */
+  /* the swatches: one per colour the archive actually holds, in wheel order. No All — none chosen
+     already means the whole spectrum, and clicking the lit one clears it. */
   const present = new Set(slides.map((s) => {
     const c = colors[String(s.image || '').split('/').pop()] || '#c9c9c9';
     return colorBucket(hslOf(c));
   }));
   const sw = el('div', 'agrid-sort__sw');
-  const allChip = el('button', 'agrid-sw agrid-sw--all label', 'All');
-  allChip.type = 'button';
-  allChip.addEventListener('click', () => setColor(null));
-  sw.appendChild(allChip);
   const swBtns = COLOR_BUCKETS.filter(([key]) => present.has(key)).map(([key, hex]) => {
     const b = el('button', 'agrid-sw');
     b.type = 'button';
@@ -621,10 +625,12 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     blobAnim.onfinish = () => { if (blobAnim) { blobAnim.cancel(); blobAnim = null; } };
   }
 
+  const sizeBtn = btns.find((b) => b.dataset.mode === 'size');
   function paintBar() {
     btns.forEach((b) => b.classList.toggle('is-on', b.dataset.mode === indexSort));
-    sw.hidden = indexSort !== 'color';
-    allChip.classList.toggle('is-on', !indexColor);
+    /* Size shows its direction while it is the one in use — an arrow that flips on the repeat click */
+    if (sizeBtn) sizeBtn.textContent = indexSort === 'size' ? ('Size ' + (indexSizeDir === 'asc' ? '↑' : '↓')) : 'Size';
+    bar.classList.toggle('is-color', indexSort === 'color');   // the palette opens only in Color
     swBtns.forEach((b) => b.classList.toggle('is-on', b.dataset.bucket === indexColor));
   }
   paintBar();
@@ -683,20 +689,24 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   }
 
   function setSort(mode) {
-    if (mode === indexSort) return;
-    indexSort = mode;
-    if (mode !== 'color') indexColor = null;   // the palette only lives inside Color
+    if (mode === 'size' && indexSort === 'size') {
+      indexSizeDir = indexSizeDir === 'desc' ? 'asc' : 'desc';   // click Size again: large <-> small
+    } else if (mode === indexSort) {
+      return;
+    } else {
+      indexSort = mode;
+      if (mode !== 'color') indexColor = null;   // the palette only lives inside Color
+    }
     buildGrid();
     paintBar();
-    placeBlob(true);      // the drop travels to the new option
+    placeBlob(true);      // the drop travels to the new option (and reshapes if Size gained its arrow)
     sc.measure();
     sc.scrollTo(0);       // a new order has no "where you were" — start at the top
     relay();
   }
 
   function setColor(bucket) {
-    if (bucket === indexColor) return;
-    indexColor = bucket;
+    indexColor = bucket === indexColor ? null : bucket;   // click the lit swatch again to clear it
     buildGrid();
     paintBar();
     sc.measure();
