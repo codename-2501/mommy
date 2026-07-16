@@ -541,7 +541,7 @@ function buildView(path) {
       }));
   }
   if (path === '/articles') {
-    return renderView('articles', (v, open) => window.LSEViews.mountIndex(v, slides, aspects, open));
+    return renderView('articles', (v, open) => window.LSEViews.mountIndex(v, slides, aspects, open, { colors: tones }));
   }
   if (path === '/about') {
     return renderView('about', (v) => window.LSEViews.mountAbout(v, content));

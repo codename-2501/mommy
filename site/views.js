@@ -395,7 +395,70 @@ function smoothTilt(outer, content) {
 }
 
 /* ---------------- INDEX: collage grid, 12 per row ---------------- */
-function mountIndex(view, slides, aspects, onOpen) {
+
+/* the sort the viewer last chose, kept for the session so it survives leaving the index and
+   coming back. date-desc (newest first) is the archive's own order — the default. */
+let indexSort = 'date-desc';
+const INDEX_SORTS = [
+  ['date-desc', '최신'],
+  ['date-asc', '오래된'],
+  ['color', '색상'],
+  ['size', '크기'],
+];
+
+/* a colour's hue/saturation/lightness, for the colour sort */
+function hslOf(hex) {
+  const h6 = String(hex || '').replace('#', '');
+  if (h6.length < 6) return { h: 0, s: 0, l: 0.5 };
+  const r = parseInt(h6.slice(0, 2), 16) / 255;
+  const g = parseInt(h6.slice(2, 4), 16) / 255;
+  const b = parseInt(h6.slice(4, 6), 16) / 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  let h = 0;
+  if (d) {
+    if (mx === r) h = ((g - b) / d) % 6;
+    else if (mx === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60; if (h < 0) h += 360;
+  }
+  const l = (mx + mn) / 2;
+  const s = d ? d / (1 - Math.abs(2 * l - 1)) : 0;
+  return { h, s, l };
+}
+
+function hoOf(s) {
+  const m = /(\d+)\s*호/.exec(String(s.size || ''));
+  return m ? parseInt(m[1], 10) : -1;
+}
+
+/* return the slides as {s, oi} pairs (oi = the work's place in the archive's own order, which the
+   deck and the hand-over both count in — so it must ride along, sorted or not) in the chosen order */
+function orderIndex(slides, colors, mode) {
+  const pairs = slides.map((s, oi) => ({ s, oi }));
+  if (mode === 'date-asc') {
+    return pairs.sort((a, b) =>
+      String(a.s.date || '').localeCompare(String(b.s.date || '')) || a.oi - b.oi);
+  }
+  if (mode === 'size') {
+    return pairs.sort((a, b) => hoOf(b.s) - hoOf(a.s) || a.oi - b.oi);   // large works first
+  }
+  if (mode === 'color') {
+    const lit = pairs.map((p) => {
+      const c = colors[String(p.s.image || '').split('/').pop()] || '#c9c9c9';
+      return Object.assign(p, { c: hslOf(c) });
+    });
+    return lit.sort((a, b) => {
+      const ag = a.c.s < 0.12, bg = b.c.s < 0.12;   // near-greys carry no hue — gather them at the end
+      if (ag !== bg) return ag ? 1 : -1;
+      if (ag) return a.c.l - b.c.l || a.oi - b.oi;
+      return a.c.h - b.c.h || a.c.l - b.c.l || a.oi - b.oi;   // round the wheel, light within a hue
+    });
+  }
+  return pairs;   // date-desc = the archive's own order
+}
+
+function mountIndex(view, slides, aspects, onOpen, opts) {
+  const colors = (opts && opts.colors) || {};
   const outer = el('div', 'agrid');
   const content = el('div', 'agrid__in');
   outer.appendChild(content);
@@ -403,51 +466,87 @@ function mountIndex(view, slides, aspects, onOpen) {
 
   const perRow = Math.round(tween(4, 12));
   const years = yearsByMonth(slides);
-  let row = null, seenMonth = '';
-  slides.forEach((s, i) => {
-    if (i % perRow === 0) {
-      row = el('div', 'agrid__row lse-row');
-      /* the row is as many columns wide as it holds. It used to be twelve in the stylesheet and
-         four on a phone, while the count of cells put in it was decided here — so the moment the
-         count became a continuous thing, the two stopped agreeing and a row of seven was laid out
-         across twelve columns. One of them has to own the number, and it is this one. */
-      row.style.gridTemplateColumns = 'repeat(' + perRow + ',1fr)';
-      content.appendChild(row);
-    }
-    const cell = el('article', 'agrid__cell lse-card');
-    cell.dataset.index = String(i);          // : the row lookup that hands the index on
-    const name = String(s.image || '').split('/').pop();
-    const box = el('div', 'agrid__media lse-slot');
-    box.dataset.id = s.id || '';
-    box.style.aspectRatio = String(aspects[name] || 1);
-    const frame = el('div', 'lse-frame');
-    frame.dataset.id = s.id || '';
-    const img = el('img');
-    img.src = thumb(s.image, 300);
-    img.loading = i < perRow * 3 ? 'eager' : 'lazy';
-    img.draggable = false;
-    gateLoad(img);
-    frame.appendChild(img);
-    box.appendChild(frame);
-    cell.appendChild(box);
-    const mo = month(s);
-    if (mo && mo !== seenMonth) {
-      seenMonth = mo;
-      const lbl = el('div', 'agrid__month');
-      const rev = el('div', 'dt-reveal');
-      const txt = el('div', 'label', mo);
-      /* same rule as the ruler: this work's own year, else the month's, else 2026 */
-      const own = /^(\d{4})/.exec(String(s.date || ''));
-      txt.dataset.year = (own && own[1]) || years[mo] || '2026';
-      rev.appendChild(txt);
-      lbl.appendChild(rev);
-      cell.appendChild(lbl);
-    }
-    cell.addEventListener('click', () => onOpen(s, box));
-    row.appendChild(cell);
+
+  /* the grid is torn down and laid out again on every sort change; the month bands only mean
+     anything when the works run in time, so they show for the date orders and not the others */
+  function buildGrid() {
+    const pairs = orderIndex(slides, colors, indexSort);
+    const withLabels = indexSort.slice(0, 4) === 'date';
+    content.replaceChildren();
+    let row = null, seenMonth = '';
+    pairs.forEach((p, pos) => {
+      const s = p.s;
+      if (pos % perRow === 0) {
+        row = el('div', 'agrid__row lse-row');
+        /* the row is as many columns wide as it holds. It used to be twelve in the stylesheet and
+           four on a phone, while the count of cells put in it was decided here — so the moment the
+           count became a continuous thing, the two stopped agreeing and a row of seven was laid out
+           across twelve columns. One of them has to own the number, and it is this one. */
+        row.style.gridTemplateColumns = 'repeat(' + perRow + ',1fr)';
+        content.appendChild(row);
+      }
+      const cell = el('article', 'agrid__cell lse-card');
+      cell.dataset.index = String(p.oi);       // the archive-order index the hand-over reads
+      const name = String(s.image || '').split('/').pop();
+      const box = el('div', 'agrid__media lse-slot');
+      box.dataset.id = s.id || '';
+      box.style.aspectRatio = String(aspects[name] || 1);
+      const frame = el('div', 'lse-frame');
+      frame.dataset.id = s.id || '';
+      const img = el('img');
+      img.src = thumb(s.image, 300);
+      img.loading = pos < perRow * 3 ? 'eager' : 'lazy';
+      img.draggable = false;
+      gateLoad(img);
+      frame.appendChild(img);
+      box.appendChild(frame);
+      cell.appendChild(box);
+      const mo = month(s);
+      if (withLabels && mo && mo !== seenMonth) {
+        seenMonth = mo;
+        const lbl = el('div', 'agrid__month');
+        const rev = el('div', 'dt-reveal');
+        const txt = el('div', 'label', mo);
+        /* same rule as the ruler: this work's own year, else the month's, else 2026 */
+        const own = /^(\d{4})/.exec(String(s.date || ''));
+        txt.dataset.year = (own && own[1]) || years[mo] || '2026';
+        rev.appendChild(txt);
+        lbl.appendChild(rev);
+        cell.appendChild(lbl);
+      }
+      cell.addEventListener('click', () => onOpen(s, box));
+      row.appendChild(cell);
+    });
+  }
+
+  buildGrid();
+
+  /* the sort control: a small row of labels above the grid, the chosen one lit */
+  const bar = el('div', 'agrid-sort');
+  const btns = INDEX_SORTS.map(([mode, lbl]) => {
+    const b = el('button', 'agrid-sort__btn label', lbl);
+    b.type = 'button';
+    b.dataset.mode = mode;
+    b.addEventListener('click', () => setSort(mode));
+    bar.appendChild(b);
+    return b;
   });
+  view.appendChild(bar);
+  function paintBar() {
+    btns.forEach((b) => b.classList.toggle('is-on', b.dataset.mode === indexSort));
+  }
+  paintBar();
 
   const sc = smoothTilt(outer, content);
+  function setSort(mode) {
+    if (mode === indexSort) return;
+    indexSort = mode;
+    buildGrid();
+    paintBar();
+    sc.measure();
+    sc.scrollTo(0);       // a new order has no "where you were" — start at the top
+  }
+
   /* the month labels ride up out of their masks on .is-in — without it they stay clipped */
   requestAnimationFrame(() => requestAnimationFrame(() => view.classList.add('is-in')));
 
@@ -457,10 +556,10 @@ function mountIndex(view, slides, aspects, onOpen) {
   requestAnimationFrame(() => {
     sc.measure();
     const idx = parseInt(document.body.dataset.index, 10);
-    const cells = content.querySelectorAll('[data-index]');
-    const cell = idx > 0 ? cells[idx] : null;
-    if (cell && cells[0]) {
-      sc.scrollTo(cell.getBoundingClientRect().top - cells[0].getBoundingClientRect().top);
+    const cell = idx > 0 ? content.querySelector('[data-index="' + idx + '"]') : null;
+    const first = content.querySelector('[data-index]');
+    if (cell && first) {
+      sc.scrollTo(cell.getBoundingClientRect().top - first.getBoundingClientRect().top);
     }
     markReady();
   });
