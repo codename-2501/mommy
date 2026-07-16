@@ -730,7 +730,7 @@ html.is-resizing .wordmark{transition:none}
   transform-origin:50% 50%;will-change:transform;
 }
 .agrid-sort__btn{
-  position:relative;z-index:2;
+  position:relative;z-index:2;white-space:nowrap;   /* Size gains " ↓" — never let it break to a second line */
   background:none;border:0;padding:.5rem 1rem;border-radius:999px;cursor:pointer;color:inherit;
   opacity:.62;transition:opacity .25s ease,color .2s ease;
 }
