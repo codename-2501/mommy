@@ -582,10 +582,7 @@ function handOverIndex(fromPath, toArticles, oldCar, oldEl, oldInst) {
   if (fromPath === '/' && !toArticles) {
     idx = (oldCar && oldCar.activeIndex()) || 0;
   } else if (fromPath === '/flow' && oldInst && oldInst.activeIndex) {
-    /* leaving flow, the next view opens on the work flow was centred on — so the paintings both
-       views show are the same ones, and they can carry over instead of the destination starting
-       cold at the newest work while flow sat somewhere else entirely */
-    idx = oldInst.activeIndex();
+    idx = oldInst.activeIndex();          // the index opens on the paintings flow was showing
   } else if (fromPath === '/articles' && oldEl) {
     const mid = innerHeight / 2;
     let best = null, bestD = Infinity;
@@ -608,9 +605,27 @@ function measureFlips(oldEl, newEl, fromFlow) {
   if (!flipEls.length) return { fromFlips: [], toFlips: [], targets: targetEls.map(bind) };
 
   const seen = [];
-  for (const node of flipEls) {
-    const b = node.getBoundingClientRect();
-    if (inView(b) || node.closest('.lse-centred')) seen.push({ el: node, bounds: b });
+  const cand = flipEls.filter((n) => inView(n.getBoundingClientRect()) || n.closest('.lse-centred'));
+  if (fromFlow) {
+    /* A flow card stands at 70–84° in the fan, so the rectangle it shows is a thin sliver — flip
+       from that and the painting flies as a speck. It is measured with its rotation stripped
+       (all at once, one reflow) so the bounds are the card whole, and the angle is kept so the
+       flight can start there and unfold to flat as it goes. */
+    const restore = [];
+    for (const node of cand) {
+      const item = node.closest('.flow-item');
+      const t = (item && item.style.transform) || '';
+      const m = /rotateY\(([^)]+)deg\)/.exec(t);
+      restore.push([item, t, m ? parseFloat(m[1]) : 0]);
+      if (item) item.style.transform = t.replace(/rotateY\([^)]*\)/, 'rotateY(0deg)');
+    }
+    if (oldEl) void oldEl.offsetWidth;
+    for (let i = 0; i < cand.length; i++) {
+      seen.push({ el: cand[i], bounds: cand[i].getBoundingClientRect(), rot: restore[i][2] });
+    }
+    for (const [item, t] of restore) if (item) item.style.transform = t;
+  } else {
+    for (const node of cand) seen.push({ el: node, bounds: node.getBoundingClientRect() });
   }
   let ids = new Set(seen.map((f) => f.el.dataset.id));
   const toFlips = [];
@@ -654,6 +669,7 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
   const byId = new Map(toFlips.map((t) => [t.el.dataset.id, t]));
   const flights = [];
   const owners = [];
+  const persp = [];                      // slots lent a perspective for an unfolding flow card
   for (const from of fromFlips) {
     const to = byId.get(from.el.dataset.id);
     if (!to) continue;
@@ -664,9 +680,15 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
     const dx = from.bounds.left - to.bounds.left;
     const dy = from.bounds.top - to.bounds.top;
     const scale = to.bounds.width ? from.bounds.width / to.bounds.width : 1;
+    /* a flow card starts at the deck angle it stood at (measured flat so it is full size, not the
+       sliver it shows on screen) and unfolds to face-on as it flies. The rotation needs a
+       perspective, lent to the slot for the flight. */
+    const rot = from.rot || 0;
+    if (rot) { to.el.style.perspective = '1600px'; persp.push(to.el); }
     from.el.style.transition = 'none';
     from.el.style.transform =
-      'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + scale + ')';
+      'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + scale + ')' +
+      (rot ? ' rotateY(' + rot + 'deg)' : '');
     flights.push({ el: from.el, delay: noStagger ? 0 : flights.length * FLIP.stagger });
   }
   if (!flights.length) return null;
@@ -679,6 +701,7 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
     setTimeout(() => {
       for (const f of flights) { if (settled(f.el)) clearFlight(f.el); }
       for (const o of owners) { if (settled(o)) o.style.zIndex = ''; }
+      for (const s of persp) s.style.perspective = '';
     }, FLIP.dur + last.delay + 50);
   };
 }
@@ -741,12 +764,12 @@ function leave(oldEl, oldInst, oldCar, flags) {
   const done = () => { if (leaving && leaving.el === oldEl) finalizeLeaving(); };
   freezeEntrance(oldEl);
 
-  /* flow flattens and hands its paintings to the next view by flip; the emptied deck just fades
-     behind them. Only when there is nothing to flip to — leaving for About, whose curtain has no
-     slots — does it fold its fan shut on its own instead. */
+  /* into the index the flip carries flow's paintings and the emptied deck just fades behind them;
+     everywhere else — the timeline, About — nothing can receive them, so flow flies its paintings
+     up and out on its own. */
   if (fromFlow && oldInst && oldInst.exit && !flip) {
     leaving = { el: oldEl, inst: null, car: oldCar, timer: 0 };   // exit() already destroyed it
-    oldInst.exit(done);                                  // the fan folds shut
+    oldInst.exit(done);                                  // the paintings fly out
     return;
   }
   if (oldInst) oldInst.destroy();
@@ -795,24 +818,19 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
     return;
   }
 
-  /* Leaving flow is the entrance run backwards. Arriving, the deck fans open over paintings that
-     flew in flat from the last view; leaving, the deck first turns flat again (flatten), and then
-     the paintings fly on to the next view — which, opened on the same work flow was centred on
-     (handOverIndex), has a slot waiting for each of them. Only About is the exception: its curtain
-     has no slots, so flow folds shut on its own there. */
-  if (flags.fromFlow && path === '/articles' && oldInst && oldInst.flatten) {
-    await oldInst.flatten();
-    /* the carousel jumps to the handed-over work but places its slides over the next few frames,
-       so measured the instant it is "ready" only a handful are on screen and only those few can
-       be flown to. Let it settle first, so a slot is waiting for every card flow is handing over. */
-    await nextFrame(); await nextFrame();
-    if (retired()) { if (view) view.classList.remove('is-pre'); return; }
-  }
-
   const { fromFlips, toFlips, targets } = measureFlips(oldEl, view, flags.fromFlow);
   if (inst && inst.unfreeze) inst.unfreeze();           // flow: the deck angle eases in
 
-  const playFlip = fromFlips.length ? prepareFlip(fromFlips, toFlips, flags.toFlow) : null;
+  /* flow hands its paintings over only into the index, where every work has a slot waiting: each
+     flies from the deck to its place in the grid, unfolding from its deck angle to flat as it goes
+     — no separate straightening beat, the turn is part of the flight. Into the timeline (which
+     shows a handful against the deck's sixteen) and into About there is nothing to receive them, so
+     flow flies its paintings out on its own there. */
+  const flowToIndex = flags.fromFlow && path === '/articles';
+  const skipFlip = flags.fromFlow && !flowToIndex;
+  const playFlip = fromFlips.length && !skipFlip
+    ? prepareFlip(fromFlips, toFlips, flags.toFlow)
+    : null;
   const playRise = prepareRise(targets, flags.fromFlow, flags.toFlow);
 
   flags.flip = !!playFlip;

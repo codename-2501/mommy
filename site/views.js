@@ -243,24 +243,13 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     ruler.destroy();          // it listens for resize of its own
   }
 
-  function stopInput() {
-    removeEventListener('pointermove', onMove);
-    removeEventListener('pointerup', onUp);
-    removeEventListener('wheel', onWheel);
-    removeEventListener('keydown', onKey);
-    removeEventListener('resize', measure);
-  }
-
   return {
     ready,
     unfreeze,
     destroy,
-    /* the work under the centre line — the same one the ruler reads. Handed to the next view so it
-       opens on the same paintings, which is what lets them carry over the way timeline↔index do. */
+    /* the work under the centre line, found by measuring the card nearest the middle. Handed to the
+       index so it opens on the same paintings flow is showing, so each has a slot to fly to. */
     activeIndex() {
-      /* the card whose centre is nearest the middle of the screen, found by measuring — the
-         ruler's formula was a few works out, and a few works out is the difference between the
-         next view opening on the same paintings and on a set that barely overlaps. */
       const mid = innerWidth / 2;
       let best = 0, bestD = Infinity;
       for (let i = 0; i < items.length; i++) {
@@ -271,38 +260,20 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
       }
       return best;
     },
-    /* Turn the deck to face the viewer — the reverse of the fan opening on arrival. In the fan the
-       cards stand at 70–84°, edge-on, and edge-on their on-screen rectangles are slivers a flip
-       cannot carry; flat they are whole rectangles again. Easing deckK to 0 lays them flat where
-       they are (the frame loop keeps applying it), and once flat the paintings can be measured
-       clean and flown to their slots in the next view. */
-    flatten() {
-      stopInput();
-      target = cur;
-      return new Promise((res) => {
-        const t0 = performance.now(), DUR = 300, startK = deckK;
-        (function flat() {
-          const t = Math.min(1, (performance.now() - t0) / DUR);
-          deckK = startK * (1 - Math.pow(t, 4));         // the open's ease-out, reversed
-          if (t < 1) requestAnimationFrame(flat);
-          else res();
-        })();
-      });
-    },
-    /* the fallback for leaving where nothing can carry over (About's curtain has no slots): the
-       fan simply folds shut and the view fades, the mirror of it opening on arrival. */
+    /* the paintings themselves leave — y to the viewport top, then a further
+       -150% of their own height. power2.in .5s, stagger .025. The cards stay behind. */
     exit(done) {
-      stopInput();
-      target = cur;
-      const t0 = performance.now(), DUR = 720, startK = deckK;
-      view.style.willChange = 'opacity';
-      (function close() {
-        const t = Math.min(1, (performance.now() - t0) / DUR);
-        deckK = startK * (1 - Math.pow(t, 4));
-        view.style.opacity = String(1 - t * t);
-        if (t < 1) requestAnimationFrame(close);
-        else { destroy(); done(); }
-      })();
+      destroy();
+      const frames = wrap.querySelectorAll('.lse-frame');
+      let k = 0;
+      for (const f of frames) {
+        const r = f.getBoundingClientRect();
+        if (r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight) continue;
+        f.style.transition = 'transform .5s cubic-bezier(.55,.085,.68,.53) ' + (k * 0.025) + 's';
+        f.style.transform = 'translate3d(0,' + (-r.top) + 'px,0) translateY(-150%)';
+        k += 1;
+      }
+      setTimeout(done, 500 + k * 25);
     },
   };
 }
