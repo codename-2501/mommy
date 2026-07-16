@@ -340,7 +340,9 @@ function waveFill(reveal, grey, durMs, onDone) {
     const lin = Math.min(1, (ts - t0) / durMs);
     const level = ease(lin) * 114 - 7;               // mean x, running well past both ends
     const t = (ts - t0) / 1000;
-    if (grey) grey.style.clipPath = poly(level + 8, 5, 0.9, t * 5 + 1);   // same wavelength, leading — a parallel echo
+    /* same wavelength, but its ripple runs at its own rate and its lead breathes, so it drifts with
+       the black rather than marching locked to it */
+    if (grey) grey.style.clipPath = poly(level + 8 + 4 * Math.sin(t * 1.5), 5, 0.9, t * 3.1 + 1);
     reveal.style.clipPath = poly(level, 4, 0.9, t * 5);                    // the gentle main wave
     if (lin < 1) raf = requestAnimationFrame(frame);
     else if (!done) { done = true; onDone(); }
