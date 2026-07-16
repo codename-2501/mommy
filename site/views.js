@@ -319,7 +319,8 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
    natively now: the finger gets the OS's own physics, and the wheel gets the same lerp the
    detail uses. The rows still tilt, driven by the speed the scroll is actually running at. -------- */
 function smoothTilt(outer, content) {
-  let target = 0, cur = 0, lastTs = 0, raf = 0, applied = -1, prevTop = 0;
+  let target = 0, cur = 0, lastTs = 0, raf = 0, applied = -1, prevTop = 0, over = 0;
+  const OVER_MAX = 90;   // how far the rubber-band gives at an end, px
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;   // detail.js: same numbers
   const tilts = () => content.querySelectorAll('.lse-row');
   /* the tilt is a scroll-driven CSS animation (app.css: rowTilt) wherever the browser has one:
@@ -333,7 +334,13 @@ function smoothTilt(outer, content) {
   function onWheel(e) {
     if (window.LSEDetail && window.LSEDetail.isOpen) return;
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
-    target = Math.max(0, Math.min(limit(), target + raw * mult));
+    const lim = limit(), next = target + raw * mult;
+    /* past an end the page gives instead of stopping dead: the overshoot takes the push at a
+       fraction, capped, and springs back in the frame loop — a rubber-band, not a wall */
+    if (next < 0 && target <= 0.5) over += (-next) * 0.28;
+    else if (next > lim && target >= lim - 0.5) over -= (next - lim) * 0.28;
+    over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
+    target = Math.max(0, Math.min(lim, next));
     e.preventDefault();                     // the lerp owns the wheel, not the browser
   }
   function onKey(e) {
@@ -356,6 +363,12 @@ function smoothTilt(outer, content) {
     cur += (target - cur) * 0.1 * ratio;    // detail.js: same lerp
     outer.scrollTop = cur;
     applied = outer.scrollTop;
+    /* the rubber-band eases back to the edge and rides on the content's own transform */
+    if (over !== 0) {
+      over += (0 - over) * 0.16 * ratio;
+      if (Math.abs(over) < 0.4) over = 0;
+      content.style.transform = over ? 'translateY(' + over.toFixed(1) + 'px)' : '';
+    }
 
     /* the tilt rides the speed the page is actually moving at, so it works the same whether
        the wheel, a finger or the system's momentum is driving it */
