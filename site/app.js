@@ -296,7 +296,8 @@ function renderIntro(logoStart) {
   const gate = el('div', 'intro-gate');
   gate.style.transitionDelay = (logoStart + 0.6).toFixed(2) + 's';
   const enter = el('button', 'btn', 'Enter →');
-  enter.addEventListener('click', () => enterSite(intro));
+  const autoEnter = setTimeout(() => enterSite(intro), 10000);   // enters on its own after 10s
+  enter.addEventListener('click', () => { clearTimeout(autoEnter); enterSite(intro); });
   gate.appendChild(enter);
   intro.appendChild(gate);
 
