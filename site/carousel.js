@@ -245,8 +245,11 @@ function mount(view, slides, aspects, opts, onOpen) {
     const idx = parseInt(document.body.dataset.index, 10);
     /* land the handed-over work in the actual centre of the screen (and its ruler reads it too). The
        centre a slide sits at is innerWidth/2 - pad - slideW/2 back from cur; subtracting exactly that
-       puts the work under the middle rather than a slide-width to one side. */
-    if (idx >= 0) { const slideW = step - tween(1.2, 2) * rem; target = cur = idx * step - (innerWidth * 0.5 - 2 * rem - slideW / 2); }
+       puts the work under the middle rather than a slide-width to one side. With no hand-over (a fresh
+       timeline) centre the first work, the same spot reset() lands on — not the raw cur=0 edge. */
+    const j = idx >= 0 ? idx : 0;
+    const slideW = step - tween(1.2, 2) * rem;
+    target = cur = j * step - (innerWidth * 0.5 - 2 * rem - slideW / 2);
     markActive();
     /* entrance offsets — each item enters from y = viewportBottom - itemTop.
        item rects are safe to read: only children carry the entrance/wrap transforms */
