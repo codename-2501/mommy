@@ -701,7 +701,11 @@ html.is-resizing .wordmark{transition:none}
 .agrid__media{position:relative;width:100%}
 .agrid__media img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
 .agrid__cell:hover .agrid__media{opacity:.75;transition:opacity .25s ease}
-.agrid__month{position:absolute;bottom:calc(100% + 1rem);left:0;text-transform:uppercase;white-space:nowrap}
+/* the month sits above its column of cells, and a long one — SEPTEMBER 2024 — is wider than a
+   cell in a twelve-across grid, so held on one line it ran past the cell into its neighbour. It
+   wraps within the cell now (the year drops to a second line), growing upward into the row gap
+   above rather than sideways over the next column. */
+.agrid__month{position:absolute;bottom:calc(100% + 1rem);left:0;width:100%;text-transform:uppercase}
 /* month + year, set the same way as the timeline ruler's labels */
 .agrid__month .label[data-year]:not([data-year=""])::after{content:" " attr(data-year);opacity:.5}
 
@@ -806,8 +810,11 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
 .about__cv-en{font-size:calc(min(calc(13.751px + 0.5766vw),2.24rem) * var(--sz-t,1));opacity:.5;line-height:1.35}
 .about__cv-label-ko{line-height:1.3}
 .about__cv-label-en{opacity:.55;font-size:.85em;line-height:1.3}
+/* a date may be several years — "2023, 2022, 2021, 2019, 2018" — and held on one line it ran off
+   the edge. It wraps now, at the spaces between the years; a single date like 2024.10 has no
+   space to break at, so it stays whole. */
 .about__cv-d{font-size:calc(min(calc(11.049px + 0.7568vw),2.24rem) * var(--sz-n,1));opacity:.75;line-height:1.45;
-  font-family:mono,sans,ui-monospace,monospace;white-space:nowrap}
+  font-family:mono,sans,ui-monospace,monospace}
 .about__cv-n{font-size:calc(min(calc(11.049px + 0.7568vw),2.24rem) * var(--sz-n,1));opacity:.5;line-height:1.45}
 /* the group's alignment moves its entries within their column. The group's name keeps its own
    side of the gutter — it is the spine the entries hang from, and swinging it about would
