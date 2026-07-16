@@ -149,9 +149,9 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     const xo = p - 0.5;
     const bob = Math.sin(time + xo * Math.PI * 2) * rest * (1 + vel * 0.01);
     const y = innerHeight * 0.5 * xo + bob;
-    /* a concave arc: the card at the centre faces straight out and the deck closes away to either
-       side, edge-on at the edges (+/-78deg), the two sides mirrored so it curves toward the viewer */
-    const rotY = -(p - 0.5) * 2 * 78 * deckK;
+    /* all tilted the one way, but least at the centre and most at the edges: 65deg on the centre
+       line (the most open), closing to 83deg toward either edge — a symmetric close, no sign flip */
+    const rotY = -(65 + 18 * Math.abs(p - 0.5) * 2) * deckK;
     /* the hovered card slides 75% sideways — pull it forward in the deck's 3D space so it
        passes OVER its neighbours instead of under them */
     const z = i === hoverIdx ? 60 : 0;
