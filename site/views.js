@@ -584,7 +584,9 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     const c = colors[String(s.image || '').split('/').pop()] || '#c9c9c9';
     return colorBucket(hslOf(c));
   }));
-  const sw = el('div', 'agrid-sort__sw');
+  /* the palette is its own capsule, floated below the sort bar — stretching the sort bar to hold it
+     read as cheap, so it stands apart */
+  const pal = el('div', 'agrid-pal');
   const swBtns = COLOR_BUCKETS.filter(([key]) => present.has(key)).map(([key, hex]) => {
     const b = el('button', 'agrid-sw');
     b.type = 'button';
@@ -592,10 +594,10 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     b.style.background = hex;
     b.title = key;
     b.addEventListener('click', () => setColor(key));
-    sw.appendChild(b);
+    pal.appendChild(b);
     return b;
   });
-  bar.appendChild(sw);
+  view.appendChild(pal);
   view.appendChild(bar);
 
   /* the drop travels to the chosen option, drawing itself thin across the gap and rounding out
@@ -630,7 +632,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     btns.forEach((b) => b.classList.toggle('is-on', b.dataset.mode === indexSort));
     /* Size shows its direction while it is the one in use — an arrow that flips on the repeat click */
     if (sizeBtn) sizeBtn.textContent = indexSort === 'size' ? ('Size ' + (indexSizeDir === 'asc' ? '↑' : '↓')) : 'Size';
-    bar.classList.toggle('is-color', indexSort === 'color');   // the palette opens only in Color
+    pal.classList.toggle('is-open', indexSort === 'color');   // the palette shows only in Color
     swBtns.forEach((b) => b.classList.toggle('is-on', b.dataset.bucket === indexColor));
   }
   paintBar();
@@ -644,6 +646,8 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     if (!wm) return;
     const b = wm.getBoundingClientRect().bottom;
     if (b > 0) bar.style.top = Math.round(b + 16) + 'px';
+    const br = bar.getBoundingClientRect();
+    pal.style.top = Math.round(br.bottom + 10) + 'px';   // the palette floats just under the bar
   }
   let trackStart = null;
   function track(ts) {
@@ -697,8 +701,14 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
       indexSort = mode;
       if (mode !== 'color') indexColor = null;   // the palette only lives inside Color
     }
+    const w0 = bar.getBoundingClientRect().width;   // width before the label may gain/lose its arrow
     buildGrid();
     paintBar();
+    const w1 = bar.getBoundingClientRect().width;
+    if (Math.abs(w1 - w0) > 1) {
+      bar.animate([{ width: w0 + 'px' }, { width: w1 + 'px' }],
+        { duration: 420, easing: 'cubic-bezier(.4,0,.2,1)' });   // grow/shrink the box evenly, no snap
+    }
     placeBlob(true);      // the drop travels to the new option (and reshapes if Size gained its arrow)
     sc.measure();
     sc.scrollTo(0);       // a new order has no "where you were" — start at the top
