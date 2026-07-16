@@ -618,17 +618,13 @@ function measureFlips(oldEl, newEl, fromFlow) {
   }
   ids = new Set(toFlips.map((t) => t.el.dataset.id));
   const paired = new Set(toFlips.map((t) => t.el));
+  /* a slot that receives a flown painting must not also rise — the rest are new to this view
+     and rise in from below, whichever way the deck is going (in to flow, or out of it) */
   const rest = targetEls.filter((node) => !paired.has(node)).map(bind);
-  /* leaving flow nothing flips (the paintings fly out instead) — every slot rises, top row first */
-  const targets = fromFlow
-    ? [...toFlips, ...rest].sort((a, b) => (Math.abs(a.bounds.top - b.bounds.top) > 1
-      ? a.bounds.top - b.bounds.top
-      : a.bounds.left - b.bounds.left))
-    : rest;
   return {
     fromFlips: fromFlow ? seen : seen.filter((f) => ids.has(f.el.dataset.id)),
     toFlips,
-    targets,
+    targets: rest,
   };
 }
 
@@ -734,15 +730,14 @@ function freezeEntrance(viewNode) {
 
 function leave(oldEl, oldInst, oldCar, flags) {
   if (!oldEl) return;
-  const { fromFlow, fromAbout, toAbout, flip } = flags;
+  const { fromFlow, fromAbout, toAbout } = flags;
   const done = () => { if (leaving && leaving.el === oldEl) finalizeLeaving(); };
   freezeEntrance(oldEl);
 
-  /* The deck flies its paintings out when it leaves — except it did not when it left for About,
-     where they simply stood still until the curtain covered them and then were gone. The curtain
-     hides the fact rather than making it: a view that leaves with no motion of its own has not
-     left, it has been taken away. It flies them out wherever it is going. */
-  if (fromFlow && oldInst && oldInst.exit && !flip) {
+  /* Into the index or the timeline the deck has already fanned shut and flown its paintings on to
+     their slots (flatten + the flip, in transition); what is left of flow just fades behind them.
+     Only About, whose curtain has no slots to receive them, folds and fades on its own here. */
+  if (fromFlow && toAbout && oldInst && oldInst.exit) {
     leaving = { el: oldEl, inst: null, car: oldCar, timer: 0 };   // exit() already destroyed it
     oldInst.exit(done);                                  // no slots to carry to: fold and fade
     return;
@@ -793,15 +788,21 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
     return;
   }
 
+  /* Leaving flow is the exact reverse of arriving. Arriving, the paintings flew in from the last
+     view and the deck fanned open over them; leaving, the deck fans shut (flatten, lifted above the
+     arriving view so the fold is seen) and then, flat again, the paintings fly on to their slots in
+     the next view — the same flip that carried them in, run backwards. About's curtain has no slots
+     to receive them, so there flow folds and fades on its own (exit) instead. */
+  if (flags.fromFlow && !flags.toAbout && oldInst && oldInst.flatten) {
+    await oldInst.flatten();                             // fan shut before the paintings fly out
+    if (retired()) { view.classList.remove('is-pre'); return; }
+    await nextFrame();
+  }
+
   const { fromFlips, toFlips, targets } = measureFlips(oldEl, view, flags.fromFlow);
   if (inst && inst.unfreeze) inst.unfreeze();           // flow: the deck angle eases in
 
-  /* flow hands its paintings over only into the index, where every work has a slot waiting: each
-     flies from the deck to its place in the grid, unfolding from its deck angle to flat as it goes
-     — no separate straightening beat, the turn is part of the flight. Into the timeline (which
-     shows a handful against the deck's sixteen) and into About there is nothing to receive them, so
-     flow flies its paintings out on its own there. */
-  const skipFlip = flags.fromFlow && !flags.toAbout;    // flow leaves by flying its paintings out
+  const skipFlip = flags.fromFlow && flags.toAbout;     // About has no slots to receive the paintings
   const playFlip = fromFlips.length && !skipFlip
     ? prepareFlip(fromFlips, toFlips, flags.toFlow)
     : null;
