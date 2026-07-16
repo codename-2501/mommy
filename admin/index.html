@@ -65,6 +65,7 @@
   .imgcard .meta{padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px}
   .imgcard .nm{font-size:11px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .use{font-size:10px;color:var(--mut)}
+  .imgcard .spec{font-size:10px;color:var(--mut);opacity:.8;margin-top:1px}
 
   /* block editor: only the grip drags, so a textarea keeps its own text selection.
      The row wraps — on a narrow screen the buttons drop under the field instead of
@@ -317,7 +318,7 @@
 
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-let cfg=null, images=[], pickTarget=null, curPage='/about', nid=0, baseVersion=null;
+let cfg=null, images=[], imageInfo={}, pickTarget=null, curPage='/about', nid=0, baseVersion=null;
 function setStatus(m,c=''){const e=$('#status');e.textContent=m;e.className='status '+c;}
 /* 게시: 저장된 content.json + 이미지를 커밋·푸시하면 배포 워크플로우가 공개 사이트를 다시 빌드한다.
    편집은 저장 시점에 로컬에만 반영되고, 게시가 그것을 인터넷으로 올린다. */
@@ -342,7 +343,7 @@ async function load(){
     fetch('/api/images?t='+Date.now()).then(r=>r.json()),
     fetch('/api/pages?t='+Date.now()).then(r=>r.json())
   ]);
-  cfg=c; baseVersion=cfg._version||null; delete cfg._version; images=im.images||[];
+  cfg=c; baseVersion=cfg._version||null; delete cfg._version; images=im.images||[]; imageInfo=im.info||{};
   const sel=$('#pageSel'); sel.innerHTML=(pg.pages||['/']).map(p=>`<option value="${p}">${p}</option>`).join('');
   loadWordmark(); loadMeta(); renderBg();
   $('#orderMode').value=orderMode();
@@ -735,13 +736,27 @@ $('#ed-desc').addEventListener('input',()=>{ if(editTarget!=null) renderMediaLis
 $('#editPickImg').onclick=$('#editThumb').onclick=()=>showEditPicker('thumb');
 
 /* ---------- images CRUD ---------- */
+function fmtBytes(b){
+  if(!b) return '';
+  if(b<1024) return b+' B';
+  if(b<1048576) return (b/1024).toFixed(0)+' KB';
+  return (b/1048576).toFixed(1)+' MB';
+}
+function imgSpec(name){
+  const i=imageInfo[name]; if(!i) return '';
+  const dim=(i.w&&i.h)?i.w+'×'+i.h:''; const sz=fmtBytes(i.bytes);
+  return [dim,sz].filter(Boolean).join(' · ');
+}
 function renderImages(){
   const g=$('#imgGrid'); g.innerHTML='';
   images.forEach(name=>{
     const u=usageCount(name);
+    const spec=imgSpec(name);
     const c=document.createElement('div'); c.className='imgcard';
     c.innerHTML=`<div class="ph"><img loading="lazy" src="/images/${name}"></div>
-      <div class="meta"><div><div class="nm" title="${name}">${name}</div><div class="use">${u}개 슬라이드 사용</div></div>
+      <div class="meta"><div><div class="nm" title="${name}">${name}</div>
+      ${spec?`<div class="spec">${spec}</div>`:''}
+      <div class="use">${u}개 슬라이드 사용</div></div>
       <button class="btn sm danger" data-del="${name}">삭제</button></div>`;
     g.appendChild(c);
   });

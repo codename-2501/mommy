@@ -550,7 +550,23 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     f for f in os.listdir(IMAGES_DIR)
                     if f.lower().endswith(ALLOWED_IMG)
                 )
-                return self._send_json({"images": files})
+                # dimensions and byte size per image, so the library can show each one's
+                # resolution and weight. Image.open reads only the header for .size, so this
+                # stays cheap over the whole folder.
+                from PIL import Image
+                info = {}
+                for f in files:
+                    p = os.path.join(IMAGES_DIR, f)
+                    try:
+                        w, h = Image.open(p).size
+                    except Exception:
+                        w, h = 0, 0
+                    try:
+                        b = os.path.getsize(p)
+                    except OSError:
+                        b = 0
+                    info[f] = {"w": w, "h": h, "bytes": b}
+                return self._send_json({"images": files, "info": info})
             except Exception as e:
                 return self._send_json({"error": str(e)}, 500)
 
