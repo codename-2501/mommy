@@ -301,14 +301,24 @@ function renderIntro(logoStart) {
   const enter = el('button', 'btn');
   const grey = el('span', 'btn__wave');                              // the second wave, behind — depth
   enter.appendChild(grey);
-  enter.appendChild(el('span', 'btn__label', 'Enter →'));            // black text, the resting state
+  const baseLabel = el('span', 'btn__label', 'Enter →');             // black text, the resting state
+  enter.appendChild(baseLabel);
   const reveal = el('span', 'btn__reveal');                          // black bar + white text, swept in
-  reveal.appendChild(el('span', 'btn__label', 'Enter →'));
+  const revealLabel = el('span', 'btn__label', 'Enter →');
+  reveal.appendChild(revealLabel);
   enter.appendChild(reveal);
   let stopWave = null;
   enter.addEventListener('click', () => { if (stopWave) stopWave(); enterSite(intro); });
-  setTimeout(() => { stopWave = waveFill(reveal, grey, 10000, () => enterSite(intro)); },
-    Math.round((LIST_START + logoStart + 1.3) * 1000));   // once the button has arrived, the tide starts
+  /* the word scrambles in as the button arrives — the same reveal the title and the list use */
+  scrambleIn(baseLabel, 'Enter →', Math.round((LIST_START + logoStart + 0.7) * 1000), 600);
+  setTimeout(() => {
+    stopWave = waveFill(reveal, grey, 10000, () => {
+      /* the tide has covered the button — it is all black now. Turn the word to a welcome, hold a
+         beat so it can be read, then enter. */
+      scrambleIn(revealLabel, 'Welcome!', 0, 500);
+      setTimeout(() => enterSite(intro), 1000);
+    });
+  }, Math.round((LIST_START + logoStart + 1.3) * 1000));   // once the button has arrived, the tide starts
   gate.appendChild(enter);
   intro.appendChild(gate);
 
