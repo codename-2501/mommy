@@ -732,16 +732,17 @@ function freezeEntrance(viewNode) {
 
 function leave(oldEl, oldInst, oldCar, flags) {
   if (!oldEl) return;
-  const { fromFlow, fromAbout, toAbout, flip } = flags;
+  const { fromFlow, fromAbout, toAbout } = flags;
   const done = () => { if (leaving && leaving.el === oldEl) finalizeLeaving(); };
   freezeEntrance(oldEl);
 
-  /* flow flattens and hands its paintings over by flip now, and the emptied view just fades
-     behind them. Only when there is nothing to flip to — leaving for About — does it fall back
-     to folding its deck shut on its own. */
-  if (fromFlow && oldInst && oldInst.exit && !flip) {
+  /* The deck flies its paintings out when it leaves — except it did not when it left for About,
+     where they simply stood still until the curtain covered them and then were gone. The curtain
+     hides the fact rather than making it: a view that leaves with no motion of its own has not
+     left, it has been taken away. It flies them out wherever it is going. */
+  if (fromFlow && oldInst && oldInst.exit) {
     leaving = { el: oldEl, inst: null, car: oldCar, timer: 0 };   // exit() already destroyed it
-    oldInst.exit(done);                                  // the deck folds shut
+    oldInst.exit(done);                                  // the paintings fly out
     return;
   }
   if (oldInst) oldInst.destroy();
@@ -752,7 +753,7 @@ function leave(oldEl, oldInst, oldCar, flags) {
     leaving = { el: oldEl, timer: setTimeout(done, 1050) };
     return;
   }
-  oldEl.classList.add('is-exit');                        // autoAlpha 0, .35s — fades behind the flip
+  if (!fromFlow) oldEl.classList.add('is-exit');         // autoAlpha 0, .35s
   leaving = { el: oldEl, timer: setTimeout(done, fromFlow ? 1050 : FADE + 50) };
 }
 
@@ -790,23 +791,15 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
     return;
   }
 
-  /* flow stands its paintings at a steep angle, edge-on, and an edge-on card is a sliver a flip
-     cannot carry. So it turns to face the viewer first — flatten() lays the deck flat — and only
-     then are the paintings measured, whole rectangles again, and handed over the way every other
-     view hands them over. Leaving for About is the exception: its curtain has no slots to fly to,
-     so flow keeps its own fold exit there. */
-  if (flags.fromFlow && !flags.toAbout && oldInst && oldInst.flatten) {
-    await oldInst.flatten();
-    if (retired()) { if (view) view.classList.remove('is-pre'); return; }
-  }
-
   const { fromFlips, toFlips, targets } = measureFlips(oldEl, view, flags.fromFlow);
   if (inst && inst.unfreeze) inst.unfreeze();           // flow: the deck angle eases in
 
-  const playFlip = fromFlips.length ? prepareFlip(fromFlips, toFlips, flags.toFlow) : null;
+  const skipFlip = flags.fromFlow && !flags.toAbout;    // flow leaves by flying its paintings out
+  const playFlip = fromFlips.length && !skipFlip
+    ? prepareFlip(fromFlips, toFlips, flags.toFlow)
+    : null;
   const playRise = prepareRise(targets, flags.fromFlow, flags.toFlow);
 
-  flags.flip = !!playFlip;
   leave(oldEl, oldInst, oldCar, flags);
   view.classList.remove('is-pre');
   void view.offsetWidth;                // paint the from-state before attaching transitions
