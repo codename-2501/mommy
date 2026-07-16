@@ -346,10 +346,13 @@ function smoothTilt(outer, content) {
     if (window.LSEDetail && window.LSEDetail.isOpen) return;
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
     const lim = limit(), next = target + raw * mult;
-    /* past an end the page gives instead of stopping dead: the overshoot takes the push at a
-       fraction, capped, and springs back in the frame loop — a rubber-band, not a wall */
-    if (next < 0 && target <= 0.5) over += (-next) * 0.28;
-    else if (next > lim && target >= lim - 0.5) over -= (next - lim) * 0.28;
+    /* past an end the page gives instead of stopping dead: whatever the wheel pushes beyond the edge
+       — whether it was already resting there or is arriving from mid-page — goes into the overshoot
+       at a fraction, capped, and springs back in the frame loop. A rubber-band, not a wall. Guarding
+       on "already at the edge" meant the first push into an end was swallowed and only a second wheel
+       bounced, which read as no bounce at all. */
+    if (next < 0) over += (-next) * 0.28;
+    else if (next > lim) over -= (next - lim) * 0.28;
     over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
     target = Math.max(0, Math.min(lim, next));
     e.preventDefault();                     // the lerp owns the wheel, not the browser
