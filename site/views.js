@@ -243,30 +243,60 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     ruler.destroy();          // it listens for resize of its own
   }
 
+  function stopInput() {
+    removeEventListener('pointermove', onMove);
+    removeEventListener('pointerup', onUp);
+    removeEventListener('wheel', onWheel);
+    removeEventListener('keydown', onKey);
+    removeEventListener('resize', measure);
+  }
+
   return {
     ready,
     unfreeze,
     destroy,
-    /* The exit is the entrance run backwards. Arriving, the deck fans open — deckK 0→1 as
-       1-(1-t)^4; leaving, it fans shut — deckK 1→0 as 1-t^4, the same curve reversed in time. The
-       frame loop keeps running so place() folds the cards with deckK, only the input is stopped,
-       and the view is lifted above the one arriving underneath so the fold is seen rather than
-       covered. It fades out over the last of the fold. */
-    exit(done) {
-      removeEventListener('pointermove', onMove);
-      removeEventListener('pointerup', onUp);
-      removeEventListener('wheel', onWheel);
-      removeEventListener('keydown', onKey);
-      removeEventListener('resize', measure);
-      target = cur;                                  // hold still while it folds
+    /* the work under the centre line, measured as the card nearest the middle. Handed to the next
+       view so it opens on the same paintings flow is showing — then each has a slot to fly to. */
+    activeIndex() {
+      const mid = innerWidth / 2;
+      let best = 0, bestD = Infinity;
+      for (let i = 0; i < items.length; i++) {
+        const r = items[i].el.getBoundingClientRect();
+        if (!r.width) continue;
+        const d = Math.abs(r.left + r.width / 2 - mid);
+        if (d < bestD) { bestD = d; best = i; }
+      }
+      return best;
+    },
+    /* The first half of leaving, and the exact reverse of arriving. On the way in the deck fans
+       open — deckK 0→1 as 1-(1-t)^4 — over cards that flew in flat; on the way out it fans shut,
+       deckK 1→0, the same curve reversed, lifted above the arriving view so the fold is seen. Once
+       flat, the paintings are whole rectangles again and fly on to their slots in the next view
+       (the flip), the way they flew in. */
+    flatten() {
+      stopInput();
+      target = cur;
       view.style.zIndex = '30';                      // over the arriving view, so the fold shows
+      return new Promise((res) => {
+        const t0 = performance.now(), DUR = 460, startK = deckK;
+        (function close() {
+          const t = Math.min(1, (performance.now() - t0) / DUR);
+          deckK = startK * (1 - t * t * (3 - 2 * t));   // smoothstep to flat
+          if (t < 1) requestAnimationFrame(close);
+          else res();
+        })();
+      });
+    },
+    /* the fallback for leaving where nothing can receive the paintings (About's curtain has no
+       slots): the fan simply folds shut and fades, the arrival reversed with nowhere to hand off. */
+    exit(done) {
+      stopInput();
+      target = cur;
+      view.style.zIndex = '30';
       view.style.willChange = 'opacity';
       const t0 = performance.now(), DUR = 800, startK = deckK;
       (function close() {
         const t = Math.min(1, (performance.now() - t0) / DUR);
-        /* the fan shuts over the first 70% and shows every step of it — folded to flat before it
-           fades, so the closing is seen and not swallowed by the fade the way a back-loaded curve
-           was. The flat deck holds a beat, then goes. */
         const fold = Math.min(1, t / 0.7);
         deckK = startK * (1 - fold * fold * (3 - 2 * fold));   // smoothstep to 0
         view.style.opacity = t < 0.78 ? '1' : String(1 - (t - 0.78) / 0.22);

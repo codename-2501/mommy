@@ -577,10 +577,12 @@ function inView(r) {
 }
 
 /* hand the work the viewer was on over to the incoming view */
-function handOverIndex(fromPath, toArticles, oldCar, oldEl) {
+function handOverIndex(fromPath, toArticles, oldCar, oldEl, oldInst) {
   let idx = 0;
   if (fromPath === '/' && !toArticles) {
     idx = (oldCar && oldCar.activeIndex()) || 0;
+  } else if (fromPath === '/flow' && oldInst && oldInst.activeIndex) {
+    idx = oldInst.activeIndex();          // the next view opens on the paintings flow was showing
   } else if (fromPath === '/articles' && oldEl) {
     const mid = innerHeight / 2;
     let best = null, bestD = Infinity;
@@ -732,7 +734,7 @@ function freezeEntrance(viewNode) {
 
 function leave(oldEl, oldInst, oldCar, flags) {
   if (!oldEl) return;
-  const { fromFlow, fromAbout, toAbout } = flags;
+  const { fromFlow, fromAbout, toAbout, flip } = flags;
   const done = () => { if (leaving && leaving.el === oldEl) finalizeLeaving(); };
   freezeEntrance(oldEl);
 
@@ -740,9 +742,9 @@ function leave(oldEl, oldInst, oldCar, flags) {
      where they simply stood still until the curtain covered them and then were gone. The curtain
      hides the fact rather than making it: a view that leaves with no motion of its own has not
      left, it has been taken away. It flies them out wherever it is going. */
-  if (fromFlow && oldInst && oldInst.exit) {
+  if (fromFlow && oldInst && oldInst.exit && !flip) {
     leaving = { el: oldEl, inst: null, car: oldCar, timer: 0 };   // exit() already destroyed it
-    oldInst.exit(done);                                  // the paintings fly out
+    oldInst.exit(done);                                  // no slots to carry to: fold and fade
     return;
   }
   if (oldInst) oldInst.destroy();
@@ -753,7 +755,7 @@ function leave(oldEl, oldInst, oldCar, flags) {
     leaving = { el: oldEl, timer: setTimeout(done, 1050) };
     return;
   }
-  if (!fromFlow) oldEl.classList.add('is-exit');         // autoAlpha 0, .35s
+  oldEl.classList.add('is-exit');                        // fades behind the flip
   leaving = { el: oldEl, timer: setTimeout(done, fromFlow ? 1050 : FADE + 50) };
 }
 
@@ -766,7 +768,7 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
   };
   const toCarousel = path === '/' || path === '/flow';   // the views that jump to an index
 
-  handOverIndex(oldPath, path === '/articles', oldCar, oldEl);
+  handOverIndex(oldPath, path === '/articles', oldCar, oldEl, oldInst);
   if (oldCar) oldCar.freeze();          // hold the paintings still while they are measured
 
   const frag = buildView(path);
