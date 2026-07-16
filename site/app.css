@@ -342,7 +342,13 @@ html.is-resizing .wordmark{transition:none}
   font-size:min(1.4rem,15px);
   opacity:.42;transition:opacity .35s ease;
 }
-.ruler__label.is-live{opacity:1}                    /* the month you are standing in */
+/* the month you are standing in rides at the centre in a capsule — the sideways sticky header.
+   A shadow lifts it off the ground so the pill reads even where that ground is white. */
+.ruler__label.is-live{
+  opacity:1;padding:.2rem .85rem;border-radius:999px;
+  background:rgba(255,255,255,.86);backdrop-filter:blur(4px);
+  box-shadow:0 2px 9px rgba(0,0,0,.16);
+}
 .ruler__label::after{content:" " attr(data-year);opacity:.5}
 
 /* ---------- menu: solid buttons, same face as the detail's controls ----------

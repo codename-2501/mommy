@@ -168,24 +168,39 @@ function create(view, slides, opts) {
         l.style.left = at + 'px';
         l.dataset.g = String(groups.indexOf(g));
         labelTrack.appendChild(l);
-        made.push({ el: l, at });
+        made.push({ el: l, at, end: at + g.slides * workW, w: 0, extra: 0 });
       }
     }
-    /* one read of the layout for all of them, after they are all in the document */
-    const pad = LABEL_PAD * (rootPx() / 10);
-    const rowEnd = [-Infinity];
-    for (const m of made) {
-      const w = m.el.offsetWidth;                 // as the browser drew it, at this size
-      /* with the label's size capped, the shortest month on the ruler (June, one painting, 96px
-         of track) still has room for its name at every width — so nothing has to be moved out of
-         anything's way, and nothing is hidden. Measured, not assumed: the check below is what
-         tells us that stays true. */
-      rowEnd[0] = m.at + w;
-    }
+    /* one read of the layout for all of them, after they are all in the document — the width is what
+       the sticky pin centres, and its region (at..end) is how long it stays pinned */
+    for (const m of made) m.w = m.el.offsetWidth;   // as the browser drew it, at this size
+    madeLabels = made;
   }
 
   /* ---------- the ticks, drawn on a canvas ---------- */
+  let madeLabels = [];           // the label spans, with their region, for the sticky pin
   let litGroup = -1;             // the month whose name is lit
+
+  /* Sticky, sideways: the name of the month you are in is held at the centre while its stretch of
+     ruler runs under it, then the next month's name slides in and pushes it off — a section header,
+     laid on its side. Each label is centred on the middle line for as long as its region (at..end)
+     spans it, but never dragged ahead of where it has naturally scrolled to, and never past its own
+     region's end, so the hand-off is one continuous move with no jump. */
+  const STICKY_GAP = 8;
+  function stickyPin(lOff) {
+    const centre = cw * 0.5;
+    for (const m of madeLabels) {
+      const left = m.at - lOff;                       // where it has naturally scrolled to
+      const target = centre - m.w * 0.5;              // centred on the middle line
+      let x = Math.min(target, (m.end - lOff) - m.w - STICKY_GAP);   // centred, then pushed by its end
+      if (x < left) x = left;                         // but never ahead of its natural scroll
+      const extra = x - left;
+      if (Math.abs(extra - m.extra) > 0.5) {
+        m.el.style.transform = extra ? 'translateX(' + extra + 'px)' : 'translateX(0)';
+        m.extra = extra;
+      }
+    }
+  }
   let ctx = null, cw = 0, ch = 0, dpr = 1;
   let heights = new Float32Array(0);
   let baseIdx = null;
@@ -543,6 +558,7 @@ function create(view, slides, opts) {
       let lOff = off % rulerHalf;
       if (lOff < 0) lOff += rulerHalf;
       labelTrack.style.transform = 'translate3d(' + (-lOff) + 'px,0,0)';
+      stickyPin(lOff);   // hold the live month's name at the centre as its region runs under it
       const r = ratio || 1;
       if (mode === 'ticks') drawSticks(off, r);
       else if (mode === 'colors') drawColors(off, r);

@@ -149,7 +149,7 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     const xo = p - 0.5;
     const bob = Math.sin(time + xo * Math.PI * 2) * rest * (1 + vel * 0.01);
     const y = innerHeight * 0.5 * xo + bob;
-    const rotY = (-(18 * p) - 66) * deckK;   // deck angle, opening as the card comes forward
+    const rotY = (-(18 * p) - 65) * deckK;   // deck angle (65deg at rest), opening as the card comes forward
     /* the hovered card slides 75% sideways — pull it forward in the deck's 3D space so it
        passes OVER its neighbours instead of under them */
     const z = i === hoverIdx ? 60 : 0;
