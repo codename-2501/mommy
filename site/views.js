@@ -178,7 +178,10 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
         w += b.end - total;
         place(i, w);
       }
-      const f = (cur + innerWidth * 0.5 - bounds[0].left) / cardGap;   // work under the line
+      /* the centre line marks the card that is MOST open (p=0.5 in place()), whose box is centred on
+         the screen — not the one whose left edge the line has just reached. Offset the reference by
+         half a card so the live work is the one the eye reads as centred. */
+      const f = (cur + innerWidth * 0.5 - bounds[0].left - bounds[0].width * 0.5) / cardGap;   // work under the line
       let lap = f % lapWorks;
       if (lap < 0) lap += lapWorks;
       ruler.update(lap * (slides.length / lapWorks), ratio);
@@ -227,7 +230,7 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
        one work is total/slides.length px of cur (the lap is stretched over the whole archive, which
        is why it is not cardGap — that would land a work short). The old bounds[idx].left sat the work
        innerWidth/2 (~half the cards abreast) to one side, so work 0 fell off the left edge. */
-    if (idx >= 0 && bounds[idx]) { target = cur = idx * (total / slides.length) - innerWidth * 0.5 + bounds[0].left; }
+    if (idx >= 0 && bounds[idx]) { target = cur = idx * (total / slides.length) - innerWidth * 0.5 + bounds[0].left + bounds[0].width * 0.5; }
     markReady();
   });
   raf = requestAnimationFrame(frame);
@@ -271,7 +274,7 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     destroy,
     /* re-tap the active tab: glide the deck (target only, cur lerps) back to the first work —
        the same landing spot the hand-over uses for idx 0 */
-    reset() { if (bounds[0]) target = bounds[0].left - innerWidth * 0.5; },
+    reset() { if (bounds[0]) target = bounds[0].left + bounds[0].width * 0.5 - innerWidth * 0.5; },
     /* the work under the centre line, measured as the card nearest the middle. Handed to the next
        view so it opens on the same paintings flow is showing — then each has a slot to fly to. */
     /* hand over the exact work the ruler is showing under the centre line — the ruler is the single
