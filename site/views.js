@@ -383,6 +383,12 @@ function smoothTilt(outer, content) {
       target = cur = Math.max(0, Math.min(limit(), y));
       outer.scrollTop = cur; applied = outer.scrollTop; prevTop = outer.scrollTop;
     },
+    /* like scrollTo, but only the target moves — the frame's lerp carries the page there, so a jump
+       to the top reads as a glide instead of a cut */
+    glideTo(y) {
+      cur = outer.scrollTop; applied = -1;   // start from where we are; skip the follow-external guard once
+      target = Math.max(0, Math.min(limit(), y));
+    },
     measure,
     destroy() {
       cancelAnimationFrame(raf);
@@ -508,9 +514,10 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   function buildGrid() {
     let pairs = orderIndex(slides, colors, indexSort, indexSizeDir);
     if (indexSort === 'color' && indexColor) pairs = pairs.filter((p) => bucketOfPair(p) === indexColor);
-    const withLabels = indexSort.slice(0, 4) === 'date';
+    const dateMode = indexSort.slice(0, 4) === 'date';
+    const withLabels = dateMode || indexSort === 'size';   // months in time, 호 by size, nothing by colour
     content.replaceChildren();
-    let row = null, seenMonth = '';
+    let row = null, seenGroup = '';
     pairs.forEach((p, pos) => {
       const s = p.s;
       if (pos % perRow === 0) {
@@ -538,15 +545,26 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
       frame.appendChild(img);
       box.appendChild(frame);
       cell.appendChild(box);
-      const mo = month(s);
-      if (withLabels && mo && mo !== seenMonth) {
-        seenMonth = mo;
+      /* the band a work opens: its month (with a year under it) in the date orders, its canvas 호 in
+         Size. One is written per run, at the first work of the run. */
+      let groupKey = '', bandText = '', bandYear = '';
+      if (dateMode) {
+        const mo = month(s);
+        if (mo) {
+          groupKey = 'm:' + mo; bandText = mo;
+          const own = /^(\d{4})/.exec(String(s.date || ''));
+          bandYear = (own && own[1]) || years[mo] || '2026';   // this work's year, else the month's
+        }
+      } else if (indexSort === 'size') {
+        const ho = hoOf(s);
+        if (ho > 0) { groupKey = 'h:' + ho; bandText = ho + '호'; }
+      }
+      if (withLabels && groupKey && groupKey !== seenGroup) {
+        seenGroup = groupKey;
         const lbl = el('div', 'agrid__month');
         const rev = el('div', 'dt-reveal');
-        const txt = el('div', 'label', mo);
-        /* same rule as the ruler: this work's own year, else the month's, else 2026 */
-        const own = /^(\d{4})/.exec(String(s.date || ''));
-        txt.dataset.year = (own && own[1]) || years[mo] || '2026';
+        const txt = el('div', 'label', bandText);
+        txt.dataset.year = bandYear;   // the ::after only shows when this is non-empty (date only)
         rev.appendChild(txt);
         lbl.appendChild(rev);
         cell.appendChild(lbl);
@@ -719,12 +737,14 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     paintBar();
     const w1 = bar.getBoundingClientRect().width;
     if (Math.abs(w1 - w0) > 1) {
+      /* the box opens faster than the drop travels (240ms vs the flip's 460ms), so the room is
+         already there by the time the chip slides into it */
       bar.animate([{ width: w0 + 'px' }, { width: w1 + 'px' }],
-        { duration: 420, easing: 'cubic-bezier(.4,0,.2,1)' });   // grow/shrink the box evenly, no snap
+        { duration: 240, easing: 'cubic-bezier(.4,0,.2,1)' });
     }
     placeBlob(true);      // the drop travels to the new option (and reshapes if Size gained its arrow)
     sc.measure();
-    sc.scrollTo(0);       // a new order has no "where you were" — start at the top
+    sc.glideTo(0);        // a new order has no "where you were" — glide to the top rather than cut to it
     relay();
   }
 
@@ -733,7 +753,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     buildGrid();
     paintBar();
     sc.measure();
-    sc.scrollTo(0);
+    sc.glideTo(0);
     relay();
   }
 
