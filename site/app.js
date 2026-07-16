@@ -340,8 +340,8 @@ function waveFill(reveal, grey, durMs, onDone) {
     const lin = Math.min(1, (ts - t0) / durMs);
     const level = ease(lin) * 114 - 7;               // mean x, running well past both ends
     const t = (ts - t0) / 1000;
-    if (grey) grey.style.clipPath = poly(level + 8, 5.5, 1.5, t * 4.3 + 1.7);   // a second wavelength, leading
-    reveal.style.clipPath = poly(level, 4, 0.9, t * 5);                          // the gentle main wave
+    if (grey) grey.style.clipPath = poly(level + 8, 5, 0.9, t * 5 + 1);   // same wavelength, leading — a parallel echo
+    reveal.style.clipPath = poly(level, 4, 0.9, t * 5);                    // the gentle main wave
     if (lin < 1) raf = requestAnimationFrame(frame);
     else if (!done) { done = true; onDone(); }
   }
