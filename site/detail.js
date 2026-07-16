@@ -283,13 +283,22 @@ document.addEventListener('keydown', (e) => {
   if (lb) { e.stopImmediatePropagation(); lb.click(); }
 }, true);
 
-/* panel smooth scroll — virtual-scroll feel (delta *0.9, lerp .1/frame) */
+/* panel smooth scroll — virtual-scroll feel (delta *0.9, lerp .1/frame), with a rubber-band at the
+   ends so the page gives and springs back instead of stopping dead — the same feel as the index. */
 function smoothScroll(sc) {
-  let target = 0, cur = 0, last = 0, applied = -1;
+  let target = 0, cur = 0, last = 0, applied = -1, over = 0;
+  const OVER_MAX = 90;   // how far the rubber-band gives at an end, px
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;
+  const body = () => sc.firstElementChild;   // the content the overshoot rides on
   sc.addEventListener('wheel', (e) => {
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
-    target = Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight, target + raw * mult));
+    const lim = sc.scrollHeight - sc.clientHeight, next = target + raw * mult;
+    /* whatever the wheel pushes past an edge goes into the overshoot at a fraction, capped, and
+       springs back in the tick — a rubber-band, not a wall */
+    if (next < 0) over += (-next) * 0.28;
+    else if (next > lim) over -= (next - lim) * 0.28;
+    over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
+    target = Math.max(0, Math.min(lim, next));
     e.preventDefault();
   }, { passive: false });
   function tick(ts) {
@@ -302,6 +311,12 @@ function smoothScroll(sc) {
     cur += (target - cur) * 0.1 * ratio;
     sc.scrollTop = cur;
     applied = sc.scrollTop;
+    if (over !== 0) {
+      over += (0 - over) * 0.16 * ratio;
+      if (Math.abs(over) < 0.4) over = 0;
+      const b = body();
+      if (b) b.style.transform = over ? 'translateY(' + over.toFixed(1) + 'px)' : '';
+    }
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
