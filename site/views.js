@@ -516,21 +516,30 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     const c = colors[String(p.s.image || '').split('/').pop()] || '#c9c9c9';
     return colorBucket(hslOf(c));
   }
+  /* one delegated click for the whole grid — not a listener per cell (there are hundreds), which was
+     part of what made a fresh grid stall the main thread as it arrived */
+  content.addEventListener('click', (e) => {
+    const cell = e.target.closest('.agrid__cell');
+    if (!cell || !content.contains(cell)) return;
+    const s = slides[parseInt(cell.dataset.index, 10)];
+    const box = cell.querySelector('.lse-slot');
+    if (s && box) onOpen(s, box);
+  });
+
+  let buildRAF = 0;
   function buildGrid() {
+    if (buildRAF) { cancelAnimationFrame(buildRAF); buildRAF = 0; }
     let pairs = orderIndex(slides, colors, indexSort, indexSizeDir);
     if (indexSort === 'color' && indexColor) pairs = pairs.filter((p) => bucketOfPair(p) === indexColor);
     const dateMode = indexSort.slice(0, 4) === 'date';
     const withLabels = dateMode || indexSort === 'size';   // months in time, 호 by size, nothing by colour
     content.replaceChildren();
     let row = null, seenGroup = '';
-    pairs.forEach((p, pos) => {
+    const buildCell = (p, pos) => {
       const s = p.s;
       if (pos % perRow === 0) {
         row = el('div', 'agrid__row lse-row');
-        /* the row is as many columns wide as it holds. It used to be twelve in the stylesheet and
-           four on a phone, while the count of cells put in it was decided here — so the moment the
-           count became a continuous thing, the two stopped agreeing and a row of seven was laid out
-           across twelve columns. One of them has to own the number, and it is this one. */
+        /* the row is as many columns wide as it holds — one owner of the count (see git blame). */
         row.style.gridTemplateColumns = 'repeat(' + perRow + ',1fr)';
         content.appendChild(row);
       }
@@ -574,9 +583,25 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
         lbl.appendChild(rev);
         cell.appendChild(lbl);
       }
-      cell.addEventListener('click', () => onOpen(s, box));
       row.appendChild(cell);
-    });
+    };
+    /* build the fold's worth now — plus down to the work the deck handed over, so the scroll that
+       lands on it has real layout — and hand the rest off to later frames, so arriving at the grid
+       does not block the main thread through the flip that carries the paintings in */
+    const N = pairs.length;
+    const handoff = parseInt(document.body.dataset.index, 10) || 0;
+    const targetPos = handoff > 0 ? pairs.findIndex((p) => p.oi === handoff) : 0;
+    const first = Math.min(N, Math.max(perRow * 5, (targetPos < 0 ? 0 : targetPos) + perRow * 2));
+    let pos = 0;
+    for (; pos < first; pos++) buildCell(pairs[pos], pos);
+    if (pos < N) {
+      const step = () => {
+        const end = Math.min(N, pos + perRow * 6);
+        for (; pos < end; pos++) buildCell(pairs[pos], pos);
+        buildRAF = pos < N ? requestAnimationFrame(step) : 0;
+      };
+      buildRAF = requestAnimationFrame(step);
+    }
   }
 
   buildGrid();
@@ -793,6 +818,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   });
   function destroy() {
     cancelAnimationFrame(frameRAF);
+    cancelAnimationFrame(buildRAF);
     if (wm) { wm.style.top = ''; wm.style.translate = ''; }   // hand the shared wordmark back clean
     removeEventListener('resize', onResize);
     sc.destroy();
