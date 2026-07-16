@@ -620,7 +620,10 @@ html.is-resizing .wordmark{transition:none}
 .dt-strip--out .dt-media{transition:transform 1s var(--ease-travel)}
 
 /* ---------- FLOW: floating card deck ---------- */
-.flow{position:fixed;inset:0;z-index:1;overflow:hidden;user-select:none;cursor:grab}
+/* touch-action:none — the deck's drag is a horizontal one, and without this a phone hands that
+   gesture to its own back-swipe / overscroll and cancels the pointer mid-drag (the carousel already
+   reserves it with pan-y). This is why the drag died on some devices. */
+.flow{position:fixed;inset:0;z-index:1;overflow:hidden;user-select:none;cursor:grab;touch-action:none}
 .flow:active{cursor:grabbing}
 .flow__inner{position:relative;display:flex;align-items:center;height:100%}
 .flow__deck{

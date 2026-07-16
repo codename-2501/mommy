@@ -209,6 +209,7 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
   wrap.addEventListener('pointerdown', onDown);
   addEventListener('pointermove', onMove);
   addEventListener('pointerup', onUp);
+  addEventListener('pointercancel', onUp);   // if a device still steals the gesture, end the drag cleanly
   addEventListener('wheel', onWheel, { passive: true });
   addEventListener('keydown', onKey);
   addEventListener('resize', measure);
@@ -241,6 +242,7 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     cancelAnimationFrame(raf);
     removeEventListener('pointermove', onMove);
     removeEventListener('pointerup', onUp);
+    removeEventListener('pointercancel', onUp);
     removeEventListener('wheel', onWheel);
     removeEventListener('keydown', onKey);
     removeEventListener('resize', measure);
@@ -250,6 +252,7 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
   function stopInput() {
     removeEventListener('pointermove', onMove);
     removeEventListener('pointerup', onUp);
+    removeEventListener('pointercancel', onUp);
     removeEventListener('wheel', onWheel);
     removeEventListener('keydown', onKey);
     removeEventListener('resize', measure);
