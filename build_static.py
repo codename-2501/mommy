@@ -17,6 +17,7 @@ detail body renders at full quality (detail.js: "body images: full quality").
 Usage:  python3 build_static.py
 Output: dist/
 """
+import hashlib
 import json
 import os
 import re
@@ -207,6 +208,31 @@ def main():
         text = re.sub(r'url\((/(?!/))', r'url(' + base + r'\1', text)
         with open(css, "w", encoding="utf-8") as fh:
             fh.write(text)
+
+    # cache-busting: GitHub Pages serves site/*.js and app.css with max-age=600, so for ten minutes
+    # after a deploy a browser keeps running the old files and the change stays invisible. Stamp each
+    # asset URL in the shell with a short hash of that file's final contents: the URL changes only
+    # when the file does, so a changed file is fetched at once while an unchanged one keeps its cache.
+    def _ver(url):
+        rel = url[len(base):] if base and url.startswith(base) else url
+        try:
+            with open(os.path.join(DIST, rel.lstrip("/")), "rb") as fh:
+                return hashlib.md5(fh.read()).hexdigest()[:8]
+        except OSError:
+            return ""
+
+    def _bust(html):
+        def repl(m):
+            v = _ver(m.group(2))
+            return m.group(1) + m.group(2) + ('?v=' + v if v else '') + '"'
+        return re.sub(r'((?:src|href)=")([^"?]*site/[^"?]+\.(?:js|css))"', repl, html)
+
+    for shell_name in ("index.html", "404.html"):
+        sp = os.path.join(DIST, shell_name)
+        with open(sp, encoding="utf-8") as fh:
+            txt = fh.read()
+        with open(sp, "w", encoding="utf-8") as fh:
+            fh.write(_bust(txt))
 
     # SPA shell: admin_server served site/index.html for /, /flow, /articles,
     # /about and /p/<id>. Static hosts serve real files first, so a catch-all is
