@@ -454,6 +454,9 @@ html.is-resizing .wordmark{transition:none}
 /* ---------- detail view (overlay above home; transition values) ---------- */
 .detail{position:fixed;inset:0;z-index:60}
 .detail.is-wait{visibility:hidden}   /* the pre-transition beat */
+/* while it is leaving (~1.1s) the detail still covers the screen, fading — but it must not keep
+   catching clicks, or a press on the bottom menu underneath lands on the transparent detail instead */
+.detail.is-off{pointer-events:none}
 .dt-bg{
   position:absolute;inset:0;background:#fff;
   opacity:0;transition:opacity .35s ease;   /* : old page autoAlpha .35 power1 */
