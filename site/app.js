@@ -315,7 +315,19 @@ function renderIntro(logoStart) {
   requestAnimationFrame(() => requestAnimationFrame(() => {
     intro.classList.add('is-ready');
     const wm = document.querySelector('.wordmark');
-    if (wm) wm.classList.add('is-ready');
+    if (wm) {
+      wm.classList.add('is-ready');
+      /* the title scrambles in, line by line, exactly as the month list does — a text logo only;
+         a picture logo keeps the rise (there is nothing to scramble) */
+      if (!wm.classList.contains('wordmark--image')) {
+        wm.classList.add('is-scramble');
+        [...wm.querySelectorAll('.line-in')].forEach((ln, i) => {
+          /* a one-glyph decorative line (the divider dash) has nothing to spell — scrambling it just
+             flashes a stray letter, so leave it to show in place */
+          if (ln.textContent.trim().length > 1) scrambleIn(ln, ln.textContent, i * 120, 600);
+        });
+      }
+    }
     for (const run of scrambles) run();
   }));
   return intro;
