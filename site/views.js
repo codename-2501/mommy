@@ -247,20 +247,32 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     ready,
     unfreeze,
     destroy,
-    /* the paintings themselves leave — y to the viewport top, then a further
-       -150% of their own height. power2.in .5s, stagger .025. The cards stay behind. */
+    /* The exit is the entrance run backwards. Arriving, the deck fans open — deckK 0→1 as
+       1-(1-t)^4; leaving, it fans shut — deckK 1→0 as 1-t^4, the same curve reversed in time. The
+       frame loop keeps running so place() folds the cards with deckK, only the input is stopped,
+       and the view is lifted above the one arriving underneath so the fold is seen rather than
+       covered. It fades out over the last of the fold. */
     exit(done) {
-      destroy();
-      const frames = wrap.querySelectorAll('.lse-frame');
-      let k = 0;
-      for (const f of frames) {
-        const r = f.getBoundingClientRect();
-        if (r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight) continue;
-        f.style.transition = 'transform .5s cubic-bezier(.55,.085,.68,.53) ' + (k * 0.025) + 's';
-        f.style.transform = 'translate3d(0,' + (-r.top) + 'px,0) translateY(-150%)';
-        k += 1;
-      }
-      setTimeout(done, 500 + k * 25);
+      removeEventListener('pointermove', onMove);
+      removeEventListener('pointerup', onUp);
+      removeEventListener('wheel', onWheel);
+      removeEventListener('keydown', onKey);
+      removeEventListener('resize', measure);
+      target = cur;                                  // hold still while it folds
+      view.style.zIndex = '30';                      // over the arriving view, so the fold shows
+      view.style.willChange = 'opacity';
+      const t0 = performance.now(), DUR = 800, startK = deckK;
+      (function close() {
+        const t = Math.min(1, (performance.now() - t0) / DUR);
+        /* the fan shuts over the first 70% and shows every step of it — folded to flat before it
+           fades, so the closing is seen and not swallowed by the fade the way a back-loaded curve
+           was. The flat deck holds a beat, then goes. */
+        const fold = Math.min(1, t / 0.7);
+        deckK = startK * (1 - fold * fold * (3 - 2 * fold));   // smoothstep to 0
+        view.style.opacity = t < 0.78 ? '1' : String(1 - (t - 0.78) / 0.22);
+        if (t < 1) requestAnimationFrame(close);
+        else { destroy(); done(); }
+      })();
     },
   };
 }
