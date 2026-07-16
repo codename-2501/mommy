@@ -1008,7 +1008,13 @@ function navigate(href) {
   if (BASE && to.indexOf(BASE) === 0) to = to.slice(BASE.length);
   to = to.replace(/\/+$/, '') || '/';
   const at = route();
-  if (to === at) return;
+  if (to === at) {
+    /* tapping the tab you are already on returns the view to its start — the first work / the top —
+       rather than tearing it down and replaying its arrival */
+    const v = activeView || carousel;
+    if (v && v.reset) v.reset();
+    return;
+  }
   history.pushState(null, '', toHref(to));
   render();
 }
