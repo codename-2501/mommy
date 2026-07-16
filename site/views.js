@@ -247,6 +247,27 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     ready,
     unfreeze,
     destroy,
+    /* Turn the deck to face the viewer before it hands its paintings over. In the fan the cards
+       stand at 70–84°, edge-on, so their on-screen rectangles are slivers a flip cannot carry
+       cleanly — flat they are whole rectangles again. Easing deckK to 0 lays them flat where they
+       are (the frame loop keeps applying it), and once they are flat the paintings can fly to
+       their slots in the next view the way every other view's do. */
+    flatten() {
+      removeEventListener('pointermove', onMove);
+      removeEventListener('pointerup', onUp);
+      removeEventListener('wheel', onWheel);
+      removeEventListener('keydown', onKey);
+      target = cur;                                    // hold still while it turns flat
+      return new Promise((res) => {
+        const t0 = performance.now(), DUR = 300, startK = deckK;
+        (function flat() {
+          const t = Math.min(1, (performance.now() - t0) / DUR);
+          deckK = startK * (1 - t * (2 - t));           // ease-out to 0: the fan turns to face you
+          if (t < 1) requestAnimationFrame(flat);
+          else res();
+        })();
+      });
+    },
     /* The deck arrives by fanning open (deckK 0→1) as the view rises into place; it leaves by
        playing that in reverse — the fan folds shut and the view sinks back down the way it came.
        The paintings used to fly up and off instead, a motion the arrival never made, so coming
