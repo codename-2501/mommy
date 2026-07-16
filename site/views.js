@@ -258,12 +258,18 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     /* the work under the centre line — the same one the ruler reads. Handed to the next view so it
        opens on the same paintings, which is what lets them carry over the way timeline↔index do. */
     activeIndex() {
-      if (!cardGap) return 0;
-      const f = (cur + innerWidth * 0.5 - bounds[0].left) / cardGap;
-      let lap = f % lapWorks;
-      if (lap < 0) lap += lapWorks;
-      const work = Math.round(lap * (slides.length / lapWorks));
-      return ((work % slides.length) + slides.length) % slides.length;
+      /* the card whose centre is nearest the middle of the screen, found by measuring — the
+         ruler's formula was a few works out, and a few works out is the difference between the
+         next view opening on the same paintings and on a set that barely overlaps. */
+      const mid = innerWidth / 2;
+      let best = 0, bestD = Infinity;
+      for (let i = 0; i < items.length; i++) {
+        const r = items[i].el.getBoundingClientRect();
+        if (!r.width) continue;
+        const d = Math.abs(r.left + r.width / 2 - mid);
+        if (d < bestD) { bestD = d; best = i; }
+      }
+      return best;
     },
     /* Turn the deck to face the viewer — the reverse of the fan opening on arrival. In the fan the
        cards stand at 70–84°, edge-on, and edge-on their on-screen rectangles are slivers a flip

@@ -800,8 +800,12 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
      the paintings fly on to the next view — which, opened on the same work flow was centred on
      (handOverIndex), has a slot waiting for each of them. Only About is the exception: its curtain
      has no slots, so flow folds shut on its own there. */
-  if (flags.fromFlow && !flags.toAbout && oldInst && oldInst.flatten) {
+  if (flags.fromFlow && path === '/articles' && oldInst && oldInst.flatten) {
     await oldInst.flatten();
+    /* the carousel jumps to the handed-over work but places its slides over the next few frames,
+       so measured the instant it is "ready" only a handful are on screen and only those few can
+       be flown to. Let it settle first, so a slot is waiting for every card flow is handing over. */
+    await nextFrame(); await nextFrame();
     if (retired()) { if (view) view.classList.remove('is-pre'); return; }
   }
 
