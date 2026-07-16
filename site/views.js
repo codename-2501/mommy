@@ -399,12 +399,37 @@ function smoothTilt(outer, content) {
 /* the sort the viewer last chose, kept for the session so it survives leaving the index and
    coming back. date-desc (newest first) is the archive's own order — the default. */
 let indexSort = 'date-desc';
+let indexColor = null;   // a chosen colour in Color mode (a bucket key), or null for the whole spectrum
 const INDEX_SORTS = [
   ['date-desc', 'Latest'],
   ['date-asc', 'Oldest'],
   ['color', 'Color'],
   ['size', 'Size'],
 ];
+
+/* the colour wheel cut into named wedges, each with a swatch colour to stand for it and the hue
+   span it covers. Red wraps the 360/0 seam. A near-grey painting carries no hue and is its own
+   bucket (neutral). Order here is the order the swatches show — the same walk round the wheel the
+   sort takes. */
+const COLOR_BUCKETS = [
+  ['red', '#cf4a3c', 342, 15],
+  ['orange', '#d9843a', 15, 45],
+  ['yellow', '#d8bf46', 45, 70],
+  ['green', '#5a9e55', 70, 165],
+  ['blue', '#4676ac', 165, 255],
+  ['purple', '#8a5aa8', 255, 300],
+  ['pink', '#cc6a9c', 300, 342],
+  ['neutral', '#b9b3ab', -1, -1],
+];
+function colorBucket(hsl) {
+  if (hsl.s < 0.12) return 'neutral';
+  const h = hsl.h;
+  for (const [key, , lo, hi] of COLOR_BUCKETS) {
+    if (lo < 0) continue;
+    if (lo > hi ? (h >= lo || h < hi) : (h >= lo && h < hi)) return key;   // lo>hi = the red wrap
+  }
+  return 'neutral';
+}
 
 /* a colour's hue/saturation/lightness, for the colour sort */
 function hslOf(hex) {
@@ -469,8 +494,13 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
 
   /* the grid is torn down and laid out again on every sort change; the month bands only mean
      anything when the works run in time, so they show for the date orders and not the others */
+  function bucketOfPair(p) {
+    const c = colors[String(p.s.image || '').split('/').pop()] || '#c9c9c9';
+    return colorBucket(hslOf(c));
+  }
   function buildGrid() {
-    const pairs = orderIndex(slides, colors, indexSort);
+    let pairs = orderIndex(slides, colors, indexSort);
+    if (indexSort === 'color' && indexColor) pairs = pairs.filter((p) => bucketOfPair(p) === indexColor);
     const withLabels = indexSort.slice(0, 4) === 'date';
     content.replaceChildren();
     let row = null, seenMonth = '';
@@ -521,20 +551,49 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
 
   buildGrid();
 
-  /* the sort control: a small row of labels above the grid, the chosen one lit */
+  /* the sort control: a row of labels, the chosen one lit; and — in Color — a palette below it,
+     one swatch per colour the archive actually holds, that filters the grid down to that colour */
   const bar = el('div', 'agrid-sort');
-  bar.appendChild(el('span', 'agrid-sort__cap label', 'Sort'));
+  const row1 = el('div', 'agrid-sort__row');
+  row1.appendChild(el('span', 'agrid-sort__cap label', 'Sort'));
   const btns = INDEX_SORTS.map(([mode, lbl]) => {
     const b = el('button', 'agrid-sort__btn label', lbl);
     b.type = 'button';
     b.dataset.mode = mode;
     b.addEventListener('click', () => setSort(mode));
-    bar.appendChild(b);
+    row1.appendChild(b);
     return b;
   });
+  bar.appendChild(row1);
+
+  /* the swatches: only the buckets that hold at least one work, in wheel order, plus All */
+  const present = new Set(slides.map((s) => {
+    const c = colors[String(s.image || '').split('/').pop()] || '#c9c9c9';
+    return colorBucket(hslOf(c));
+  }));
+  const sw = el('div', 'agrid-sort__sw');
+  const allChip = el('button', 'agrid-sw agrid-sw--all label', 'All');
+  allChip.type = 'button';
+  allChip.addEventListener('click', () => setColor(null));
+  sw.appendChild(allChip);
+  const swBtns = COLOR_BUCKETS.filter(([key]) => present.has(key)).map(([key, hex]) => {
+    const b = el('button', 'agrid-sw');
+    b.type = 'button';
+    b.dataset.bucket = key;
+    b.style.background = hex;
+    b.title = key;
+    b.addEventListener('click', () => setColor(key));
+    sw.appendChild(b);
+    return b;
+  });
+  bar.appendChild(sw);
   view.appendChild(bar);
+
   function paintBar() {
     btns.forEach((b) => b.classList.toggle('is-on', b.dataset.mode === indexSort));
+    sw.hidden = indexSort !== 'color';
+    allChip.classList.toggle('is-on', !indexColor);
+    swBtns.forEach((b) => b.classList.toggle('is-on', b.dataset.bucket === indexColor));
   }
   paintBar();
 
@@ -586,10 +645,21 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   function setSort(mode) {
     if (mode === indexSort) return;
     indexSort = mode;
+    if (mode !== 'color') indexColor = null;   // the palette only lives inside Color
     buildGrid();
     paintBar();
     sc.measure();
     sc.scrollTo(0);       // a new order has no "where you were" — start at the top
+    relay();
+  }
+
+  function setColor(bucket) {
+    if (bucket === indexColor) return;
+    indexColor = bucket;
+    buildGrid();
+    paintBar();
+    sc.measure();
+    sc.scrollTo(0);
     relay();
   }
 
