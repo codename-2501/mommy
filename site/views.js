@@ -153,6 +153,7 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     /* the hovered card slides 75% sideways — pull it forward in the deck's 3D space so it
        passes OVER its neighbours instead of under them */
     const z = i === hoverIdx ? 60 : 0;
+    items[i].el._roty = rotY;   // the deck angle right now, read by the exit flight so it unwinds mid-air
     items[i].el.style.transform =
       'translate3d(' + (b.left - wrapped) + 'px,' + y + 'px,' + z + 'px) rotateY(' + rotY + 'deg)';
   }
@@ -268,24 +269,14 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
       }
       return best;
     },
-    /* The first half of leaving, and the exact reverse of arriving. On the way in the deck fans
-       open — deckK 0→1 as 1-(1-t)^4 — over cards that flew in flat; on the way out it fans shut,
-       deckK 1→0, the same curve reversed, lifted above the arriving view so the fold is seen. Once
-       flat, the paintings are whole rectangles again and fly on to their slots in the next view
-       (the flip), the way they flew in. */
-    flatten() {
+    /* Leaving, the deck holds still to be measured, then hands its paintings to the next view. It
+       does NOT fold first: each painting carries its deck angle into the flight and unwinds to flat
+       as it travels (app.js bakes _roty into the flip) — the reverse of arriving, where they flew in
+       flat and the deck fanned open. Folding first, then flying, read as two moves; this is one. */
+    freeze() {
       stopInput();
+      cancelAnimationFrame(raf);   // stop the deck's motion so the measured rects do not drift
       target = cur;
-      view.style.zIndex = '30';                      // over the arriving view, so the fold shows
-      return new Promise((res) => {
-        const t0 = performance.now(), DUR = 460, startK = deckK;
-        (function close() {
-          const t = Math.min(1, (performance.now() - t0) / DUR);
-          deckK = startK * (1 - t * t * (3 - 2 * t));   // smoothstep to flat
-          if (t < 1) requestAnimationFrame(close);
-          else res();
-        })();
-      });
     },
     /* the fallback for leaving where nothing can receive the paintings (About's curtain has no
        slots): the fan simply folds shut and fades, the arrival reversed with nowhere to hand off. */
