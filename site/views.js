@@ -247,20 +247,30 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     ready,
     unfreeze,
     destroy,
-    /* the paintings themselves leave — y to the viewport top, then a further
-       -150% of their own height. power2.in .5s, stagger .025. The cards stay behind. */
+    /* The deck arrives by fanning open (deckK 0→1) as the view rises into place; it leaves by
+       playing that in reverse — the fan folds shut and the view sinks back down the way it came.
+       The paintings used to fly up and off instead, a motion the arrival never made, so coming
+       and going looked like two different things. The frame loop is kept running through the
+       close so place() folds the cards with deckK; only the input is stopped. */
     exit(done) {
-      destroy();
-      const frames = wrap.querySelectorAll('.lse-frame');
-      let k = 0;
-      for (const f of frames) {
-        const r = f.getBoundingClientRect();
-        if (r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight) continue;
-        f.style.transition = 'transform .5s cubic-bezier(.55,.085,.68,.53) ' + (k * 0.025) + 's';
-        f.style.transform = 'translate3d(0,' + (-r.top) + 'px,0) translateY(-150%)';
-        k += 1;
-      }
-      setTimeout(done, 500 + k * 25);
+      removeEventListener('pointermove', onMove);
+      removeEventListener('pointerup', onUp);
+      removeEventListener('wheel', onWheel);
+      removeEventListener('keydown', onKey);
+      removeEventListener('resize', measure);
+      target = cur;                                    // no drift while it closes
+      const t0 = performance.now();
+      const DUR = 640, startK = deckK;
+      view.style.willChange = 'transform, opacity';
+      (function close() {
+        const t = Math.min(1, (performance.now() - t0) / DUR);
+        const e = t * t;                               // ease-in: the open's ease-out, reversed
+        deckK = startK * (1 - e);                       // the fan folds shut
+        view.style.transform = 'translateY(' + (e * innerHeight * 0.6) + 'px)';   // sinks down
+        view.style.opacity = String(1 - e);
+        if (t < 1) requestAnimationFrame(close);
+        else { destroy(); done(); }
+      })();
     },
   };
 }
