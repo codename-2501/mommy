@@ -229,7 +229,7 @@ html.is-resizing .wordmark{transition:none}
 .intro.is-leaving .intro-gate{opacity:0;transition:opacity .5s ease-out}
 .intro-gate .btn{
   display:flex;align-items:center;gap:.7em;
-  border:1px solid #000;padding:1rem 2rem;
+  border:1px solid #000;border-radius:999px;padding:1rem 2.2rem;   /* capsule, like the menu chips */
   font-size:1.7rem;font-weight:500;
   transition:background .25s ease,color .25s ease;
 }
@@ -717,18 +717,25 @@ html.is-resizing .wordmark{transition:none}
 .agrid-sort{
   position:fixed;left:50%;top:30vh;transform:translateX(-50%);z-index:14;   /* top set by views.js, under the wordmark */
   display:flex;flex-direction:column;align-items:center;gap:.9rem;
-  padding:1rem 1.6rem;border-radius:1.6rem;
+  padding:.9rem 1.1rem;border-radius:1.6rem;
   background:rgba(255,255,255,.66);backdrop-filter:blur(6px);   /* lift it off the busy ground */
-  transition:top .4s var(--ease-rise);
+  opacity:0;transition:opacity .9s ease;   /* fades in with the wordmark as the index arrives */
 }
-.agrid-sort__row{display:flex;gap:1.4rem;align-items:baseline}
-.agrid-sort__cap{opacity:.5;margin-right:.2rem}
+.view--articles.is-in .agrid-sort{opacity:1}
+.agrid-sort__row{position:relative;display:flex;gap:.5rem;align-items:stretch}
+/* the travelling drop, under the words; the chosen word rides over it and turns white */
+.agrid-sort__drop{position:absolute;inset:0;z-index:1;pointer-events:none}
+.agrid-sort__blob{
+  position:absolute;left:0;top:0;border-radius:999px;background:#111;
+  transform-origin:50% 50%;will-change:transform;
+}
 .agrid-sort__btn{
-  background:none;border:0;padding:.3rem 0;cursor:pointer;color:inherit;
-  opacity:.6;transition:opacity .25s ease;
+  position:relative;z-index:2;
+  background:none;border:0;padding:.5rem 1rem;border-radius:999px;cursor:pointer;color:inherit;
+  opacity:.62;transition:opacity .25s ease,color .2s ease;
 }
-@media (hover:hover){.agrid-sort__btn:not(.is-on):hover{opacity:.85}}
-.agrid-sort__btn.is-on{opacity:1;text-decoration:underline;text-underline-offset:.5rem}
+@media (hover:hover){.agrid-sort__btn:not(.is-on):hover{opacity:.9}}
+.agrid-sort__btn.is-on{opacity:1;color:#fff;transition:color .2s ease .18s}   /* white once the drop lands */
 /* the colour palette (Color mode only) */
 .agrid-sort__sw{display:flex;gap:.7rem;align-items:center;justify-content:center}
 .agrid-sort__sw[hidden]{display:none}

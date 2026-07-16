@@ -555,7 +555,12 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
      one swatch per colour the archive actually holds, that filters the grid down to that colour */
   const bar = el('div', 'agrid-sort');
   const row1 = el('div', 'agrid-sort__row');
-  row1.appendChild(el('span', 'agrid-sort__cap label', 'Sort'));
+  /* a black capsule travels to whichever option is chosen — the same drop as the bottom menu,
+     drawn thin as it crosses and round where it lands — and the option it sits on turns white */
+  const drop = el('div', 'agrid-sort__drop');
+  const blob = el('div', 'agrid-sort__blob');
+  drop.appendChild(blob);
+  row1.appendChild(drop);
   const btns = INDEX_SORTS.map(([mode, lbl]) => {
     const b = el('button', 'agrid-sort__btn label', lbl);
     b.type = 'button';
@@ -589,6 +594,33 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   bar.appendChild(sw);
   view.appendChild(bar);
 
+  /* the drop travels to the chosen option, drawing itself thin across the gap and rounding out
+     where it lands — the bottom menu's move, scaled to a word. It resizes to each option, since
+     Latest and Size are not the same width. */
+  let blobAt = null, blobAnim = null;
+  function placeBlob(animate) {
+    const active = row1.querySelector('.agrid-sort__btn.is-on');
+    if (!active) return;
+    const rr = row1.getBoundingClientRect(), ar = active.getBoundingClientRect();
+    if (!ar.width) return;
+    const to = { x: ar.left - rr.left, y: ar.top - rr.top, w: ar.width, h: ar.height };
+    const from = blobAt; blobAt = to;
+    if (blobAnim) { blobAnim.cancel(); blobAnim = null; }
+    blob.style.width = to.w + 'px';
+    blob.style.height = to.h + 'px';
+    const rest = 'translate3d(' + to.x + 'px,' + to.y + 'px,0) scale(1,1)';
+    if (!animate || !from) { blob.style.transform = rest; return; }
+    const dx = to.x - from.x, mid = from.x + dx * 0.5;
+    const stretch = 1 + Math.min(Math.abs(dx) / 200, 0.5);
+    blob.style.transform = rest;
+    blobAnim = blob.animate([
+      { transform: 'translate3d(' + from.x + 'px,' + from.y + 'px,0) scale(1,1)' },
+      { transform: 'translate3d(' + mid + 'px,' + to.y + 'px,0) scale(' + stretch + ',.82)', offset: 0.42 },
+      { transform: rest },
+    ], { duration: 460, easing: 'cubic-bezier(.32,.9,.24,1)', fill: 'both' });
+    blobAnim.onfinish = () => { if (blobAnim) { blobAnim.cancel(); blobAnim = null; } };
+  }
+
   function paintBar() {
     btns.forEach((b) => b.classList.toggle('is-on', b.dataset.mode === indexSort));
     sw.hidden = indexSort !== 'color';
@@ -598,18 +630,26 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   paintBar();
 
   /* the bar rides just under the wordmark, centred. The wordmark scales differently on a phone than
-     on a desktop, so no fixed rem sits under it on both — its foot is measured instead. It rides up
-     into place over 1.5s when the index arrives, so the reading is retaken when that settles (and on
-     resize); the bar's own top eases, so a late reading glides rather than jumps. */
+     on a desktop, so no fixed rem sits under it on both — its foot is measured. And the wordmark
+     rides up into place over 1.5s as the index arrives, so the bar is glued to it frame by frame for
+     that window: they move as one, rather than the bar sitting still and snapping up at the end. */
   const wm = document.querySelector('.wordmark');
   function placeBar() {
     if (!wm) return;
     const b = wm.getBoundingClientRect().bottom;
     if (b > 0) bar.style.top = Math.round(b + 16) + 'px';
   }
-  requestAnimationFrame(placeBar);
+  let trackStart = null;
+  function track(ts) {
+    if (trackStart === null) trackStart = ts;
+    placeBar();
+    if (ts - trackStart < 1700) requestAnimationFrame(track);   // the wordmark's rise lasts 1.5s
+  }
+  requestAnimationFrame(track);
+  requestAnimationFrame(() => placeBlob(false));
   if (wm) wm.addEventListener('transitionend', placeBar);
-  addEventListener('resize', placeBar);
+  function onResize() { placeBar(); placeBlob(false); }
+  addEventListener('resize', onResize);
 
   const sc = smoothTilt(outer, content);
 
@@ -648,6 +688,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     if (mode !== 'color') indexColor = null;   // the palette only lives inside Color
     buildGrid();
     paintBar();
+    placeBlob(true);      // the drop travels to the new option
     sc.measure();
     sc.scrollTo(0);       // a new order has no "where you were" — start at the top
     relay();
@@ -681,7 +722,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   });
   function destroy() {
     if (wm) wm.removeEventListener('transitionend', placeBar);
-    removeEventListener('resize', placeBar);
+    removeEventListener('resize', onResize);
     sc.destroy();
   }
   return { ready, destroy, measure: sc.measure, scrollTo: sc.scrollTo };
