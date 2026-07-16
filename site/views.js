@@ -247,19 +247,6 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     ready,
     unfreeze,
     destroy,
-    /* the work under the centre line, found by measuring the card nearest the middle. Handed to the
-       index so it opens on the same paintings flow is showing, so each has a slot to fly to. */
-    activeIndex() {
-      const mid = innerWidth / 2;
-      let best = 0, bestD = Infinity;
-      for (let i = 0; i < items.length; i++) {
-        const r = items[i].el.getBoundingClientRect();
-        if (!r.width) continue;
-        const d = Math.abs(r.left + r.width / 2 - mid);
-        if (d < bestD) { bestD = d; best = i; }
-      }
-      return best;
-    },
     /* the paintings themselves leave — y to the viewport top, then a further
        -150% of their own height. power2.in .5s, stagger .025. The cards stay behind. */
     exit(done) {
