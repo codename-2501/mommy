@@ -222,7 +222,12 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
   requestAnimationFrame(() => {
     measure();                      // after insertion — detached rects are all zero
     const idx = parseInt(document.body.dataset.index, 10);
-    if (idx > 0 && bounds[idx]) { target = bounds[idx].left; cur = target; }
+    /* land the handed work under the centre line — the exact inverse of what the ruler reports:
+       it reads (cur + innerWidth/2 - bounds[0].left) * slides.length / total as the live work, so
+       one work is total/slides.length px of cur (the lap is stretched over the whole archive, which
+       is why it is not cardGap — that would land a work short). The old bounds[idx].left sat the work
+       innerWidth/2 (~half the cards abreast) to one side, so work 0 fell off the left edge. */
+    if (idx >= 0 && bounds[idx]) { target = cur = idx * (total / slides.length) - innerWidth * 0.5 + bounds[0].left; }
     markReady();
   });
   raf = requestAnimationFrame(frame);
