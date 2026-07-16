@@ -577,10 +577,15 @@ function inView(r) {
 }
 
 /* hand the work the viewer was on over to the incoming view */
-function handOverIndex(fromPath, toArticles, oldCar, oldEl) {
+function handOverIndex(fromPath, toArticles, oldCar, oldEl, oldInst) {
   let idx = 0;
   if (fromPath === '/' && !toArticles) {
     idx = (oldCar && oldCar.activeIndex()) || 0;
+  } else if (fromPath === '/flow' && oldInst && oldInst.activeIndex) {
+    /* leaving flow, the next view opens on the work flow was centred on — so the paintings both
+       views show are the same ones, and they can carry over instead of the destination starting
+       cold at the newest work while flow sat somewhere else entirely */
+    idx = oldInst.activeIndex();
   } else if (fromPath === '/articles' && oldEl) {
     const mid = innerHeight / 2;
     let best = null, bestD = Infinity;
@@ -732,17 +737,16 @@ function freezeEntrance(viewNode) {
 
 function leave(oldEl, oldInst, oldCar, flags) {
   if (!oldEl) return;
-  const { fromFlow, fromAbout, toAbout } = flags;
+  const { fromFlow, fromAbout, toAbout, flip } = flags;
   const done = () => { if (leaving && leaving.el === oldEl) finalizeLeaving(); };
   freezeEntrance(oldEl);
 
-  /* The deck flies its paintings out when it leaves — except it did not when it left for About,
-     where they simply stood still until the curtain covered them and then were gone. The curtain
-     hides the fact rather than making it: a view that leaves with no motion of its own has not
-     left, it has been taken away. It flies them out wherever it is going. */
-  if (fromFlow && oldInst && oldInst.exit) {
+  /* flow flattens and hands its paintings to the next view by flip; the emptied deck just fades
+     behind them. Only when there is nothing to flip to — leaving for About, whose curtain has no
+     slots — does it fold its fan shut on its own instead. */
+  if (fromFlow && oldInst && oldInst.exit && !flip) {
     leaving = { el: oldEl, inst: null, car: oldCar, timer: 0 };   // exit() already destroyed it
-    oldInst.exit(done);                                  // the paintings fly out
+    oldInst.exit(done);                                  // the fan folds shut
     return;
   }
   if (oldInst) oldInst.destroy();
@@ -753,7 +757,7 @@ function leave(oldEl, oldInst, oldCar, flags) {
     leaving = { el: oldEl, timer: setTimeout(done, 1050) };
     return;
   }
-  if (!fromFlow) oldEl.classList.add('is-exit');         // autoAlpha 0, .35s
+  oldEl.classList.add('is-exit');                        // autoAlpha 0, .35s — fades behind the flip
   leaving = { el: oldEl, timer: setTimeout(done, fromFlow ? 1050 : FADE + 50) };
 }
 
@@ -766,7 +770,7 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
   };
   const toCarousel = path === '/' || path === '/flow';   // the views that jump to an index
 
-  handOverIndex(oldPath, path === '/articles', oldCar, oldEl);
+  handOverIndex(oldPath, path === '/articles', oldCar, oldEl, oldInst);
   if (oldCar) oldCar.freeze();          // hold the paintings still while they are measured
 
   const frag = buildView(path);
@@ -791,15 +795,23 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
     return;
   }
 
+  /* Leaving flow is the entrance run backwards. Arriving, the deck fans open over paintings that
+     flew in flat from the last view; leaving, the deck first turns flat again (flatten), and then
+     the paintings fly on to the next view — which, opened on the same work flow was centred on
+     (handOverIndex), has a slot waiting for each of them. Only About is the exception: its curtain
+     has no slots, so flow folds shut on its own there. */
+  if (flags.fromFlow && !flags.toAbout && oldInst && oldInst.flatten) {
+    await oldInst.flatten();
+    if (retired()) { if (view) view.classList.remove('is-pre'); return; }
+  }
+
   const { fromFlips, toFlips, targets } = measureFlips(oldEl, view, flags.fromFlow);
   if (inst && inst.unfreeze) inst.unfreeze();           // flow: the deck angle eases in
 
-  const skipFlip = flags.fromFlow && !flags.toAbout;    // flow leaves by flying its paintings out
-  const playFlip = fromFlips.length && !skipFlip
-    ? prepareFlip(fromFlips, toFlips, flags.toFlow)
-    : null;
+  const playFlip = fromFlips.length ? prepareFlip(fromFlips, toFlips, flags.toFlow) : null;
   const playRise = prepareRise(targets, flags.fromFlow, flags.toFlow);
 
+  flags.flip = !!playFlip;
   leave(oldEl, oldInst, oldCar, flags);
   view.classList.remove('is-pre');
   void view.offsetWidth;                // paint the from-state before attaching transitions

@@ -243,31 +243,55 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     ruler.destroy();          // it listens for resize of its own
   }
 
+  function stopInput() {
+    removeEventListener('pointermove', onMove);
+    removeEventListener('pointerup', onUp);
+    removeEventListener('wheel', onWheel);
+    removeEventListener('keydown', onKey);
+    removeEventListener('resize', measure);
+  }
+
   return {
     ready,
     unfreeze,
     destroy,
-    /* The deck arrives by fanning open (deckK 0→1) as the view rises into place; it leaves by
-       playing that in reverse — the fan folds shut and the view sinks back down the way it came.
-       The paintings used to fly up and off instead, a motion the arrival never made, so coming
-       and going looked like two different things. The frame loop is kept running through the
-       close so place() folds the cards with deckK; only the input is stopped. */
+    /* the work under the centre line — the same one the ruler reads. Handed to the next view so it
+       opens on the same paintings, which is what lets them carry over the way timeline↔index do. */
+    activeIndex() {
+      if (!cardGap) return 0;
+      const f = (cur + innerWidth * 0.5 - bounds[0].left) / cardGap;
+      let lap = f % lapWorks;
+      if (lap < 0) lap += lapWorks;
+      const work = Math.round(lap * (slides.length / lapWorks));
+      return ((work % slides.length) + slides.length) % slides.length;
+    },
+    /* Turn the deck to face the viewer — the reverse of the fan opening on arrival. In the fan the
+       cards stand at 70–84°, edge-on, and edge-on their on-screen rectangles are slivers a flip
+       cannot carry; flat they are whole rectangles again. Easing deckK to 0 lays them flat where
+       they are (the frame loop keeps applying it), and once flat the paintings can be measured
+       clean and flown to their slots in the next view. */
+    flatten() {
+      stopInput();
+      target = cur;
+      return new Promise((res) => {
+        const t0 = performance.now(), DUR = 300, startK = deckK;
+        (function flat() {
+          const t = Math.min(1, (performance.now() - t0) / DUR);
+          deckK = startK * (1 - Math.pow(t, 4));         // the open's ease-out, reversed
+          if (t < 1) requestAnimationFrame(flat);
+          else res();
+        })();
+      });
+    },
+    /* the fallback for leaving where nothing can carry over (About's curtain has no slots): the
+       fan simply folds shut and the view fades, the mirror of it opening on arrival. */
     exit(done) {
-      removeEventListener('pointermove', onMove);
-      removeEventListener('pointerup', onUp);
-      removeEventListener('wheel', onWheel);
-      removeEventListener('keydown', onKey);
-      removeEventListener('resize', measure);
-      target = cur;                                    // no drift while it closes
-      const t0 = performance.now();
-      const DUR = 720, startK = deckK;
+      stopInput();
+      target = cur;
+      const t0 = performance.now(), DUR = 720, startK = deckK;
       view.style.willChange = 'opacity';
       (function close() {
         const t = Math.min(1, (performance.now() - t0) / DUR);
-        /* the open runs deckK 0→1 as 1-(1-t)^4; this is that played backwards in time, 1→0 as
-           1-t^4 — the same fan, the same curve, only shutting. No sink: the arrival did not lift
-           the deck, so its leaving does not drop it. It folds flat and the view fades as the next
-           one takes its place, the mirror of the deck fanning open over the view that was there. */
         deckK = startK * (1 - Math.pow(t, 4));
         view.style.opacity = String(1 - t * t);
         if (t < 1) requestAnimationFrame(close);
