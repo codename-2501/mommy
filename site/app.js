@@ -298,10 +298,11 @@ function renderIntro(logoStart) {
   /* the ten-second countdown to auto-enter is drawn as a bar filling the button left to right; when
      it reaches the far side it enters. A click enters at once and stops the fill. */
   const enter = el('button', 'btn');
-  const fill = el('span', 'btn__fill');
-  enter.appendChild(fill);
-  enter.appendChild(el('span', 'btn__label', 'Enter →'));
-  fill.addEventListener('animationend', () => enterSite(intro));   // the bar reached the end
+  enter.appendChild(el('span', 'btn__label', 'Enter →'));            // black text, the resting state
+  const reveal = el('span', 'btn__reveal');                          // black bar + white text, swept in
+  reveal.appendChild(el('span', 'btn__label', 'Enter →'));
+  enter.appendChild(reveal);
+  reveal.addEventListener('animationend', () => enterSite(intro));   // the bar reached the end
   enter.addEventListener('click', () => { enter.classList.remove('counting'); enterSite(intro); });
   setTimeout(() => enter.classList.add('counting'), Math.round((logoStart + 1.2) * 1000));   // once the button has arrived
   gate.appendChild(enter);
