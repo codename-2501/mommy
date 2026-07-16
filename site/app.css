@@ -731,7 +731,9 @@ html.is-resizing .wordmark{transition:none}
 }
 .agrid-sort__btn{
   position:relative;z-index:2;white-space:nowrap;   /* Size gains " ↓" — never let it break to a second line */
-  background:none;border:0;padding:.5rem 1rem;border-radius:999px;cursor:pointer;color:inherit;
+  /* the inline padding clears the chip's own corner radius (half its height), so the word sits in the
+     chip's straight run, never crossing where its rounded end begins */
+  background:none;border:0;padding:.4rem 1.5rem;border-radius:999px;cursor:pointer;color:inherit;
   opacity:.62;transition:opacity .25s ease,color .2s ease;
 }
 @media (hover:hover){.agrid-sort__btn:not(.is-on):hover{opacity:.9}}
@@ -755,9 +757,9 @@ html.is-resizing .wordmark{transition:none}
 @media (hover:hover){.agrid-sw:not(.is-on):hover{transform:scale(1.1)}}
 .agrid-sw.is-on{border-color:#111;transform:scale(1.06)}
 @media (max-width:699px){
-  .agrid-sort{padding:.35rem}
-  .agrid-sort__row{gap:.2rem}
-  .agrid-sort__btn{padding:.5rem .7rem}
+  .agrid-sort{padding:.3rem}
+  .agrid-sort__row{gap:.1rem}
+  .agrid-sort__btn{padding:.4rem 1.4rem}
   .agrid-pal{padding:.45rem .7rem;gap:.5rem}
   .agrid-sw{width:2.1rem;height:1.3rem}
 }
