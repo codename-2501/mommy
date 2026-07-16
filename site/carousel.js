@@ -261,6 +261,7 @@ function mount(view, slides, aspects, opts, onOpen) {
     ready,
     activeIndex() { return ruler && ruler.liveWork ? ruler.liveWork() : (step ? wrapIdx(Math.round(target / step)) : 0); },
     goTo(i) { const slideW = step - tween(1.2, 2) * rem; target = cur = i * step - (innerWidth * 0.5 - 2 * rem - slideW / 2); },   // instant jump (detail close sync), centred
+    reset() { const slideW = step - tween(1.2, 2) * rem; target = -(innerWidth * 0.5 - 2 * rem - slideW / 2); },   // re-tap the active tab: glide (target only) back to the first work
     freeze() {                                      // halt drift + clear skew (flip measure)
       target = cur;
       for (let k = 0; k < contents.length; k++) contents[k].style.transform = '';

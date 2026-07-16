@@ -269,6 +269,9 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     ready,
     unfreeze,
     destroy,
+    /* re-tap the active tab: glide the deck (target only, cur lerps) back to the first work —
+       the same landing spot the hand-over uses for idx 0 */
+    reset() { if (bounds[0]) target = bounds[0].left - innerWidth * 0.5; },
     /* the work under the centre line, measured as the card nearest the middle. Handed to the next
        view so it opens on the same paintings flow is showing — then each has a slot to fly to. */
     /* hand over the exact work the ruler is showing under the centre line — the ruler is the single
@@ -830,7 +833,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     removeEventListener('resize', onResize);
     sc.destroy();
   }
-  return { ready, destroy, measure: sc.measure, scrollTo: sc.scrollTo };
+  return { ready, destroy, measure: sc.measure, scrollTo: sc.scrollTo, reset: () => sc.glideTo(0) };
 }
 
 /* One CV entry, whichever shape the admin saved it in.
@@ -1057,6 +1060,7 @@ function mountAbout(view, content) {
     view.classList.add('is-in');
     setTimeout(() => sc.measure(), 600);
   }));
+  sc.reset = () => sc.glideTo(0);   // re-tap the active tab: glide back to the top
   return sc;
 }
 
