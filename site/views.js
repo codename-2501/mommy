@@ -539,6 +539,36 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   paintBar();
 
   const sc = smoothTilt(outer, content);
+
+  /* re-lay after a sort change: the whole archive reorders and the scroll returns to the top, so a
+     painting's old place and its new one rarely share the screen — flying each from one to the other
+     would read as chaos, not order. Instead the new arrangement settles in from the top, a short
+     stagger down the fold, so the change reads as the grid composing itself rather than a hard cut.
+     Only the fold's worth is touched; everything below is off screen and needs no motion. */
+  function relay() {
+    const cells = content.querySelectorAll('.agrid__cell');
+    const n = Math.min(cells.length, perRow * 5);
+    for (let i = 0; i < n; i++) {
+      cells[i].style.transition = 'none';
+      cells[i].style.transform = 'translateY(24px) scale(.96)';
+      cells[i].style.opacity = '0';
+    }
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      for (let i = 0; i < n; i++) {
+        const delay = Math.min(i, perRow * 3) * 16;   // cap the stagger so it never drags
+        cells[i].style.transition =
+          'transform .52s var(--ease-rise) ' + delay + 'ms, opacity .42s ease ' + delay + 'ms';
+        cells[i].style.transform = '';
+        cells[i].style.opacity = '';
+      }
+    }));
+    setTimeout(() => {
+      for (let i = 0; i < n; i++) {
+        cells[i].style.transition = ''; cells[i].style.transform = ''; cells[i].style.opacity = '';
+      }
+    }, 1100);       // hand the cells back clean once they have landed
+  }
+
   function setSort(mode) {
     if (mode === indexSort) return;
     indexSort = mode;
@@ -546,6 +576,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     paintBar();
     sc.measure();
     sc.scrollTo(0);       // a new order has no "where you were" — start at the top
+    relay();
   }
 
   /* the month labels ride up out of their masks on .is-in — without it they stay clipped */
