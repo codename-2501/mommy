@@ -716,15 +716,18 @@ html.is-resizing .wordmark{transition:none}
    grid but under the menu and any detail, and leaves with the view (it is the view's own child). */
 .agrid-sort{
   position:fixed;top:2.4rem;right:2.4rem;z-index:14;
-  display:flex;gap:1.6rem;align-items:center;
+  display:flex;gap:1.4rem;align-items:baseline;
+  padding:1rem 1.6rem;border-radius:999px;
+  background:rgba(255,255,255,.66);backdrop-filter:blur(6px);   /* lift it off the busy ground */
 }
+.agrid-sort__cap{opacity:.5;margin-right:.2rem}
 .agrid-sort__btn{
   background:none;border:0;padding:.3rem 0;cursor:pointer;color:inherit;
-  opacity:.38;transition:opacity .25s ease;
+  opacity:.6;transition:opacity .25s ease;
 }
-@media (hover:hover){.agrid-sort__btn:not(.is-on):hover{opacity:.7}}
+@media (hover:hover){.agrid-sort__btn:not(.is-on):hover{opacity:.85}}
 .agrid-sort__btn.is-on{opacity:1;text-decoration:underline;text-underline-offset:.5rem}
-@media (max-width:699px){.agrid-sort{top:1.4rem;right:1.4rem;gap:1.1rem}}
+@media (max-width:699px){.agrid-sort{top:1.2rem;right:1.2rem;gap:1.1rem;padding:.8rem 1.2rem}}
 
 /* ---------- ABOUT: black page ---------- */
 .about{position:fixed;inset:0;z-index:4}
