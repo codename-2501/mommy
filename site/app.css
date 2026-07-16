@@ -184,6 +184,9 @@ html.is-resizing .wordmark{transition:none}
   will-change:transform;
 }
 .wordmark.is-ready .line-in{transform:translateY(0);clip-path:inset(0 0 -20% 0)}
+/* the intro reveals the title by scrambling its letters — the same effect the month list uses — so
+   the line shows in place with no rise or clip; the JS rolls the text from random glyphs to the name */
+.wordmark.is-scramble .line-in{transform:none;clip-path:none;transition:none}
 /* a picture logo sits in the same slot and rides the same reveal. The difference-blend is for
    type — it inverts whatever is behind it, which turns a photograph inside out — so a picture
    logo is drawn plainly, and sized against the wordmark's own em so it scales with everything
