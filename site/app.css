@@ -228,12 +228,22 @@ html.is-resizing .wordmark{transition:none}
 .intro.is-ready .intro-gate{opacity:1}
 .intro.is-leaving .intro-gate{opacity:0;transition:opacity .5s ease-out}
 .intro-gate .btn{
+  position:relative;overflow:hidden;   /* the fill bar is clipped to the capsule */
   display:flex;align-items:center;gap:.7em;
   border:1px solid #000;border-radius:999px;padding:1rem 2.2rem;   /* capsule, like the menu chips */
   font-size:1.7rem;font-weight:500;
   transition:background .25s ease,color .25s ease;
 }
 .intro-gate .btn:hover{background:#000;color:#fff}
+/* the countdown, drawn as a bar sweeping left to right across the button over ten seconds */
+.intro-gate .btn__fill{
+  position:absolute;left:0;top:0;bottom:0;width:100%;
+  transform:scaleX(0);transform-origin:left;
+  background:rgba(0,0,0,.13);pointer-events:none;
+}
+.intro-gate .btn.counting .btn__fill{animation:btn-fill 10s linear forwards}
+@keyframes btn-fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.intro-gate .btn__label{position:relative}   /* the text rides over the fill */
 .intro-gate .alt{font-size:1.5rem;font-weight:500;opacity:.35}
 .intro-gate .alt:hover{opacity:.7;transition:opacity .25s ease}
 
