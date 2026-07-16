@@ -153,7 +153,10 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     /* the hovered card slides 75% sideways — pull it forward in the deck's 3D space so it
        passes OVER its neighbours instead of under them */
     const z = i === hoverIdx ? 60 : 0;
-    items[i].el._roty = rotY;   // the deck angle right now, read by the exit flight so it unwinds mid-air
+    /* the deck angle and place right now — read on the way out: into a view with slots the flip
+       carries them there (app.js), into About it turns them flat and slides them out (exit) */
+    items[i].el._roty = rotY;
+    items[i].el._pos = [b.left - wrapped, y, z];
     items[i].el.style.transform =
       'translate3d(' + (b.left - wrapped) + 'px,' + y + 'px,' + z + 'px) rotateY(' + rotY + 'deg)';
   }
@@ -278,22 +281,32 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
       cancelAnimationFrame(raf);   // stop the deck's motion so the measured rects do not drift
       target = cur;
     },
-    /* the fallback for leaving where nothing can receive the paintings (About's curtain has no
-       slots): the fan simply folds shut and fades, the arrival reversed with nowhere to hand off. */
+    /* leaving for About, whose curtain has no slots to receive the paintings. The same move as
+       leaving for the timeline or the index — each painting turns flat as it travels — only with
+       nowhere to land, so it slides out below instead: the reverse of arriving into flow, where the
+       slots with no painting of their own rise up from under the fold. Turn and travel as one. */
     exit(done) {
       stopInput();
+      cancelAnimationFrame(raf);   // our per-card transition owns the transforms now, not place()
       target = cur;
       view.style.zIndex = '30';
-      view.style.willChange = 'opacity';
-      const t0 = performance.now(), DUR = 800, startK = deckK;
-      (function close() {
-        const t = Math.min(1, (performance.now() - t0) / DUR);
-        const fold = Math.min(1, t / 0.7);
-        deckK = startK * (1 - fold * fold * (3 - 2 * fold));   // smoothstep to 0
-        view.style.opacity = t < 0.78 ? '1' : String(1 - (t - 0.78) / 0.22);
-        if (t < 1) requestAnimationFrame(close);
-        else { destroy(); done(); }
-      })();
+      const H = innerHeight * 1.1;
+      let n = 0;
+      for (const it of items) {
+        const p = it.el._pos;
+        if (!p) continue;
+        const r = it.el.getBoundingClientRect();
+        if (r.bottom < -60 || r.top > innerHeight + 60 || r.right < -60 || r.left > innerWidth + 60) continue;
+        const delay = n++ * 40;
+        it.el.style.transition =
+          'transform 900ms var(--ease-travel) ' + delay + 'ms, opacity 600ms ease ' + (delay + 260) + 'ms';
+        it.el.style.transform =
+          'translate3d(' + p[0] + 'px,' + (p[1] + H) + 'px,' + p[2] + 'px) rotateY(0deg)';
+        it.el.style.opacity = '0';
+      }
+      ruler.el.style.transition = 'opacity 300ms ease 500ms';   // let the chrome go with them
+      ruler.el.style.opacity = '0';
+      setTimeout(() => { destroy(); done(); }, 1000);
     },
   };
 }
