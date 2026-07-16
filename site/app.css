@@ -236,11 +236,17 @@ html.is-resizing .wordmark{transition:none}
 }
 .intro-gate .btn{color:#000}
 .intro-gate .btn:hover{background:#000;color:#fff}
-/* the countdown: a black-on-white copy of the button, clipped to a rising tide (app.js drives the
-   clip-path polygon — a rippling wave washing left to right), so the word flips from black to white
-   under the water's edge and the resting black label below shows wherever it has not yet reached */
+/* the countdown, two waves deep (app.js drives the clip-path polygons — rippling sine curves washing
+   left to right). The grey wave leads on a second wavelength, behind the word, for depth; the black
+   wave is the main body and flips the word to white under its edge. The resting black label shows
+   wherever neither has reached. */
+.intro-gate .btn__wave{
+  position:absolute;inset:0;z-index:0;
+  background:#bcbcbc;clip-path:inset(0 100% 0 0);pointer-events:none;
+}
+.intro-gate .btn__label{position:relative;z-index:1}
 .intro-gate .btn__reveal{
-  position:absolute;inset:0;
+  position:absolute;inset:0;z-index:2;
   display:flex;align-items:center;justify-content:center;
   background:#000;color:#fff;
   clip-path:inset(0 100% 0 0);pointer-events:none;
