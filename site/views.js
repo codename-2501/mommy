@@ -694,39 +694,32 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
      instead, which the compositor draws, and they track the grid smoothly. During the ride-in the
      bar is glued to the title's measured foot (the scroll is idle then); after it, the resting tops
      are fixed once and only translate changes. */
-  let frameRAF = 0, lastS = -1, frame0 = null, wmFoot = null, barH = null, barRest = null;
+  let frameRAF = 0, lastS = -1, frame0 = null, wmFoot = null, barH = null;
   function frameLoop(ts) {
     if (frame0 === null) frame0 = ts;
     const settling = ts - frame0 < 1700;   // the wordmark's rise lasts 1.5s
     const s = outer.scrollTop;
     if (s === lastS && !settling) { frameRAF = requestAnimationFrame(frameLoop); return; }
     lastS = s;
-    if (settling) {
-      const foot = wm ? wm.getBoundingClientRect().bottom : 0;   // track the title as it rides in
-      wmFoot = foot;
+    /* the scroll offset is applied every frame, even during the ride-in — so coming back to an
+       already-scrolled index the bar is where the scroll puts it from the first frame, instead of
+       resting under the title and then snapping to the top the moment you scroll */
+    if (wm) wm.style.translate = '0px ' + (-s) + 'px';   // the title slides up and out with the scroll
+    if (settling) {   // the wordmark may still be riding in — keep reading its rest foot (undo the scroll)
+      wmFoot = wm ? wm.getBoundingClientRect().bottom + s : 0;
       if (barH === null) { const h = bar.getBoundingClientRect().height; if (h) barH = h; }
-      const t = Math.round(foot + 16);
-      if (wm) wm.style.translate = '';
-      bar.style.top = t + 'px'; bar.style.translate = '';
-      if (barH !== null) { pal.style.top = (t + barH + 10) + 'px'; pal.style.translate = ''; }
-    } else {
-      if (barRest === null) {                                     // fix the resting tops once
-        barRest = Math.round((wmFoot || 0) + 16);
-        bar.style.top = barRest + 'px';
-        if (barH !== null) pal.style.top = (barRest + barH + 10) + 'px';
-      }
-      if (wm) wm.style.translate = '0px ' + (-s) + 'px';          // the title slides up and out
-      const off = Math.max(STICKY_TOP - barRest, -s);             // the bar follows, caught at STICKY_TOP
-      bar.style.translate = '0px ' + off + 'px';
-      pal.style.translate = '0px ' + off + 'px';
     }
+    const restTop = Math.round((wmFoot || 0) + 16);
+    bar.style.top = restTop + 'px';
+    const off = Math.max(STICKY_TOP - restTop, -s);      // follow the title, then catch at STICKY_TOP
+    bar.style.translate = '0px ' + off + 'px';
+    if (barH !== null) { pal.style.top = (restTop + barH + 10) + 'px'; pal.style.translate = '0px ' + off + 'px'; }
     frameRAF = requestAnimationFrame(frameLoop);
   }
   frameRAF = requestAnimationFrame(frameLoop);
   requestAnimationFrame(() => placeBlob(false));
   function onResize() {   // re-measure on the next ride-in window
-    wmFoot = null; barH = null; barRest = null; frame0 = null;
-    if (wm) wm.style.translate = ''; bar.style.translate = ''; pal.style.translate = '';
+    wmFoot = null; barH = null; frame0 = null; lastS = -1;
     placeBlob(false);
   }
   addEventListener('resize', onResize);
