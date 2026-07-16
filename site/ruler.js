@@ -180,6 +180,8 @@ function create(view, slides, opts) {
   /* ---------- the ticks, drawn on a canvas ---------- */
   let madeLabels = [];           // the label spans, with their region, for the sticky pin
   let litGroup = -1;             // the month whose name is lit
+  let liveWorkIdx = 0;           // the exact work under the centre line — handed over so a view that
+                                 // leaves for another lands it on the same work the ruler is showing
 
   /* Sticky, sideways: the name of the month you are in is held at the centre while its stretch of
      ruler runs under it, then the next month's name slides in and pushes it off — a section header,
@@ -274,7 +276,8 @@ function create(view, slides, opts) {
     if (mode === 'dots') {
       centerIdx = Math.round(centerIdx / TICKS_PER_SLIDE) * TICKS_PER_SLIDE;
     }
-    const liveGroup = groupOf[workOfTick(centerIdx)];
+    liveWorkIdx = workOfTick(centerIdx);
+    const liveGroup = groupOf[liveWorkIdx];
     markLive(liveGroup);
     shiftHeights(q);
     const ease = 0.12 * ratio, easeC = 0.2 * ratio;
@@ -390,6 +393,7 @@ function create(view, slides, opts) {
   let liveHere = -1;
   function liveAt(U) {
     const centreWork = ((Math.round((U + cw * 0.5) / workW - 0.5) % n) + n) % n;
+    liveWorkIdx = centreWork;
     liveHere = groupOf[centreWork];
     markLive(liveHere);
   }
@@ -550,6 +554,7 @@ function create(view, slides, opts) {
   return {
     el: ruler,
     resize,
+    liveWork: () => liveWorkIdx,   // the work under the centre line, for a hand-over that must match
     /* called once a frame with the work under the centre line, and how long that frame was
        against a 60Hz one, so the swell eases at the same speed on any display */
     update(centerSlide, ratio) {

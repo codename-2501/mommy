@@ -266,17 +266,12 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     destroy,
     /* the work under the centre line, measured as the card nearest the middle. Handed to the next
        view so it opens on the same paintings flow is showing — then each has a slot to fly to. */
-    /* the work under the centre line, read the same way the ruler reads it — as the deck's continuous
-       wrapped position, not the nearest card. The two disagreed by a work near a month's edge (the
-       deck loops, so the nearest card can be a copy on the far side), which handed the timeline a
-       different month than the deck was showing and made its line appear to jump on the way in. */
+    /* hand over the exact work the ruler is showing under the centre line — the ruler is the single
+       source of truth for "the work you are on", so the timeline lands on the same one and its month
+       label does not jump. (The deck's own nearest-card and its continuous position each rounded a
+       shade differently from the ruler at a month's edge; taking the ruler's own answer removes it.) */
     activeIndex() {
-      if (!cardGap || lapWorks <= 0 || !bounds.length) return 0;
-      const f = (cur + innerWidth * 0.5 - bounds[0].left) / cardGap;
-      let lap = f % lapWorks; if (lap < 0) lap += lapWorks;
-      let idx = Math.round(lap * (slides.length / lapWorks)) % slides.length;
-      if (idx < 0) idx += slides.length;
-      return idx;
+      return ruler && ruler.liveWork ? ruler.liveWork() : 0;
     },
     /* Leaving, the deck holds still to be measured, then hands its paintings to the next view. It
        does NOT fold first: each painting carries its deck angle into the flight and unwinds to flat
