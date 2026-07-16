@@ -716,7 +716,7 @@ html.is-resizing .wordmark{transition:none}
    grid but under the menu and any detail, and leaves with the view (it is the view's own child). */
 .agrid-sort{
   position:fixed;left:50%;top:30vh;transform:translateX(-50%);z-index:14;   /* top set by views.js, under the wordmark */
-  display:flex;flex-direction:column;align-items:center;gap:0;
+  display:flex;align-items:stretch;overflow:hidden;   /* Size's arrow reveals as the box widens to it */
   padding:.5rem .6rem;border-radius:999px;   /* a capsule, the same round as the chips inside it */
   background:rgba(255,255,255,.66);backdrop-filter:blur(6px);   /* lift it off the busy ground */
   opacity:0;transition:opacity .9s ease;   /* fades in with the wordmark as the index arrives */
@@ -736,18 +736,17 @@ html.is-resizing .wordmark{transition:none}
 }
 @media (hover:hover){.agrid-sort__btn:not(.is-on):hover{opacity:.9}}
 .agrid-sort__btn.is-on{opacity:1;color:#fff;transition:color .2s ease .18s}   /* white once the drop lands */
-/* the colour palette: closed to nothing until Color opens it, when it slides down from under a
-   hairline divider. max-height/opacity carry the open; the divider only inks once it is open. */
-.agrid-sort__sw{
-  display:flex;gap:.7rem;align-items:center;justify-content:center;overflow:hidden;
-  max-height:0;opacity:0;margin-top:0;padding-top:0;
-  border-top:1px solid transparent;
-  transition:max-height .4s var(--ease-rise),opacity .32s ease,margin-top .4s var(--ease-rise),padding-top .4s var(--ease-rise);
+/* the colour palette: its own capsule under the sort bar (top set by views.js), not a stretch of
+   the bar. It rises and fades in when Color opens it, and folds away the same when Color is left. */
+.agrid-pal{
+  position:fixed;left:50%;transform:translateX(-50%) translateY(-6px) scale(.96);z-index:14;
+  display:flex;gap:.7rem;align-items:center;justify-content:center;
+  padding:.55rem .9rem;border-radius:999px;
+  background:rgba(255,255,255,.66);backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;
+  transition:opacity .3s ease,transform .38s var(--ease-rise);
 }
-.agrid-sort.is-color .agrid-sort__sw{
-  max-height:4rem;opacity:1;margin-top:.75rem;padding-top:.75rem;
-  border-top-color:rgba(0,0,0,.14);
-}
+.agrid-pal.is-open{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0) scale(1)}
 .agrid-sw{
   width:2rem;height:2rem;border-radius:50%;padding:0;cursor:pointer;
   border:2px solid transparent;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);
@@ -759,6 +758,7 @@ html.is-resizing .wordmark{transition:none}
   .agrid-sort{padding:.4rem .5rem}
   .agrid-sort__row{gap:.2rem}
   .agrid-sort__btn{padding:.5rem .7rem}
+  .agrid-pal{padding:.45rem .7rem;gap:.5rem}
   .agrid-sw{width:1.7rem;height:1.7rem}
 }
 
