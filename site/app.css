@@ -112,13 +112,13 @@ img{max-width:100%;display:block}
      the root em — so 44vh alone stops clearing it on a short screen (the two collided at
      320x568). Take whichever of the two floors is lower down: the vh rule while the window
      is tall, the wordmark's own half-height in rem once it is not. */
-  padding-top:max(calc(44vh + 3rem),calc(27vh + 12rem));gap:3rem;   /* the list sits a little higher */
+  padding-top:max(calc(39vh + 2rem),calc(27vh + 11rem));gap:3rem;   /* the list sits higher, off the button */
 }
 .intro.is-leaving{pointer-events:none}
 /* a short window cannot hold a full-size wordmark, the list and the button with air between
    them — the title gives up some size rather than the layout giving up its spacing */
 @media (max-height:780px){
-  .intro{padding-top:max(calc(44vh + 1rem),calc(27vh + 12rem));gap:2.2rem}
+  .intro{padding-top:max(calc(40vh + 0rem),calc(27vh + 11rem));gap:2.2rem}
 }
 /* A short desktop window makes the intro's wordmark give up a fifth of its size. That used to
    be a font-size (.9rem -> .72rem), and font-size does not transition: the moment the intro
