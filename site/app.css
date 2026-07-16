@@ -717,7 +717,7 @@ html.is-resizing .wordmark{transition:none}
 .agrid-sort{
   position:fixed;left:50%;top:30vh;transform:translateX(-50%);z-index:14;   /* top set by views.js, under the wordmark */
   display:flex;align-items:stretch;overflow:hidden;   /* Size's arrow reveals as the box widens to it */
-  padding:.5rem .6rem;border-radius:999px;   /* a capsule, the same round as the chips inside it */
+  padding:.4rem 1rem;border-radius:999px;   /* wide ends keep the words off the capsule's curve */
   background:rgba(255,255,255,.66);backdrop-filter:blur(6px);   /* lift it off the busy ground */
   opacity:0;transition:opacity .9s ease;   /* fades in with the wordmark as the index arrives */
 }
@@ -748,18 +748,18 @@ html.is-resizing .wordmark{transition:none}
 }
 .agrid-pal.is-open{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0) scale(1)}
 .agrid-sw{
-  width:2rem;height:2rem;border-radius:50%;padding:0;cursor:pointer;
+  width:2.6rem;height:1.5rem;border-radius:999px;padding:0;cursor:pointer;   /* capsule swatch, not a dot */
   border:2px solid transparent;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);
   transition:transform .2s ease,border-color .2s ease;
 }
-@media (hover:hover){.agrid-sw:not(.is-on):hover{transform:scale(1.12)}}
-.agrid-sw.is-on{border-color:#111;transform:scale(1.08)}
+@media (hover:hover){.agrid-sw:not(.is-on):hover{transform:scale(1.1)}}
+.agrid-sw.is-on{border-color:#111;transform:scale(1.06)}
 @media (max-width:699px){
-  .agrid-sort{padding:.4rem .5rem}
+  .agrid-sort{padding:.35rem .8rem}
   .agrid-sort__row{gap:.2rem}
   .agrid-sort__btn{padding:.5rem .7rem}
   .agrid-pal{padding:.45rem .7rem;gap:.5rem}
-  .agrid-sw{width:1.7rem;height:1.7rem}
+  .agrid-sw{width:2.1rem;height:1.3rem}
 }
 
 /* ---------- ABOUT: black page ---------- */

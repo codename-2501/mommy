@@ -642,10 +642,14 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
      rides up into place over 1.5s as the index arrives, so the bar is glued to it frame by frame for
      that window: they move as one, rather than the bar sitting still and snapping up at the end. */
   const wm = document.querySelector('.wordmark');
+  const wmBaseTop = wm ? parseFloat(getComputedStyle(wm).top) || 0 : 0;
+  const STICKY_TOP = 18;   // where the bar catches near the top — a gap, not flush against the edge
   function placeBar() {
     if (!wm) return;
     const b = wm.getBoundingClientRect().bottom;
-    if (b > 0) bar.style.top = Math.round(b + 16) + 'px';
+    /* under the wordmark's foot normally; but never higher than STICKY_TOP, so as the title scrolls
+       away the bar rises with it and then catches, holding just below the top edge */
+    bar.style.top = Math.max(STICKY_TOP, Math.round(b + 16)) + 'px';
     const br = bar.getBoundingClientRect();
     pal.style.top = Math.round(br.bottom + 10) + 'px';   // the palette floats just under the bar
   }
@@ -660,6 +664,13 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   if (wm) wm.addEventListener('transitionend', placeBar);
   function onResize() { placeBar(); placeBlob(false); }
   addEventListener('resize', onResize);
+  /* the title slides up and out with the scroll (its `top` is not transitioned, so this is smooth);
+     the bar follows via placeBar until it catches at STICKY_TOP */
+  function onScroll() {
+    if (wm) wm.style.top = (wmBaseTop - outer.scrollTop) + 'px';
+    placeBar();
+  }
+  outer.addEventListener('scroll', onScroll, { passive: true });
 
   const sc = smoothTilt(outer, content);
 
@@ -741,7 +752,8 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     markReady();
   });
   function destroy() {
-    if (wm) wm.removeEventListener('transitionend', placeBar);
+    if (wm) { wm.removeEventListener('transitionend', placeBar); wm.style.top = ''; }   // hand the shared wordmark back
+    outer.removeEventListener('scroll', onScroll);
     removeEventListener('resize', onResize);
     sc.destroy();
   }
