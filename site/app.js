@@ -302,9 +302,10 @@ function renderIntro(logoStart) {
   const reveal = el('span', 'btn__reveal');                          // black bar + white text, swept in
   reveal.appendChild(el('span', 'btn__label', 'Enter →'));
   enter.appendChild(reveal);
-  reveal.addEventListener('animationend', () => enterSite(intro));   // the bar reached the end
-  enter.addEventListener('click', () => { enter.classList.remove('counting'); enterSite(intro); });
-  setTimeout(() => enter.classList.add('counting'), Math.round((logoStart + 1.2) * 1000));   // once the button has arrived
+  let stopWave = null;
+  enter.addEventListener('click', () => { if (stopWave) stopWave(); enterSite(intro); });
+  setTimeout(() => { stopWave = waveFill(reveal, 10000, () => enterSite(intro)); },
+    Math.round((logoStart + 1.2) * 1000));   // once the button has arrived, the tide starts
   gate.appendChild(enter);
   intro.appendChild(gate);
 
@@ -315,6 +316,33 @@ function renderIntro(logoStart) {
     for (const run of scrambles) run();
   }));
   return intro;
+}
+
+/* the countdown fills the Enter button like a tide washing across it: the black-on-white copy is
+   clipped to a body of water whose leading edge is a rippling sine curve, advancing left to right
+   (eased) over durMs, then it calls onDone. Returns a stop() for a click that enters early. */
+function waveFill(reveal, durMs, onDone) {
+  const AMP = 4;       // wave depth, % of width
+  const WAVES = 1.7;   // crests down the button's height
+  const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  let t0 = null, raf = 0, done = false;
+  function frame(ts) {
+    if (t0 === null) t0 = ts;
+    const lin = Math.min(1, (ts - t0) / durMs);
+    const level = ease(lin) * 108 - 4;               // the tide's mean x, running just past both ends
+    const phase = (ts - t0) / 1000 * 6;              // ripple speed
+    const N = 16, pts = ['0% 0%', '0% 100%'];
+    for (let i = N; i >= 0; i--) {                   // the wavy leading edge, bottom to top
+      const y = i / N;
+      const x = level + AMP * Math.sin(y * WAVES * Math.PI * 2 + phase);
+      pts.push(x.toFixed(2) + '% ' + (y * 100).toFixed(2) + '%');
+    }
+    reveal.style.clipPath = 'polygon(' + pts.join(',') + ')';
+    if (lin < 1) raf = requestAnimationFrame(frame);
+    else if (!done) { done = true; onDone(); }
+  }
+  raf = requestAnimationFrame(frame);
+  return () => cancelAnimationFrame(raf);
 }
 
 function enterSite(intro) {
