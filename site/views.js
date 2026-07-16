@@ -665,36 +665,49 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
      rides up into place over 1.5s as the index arrives, so the bar is glued to it frame by frame for
      that window: they move as one, rather than the bar sitting still and snapping up at the end. */
   const wm = document.querySelector('.wordmark');
-  const wmBaseTop = wm ? parseFloat(getComputedStyle(wm).top) || 0 : 0;
   const STICKY_TOP = 18;   // where the bar catches near the top — a gap, not flush against the edge
 
-  /* One rAF loop drives the title's scroll and the bar's placing — reading the scroll on the paint
-     tick, not off the scroll event (which on a phone fires out of step with the frame). Crucially it
-     measures nothing while scrolling: the wordmark's settled foot and the bar's height are read only
-     while the title is still riding in (scroll idle), then the positions are pure arithmetic on the
-     scroll offset — no getBoundingClientRect per frame, so nothing forces layout and the bar holds
-     steady instead of juddering. */
-  let frameRAF = 0, lastScroll = -1, frame0 = null, wmFoot = null, barH = null;
+  /* The title slides up with the scroll and the bar follows, then catches near the top. The grid
+     scrolls on the compositor; if the title and bar moved by `top` (a layout property, on the main
+     thread) they would stutter against it — so once the title has ridden in they move by `translate`
+     instead, which the compositor draws, and they track the grid smoothly. During the ride-in the
+     bar is glued to the title's measured foot (the scroll is idle then); after it, the resting tops
+     are fixed once and only translate changes. */
+  let frameRAF = 0, lastS = -1, frame0 = null, wmFoot = null, barH = null, barRest = null;
   function frameLoop(ts) {
     if (frame0 === null) frame0 = ts;
     const settling = ts - frame0 < 1700;   // the wordmark's rise lasts 1.5s
     const s = outer.scrollTop;
-    if (s === lastScroll && !settling) { frameRAF = requestAnimationFrame(frameLoop); return; }
-    lastScroll = s;
-    if (wm) wm.style.top = (wmBaseTop - s) + 'px';   // the title slides up and out with the scroll
-    if (settling) {                                   // measure only now, while nothing is scrolling
-      if (wm) wmFoot = wm.getBoundingClientRect().bottom + s;   // its foot, normalised to scroll 0
+    if (s === lastS && !settling) { frameRAF = requestAnimationFrame(frameLoop); return; }
+    lastS = s;
+    if (settling) {
+      const foot = wm ? wm.getBoundingClientRect().bottom : 0;   // track the title as it rides in
+      wmFoot = foot;
       if (barH === null) { const h = bar.getBoundingClientRect().height; if (h) barH = h; }
+      const t = Math.round(foot + 16);
+      if (wm) wm.style.translate = '';
+      bar.style.top = t + 'px'; bar.style.translate = '';
+      if (barH !== null) { pal.style.top = (t + barH + 10) + 'px'; pal.style.translate = ''; }
+    } else {
+      if (barRest === null) {                                     // fix the resting tops once
+        barRest = Math.round((wmFoot || 0) + 16);
+        bar.style.top = barRest + 'px';
+        if (barH !== null) pal.style.top = (barRest + barH + 10) + 'px';
+      }
+      if (wm) wm.style.translate = '0px ' + (-s) + 'px';          // the title slides up and out
+      const off = Math.max(STICKY_TOP - barRest, -s);             // the bar follows, caught at STICKY_TOP
+      bar.style.translate = '0px ' + off + 'px';
+      pal.style.translate = '0px ' + off + 'px';
     }
-    const foot = (wmFoot || 0) - s;                   // where the foot sits now — computed, not read
-    const t = Math.max(STICKY_TOP, Math.round(foot + 16));   // follow it, then catch at STICKY_TOP
-    bar.style.top = t + 'px';
-    if (barH !== null) pal.style.top = (t + barH + 10) + 'px';   // the palette floats just under the bar
     frameRAF = requestAnimationFrame(frameLoop);
   }
   frameRAF = requestAnimationFrame(frameLoop);
   requestAnimationFrame(() => placeBlob(false));
-  function onResize() { wmFoot = null; barH = null; frame0 = null; placeBlob(false); }   // re-measure on the next settling window
+  function onResize() {   // re-measure on the next ride-in window
+    wmFoot = null; barH = null; barRest = null; frame0 = null;
+    if (wm) wm.style.translate = ''; bar.style.translate = ''; pal.style.translate = '';
+    placeBlob(false);
+  }
   addEventListener('resize', onResize);
 
   const sc = smoothTilt(outer, content);
@@ -780,7 +793,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   });
   function destroy() {
     cancelAnimationFrame(frameRAF);
-    if (wm) wm.style.top = '';   // hand the shared wordmark back
+    if (wm) { wm.style.top = ''; wm.style.translate = ''; }   // hand the shared wordmark back clean
     removeEventListener('resize', onResize);
     sc.destroy();
   }
