@@ -622,8 +622,8 @@ function inView(r) {
 /* hand the work the viewer was on over to the incoming view */
 function handOverIndex(fromPath, toArticles, oldCar, oldEl, oldInst) {
   let idx = 0;
-  if (fromPath === '/' && !toArticles) {
-    idx = (oldCar && oldCar.activeIndex()) || 0;
+  if (fromPath === '/') {
+    idx = (oldCar && oldCar.activeIndex()) || 0;   // to flow OR to index — both open on the work you were on
   } else if (fromPath === '/flow' && oldInst && oldInst.activeIndex) {
     idx = oldInst.activeIndex();          // the next view opens on the paintings flow was showing
   } else if (fromPath === '/articles' && oldEl) {
