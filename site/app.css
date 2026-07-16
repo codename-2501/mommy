@@ -707,7 +707,10 @@ html.is-resizing .wordmark{transition:none}
    above rather than sideways over the next column. */
 .agrid__month{position:absolute;bottom:calc(100% + 1rem);left:0;width:100%;text-transform:uppercase}
 /* month + year, set the same way as the timeline ruler's labels */
-.agrid__month .label[data-year]:not([data-year=""])::after{content:" " attr(data-year);opacity:.5}
+/* the year sits on its own line, always — so a short month (JUNE) and a long one (SEPTEMBER)
+   read the same two-line way instead of one wrapping and the other not. display:block drops it
+   below the month whether or not the month would have fit beside it. */
+.agrid__month .label[data-year]:not([data-year=""])::after{content:attr(data-year);display:block;opacity:.5}
 
 /* ---------- ABOUT: black page ---------- */
 .about{position:fixed;inset:0;z-index:4}
