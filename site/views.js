@@ -644,34 +644,34 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   const wm = document.querySelector('.wordmark');
   const wmBaseTop = wm ? parseFloat(getComputedStyle(wm).top) || 0 : 0;
   const STICKY_TOP = 18;   // where the bar catches near the top — a gap, not flush against the edge
-  function placeBar() {
-    if (!wm) return;
-    const b = wm.getBoundingClientRect().bottom;
-    /* under the wordmark's foot normally; but never higher than STICKY_TOP, so as the title scrolls
-       away the bar rises with it and then catches, holding just below the top edge */
-    bar.style.top = Math.max(STICKY_TOP, Math.round(b + 16)) + 'px';
-    const br = bar.getBoundingClientRect();
-    pal.style.top = Math.round(br.bottom + 10) + 'px';   // the palette floats just under the bar
-  }
-  /* One rAF loop drives the title's scroll and the bar's placing. Reading the scroll on the paint
-     tick — rather than off the scroll event, which on a phone fires out of step with the frame and
-     left the fixed bar juddering — keeps them steady. It only touches the DOM when the scroll has
-     actually moved, or during the 1.7s the wordmark takes to ride in. */
-  let frameRAF = 0, lastScroll = -1, frame0 = null;
+
+  /* One rAF loop drives the title's scroll and the bar's placing — reading the scroll on the paint
+     tick, not off the scroll event (which on a phone fires out of step with the frame). Crucially it
+     measures nothing while scrolling: the wordmark's settled foot and the bar's height are read only
+     while the title is still riding in (scroll idle), then the positions are pure arithmetic on the
+     scroll offset — no getBoundingClientRect per frame, so nothing forces layout and the bar holds
+     steady instead of juddering. */
+  let frameRAF = 0, lastScroll = -1, frame0 = null, wmFoot = null, barH = null;
   function frameLoop(ts) {
     if (frame0 === null) frame0 = ts;
+    const settling = ts - frame0 < 1700;   // the wordmark's rise lasts 1.5s
     const s = outer.scrollTop;
-    if (s !== lastScroll || ts - frame0 < 1700) {
-      lastScroll = s;
-      if (wm) wm.style.top = (wmBaseTop - s) + 'px';   // the title slides up and out with the scroll
-      placeBar();                                       // the bar follows, then catches at STICKY_TOP
+    if (s === lastScroll && !settling) { frameRAF = requestAnimationFrame(frameLoop); return; }
+    lastScroll = s;
+    if (wm) wm.style.top = (wmBaseTop - s) + 'px';   // the title slides up and out with the scroll
+    if (settling) {                                   // measure only now, while nothing is scrolling
+      if (wm) wmFoot = wm.getBoundingClientRect().bottom + s;   // its foot, normalised to scroll 0
+      if (barH === null) { const h = bar.getBoundingClientRect().height; if (h) barH = h; }
     }
+    const foot = (wmFoot || 0) - s;                   // where the foot sits now — computed, not read
+    const t = Math.max(STICKY_TOP, Math.round(foot + 16));   // follow it, then catch at STICKY_TOP
+    bar.style.top = t + 'px';
+    if (barH !== null) pal.style.top = (t + barH + 10) + 'px';   // the palette floats just under the bar
     frameRAF = requestAnimationFrame(frameLoop);
   }
   frameRAF = requestAnimationFrame(frameLoop);
   requestAnimationFrame(() => placeBlob(false));
-  if (wm) wm.addEventListener('transitionend', placeBar);
-  function onResize() { placeBar(); placeBlob(false); }
+  function onResize() { wmFoot = null; barH = null; frame0 = null; placeBlob(false); }   // re-measure on the next settling window
   addEventListener('resize', onResize);
 
   const sc = smoothTilt(outer, content);
@@ -755,7 +755,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   });
   function destroy() {
     cancelAnimationFrame(frameRAF);
-    if (wm) { wm.removeEventListener('transitionend', placeBar); wm.style.top = ''; }   // hand the shared wordmark back
+    if (wm) wm.style.top = '';   // hand the shared wordmark back
     removeEventListener('resize', onResize);
     sc.destroy();
   }
