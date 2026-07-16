@@ -653,24 +653,26 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     const br = bar.getBoundingClientRect();
     pal.style.top = Math.round(br.bottom + 10) + 'px';   // the palette floats just under the bar
   }
-  let trackStart = null;
-  function track(ts) {
-    if (trackStart === null) trackStart = ts;
-    placeBar();
-    if (ts - trackStart < 1700) requestAnimationFrame(track);   // the wordmark's rise lasts 1.5s
+  /* One rAF loop drives the title's scroll and the bar's placing. Reading the scroll on the paint
+     tick — rather than off the scroll event, which on a phone fires out of step with the frame and
+     left the fixed bar juddering — keeps them steady. It only touches the DOM when the scroll has
+     actually moved, or during the 1.7s the wordmark takes to ride in. */
+  let frameRAF = 0, lastScroll = -1, frame0 = null;
+  function frameLoop(ts) {
+    if (frame0 === null) frame0 = ts;
+    const s = outer.scrollTop;
+    if (s !== lastScroll || ts - frame0 < 1700) {
+      lastScroll = s;
+      if (wm) wm.style.top = (wmBaseTop - s) + 'px';   // the title slides up and out with the scroll
+      placeBar();                                       // the bar follows, then catches at STICKY_TOP
+    }
+    frameRAF = requestAnimationFrame(frameLoop);
   }
-  requestAnimationFrame(track);
+  frameRAF = requestAnimationFrame(frameLoop);
   requestAnimationFrame(() => placeBlob(false));
   if (wm) wm.addEventListener('transitionend', placeBar);
   function onResize() { placeBar(); placeBlob(false); }
   addEventListener('resize', onResize);
-  /* the title slides up and out with the scroll (its `top` is not transitioned, so this is smooth);
-     the bar follows via placeBar until it catches at STICKY_TOP */
-  function onScroll() {
-    if (wm) wm.style.top = (wmBaseTop - outer.scrollTop) + 'px';
-    placeBar();
-  }
-  outer.addEventListener('scroll', onScroll, { passive: true });
 
   const sc = smoothTilt(outer, content);
 
@@ -752,8 +754,8 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     markReady();
   });
   function destroy() {
+    cancelAnimationFrame(frameRAF);
     if (wm) { wm.removeEventListener('transitionend', placeBar); wm.style.top = ''; }   // hand the shared wordmark back
-    outer.removeEventListener('scroll', onScroll);
     removeEventListener('resize', onResize);
     sc.destroy();
   }
