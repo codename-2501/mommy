@@ -400,10 +400,10 @@ function smoothTilt(outer, content) {
    coming back. date-desc (newest first) is the archive's own order — the default. */
 let indexSort = 'date-desc';
 const INDEX_SORTS = [
-  ['date-desc', '최신'],
-  ['date-asc', '오래된'],
-  ['color', '색상'],
-  ['size', '크기'],
+  ['date-desc', 'Latest'],
+  ['date-asc', 'Oldest'],
+  ['color', 'Color'],
+  ['size', 'Size'],
 ];
 
 /* a colour's hue/saturation/lightness, for the colour sort */
@@ -523,7 +523,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
 
   /* the sort control: a small row of labels above the grid, the chosen one lit */
   const bar = el('div', 'agrid-sort');
-  bar.appendChild(el('span', 'agrid-sort__cap label', '정렬'));
+  bar.appendChild(el('span', 'agrid-sort__cap label', 'Sort'));
   const btns = INDEX_SORTS.map(([mode, lbl]) => {
     const b = el('button', 'agrid-sort__btn label', lbl);
     b.type = 'button';
@@ -537,6 +537,20 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     btns.forEach((b) => b.classList.toggle('is-on', b.dataset.mode === indexSort));
   }
   paintBar();
+
+  /* the bar rides just under the wordmark, centred. The wordmark scales differently on a phone than
+     on a desktop, so no fixed rem sits under it on both — its foot is measured instead. It rides up
+     into place over 1.5s when the index arrives, so the reading is retaken when that settles (and on
+     resize); the bar's own top eases, so a late reading glides rather than jumps. */
+  const wm = document.querySelector('.wordmark');
+  function placeBar() {
+    if (!wm) return;
+    const b = wm.getBoundingClientRect().bottom;
+    if (b > 0) bar.style.top = Math.round(b + 16) + 'px';
+  }
+  requestAnimationFrame(placeBar);
+  if (wm) wm.addEventListener('transitionend', placeBar);
+  addEventListener('resize', placeBar);
 
   const sc = smoothTilt(outer, content);
 
@@ -595,7 +609,12 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     }
     markReady();
   });
-  return { ready, destroy: sc.destroy, measure: sc.measure, scrollTo: sc.scrollTo };
+  function destroy() {
+    if (wm) wm.removeEventListener('transitionend', placeBar);
+    removeEventListener('resize', placeBar);
+    sc.destroy();
+  }
+  return { ready, destroy, measure: sc.measure, scrollTo: sc.scrollTo };
 }
 
 /* One CV entry, whichever shape the admin saved it in.

@@ -715,10 +715,11 @@ html.is-resizing .wordmark{transition:none}
 /* the index sort control: a quiet row of labels top-right, the chosen one lit. Sits above the
    grid but under the menu and any detail, and leaves with the view (it is the view's own child). */
 .agrid-sort{
-  position:fixed;top:2.4rem;right:2.4rem;z-index:14;
+  position:fixed;left:50%;top:30vh;transform:translateX(-50%);z-index:14;   /* top set by views.js, under the wordmark */
   display:flex;gap:1.4rem;align-items:baseline;
   padding:1rem 1.6rem;border-radius:999px;
   background:rgba(255,255,255,.66);backdrop-filter:blur(6px);   /* lift it off the busy ground */
+  transition:top .4s var(--ease-rise);
 }
 .agrid-sort__cap{opacity:.5;margin-right:.2rem}
 .agrid-sort__btn{
@@ -727,7 +728,7 @@ html.is-resizing .wordmark{transition:none}
 }
 @media (hover:hover){.agrid-sort__btn:not(.is-on):hover{opacity:.85}}
 .agrid-sort__btn.is-on{opacity:1;text-decoration:underline;text-underline-offset:.5rem}
-@media (max-width:699px){.agrid-sort{top:1.2rem;right:1.2rem;gap:1.1rem;padding:.8rem 1.2rem}}
+@media (max-width:699px){.agrid-sort{gap:1.1rem;padding:.7rem 1.1rem}}
 
 /* ---------- ABOUT: black page ---------- */
 .about{position:fixed;inset:0;z-index:4}
