@@ -287,13 +287,21 @@ document.addEventListener('keydown', (e) => {
    stop at each end (clamped, no rubber-band), the same floaty feel as the index and the reference. */
 function smoothScroll(sc) {
   let target = 0, cur = 0, last = 0, applied = -1;
-  let tY = 0, tVel = 0, momentum = 0, touching = false;
-  const LERP = 0.045;   // slower chase = floatier glide
+  let tY = 0, tVel = 0, momentum = 0, touching = false, over = 0;
+  const LERP = 0.1;
+  const OVER_MAX = 60;
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;
+  const body = () => sc.firstElementChild;   // the content the stretch rides on
   const lim = () => Math.max(0, sc.scrollHeight - sc.clientHeight);
+  function pushEnd(next, l) {
+    if (next < 0) over += (-next) * 0.3 * (1 - Math.abs(over) / OVER_MAX);
+    else if (next > l) over -= (next - l) * 0.3 * (1 - Math.abs(over) / OVER_MAX);
+    over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
+    return Math.max(0, Math.min(l, next));
+  }
   sc.addEventListener('wheel', (e) => {
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
-    target = Math.max(0, Math.min(lim(), target + raw * mult));
+    target = pushEnd(target + raw * mult, lim());
     e.preventDefault();
   }, { passive: false });
   /* touch driven the same way as the index, so a phone gets the same floaty scroll (see views.js) */
@@ -302,7 +310,7 @@ function smoothScroll(sc) {
   sc.addEventListener('touchmove', (e) => {
     if (!touching) return;
     const y = e.touches[0].clientY, dy = tY - y;
-    target = Math.max(0, Math.min(lim(), target + dy));
+    target = pushEnd(target + dy, lim());
     cur = target; tVel = dy; tY = y;
     if (e.cancelable) e.preventDefault();
   }, { passive: false });
@@ -317,13 +325,20 @@ function smoothScroll(sc) {
       cur = target = sc.scrollTop;         // external scroll (anchors, scrollIntoView…)
     }
     if (!touching && momentum) {
-      target = Math.max(0, Math.min(lim(), target + momentum * ratio));
-      momentum *= Math.pow(0.94, ratio);
-      if (Math.abs(momentum) < 0.4) momentum = 0;
+      const l = lim(), nt = target + momentum * ratio;
+      target = pushEnd(nt, l);
+      if (nt < 0 || nt > l) momentum = 0;
+      else { momentum *= Math.pow(0.9, ratio); if (Math.abs(momentum) < 0.4) momentum = 0; }
     }
     cur += (target - cur) * LERP * ratio;
     sc.scrollTop = cur;
     applied = sc.scrollTop;
+    if (over !== 0) {
+      over += (0 - over) * 0.14 * ratio;
+      if (Math.abs(over) < 0.3) over = 0;
+      const b = body();
+      if (b) b.style.transform = over ? 'translateY(' + over.toFixed(1) + 'px)' : '';
+    }
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
