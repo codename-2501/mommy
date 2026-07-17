@@ -287,7 +287,7 @@ document.addEventListener('keydown', (e) => {
    ends so the page gives and springs back instead of stopping dead — the same feel as the index. */
 function smoothScroll(sc) {
   let target = 0, cur = 0, last = 0, applied = -1, over = 0;
-  const OVER_MAX = 90;   // how far the rubber-band gives at an end, px
+  const OVER_MAX = 120;   // how far the rubber-band gives at an end, px
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;
   const body = () => sc.firstElementChild;   // the content the overshoot rides on
   sc.addEventListener('wheel', (e) => {
@@ -295,8 +295,8 @@ function smoothScroll(sc) {
     const lim = sc.scrollHeight - sc.clientHeight, next = target + raw * mult;
     /* whatever the wheel pushes past an edge goes into the overshoot at a fraction, capped, and
        springs back in the tick — a rubber-band, not a wall */
-    if (next < 0) over += (-next) * 0.28;
-    else if (next > lim) over -= (next - lim) * 0.28;
+    if (next < 0) over += (-next) * 0.45;
+    else if (next > lim) over -= (next - lim) * 0.45;
     over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
     target = Math.max(0, Math.min(lim, next));
     e.preventDefault();
@@ -312,7 +312,7 @@ function smoothScroll(sc) {
     sc.scrollTop = cur;
     applied = sc.scrollTop;
     if (over !== 0) {
-      over += (0 - over) * 0.16 * ratio;
+      over += (0 - over) * 0.11 * ratio;   // chewier spring — slower, fuller give than a snap-back
       if (Math.abs(over) < 0.4) over = 0;
       const b = body();
       if (b) b.style.transform = over ? 'translateY(' + over.toFixed(1) + 'px)' : '';
