@@ -287,7 +287,7 @@ document.addEventListener('keydown', (e) => {
    stop at each end (clamped, no rubber-band), the same floaty feel as the index and the reference. */
 function smoothScroll(sc) {
   let target = 0, cur = 0, last = 0, applied = -1;
-  const LERP = 0.06;   // slower chase = floatier glide
+  const LERP = 0.045;   // slower chase = floatier glide
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;
   sc.addEventListener('wheel', (e) => {
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
