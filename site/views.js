@@ -331,7 +331,7 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
    detail uses. The rows still tilt, driven by the speed the scroll is actually running at. -------- */
 function smoothTilt(outer, content) {
   let target = 0, cur = 0, lastTs = 0, raf = 0, applied = -1, prevTop = 0, over = 0;
-  const OVER_MAX = 90;   // how far the rubber-band gives at an end, px
+  const OVER_MAX = 120;   // how far the rubber-band gives at an end, px
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;   // detail.js: same numbers
   const tilts = () => content.querySelectorAll('.lse-row');
   /* the tilt is a scroll-driven CSS animation (app.css: rowTilt) wherever the browser has one:
@@ -351,8 +351,8 @@ function smoothTilt(outer, content) {
        at a fraction, capped, and springs back in the frame loop. A rubber-band, not a wall. Guarding
        on "already at the edge" meant the first push into an end was swallowed and only a second wheel
        bounced, which read as no bounce at all. */
-    if (next < 0) over += (-next) * 0.28;
-    else if (next > lim) over -= (next - lim) * 0.28;
+    if (next < 0) over += (-next) * 0.45;
+    else if (next > lim) over -= (next - lim) * 0.45;
     over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
     target = Math.max(0, Math.min(lim, next));
     e.preventDefault();                     // the lerp owns the wheel, not the browser
@@ -379,7 +379,7 @@ function smoothTilt(outer, content) {
     applied = outer.scrollTop;
     /* the rubber-band eases back to the edge and rides on the content's own transform */
     if (over !== 0) {
-      over += (0 - over) * 0.16 * ratio;
+      over += (0 - over) * 0.11 * ratio;   // chewier spring — slower, fuller give than a snap-back
       if (Math.abs(over) < 0.4) over = 0;
       content.style.transform = over ? 'translateY(' + over.toFixed(1) + 'px)' : '';
     }
