@@ -286,7 +286,7 @@ document.addEventListener('keydown', (e) => {
 /* panel smooth scroll — virtual-scroll feel (delta *0.9, lerp .1/frame), with a rubber-band at the
    ends so the page gives and springs back instead of stopping dead — the same feel as the index. */
 function smoothScroll(sc) {
-  let target = 0, cur = 0, last = 0, applied = -1, over = 0;
+  let target = 0, cur = 0, last = 0, applied = -1, over = 0, overHold = 0;
   const OVER_MAX = 120;   // how far the rubber-band gives at an end, px
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;
   const body = () => sc.firstElementChild;   // the content the overshoot rides on
@@ -298,6 +298,7 @@ function smoothScroll(sc) {
     if (next < 0) over += (-next) * 0.45;
     else if (next > lim) over -= (next - lim) * 0.45;
     over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
+    if (over !== 0) overHold = 8;   // hold the give while momentum is still arriving; spring when quiet
     target = Math.max(0, Math.min(lim, next));
     e.preventDefault();
   }, { passive: false });
@@ -312,8 +313,9 @@ function smoothScroll(sc) {
     sc.scrollTop = cur;
     applied = sc.scrollTop;
     if (over !== 0) {
-      over += (0 - over) * 0.11 * ratio;   // chewier spring — slower, fuller give than a snap-back
-      if (Math.abs(over) < 0.4) over = 0;
+      if (overHold > 0) overHold -= ratio;   // hold the give through momentum, spring once it goes quiet
+      else over += (0 - over) * 0.11 * ratio;   // chewier spring — slower, fuller give than a snap-back
+      if (Math.abs(over) < 0.4 && overHold <= 0) over = 0;
       const b = body();
       if (b) b.style.transform = over ? 'translateY(' + over.toFixed(1) + 'px)' : '';
     }
