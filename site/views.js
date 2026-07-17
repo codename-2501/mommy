@@ -331,8 +331,9 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
    detail uses. The rows still tilt, driven by the speed the scroll is actually running at. -------- */
 function smoothTilt(outer, content) {
   let target = 0, cur = 0, lastTs = 0, raf = 0, applied = -1, prevTop = 0;
-  let tY = 0, tVel = 0, momentum = 0, touching = false;   // touch drag + its fling
-  const LERP = 0.045;   // slower chase = the floatier glide the reference's ScrollSmoother has
+  let tY = 0, tVel = 0, momentum = 0, touching = false, over = 0;   // touch drag + fling + end stretch
+  const LERP = 0.1;
+  const OVER_MAX = 60;   // the natural give at an end, px
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;   // detail.js: same numbers
   const tilts = () => content.querySelectorAll('.lse-row');
   /* the tilt is a scroll-driven CSS animation (app.css: rowTilt) wherever the browser has one:
@@ -342,13 +343,19 @@ function smoothTilt(outer, content) {
     typeof CSS !== 'undefined' && CSS.supports && CSS.supports('animation-timeline', 'view()');
   const limit = () => Math.max(0, outer.scrollHeight - outer.clientHeight);
   function measure() { target = Math.min(target, limit()); }
+  /* push toward `next`; the part that falls past an end becomes stretch (with progressive resistance —
+     the further it gives, the less each bit adds), springing back in the frame. Returns the clamped target. */
+  function pushEnd(next, lim) {
+    if (next < 0) over += (-next) * 0.3 * (1 - Math.abs(over) / OVER_MAX);
+    else if (next > lim) over -= (next - lim) * 0.3 * (1 - Math.abs(over) / OVER_MAX);
+    over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
+    return Math.max(0, Math.min(lim, next));
+  }
 
   function onWheel(e) {
     if (window.LSEDetail && window.LSEDetail.isOpen) return;
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
-    /* clamp to the ends and glide in — no rubber-band, like the reference: the long lerp eases the
-       page to a smooth stop at an edge instead of bouncing off it */
-    target = Math.max(0, Math.min(limit(), target + raw * mult));
+    target = pushEnd(target + raw * mult, limit());   // past an end -> stretch, like the reference
     e.preventDefault();                     // the lerp owns the wheel, not the browser
   }
   function onKey(e) {
@@ -374,7 +381,7 @@ function smoothTilt(outer, content) {
     if (!touching) return;
     const y = e.touches[0].clientY;
     const dy = tY - y;                        // finger up -> scroll down
-    target = Math.max(0, Math.min(limit(), target + dy));
+    target = pushEnd(target + dy, limit());   // drag past an end -> the page stretches under the finger
     cur = target;                             // 1:1 under the finger — the float is in the fling, below
     tVel = dy; tY = y;
     if (e.cancelable) e.preventDefault();
@@ -391,15 +398,23 @@ function smoothTilt(outer, content) {
     /* a touch (or any scroll we did not drive) moves scrollTop under us — follow it rather
        than fight it, exactly as the detail does */
     if (applied >= 0 && Math.abs(outer.scrollTop - applied) > 1) cur = target = outer.scrollTop;
-    /* a fling: keep feeding the target as the release speed decays, and the lerp coasts the page there */
+    /* a fling: keep feeding the target as the release speed decays; hitting an end spends the rest of
+       the fling into the stretch (over) rather than stopping dead */
     if (!touching && momentum) {
-      target = Math.max(0, Math.min(limit(), target + momentum * ratio));
-      momentum *= Math.pow(0.94, ratio);
-      if (Math.abs(momentum) < 0.4) momentum = 0;
+      const lim = limit(), nt = target + momentum * ratio;
+      target = pushEnd(nt, lim);
+      if (nt < 0 || nt > lim) momentum = 0;
+      else { momentum *= Math.pow(0.9, ratio); if (Math.abs(momentum) < 0.4) momentum = 0; }
     }
     cur += (target - cur) * LERP * ratio;    // detail.js: same lerp
     outer.scrollTop = cur;
     applied = outer.scrollTop;
+    /* the end stretch springs back to the edge, riding the content's own transform */
+    if (over !== 0) {
+      over += (0 - over) * 0.14 * ratio;
+      if (Math.abs(over) < 0.3) over = 0;
+      content.style.transform = over ? 'translateY(' + over.toFixed(1) + 'px)' : '';
+    }
 
     /* the tilt rides the speed the page is actually moving at, so it works the same whether
        the wheel, a finger or the system's momentum is driving it */
