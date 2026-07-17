@@ -761,12 +761,16 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
       from.el.style.transition = 'none';
       from.el.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + scale + ')';
     }
-    flights.push({ el: from.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT });
+    /* the deck-angle turn eases more evenly than the flat flights: --ease-travel front-loads hard
+       (92% of the way by a fifth of the time), so a turning card raced in and braked, which read as a
+       jerk at the finish. A gentler ease-out spreads the deceleration across the whole flight. */
+    const ease = roty ? 'cubic-bezier(.33,1,.68,1)' : 'var(--ease-travel)';
+    flights.push({ el: from.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease });
   }
   if (!flights.length) return null;
   return () => {
     for (const f of flights) {
-      f.el.style.transition = 'transform ' + FLIP.dur + 'ms var(--ease-travel) ' + f.delay + 'ms';
+      f.el.style.transition = 'transform ' + FLIP.dur + 'ms ' + f.ease + ' ' + f.delay + 'ms';
       f.el.style.transform = f.end;
     }
     const last = flights[flights.length - 1];
