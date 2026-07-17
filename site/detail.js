@@ -7,6 +7,7 @@
 let root = null;              // overlay element
 let curId = null;
 let closing = false;
+let closeTimer = 0;           // the pending teardown of a leaving detail — cancelled if it reopens
 
 function el(tag, cls, text) {
   const n = document.createElement(tag);
@@ -433,6 +434,10 @@ function render(container, opts, id, flip, dir) {
 
 function open(parent, opts, id, flip) {
   closing = false;
+  /* reopening within the ~1.15s close animation reuses the same root; cancel that close's teardown, or
+     it fires late and rips the just-reopened detail out from under the viewer — the "click does nothing
+     after a few times" bug. Give any slots the leaving close had not yet restored their frames back. */
+  if (closeTimer) { clearTimeout(closeTimer); closeTimer = 0; if (root && root._opts && root._opts.onGone) root._opts.onGone(); }
   if (!root) {
     root = el('div', 'detail');
     root.appendChild(el('div', 'dt-bg'));   // home fades under us
@@ -467,7 +472,8 @@ function close() {
 
   root.classList.add('is-off');
   root.classList.remove('is-on');
-  setTimeout(() => {
+  closeTimer = setTimeout(() => {
+    closeTimer = 0;
     leavingRoot.remove();
     if (root === leavingRoot) { root = null; curId = null; }
     closing = false;
