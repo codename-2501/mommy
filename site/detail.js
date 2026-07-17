@@ -283,25 +283,15 @@ document.addEventListener('keydown', (e) => {
   if (lb) { e.stopImmediatePropagation(); lb.click(); }
 }, true);
 
-/* panel smooth scroll — virtual-scroll feel (delta *0.9, lerp .1/frame), with a rubber-band at the
-   ends so the page gives and springs back instead of stopping dead — the same feel as the index. */
+/* panel smooth scroll — virtual-scroll feel: a long lerp glides the content and eases to a smooth
+   stop at each end (clamped, no rubber-band), the same floaty feel as the index and the reference. */
 function smoothScroll(sc) {
-  let target = 0, cur = 0, last = 0, applied = -1, over = 0, overHold = 0;
-  const OVER_MAX = 70;   // how far the rubber-band gives at an end, px
+  let target = 0, cur = 0, last = 0, applied = -1;
+  const LERP = 0.06;   // slower chase = floatier glide
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;
-  const body = () => sc.firstElementChild;   // the content the overshoot rides on
   sc.addEventListener('wheel', (e) => {
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
-    const lim = sc.scrollHeight - sc.clientHeight, next = target + raw * mult;
-    /* whatever the wheel pushes past an edge goes into the overshoot at a fraction, capped, and
-       springs back in the tick — a rubber-band, not a wall */
-    /* progressive resistance, like the OS rubber-band: further pulls add less, easing toward the limit */
-    const give = (px) => px * 0.55 * (1 - Math.abs(over) / OVER_MAX);
-    if (next < 0) over += give(-next);
-    else if (next > lim) over -= give(next - lim);
-    over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
-    if (over !== 0) overHold = 8;   // hold the give while momentum is still arriving; spring when quiet
-    target = Math.max(0, Math.min(lim, next));
+    target = Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight, target + raw * mult));
     e.preventDefault();
   }, { passive: false });
   function tick(ts) {
@@ -311,16 +301,9 @@ function smoothScroll(sc) {
     if (applied >= 0 && Math.abs(sc.scrollTop - applied) > 1) {
       cur = target = sc.scrollTop;         // external scroll (anchors, scrollIntoView…)
     }
-    cur += (target - cur) * 0.1 * ratio;
+    cur += (target - cur) * LERP * ratio;
     sc.scrollTop = cur;
     applied = sc.scrollTop;
-    if (over !== 0) {
-      if (overHold > 0) overHold -= ratio;   // hold the give through momentum, spring once it goes quiet
-      else over += (0 - over) * 0.11 * ratio;   // chewier spring — slower, fuller give than a snap-back
-      if (Math.abs(over) < 0.4 && overHold <= 0) over = 0;
-      const b = body();
-      if (b) b.style.transform = over ? 'translateY(' + over.toFixed(1) + 'px)' : '';
-    }
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);

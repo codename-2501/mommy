@@ -330,8 +330,8 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
    natively now: the finger gets the OS's own physics, and the wheel gets the same lerp the
    detail uses. The rows still tilt, driven by the speed the scroll is actually running at. -------- */
 function smoothTilt(outer, content) {
-  let target = 0, cur = 0, lastTs = 0, raf = 0, applied = -1, prevTop = 0, over = 0, overHold = 0;
-  const OVER_MAX = 70;   // how far the rubber-band gives at an end, px
+  let target = 0, cur = 0, lastTs = 0, raf = 0, applied = -1, prevTop = 0;
+  const LERP = 0.06;   // slower chase = the floatier glide the reference's ScrollSmoother has
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;   // detail.js: same numbers
   const tilts = () => content.querySelectorAll('.lse-row');
   /* the tilt is a scroll-driven CSS animation (app.css: rowTilt) wherever the browser has one:
@@ -345,20 +345,9 @@ function smoothTilt(outer, content) {
   function onWheel(e) {
     if (window.LSEDetail && window.LSEDetail.isOpen) return;
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
-    const lim = limit(), next = target + raw * mult;
-    /* past an end the page gives instead of stopping dead: whatever the wheel pushes beyond the edge
-       — whether it was already resting there or is arriving from mid-page — goes into the overshoot
-       at a fraction, capped, and springs back in the frame loop. A rubber-band, not a wall. Guarding
-       on "already at the edge" meant the first push into an end was swallowed and only a second wheel
-       bounced, which read as no bounce at all. */
-    /* progressive resistance, like the OS rubber-band: each bit of overshoot adds less the further the
-       give already is, so it eases toward the limit instead of racing to a hard cap and stopping dead */
-    const give = (px) => px * 0.55 * (1 - Math.abs(over) / OVER_MAX);
-    if (next < 0) over += give(-next);
-    else if (next > lim) over -= give(next - lim);
-    over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
-    if (over !== 0) overHold = 8;   // hold the give while the wheel is still coming; see the frame loop
-    target = Math.max(0, Math.min(lim, next));
+    /* clamp to the ends and glide in — no rubber-band, like the reference: the long lerp eases the
+       page to a smooth stop at an edge instead of bouncing off it */
+    target = Math.max(0, Math.min(limit(), target + raw * mult));
     e.preventDefault();                     // the lerp owns the wheel, not the browser
   }
   function onKey(e) {
@@ -378,19 +367,9 @@ function smoothTilt(outer, content) {
     /* a touch (or any scroll we did not drive) moves scrollTop under us — follow it rather
        than fight it, exactly as the detail does */
     if (applied >= 0 && Math.abs(outer.scrollTop - applied) > 1) cur = target = outer.scrollTop;
-    cur += (target - cur) * 0.1 * ratio;    // detail.js: same lerp
+    cur += (target - cur) * LERP * ratio;    // detail.js: same lerp
     outer.scrollTop = cur;
     applied = outer.scrollTop;
-    /* the rubber-band eases back to the edge and rides on the content's own transform */
-    if (over !== 0) {
-      /* hold the give steady while the wheel is still arriving (momentum), and only spring back once it
-         has gone quiet — otherwise a trackpad's long momentum outlasts the spring and the give is gone by
-         the time the page visibly stops, so the end reads as a dead stop instead of an elastic one */
-      if (overHold > 0) overHold -= ratio;
-      else over += (0 - over) * 0.11 * ratio;   // chewier spring — slower, fuller give than a snap-back
-      if (Math.abs(over) < 0.4 && overHold <= 0) over = 0;
-      content.style.transform = over ? 'translateY(' + over.toFixed(1) + 'px)' : '';
-    }
 
     /* the tilt rides the speed the page is actually moving at, so it works the same whether
        the wheel, a finger or the system's momentum is driving it */
