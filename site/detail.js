@@ -286,53 +286,24 @@ document.addEventListener('keydown', (e) => {
 /* panel smooth scroll — virtual-scroll feel: a long lerp glides the content and eases to a smooth
    stop at each end (clamped, no rubber-band), the same floaty feel as the index and the reference. */
 function smoothScroll(sc) {
-  let target = 0, cur = 0, last = 0, applied = -1;
-  let tY = 0, tVel = 0, momentum = 0, touching = false, over = 0;
-  const LERP = 0.2;
+  let over = 0, lastTs = 0;
   const OVER_MAX = 60;
-  const mult = /Win/.test(navigator.platform) ? 1.1 : 0.65;
   const body = () => sc.firstElementChild;   // the content the stretch rides on
   const lim = () => Math.max(0, sc.scrollHeight - sc.clientHeight);
-  function pushEnd(next, l) {
-    if (next < 0) over += (-next) * 0.3 * (1 - Math.abs(over) / OVER_MAX);
-    else if (next > l) over -= (next - l) * 0.3 * (1 - Math.abs(over) / OVER_MAX);
-    over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
-    return Math.max(0, Math.min(l, next));
-  }
+  /* native scroll (snappy); the wheel is only taken AT an end, where it stretches and springs back */
   sc.addEventListener('wheel', (e) => {
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
-    target = pushEnd(target + raw * mult, lim());
+    const max = lim();
+    const past = (raw < 0 && sc.scrollTop <= 0) || (raw > 0 && sc.scrollTop >= max - 1);
+    if (!past) return;
+    over -= raw * 0.2 * (1 - Math.abs(over) / OVER_MAX);
+    over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
     e.preventDefault();
   }, { passive: false });
-  /* touch driven the same way as the index, so a phone gets the same floaty scroll (see views.js) */
-  sc.style.touchAction = 'none';
-  sc.addEventListener('touchstart', (e) => { touching = true; momentum = 0; tY = e.touches[0].clientY; tVel = 0; }, { passive: true });
-  sc.addEventListener('touchmove', (e) => {
-    if (!touching) return;
-    const y = e.touches[0].clientY, dy = tY - y;
-    target = pushEnd(target + dy, lim());
-    cur = target; tVel = dy; tY = y;
-    if (e.cancelable) e.preventDefault();
-  }, { passive: false });
-  const endTouch = () => { if (touching) { touching = false; momentum = tVel; } };
-  sc.addEventListener('touchend', endTouch, { passive: true });
-  sc.addEventListener('touchcancel', endTouch, { passive: true });
   function tick(ts) {
     if (!sc.isConnected) return;
-    const ratio = last ? Math.min(3, (ts - last) / (1000 / 60)) : 1;
-    last = ts;
-    if (applied >= 0 && Math.abs(sc.scrollTop - applied) > 1) {
-      cur = target = sc.scrollTop;         // external scroll (anchors, scrollIntoView…)
-    }
-    if (!touching && momentum) {
-      const l = lim(), nt = target + momentum * ratio;
-      target = pushEnd(nt, l);
-      if (nt < 0 || nt > l) momentum = 0;
-      else { momentum *= Math.pow(0.9, ratio); if (Math.abs(momentum) < 0.4) momentum = 0; }
-    }
-    cur += (target - cur) * LERP * ratio;
-    sc.scrollTop = cur;
-    applied = sc.scrollTop;
+    const ratio = lastTs ? Math.min(3, (ts - lastTs) / (1000 / 60)) : 1;
+    lastTs = ts;
     if (over !== 0) {
       over += (0 - over) * 0.14 * ratio;
       if (Math.abs(over) < 0.3) over = 0;
