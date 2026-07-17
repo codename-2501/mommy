@@ -720,6 +720,7 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
     if (owner) { owner.style.zIndex = '5'; owners.push(owner); }
     const srcCard = from.el.closest('.lse-card');
     const roty = srcCard && typeof srcCard._roty === 'number' ? srcCard._roty : 0;
+    let endT = '';                      // where the flight lands — see the roty branch for why it matters
     to.el.replaceChildren(from.el);
     to.el.style.visibility = '';        // a slot that lent its frame out was hidden — it is back
     if (roty) {
@@ -749,6 +750,10 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
         if (Math.abs(shown - from.bounds.width) < 0.5) break;
         scale *= from.bounds.width / shown;
       }
+      /* land on the SAME function list the start uses (identity values), not '' — a matching list makes
+         CSS interpolate translate/scale/rotateY each on its own, in lockstep, so the turn and the travel
+         run as one. Interpolating to 'none' decomposes to a matrix and lets the travel outrun the turn. */
+      endT = 'perspective(1000px) translate3d(0px,0px,0) scale(1) rotateY(0deg)';
     } else {
       const dx = from.bounds.left - to.bounds.left;
       const dy = from.bounds.top - to.bounds.top;
@@ -756,13 +761,13 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
       from.el.style.transition = 'none';
       from.el.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + scale + ')';
     }
-    flights.push({ el: from.el, delay: noStagger ? 0 : flights.length * FLIP.stagger });
+    flights.push({ el: from.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT });
   }
   if (!flights.length) return null;
   return () => {
     for (const f of flights) {
       f.el.style.transition = 'transform ' + FLIP.dur + 'ms var(--ease-travel) ' + f.delay + 'ms';
-      f.el.style.transform = '';
+      f.el.style.transform = f.end;
     }
     const last = flights[flights.length - 1];
     setTimeout(() => {
