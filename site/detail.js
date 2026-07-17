@@ -385,6 +385,8 @@ function render(container, opts, id, flip, dir) {
      playing — a still beat, THEN fade+flights+panel start together as one */
   const start = () => {
     container.classList.remove('is-wait');
+    container.classList.remove('is-off');   // reopening a still-closing detail: drop the leaving state,
+                                            // or it keeps is-off's pointer-events:none and cannot be closed
     void container.offsetWidth;
     container.classList.add('is-on');
     container.classList.add('is-rev');
@@ -437,7 +439,7 @@ function open(parent, opts, id, flip) {
   /* reopening within the ~1.15s close animation reuses the same root; cancel that close's teardown, or
      it fires late and rips the just-reopened detail out from under the viewer — the "click does nothing
      after a few times" bug. Give any slots the leaving close had not yet restored their frames back. */
-  if (closeTimer) { clearTimeout(closeTimer); closeTimer = 0; if (root && root._opts && root._opts.onGone) root._opts.onGone(); }
+  if (closeTimer) { clearTimeout(closeTimer); closeTimer = 0; }   // reopening cancels the leaving teardown
   if (root && !root.isConnected) root = null;   // a torn-down root cannot be reused — build a fresh one
   if (!root) {
     root = el('div', 'detail');

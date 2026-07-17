@@ -523,6 +523,8 @@ function renderHome() {
     view, content.slides || [], aspects,
     { years: yearsByName(), colors: tones, mode: timelineMode() },
     (s, item) => {
+      healView();   // a still-closing detail can leave slots blank — make the view whole before we
+                    // grab and hide the next three, or those paintings stay gone
       carousel.freeze();   // stop the lerp drift so the flip source stays put
       const grab = (it) => {
         const slot = it && it.querySelector('.lse-slot');
@@ -569,6 +571,7 @@ function renderView(name, mount) {
   /* the detail's strip shows prev/current/next — all three fly out of this view, exactly
      as they do from the timeline. Only what is actually on screen can travel. */
   const openFrom = (s, box) => {
+    healView();   // make the view whole before hiding the next three (see the carousel handler)
     const slides = content.slides || [];
     const n = slides.length;
     const i = slides.findIndex((x) => x.id === s.id);
@@ -961,6 +964,38 @@ function restoreFlipSources() {
   flipSources = [];
 }
 
+/* Bring every slot in the current view back to whole: unhide it, and if its painting's frame went
+   missing (a flight that lost a race left it in a detail, or the detail was torn down with it) reclaim
+   the frame wherever it is, or rebuild it from the slide's thumb. Run before opening a detail so the
+   three it is about to lend out — and any three a previous open never gave back — are all present. */
+function healView() {
+  const view = viewEl;
+  if (!view || !content) return;
+  const byId = new Map((content.slides || []).map((s) => [s.id, s]));
+  view.querySelectorAll('.lse-slot').forEach((slot) => {
+    slot.style.visibility = '';
+    if (slot.querySelector('.lse-frame')) return;
+    const id = slot.dataset.id || '';
+    let frame = id && document.querySelector('.detail .lse-frame[data-id="' + id + '"]');
+    if (frame) {                                   // reclaim the real frame from a leftover detail
+      frame.style.transition = ''; frame.style.transform = ''; frame.style.transformOrigin = '';
+      slot.appendChild(frame);
+      return;
+    }
+    const s = byId.get(id);                         // else rebuild it from the slide's thumb
+    if (!s || !s.image) return;
+    const fn = String(s.image).split('/').pop();
+    frame = el('div', 'lse-frame');
+    frame.dataset.id = id;
+    const img = document.createElement('img');
+    img.src = asset('/thumbs/600/' + encodeURIComponent(fn));
+    img.className = 'ok';
+    img.draggable = false;
+    frame.appendChild(img);
+    slot.appendChild(frame);
+  });
+}
+
 /* detail close: the paintings fly back into their slots with the same that carried
    them out — the mirror of the entrance.
    Nothing else moves: the view behind the detail was never torn down, so making its slots
@@ -1012,7 +1047,7 @@ function render() {
       closePath: lastViewPath,
       onSync: (i) => { if (carousel) carousel.goTo(i); },
       onLeave: flyDetailHome,     // the paintings fly back into the view +
-      onGone: restoreFlipSources,
+      onGone: () => { restoreFlipSources(); healView(); },   // …and whatever did not make it is healed whole
     }, path.slice(3), flip);
     return;
   }
