@@ -831,6 +831,7 @@ function finalizeLeaving() {
    off screen, and vanishing a moment later when the view is dropped. Stop them where
    they are: whatever is off screen stays off screen, whatever is visible leaves properly. */
 function freezeEntrance(viewNode) {
+  if (!viewNode) return;                        // a fresh load / deep link has no outgoing view to freeze
   for (const node of viewNode.querySelectorAll('.lse-slot,.lse-frame')) {
     if (!node.style.transition && !node.style.transform) continue;
     const t = getComputedStyle(node).transform;
