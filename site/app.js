@@ -1069,6 +1069,9 @@ function navigate(href) {
   to = to.replace(/\/+$/, '') || '/';
   const at = route();
   if (to === at) {
+    /* a painting whose detail overlay is gone but whose URL is still /p/… (a reopen that lost a race,
+       or any teardown) must reopen on the next click — not sit stuck. Re-render to bring it back. */
+    if (to.indexOf('/p/') === 0 && !(window.LSEDetail && window.LSEDetail.isOpen)) { render(); return; }
     /* tapping the tab you are already on returns the view to its start — the first work / the top —
        rather than tearing it down and replaying its arrival */
     const v = activeView || carousel;

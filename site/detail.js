@@ -438,6 +438,7 @@ function open(parent, opts, id, flip) {
      it fires late and rips the just-reopened detail out from under the viewer — the "click does nothing
      after a few times" bug. Give any slots the leaving close had not yet restored their frames back. */
   if (closeTimer) { clearTimeout(closeTimer); closeTimer = 0; if (root && root._opts && root._opts.onGone) root._opts.onGone(); }
+  if (root && !root.isConnected) root = null;   // a torn-down root cannot be reused — build a fresh one
   if (!root) {
     root = el('div', 'detail');
     root.appendChild(el('div', 'dt-bg'));   // home fades under us
@@ -490,7 +491,7 @@ document.addEventListener('keydown', (e) => {
 
 window.LSEDetail = {
   open, close,
-  get isOpen() { return !!root; },
+  get isOpen() { return !!root && root.isConnected; },   // a removed root is not open, even if the ref lingers
   get id() { return curId; },
 };
 })();
