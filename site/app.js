@@ -718,19 +718,44 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
     if (!to) continue;
     const owner = to.el.closest('.lse-card');
     if (owner) { owner.style.zIndex = '5'; owners.push(owner); }
+    const srcCard = from.el.closest('.lse-card');
+    const roty = srcCard && typeof srcCard._roty === 'number' ? srcCard._roty : 0;
     to.el.replaceChildren(from.el);
     to.el.style.visibility = '';        // a slot that lent its frame out was hidden — it is back
-    /* Fly from the deck card's ACTUAL measured box. The deck's own perspective (on .flow__deck, a
-       viewport-sized parent) foreshortens each card toward the SCREEN centre. Reconstructing the deck
-       angle with an inline perspective()+rotateY vanished to the card's own centre instead, so the
-       flight's first frame snapped sideways and shrank — the "움찔". Matching the measured box exactly
-       (translate + scale, no rotate) begins the flight precisely where the deck left the card — no jump
-       — and the painting carries and scales open into its slot. */
-    const dx = from.bounds.left - to.bounds.left;
-    const dy = from.bounds.top - to.bounds.top;
-    const scale = to.bounds.width ? from.bounds.width / to.bounds.width : 1;
-    from.el.style.transition = 'none';
-    from.el.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + scale + ')';
+    if (roty) {
+      /* a painting leaving the deck stands at its deck angle: fly from that angle to flat, turning and
+         travelling as one move. The catch — the deck's perspective lives on .flow__deck (a viewport
+         parent) and foreshortens toward the SCREEN centre, while an inline perspective() vanishes to the
+         frame's own centre, so a naive reconstruction started a shade narrower and snapped sideways (the
+         "움찔"). So: pose the angle at unit scale, measure the width the inline perspective actually
+         renders, then scale so the flight STARTS at the card's exact on-screen size. Pivot at the centre
+         (translate by the centre delta) — the box then matches the deck's, and only the turn is left. */
+      const cx = from.bounds.left + from.bounds.width / 2 - (to.bounds.left + to.bounds.width / 2);
+      const cy = from.bounds.top + from.bounds.height / 2 - (to.bounds.top + to.bounds.height / 2);
+      /* Scale so the ROTATED start renders at the card's exact on-screen width — then the box matches
+         the deck's, the pivot (centre delta) matches its position, and only the turn is left to play.
+         Perspective foreshortening is non-linear in width and the grid adds its own perspective on top,
+         so a single computed scale misses. Converge instead: pose the angle, read what it renders, nudge
+         the scale toward the target width, repeat a few times. Two or three passes land within a pixel. */
+      const pose = (sc) =>
+        'perspective(1000px) translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + sc + ') rotateY(' + roty + 'deg)';
+      from.el.style.transformOrigin = '50% 50%';
+      from.el.style.transition = 'none';
+      let scale = 1;
+      for (let pass = 0; pass < 4; pass++) {
+        from.el.style.transform = pose(scale);
+        const shown = from.el.getBoundingClientRect().width;
+        if (shown < 2) break;
+        if (Math.abs(shown - from.bounds.width) < 0.5) break;
+        scale *= from.bounds.width / shown;
+      }
+    } else {
+      const dx = from.bounds.left - to.bounds.left;
+      const dy = from.bounds.top - to.bounds.top;
+      const scale = to.bounds.width ? from.bounds.width / to.bounds.width : 1;
+      from.el.style.transition = 'none';
+      from.el.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + scale + ')';
+    }
     flights.push({ el: from.el, delay: noStagger ? 0 : flights.length * FLIP.stagger });
   }
   if (!flights.length) return null;
