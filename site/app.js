@@ -888,6 +888,11 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
   viewEl = view;                        // current from this moment on, even mid-flight
   const inst = activeView || carousel;
 
+  /* if this interrupted a flight, stop it NOW — before the awaits below (a to-flow/-timeline leg waits
+     for the incoming deck to be ready, and the interrupted paintings would drift the whole time, so the
+     later measure would read them somewhere they no longer visually are). Freeze at the click. */
+  freezeEntrance(oldEl);
+
   /* a click that lands mid-transition retires this one: the next navigation already
      took this view as its "old" one, so it must not go on to animate itself in */
   const retired = () => gen !== navGen || !view || !view.isConnected;
