@@ -330,100 +330,40 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
    natively now: the finger gets the OS's own physics, and the wheel gets the same lerp the
    detail uses. The rows still tilt, driven by the speed the scroll is actually running at. -------- */
 function smoothTilt(outer, content) {
-  let target = 0, cur = 0, lastTs = 0, raf = 0, applied = -1, prevTop = 0;
-  let tY = 0, tVel = 0, momentum = 0, touching = false, over = 0;   // touch drag + fling + end stretch
-  const LERP = 0.2;
-  const OVER_MAX = 60;   // the natural give at an end, px
-  const mult = /Win/.test(navigator.platform) ? 1.1 : 0.65;
+  let over = 0, prevTop = 0, lastTs = 0, raf = 0;
+  const OVER_MAX = 60;   // the give at an end, px
   const tilts = () => content.querySelectorAll('.lse-row');
-  /* the tilt is a scroll-driven CSS animation (app.css: rowTilt) wherever the browser has one:
-     the compositor draws it, so it survives a phone's momentum scroll, and every row shares the
-     scrollport's vanishing point. The script only steps in for a browser without it. */
   const cssTilt = () =>
     typeof CSS !== 'undefined' && CSS.supports && CSS.supports('animation-timeline', 'view()');
   const limit = () => Math.max(0, outer.scrollHeight - outer.clientHeight);
-  function measure() { target = Math.min(target, limit()); }
-  /* push toward `next`; the part that falls past an end becomes stretch (with progressive resistance —
-     the further it gives, the less each bit adds), springing back in the frame. Returns the clamped target. */
-  function pushEnd(next, lim) {
-    if (next < 0) over += (-next) * 0.3 * (1 - Math.abs(over) / OVER_MAX);
-    else if (next > lim) over -= (next - lim) * 0.3 * (1 - Math.abs(over) / OVER_MAX);
-    over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
-    return Math.max(0, Math.min(lim, next));
-  }
 
+  /* the browser scrolls the page — native, instant, with the OS's own momentum (no lerp, no lag). We
+     only take the wheel AT an end, where a desktop's native scroll would stop dead: the extra push
+     stretches the content and springs back. (A phone overscrolls natively, so touch is left alone.) */
   function onWheel(e) {
     if (window.LSEDetail && window.LSEDetail.isOpen) return;
-    const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
-    target = pushEnd(target + raw * mult, limit());   // past an end -> stretch, like the reference
-    e.preventDefault();                     // the lerp owns the wheel, not the browser
-  }
-  function onKey(e) {
-    if (window.LSEDetail && window.LSEDetail.isOpen) return;
-    const wh = innerHeight, max = limit();
-    if (e.key === 'ArrowDown') { e.preventDefault(); target = Math.min(max, target + 100); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); target = Math.max(0, target - 100); }
-    else if (e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey)) { e.preventDefault(); target = Math.min(max, target + wh); }
-    else if (e.key === 'PageUp' || (e.key === ' ' && e.shiftKey)) { e.preventDefault(); target = Math.max(0, target - wh); }
-    else if (e.key === 'Home') { target = 0; }
-    else if (e.key === 'End') { target = max; }
-  }
-
-  /* the reference drives touch through the same smooth pipeline as the wheel (GSAP normalizeScroll), so
-     a phone gets the same floaty glide instead of the OS's own snap-and-bounce. Take the finger over:
-     the drag moves the page 1:1 (connected), and the fling on release coasts through the lerp. */
-  function onTouchStart(e) {
-    if (window.LSEDetail && window.LSEDetail.isOpen) return;
-    touching = true; momentum = 0;
-    tY = e.touches[0].clientY; tVel = 0;
-  }
-  function onTouchMove(e) {
-    if (!touching) return;
-    const y = e.touches[0].clientY;
-    const dy = tY - y;                        // finger up -> scroll down
-    target = pushEnd(target + dy, limit());   // drag past an end -> the page stretches under the finger
-    cur = target;                             // 1:1 under the finger — the float is in the fling, below
-    tVel = dy; tY = y;
-    if (e.cancelable) e.preventDefault();
-  }
-  function onTouchEnd() {
-    if (!touching) return;
-    touching = false;
-    momentum = tVel;                          // carry the release speed into a coasting fling
+    const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;   // + = down
+    const max = limit();
+    const past = (raw < 0 && outer.scrollTop <= 0) || (raw > 0 && outer.scrollTop >= max - 1);
+    if (!past) return;                        // in range: let the browser scroll
+    over -= raw * 0.2 * (1 - Math.abs(over) / OVER_MAX);   // progressive resistance
+    over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
+    e.preventDefault();
   }
 
   function frame(ts) {
     const ratio = lastTs ? Math.min(3, (ts - lastTs) / (1000 / 60)) : 1;
     lastTs = ts;
-    /* a touch (or any scroll we did not drive) moves scrollTop under us — follow it rather
-       than fight it, exactly as the detail does */
-    if (applied >= 0 && Math.abs(outer.scrollTop - applied) > 1) cur = target = outer.scrollTop;
-    /* a fling: keep feeding the target as the release speed decays; hitting an end spends the rest of
-       the fling into the stretch (over) rather than stopping dead */
-    if (!touching && momentum) {
-      const lim = limit(), nt = target + momentum * ratio;
-      target = pushEnd(nt, lim);
-      if (nt < 0 || nt > lim) momentum = 0;
-      else { momentum *= Math.pow(0.9, ratio); if (Math.abs(momentum) < 0.4) momentum = 0; }
-    }
-    cur += (target - cur) * LERP * ratio;    // detail.js: same lerp
-    outer.scrollTop = cur;
-    applied = outer.scrollTop;
+    const v = outer.scrollTop - prevTop;
+    prevTop = outer.scrollTop;
     /* the end stretch springs back to the edge, riding the content's own transform */
     if (over !== 0) {
       over += (0 - over) * 0.14 * ratio;
       if (Math.abs(over) < 0.3) over = 0;
       content.style.transform = over ? 'translateY(' + over.toFixed(1) + 'px)' : '';
     }
-
-    /* the tilt rides the speed the page is actually moving at, so it works the same whether
-       the wheel, a finger or the system's momentum is driving it */
-    const v = outer.scrollTop - prevTop;
-    prevTop = outer.scrollTop;
-    /* a phone's rows are a quarter the width, so the same angle bends them a quarter as far
-       across the screen — it takes more angle there to read as the same lean */
-    /* where the compositor draws the tilt itself (a phone, see app.css: rowTilt) the script
-       must keep its hands off the transform — an inline one every frame would fight it */
+    /* the row tilt rides the speed the page is actually moving at (skip where the compositor draws it
+       itself — a phone, app.css: rowTilt — or an inline transform would fight it) */
     if (!cssTilt()) {
       const deg = Math.max(-22, Math.min(22, v * 0.45));
       const ry = 'perspective(600px) rotateX(' + deg + 'deg)';
@@ -433,38 +373,17 @@ function smoothTilt(outer, content) {
   }
 
   outer.addEventListener('wheel', onWheel, { passive: false });
-  outer.style.touchAction = 'none';          // we drive the finger ourselves — keep the OS off it
-  outer.addEventListener('touchstart', onTouchStart, { passive: true });
-  outer.addEventListener('touchmove', onTouchMove, { passive: false });
-  outer.addEventListener('touchend', onTouchEnd, { passive: true });
-  outer.addEventListener('touchcancel', onTouchEnd, { passive: true });
-  addEventListener('keydown', onKey);
-  addEventListener('resize', measure);
-  const ro = new ResizeObserver(measure);   // images land late; the limit must follow
-  ro.observe(content);
   raf = requestAnimationFrame(frame);
   return {
-    scrollTo(y) {
-      target = cur = Math.max(0, Math.min(limit(), y));
-      outer.scrollTop = cur; applied = outer.scrollTop; prevTop = outer.scrollTop;
-    },
-    /* like scrollTo, but only the target moves — the frame's lerp carries the page there, so a jump
-       to the top reads as a glide instead of a cut */
+    scrollTo(y) { outer.scrollTop = Math.max(0, Math.min(limit(), y)); },
     glideTo(y) {
-      cur = outer.scrollTop; applied = -1;   // start from where we are; skip the follow-external guard once
-      target = Math.max(0, Math.min(limit(), y));
+      const t = Math.max(0, Math.min(limit(), y));
+      try { outer.scrollTo({ top: t, behavior: 'smooth' }); } catch (_) { outer.scrollTop = t; }
     },
-    measure,
+    measure() {},
     destroy() {
       cancelAnimationFrame(raf);
-      ro.disconnect();
       outer.removeEventListener('wheel', onWheel);
-      outer.removeEventListener('touchstart', onTouchStart);
-      outer.removeEventListener('touchmove', onTouchMove);
-      outer.removeEventListener('touchend', onTouchEnd);
-      outer.removeEventListener('touchcancel', onTouchEnd);
-      removeEventListener('keydown', onKey);
-      removeEventListener('resize', measure);
     },
   };
 }
