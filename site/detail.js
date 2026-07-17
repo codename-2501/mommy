@@ -295,8 +295,10 @@ function smoothScroll(sc) {
     const lim = sc.scrollHeight - sc.clientHeight, next = target + raw * mult;
     /* whatever the wheel pushes past an edge goes into the overshoot at a fraction, capped, and
        springs back in the tick — a rubber-band, not a wall */
-    if (next < 0) over += (-next) * 0.45;
-    else if (next > lim) over -= (next - lim) * 0.45;
+    /* progressive resistance, like the OS rubber-band: further pulls add less, easing toward the limit */
+    const give = (px) => px * 0.55 * (1 - Math.abs(over) / OVER_MAX);
+    if (next < 0) over += give(-next);
+    else if (next > lim) over -= give(next - lim);
     over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
     if (over !== 0) overHold = 8;   // hold the give while momentum is still arriving; spring when quiet
     target = Math.max(0, Math.min(lim, next));

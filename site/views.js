@@ -351,8 +351,11 @@ function smoothTilt(outer, content) {
        at a fraction, capped, and springs back in the frame loop. A rubber-band, not a wall. Guarding
        on "already at the edge" meant the first push into an end was swallowed and only a second wheel
        bounced, which read as no bounce at all. */
-    if (next < 0) over += (-next) * 0.45;
-    else if (next > lim) over -= (next - lim) * 0.45;
+    /* progressive resistance, like the OS rubber-band: each bit of overshoot adds less the further the
+       give already is, so it eases toward the limit instead of racing to a hard cap and stopping dead */
+    const give = (px) => px * 0.55 * (1 - Math.abs(over) / OVER_MAX);
+    if (next < 0) over += give(-next);
+    else if (next > lim) over -= give(next - lim);
     over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
     if (over !== 0) overHold = 8;   // hold the give while the wheel is still coming; see the frame loop
     target = Math.max(0, Math.min(lim, next));
