@@ -288,9 +288,9 @@ document.addEventListener('keydown', (e) => {
 function smoothScroll(sc) {
   let target = 0, cur = 0, last = 0, applied = -1;
   let tY = 0, tVel = 0, momentum = 0, touching = false, over = 0;
-  const LERP = 0.1;
+  const LERP = 0.2;
   const OVER_MAX = 60;
-  const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;
+  const mult = /Win/.test(navigator.platform) ? 1.1 : 0.65;
   const body = () => sc.firstElementChild;   // the content the stretch rides on
   const lim = () => Math.max(0, sc.scrollHeight - sc.clientHeight);
   function pushEnd(next, l) {

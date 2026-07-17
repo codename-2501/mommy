@@ -332,9 +332,9 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
 function smoothTilt(outer, content) {
   let target = 0, cur = 0, lastTs = 0, raf = 0, applied = -1, prevTop = 0;
   let tY = 0, tVel = 0, momentum = 0, touching = false, over = 0;   // touch drag + fling + end stretch
-  const LERP = 0.1;
+  const LERP = 0.2;
   const OVER_MAX = 60;   // the natural give at an end, px
-  const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;   // detail.js: same numbers
+  const mult = /Win/.test(navigator.platform) ? 1.1 : 0.65;
   const tilts = () => content.querySelectorAll('.lse-row');
   /* the tilt is a scroll-driven CSS animation (app.css: rowTilt) wherever the browser has one:
      the compositor draws it, so it survives a phone's momentum scroll, and every row shares the
