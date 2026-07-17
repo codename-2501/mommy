@@ -718,33 +718,19 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
     if (!to) continue;
     const owner = to.el.closest('.lse-card');
     if (owner) { owner.style.zIndex = '5'; owners.push(owner); }
-    /* read the source's deck angle and un-rotated width BEFORE it moves house — once it is inside
-       the destination slot, closest('.lse-card') and offsetWidth belong to the destination */
-    const srcCard = from.el.closest('.lse-card');
-    const roty = srcCard && typeof srcCard._roty === 'number' ? srcCard._roty : 0;
-    const srcW = from.el.offsetWidth;
     to.el.replaceChildren(from.el);
     to.el.style.visibility = '';        // a slot that lent its frame out was hidden — it is back
-    if (roty) {
-      /* a painting leaving the deck: it is standing at its deck angle. Fly from that angle to flat,
-         turning and travelling as one move. Pivot at the centre (the deck turns the card about its
-         middle) and take the scale from the un-rotated layout widths — the rotation already
-         foreshortens the measured box, so using that would count the turn twice and start it small. */
-      const cx = from.bounds.left + from.bounds.width / 2 - (to.bounds.left + to.bounds.width / 2);
-      const cy = from.bounds.top + from.bounds.height / 2 - (to.bounds.top + to.bounds.height / 2);
-      const scale = to.el.offsetWidth ? srcW / to.el.offsetWidth : 1;
-      from.el.style.transformOrigin = '50% 50%';
-      from.el.style.transition = 'none';
-      from.el.style.transform =
-        'perspective(1000px) translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + scale + ') rotateY(' + roty + 'deg)';
-    } else {
-      const dx = from.bounds.left - to.bounds.left;
-      const dy = from.bounds.top - to.bounds.top;
-      const scale = to.bounds.width ? from.bounds.width / to.bounds.width : 1;
-      from.el.style.transition = 'none';
-      from.el.style.transform =
-        'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + scale + ')';
-    }
+    /* Fly from the deck card's ACTUAL measured box. The deck's own perspective (on .flow__deck, a
+       viewport-sized parent) foreshortens each card toward the SCREEN centre. Reconstructing the deck
+       angle with an inline perspective()+rotateY vanished to the card's own centre instead, so the
+       flight's first frame snapped sideways and shrank — the "움찔". Matching the measured box exactly
+       (translate + scale, no rotate) begins the flight precisely where the deck left the card — no jump
+       — and the painting carries and scales open into its slot. */
+    const dx = from.bounds.left - to.bounds.left;
+    const dy = from.bounds.top - to.bounds.top;
+    const scale = to.bounds.width ? from.bounds.width / to.bounds.width : 1;
+    from.el.style.transition = 'none';
+    from.el.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + scale + ')';
     flights.push({ el: from.el, delay: noStagger ? 0 : flights.length * FLIP.stagger });
   }
   if (!flights.length) return null;
