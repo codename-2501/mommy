@@ -617,6 +617,15 @@ html.is-resizing .wordmark{transition:none}
   .dt-strip{display:none}
   .dt-body{max-width:none}
   .dt-fig img{max-width:100%}
+  /* a phone has no strip, so the paintings never fly and the panel curtain would slide a full-screen
+     sheet across the view. Drop the curtain and cross-fade the whole overlay instead: it opens and
+     closes as one soft fade, the way the reference reveals a work on a phone. Scoped to .detail so it
+     cannot touch anything else. */
+  .detail{opacity:0;transition:opacity .45s ease}
+  .detail.is-on{opacity:1}
+  .dt-panel,.dt-panel__in,
+  .detail.is-on .dt-panel,.detail.is-on .dt-panel__in,
+  .detail.is-off .dt-panel,.detail.is-off .dt-panel__in{transform:none;transition:none}
 }
 
 /* bottom controls — the panel's one way out (and its prev/next), at every width.
