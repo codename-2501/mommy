@@ -617,6 +617,17 @@ html.is-resizing .wordmark{transition:none}
   .dt-strip{display:none}
   .dt-body{max-width:none}
   .dt-fig img{max-width:100%}
+  /* enter and exit are a plain in-place cross-fade, matching the reference: the whole overlay — its
+     white ground, its content, its controls — fades up over the page, and fades back out on close. No
+     panel slide, no staggered rise. */
+  .detail{opacity:0;transition:opacity .18s ease}
+  .detail.is-on{opacity:1}
+  .detail.is-off{opacity:0;transition:opacity .14s ease}
+  .dt-panel,.dt-panel__in{transform:none;transition:none}
+  .dt-bg{opacity:1;transition:none}
+  .dt-reveal>*{transform:none;transition:none}
+  .detail.is-off .dt-fade,.dt-fade{opacity:1;transform:none;transition:none}
+  .detail.is-off .dt-controls,.dt-controls{opacity:1;transition:none}
 }
 
 /* bottom controls — the panel's one way out (and its prev/next), at every width.
