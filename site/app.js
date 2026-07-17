@@ -713,6 +713,7 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
   const byId = new Map(toFlips.map((t) => [t.el.dataset.id, t]));
   const flights = [];
   const owners = [];
+  const myGen = navGen;   // a later navigation may re-fly these frames; its cleanup, not ours, owns them
   for (const from of fromFlips) {
     const to = byId.get(from.el.dataset.id);
     if (!to) continue;
@@ -755,8 +756,11 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
          run as one. Interpolating to 'none' decomposes to a matrix and lets the travel outrun the turn. */
       endT = 'perspective(1000px) translate3d(0px,0px,0) scale(1) rotateY(0deg)';
     } else {
-      const dx = from.bounds.left - to.bounds.left;
-      const dy = from.bounds.top - to.bounds.top;
+      /* centre-delta, not left-delta: the scale pivots at the centre (transform-origin 50% 50%), so
+         aligning left edges leaves the box (from.width - to.width)/2 off — invisible when the sizes
+         match, but on an interrupted flight the frame flies between very different sizes and it snapped. */
+      const dx = from.bounds.left + from.bounds.width / 2 - (to.bounds.left + to.bounds.width / 2);
+      const dy = from.bounds.top + from.bounds.height / 2 - (to.bounds.top + to.bounds.height / 2);
       const scale = to.bounds.width ? from.bounds.width / to.bounds.width : 1;
       from.el.style.transition = 'none';
       from.el.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + scale + ')';
@@ -765,6 +769,7 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
        (92% of the way by a fifth of the time), so a turning card raced in and braked, which read as a
        jerk at the finish. A gentler ease-out spreads the deceleration across the whole flight. */
     const ease = roty ? 'cubic-bezier(.33,1,.68,1)' : 'var(--ease-travel)';
+    from.el._flightGen = myGen;   // stamp who owns this flight now
     flights.push({ el: from.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease });
   }
   if (!flights.length) return null;
@@ -775,7 +780,9 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
     }
     const last = flights[flights.length - 1];
     setTimeout(() => {
-      for (const f of flights) { if (settled(f.el)) clearFlight(f.el); }
+      /* only tidy a frame if a newer navigation has not adopted it — else we would wipe the transform
+         that a transition still in flight depends on, snapping the painting mid-move */
+      for (const f of flights) { if (f.el._flightGen === myGen && settled(f.el)) clearFlight(f.el); }
       for (const o of owners) { if (settled(o)) o.style.zIndex = ''; }
     }, FLIP.dur + last.delay + 50);
   };
@@ -902,6 +909,11 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
     oldInst.freeze();                                   // hold the deck still; each painting keeps its angle
   }
 
+  /* if this navigation interrupted a transition still in flight, the old view's paintings are mid-
+     flight on their own CSS transitions. Stop them where they are BEFORE measuring — otherwise the
+     measure reads a moving target and the new flip starts each frame a step off, which snaps. (For an
+     un-interrupted leave the frames carry no inline flight transform, so this is a no-op.) */
+  freezeEntrance(oldEl);
   const { fromFlips, toFlips, targets } = measureFlips(oldEl, view, flags.fromFlow);
   if (inst && inst.unfreeze) inst.unfreeze();           // flow: the deck angle eases in
 
