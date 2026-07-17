@@ -331,7 +331,7 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
    detail uses. The rows still tilt, driven by the speed the scroll is actually running at. -------- */
 function smoothTilt(outer, content) {
   let target = 0, cur = 0, lastTs = 0, raf = 0, applied = -1, prevTop = 0, over = 0, overHold = 0;
-  const OVER_MAX = 120;   // how far the rubber-band gives at an end, px
+  const OVER_MAX = 70;   // how far the rubber-band gives at an end, px
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;   // detail.js: same numbers
   const tilts = () => content.querySelectorAll('.lse-row');
   /* the tilt is a scroll-driven CSS animation (app.css: rowTilt) wherever the browser has one:

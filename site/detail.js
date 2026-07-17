@@ -287,7 +287,7 @@ document.addEventListener('keydown', (e) => {
    ends so the page gives and springs back instead of stopping dead — the same feel as the index. */
 function smoothScroll(sc) {
   let target = 0, cur = 0, last = 0, applied = -1, over = 0, overHold = 0;
-  const OVER_MAX = 120;   // how far the rubber-band gives at an end, px
+  const OVER_MAX = 70;   // how far the rubber-band gives at an end, px
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;
   const body = () => sc.firstElementChild;   // the content the overshoot rides on
   sc.addEventListener('wheel', (e) => {
