@@ -331,6 +331,7 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
    detail uses. The rows still tilt, driven by the speed the scroll is actually running at. -------- */
 function smoothTilt(outer, content) {
   let target = 0, cur = 0, lastTs = 0, raf = 0, applied = -1, prevTop = 0;
+  let tY = 0, tVel = 0, momentum = 0, touching = false;   // touch drag + its fling
   const LERP = 0.045;   // slower chase = the floatier glide the reference's ScrollSmoother has
   const mult = /Win/.test(navigator.platform) ? 0.9 : 0.4;   // detail.js: same numbers
   const tilts = () => content.querySelectorAll('.lse-row');
@@ -361,12 +362,41 @@ function smoothTilt(outer, content) {
     else if (e.key === 'End') { target = max; }
   }
 
+  /* the reference drives touch through the same smooth pipeline as the wheel (GSAP normalizeScroll), so
+     a phone gets the same floaty glide instead of the OS's own snap-and-bounce. Take the finger over:
+     the drag moves the page 1:1 (connected), and the fling on release coasts through the lerp. */
+  function onTouchStart(e) {
+    if (window.LSEDetail && window.LSEDetail.isOpen) return;
+    touching = true; momentum = 0;
+    tY = e.touches[0].clientY; tVel = 0;
+  }
+  function onTouchMove(e) {
+    if (!touching) return;
+    const y = e.touches[0].clientY;
+    const dy = tY - y;                        // finger up -> scroll down
+    target = Math.max(0, Math.min(limit(), target + dy));
+    cur = target;                             // 1:1 under the finger — the float is in the fling, below
+    tVel = dy; tY = y;
+    if (e.cancelable) e.preventDefault();
+  }
+  function onTouchEnd() {
+    if (!touching) return;
+    touching = false;
+    momentum = tVel;                          // carry the release speed into a coasting fling
+  }
+
   function frame(ts) {
     const ratio = lastTs ? Math.min(3, (ts - lastTs) / (1000 / 60)) : 1;
     lastTs = ts;
     /* a touch (or any scroll we did not drive) moves scrollTop under us — follow it rather
        than fight it, exactly as the detail does */
     if (applied >= 0 && Math.abs(outer.scrollTop - applied) > 1) cur = target = outer.scrollTop;
+    /* a fling: keep feeding the target as the release speed decays, and the lerp coasts the page there */
+    if (!touching && momentum) {
+      target = Math.max(0, Math.min(limit(), target + momentum * ratio));
+      momentum *= Math.pow(0.94, ratio);
+      if (Math.abs(momentum) < 0.4) momentum = 0;
+    }
     cur += (target - cur) * LERP * ratio;    // detail.js: same lerp
     outer.scrollTop = cur;
     applied = outer.scrollTop;
@@ -388,6 +418,11 @@ function smoothTilt(outer, content) {
   }
 
   outer.addEventListener('wheel', onWheel, { passive: false });
+  outer.style.touchAction = 'none';          // we drive the finger ourselves — keep the OS off it
+  outer.addEventListener('touchstart', onTouchStart, { passive: true });
+  outer.addEventListener('touchmove', onTouchMove, { passive: false });
+  outer.addEventListener('touchend', onTouchEnd, { passive: true });
+  outer.addEventListener('touchcancel', onTouchEnd, { passive: true });
   addEventListener('keydown', onKey);
   addEventListener('resize', measure);
   const ro = new ResizeObserver(measure);   // images land late; the limit must follow
@@ -409,6 +444,10 @@ function smoothTilt(outer, content) {
       cancelAnimationFrame(raf);
       ro.disconnect();
       outer.removeEventListener('wheel', onWheel);
+      outer.removeEventListener('touchstart', onTouchStart);
+      outer.removeEventListener('touchmove', onTouchMove);
+      outer.removeEventListener('touchend', onTouchEnd);
+      outer.removeEventListener('touchcancel', onTouchEnd);
       removeEventListener('keydown', onKey);
       removeEventListener('resize', measure);
     },
