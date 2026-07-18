@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """LSE GALLERY - static build for CDN hosting (Cloudflare Pages etc).
 
-admin_server.py serves the site's data through three runtime endpoints:
+The frontend expects three runtime endpoints:
   GET /api/content        -> content.json verbatim
   GET /api/aspects        -> {filename: width/height} computed with Pillow
   GET /thumbs/<w>/<name>  -> the original resized to <w> and re-encoded as WebP
@@ -26,7 +26,7 @@ import sys
 
 from PIL import Image
 
-import admin_server   # the shell's head injection lives there; one source, one behaviour
+import build_shared   # head injection + colours; standalone, so the build ships no admin code
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DIST = os.path.join(ROOT, "dist")
@@ -140,7 +140,7 @@ def main():
     meta = content.get("meta") or {}
     site_url = (meta.get("siteUrl") or "").rstrip("/")
     with open(os.path.join(ROOT, "site", "index.html"), encoding="utf-8") as fh:
-        shell = admin_server.inject_head(fh.read(), meta, site_url, thumb_ext=".webp")
+        shell = build_shared.inject_head(fh.read(), meta, site_url, thumb_ext=".webp")
     # tell the frontend where it lives, before any of its scripts run, and move the scripts and
     # any other root-absolute href/src in the shell under the mount
     if base:
@@ -168,7 +168,7 @@ def main():
 
     # /api/colors -> colors.json (the palette timeline; without it that mode falls back to grey)
     with open(os.path.join(DIST, "colors.json"), "w", encoding="utf-8") as fh:
-        json.dump({"colors": admin_server.image_colors()}, fh, ensure_ascii=False)
+        json.dump({"colors": build_shared.image_colors()}, fh, ensure_ascii=False)
 
     # /thumbs/<w>/<name> -> dist/thumbs/<w>/<name>.webp
     for width in THUMB_WIDTHS:
@@ -234,11 +234,11 @@ def main():
         with open(sp, "w", encoding="utf-8") as fh:
             fh.write(_bust(txt))
 
-    # SPA shell: admin_server served site/index.html for /, /flow, /articles,
-    # /about and /p/<id>. Static hosts serve real files first, so a catch-all is
-    # safe and keeps deep links and refreshes working.
+    # SPA shell: the app owns the routes /, /flow, /articles, /about and /p/<id>.
+    # Static hosts serve real files first, so a catch-all is safe and keeps deep
+    # links and refreshes working.
     with open(os.path.join(DIST, "_redirects"), "w", encoding="utf-8") as fh:
-        for old, new in admin_server.LEGACY_ROUTES.items():   # renamed routes, old links alive
+        for old, new in build_shared.LEGACY_ROUTES.items():   # renamed routes, old links alive
             fh.write(f"{old}  {new}  301\n")
         fh.write("/*  /index.html  200\n")
 
