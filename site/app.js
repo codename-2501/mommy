@@ -751,11 +751,11 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       from.el.style.width = to.bounds.width + 'px';
       from.el.style.height = to.bounds.height + 'px';
       from.el.style.margin = '0';
-      /* keep the deck's own overlap order so nothing flips the instant it reparents: the deck tilts every
-         card the one way (rotateY), so where two overlap the RIGHT one sits in front — order by screen x,
-         rightmost highest, and the flight simply carries that same stacking on. DOM order can't stand in
-         for this: the deck loops, so slide order is not left-to-right on screen. */
-      from.el.style.zIndex = String(Math.round(2000 + from.bounds.left));
+      /* keep the deck's own overlap order so nothing flips the instant it reparents. The deck tilts every
+         card the one way (negative rotateY → each card's right edge comes toward the viewer), so where two
+         overlap the LEFT one sits in front. Match that: leftmost gets the highest z-index. Order by screen x,
+         not DOM order — the deck loops, so slide order is not left-to-right on screen. */
+      from.el.style.zIndex = String(Math.round(4000 - from.bounds.left));
       to.el.replaceChildren();
     } else {
       to.el.replaceChildren(from.el);
