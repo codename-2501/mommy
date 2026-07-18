@@ -738,7 +738,7 @@ html.is-resizing .wordmark{transition:none}
   }
 }
 @media (max-width:699px){
-  .agrid__in{gap:7rem;padding-top:25rem}   /* clear the wordmark AND the two-row Color palette under it */
+  .agrid__in{gap:7rem;padding-top:7.5rem}   /* top clearance now comes from the sticky bar's margin (views.js) */
   .agrid__row{gap:1rem}
 }
 .agrid__cell{position:relative;cursor:pointer}
@@ -766,6 +766,22 @@ html.is-resizing .wordmark{transition:none}
   opacity:0;transition:opacity .9s ease;   /* fades in with the wordmark as the index arrives */
 }
 .view--articles.is-in .agrid-sort{opacity:1}
+/* MOBILE: the bar (and palette) ride inside the scroller as one sticky block — the browser pins them
+   near the top on the compositor, smooth through a touch fling. Its start is set in views.js
+   (margin-top = the measured wordmark foot). The empty centred column lets taps fall through to the grid. */
+.agrid__stick{
+  position:sticky;top:18px;z-index:14;
+  display:flex;flex-direction:column;align-items:center;
+  pointer-events:none;
+}
+.agrid__stick .agrid-sort{position:static;left:auto;top:auto;transform:none;pointer-events:auto}
+.agrid__stick .agrid-pal{
+  position:absolute;top:calc(100% + 1rem);left:50%;z-index:1;
+  transform:translateX(-50%) translateY(-6px) scale(.96);
+}
+.agrid__stick .agrid-pal.is-open{transform:translateX(-50%) translateY(0) scale(1)}
+/* the title is not moved per-frame on a phone (that judders); it fades out as the grid scrolls up */
+body.index-scrolled .wordmark{opacity:0}
 .agrid-sort__row{position:relative;display:flex;gap:.4rem;align-items:stretch}
 /* the travelling drop, under the words; the chosen word rides over it and turns white */
 .agrid-sort__drop{position:absolute;inset:0;z-index:1;pointer-events:none}
