@@ -628,8 +628,21 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     pal.appendChild(b);
     return b;
   });
-  view.appendChild(pal);
-  view.appendChild(bar);
+  /* On a phone the touch fling scrolls on the compositor and starves the main thread, so moving the
+     bar per-frame in script judders. There the bar rides INSIDE the scroller as position:sticky
+     (compositor) — mobile Safari has no scroll-timeline here, so .agrid carries no perspective and
+     sticky composites cleanly. On the desktop the bar stays fixed and script tracks the scroll. */
+  const isMobile = matchMedia('(max-width:699px)').matches;
+  let stick = null;
+  if (isMobile) {
+    stick = el('div', 'agrid__stick');
+    stick.appendChild(bar);
+    stick.appendChild(pal);
+    outer.insertBefore(stick, content);
+  } else {
+    view.appendChild(pal);
+    view.appendChild(bar);
+  }
 
   /* the drop travels to the chosen option, drawing itself thin across the gap and rounding out
      where it lands — the bottom menu's move, scaled to a word. It resizes to each option, since
@@ -681,16 +694,22 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
      instead, which the compositor draws, and they track the grid smoothly. During the ride-in the
      bar is glued to the title's measured foot (the scroll is idle then); after it, the resting tops
      are fixed once and only translate changes. */
-  let frameRAF = 0, lastS = -1, frame0 = null, wmFoot = null, barH = null;
+  let frameRAF = 0, lastS = -1, frame0 = null, wmFoot = null, barH = null, onScroll = null;
+  /* MOBILE: the sticky bar rides on the compositor; the only thing script does is set where it starts
+     (under the measured wordmark foot, once) and fade the title out on scroll — a threshold toggle, not
+     a per-frame position, so nothing tracks the scroll on the starved main thread. */
+  function placeStick() {
+    if (!wm || !stick) return;
+    const foot = wm.getBoundingClientRect().bottom + outer.scrollTop;   // undo the scroll: the rest foot
+    if (foot) stick.style.marginTop = Math.round(foot + 16) + 'px';
+  }
+  /* DESKTOP: the title and bar move by `translate` each frame, tracking the wheel scroll. */
   function frameLoop(ts) {
     if (frame0 === null) frame0 = ts;
     const settling = ts - frame0 < 1700;   // the wordmark's rise lasts 1.5s
     const s = outer.scrollTop;
     if (s === lastS && !settling) { frameRAF = requestAnimationFrame(frameLoop); return; }
     lastS = s;
-    /* the scroll offset is applied every frame, even during the ride-in — so coming back to an
-       already-scrolled index the bar is where the scroll puts it from the first frame, instead of
-       resting under the title and then snapping to the top the moment you scroll */
     if (wm) wm.style.translate = '0px ' + (-s) + 'px';   // the title slides up and out with the scroll
     if (settling) {   // the wordmark may still be riding in — keep reading its rest foot (undo the scroll)
       wmFoot = wm ? wm.getBoundingClientRect().bottom + s : 0;
@@ -703,12 +722,21 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     if (barH !== null) { pal.style.top = (restTop + barH + 10) + 'px'; pal.style.translate = '0px ' + off + 'px'; }
     frameRAF = requestAnimationFrame(frameLoop);
   }
-  frameRAF = requestAnimationFrame(frameLoop);
-  requestAnimationFrame(() => placeBlob(false));
-  function onResize() {   // re-measure on the next ride-in window
+  function onResize() {
     wmFoot = null; barH = null; frame0 = null; lastS = -1;
+    if (isMobile) placeStick();
     placeBlob(false);
   }
+  if (isMobile) {
+    requestAnimationFrame(placeStick);
+    setTimeout(placeStick, 1700);   // re-measure once the title has ridden into place
+    onScroll = () => document.body.classList.toggle('index-scrolled', outer.scrollTop > 24);
+    outer.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  } else {
+    frameRAF = requestAnimationFrame(frameLoop);
+  }
+  requestAnimationFrame(() => placeBlob(false));
   addEventListener('resize', onResize);
 
   const sc = smoothTilt(outer, content);
@@ -795,6 +823,8 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   function destroy() {
     cancelAnimationFrame(frameRAF);
     cancelAnimationFrame(buildRAF);
+    if (onScroll) outer.removeEventListener('scroll', onScroll);
+    document.body.classList.remove('index-scrolled');
     if (wm) { wm.style.top = ''; wm.style.translate = ''; }   // hand the shared wordmark back clean
     removeEventListener('resize', onResize);
     sc.destroy();
