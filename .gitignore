@@ -1,0 +1,19 @@
+*.pyc
+.DS_Store
+__pycache__/
+admin.log
+content.json.bak-dummy
+images/.thumbs/
+dist/
+
+# local content snapshots
+.backups/
+.content-*.tmp
+.admin_token
+.colors.json
+
+# local-only tooling (kept out of the published site)
+admin_server.py
+admin/
+tools/
+REBUILD_PLAN.md

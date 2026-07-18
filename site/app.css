@@ -1,0 +1,1033 @@
+/* LSE GALLERY — painting archive frontend. Fonts: SIL OFL (see assets/fonts/LICENSE.md) */
+
+/* ---------- fonts (vendored, offline) ---------- */
+/* Self-hosted, SIL OFL 1.1 — see site/assets/fonts/LICENSE.md.
+   Spoqa Han Sans Neo carries both Latin and Hangul, so the wordmark, the labels and the
+   Korean copy all come from one family; JetBrains Mono sets the monospaced label type. */
+@font-face{font-display:swap;font-family:sans;font-style:normal;font-weight:700;
+  src:url(/site/assets/fonts/SpoqaHanSansNeo-Bold.woff2) format("woff2")}
+@font-face{font-display:swap;font-family:sans;font-style:normal;font-weight:500;
+  src:url(/site/assets/fonts/SpoqaHanSansNeo-Medium.woff2) format("woff2")}
+@font-face{font-display:swap;font-family:sans;font-style:normal;font-weight:400;
+  src:url(/site/assets/fonts/SpoqaHanSansNeo-Regular.woff2) format("woff2")}
+@font-face{font-display:swap;font-family:mono;font-style:normal;font-weight:500;
+  src:url(/site/assets/fonts/JetBrainsMono-Medium.woff2) format("woff2")}
+
+/* ---------- root scale + our easing set ----------
+   Four curves, authored here, each with a job:
+   - travel: a painting flying between two slots. Leaves fast, lands long and quiet.
+   - rise:   a slot arriving from below the fold. Standard easeOutExpo shape.
+   - reveal: masked text and curtains. Slightly softer landing than `travel`.
+   - curtain: a panel that has to *start* slowly (it is large) and then get out of the way. */
+:root{
+  --size:1500;                                  /* the desktop mock's width */
+  --ease-travel:cubic-bezier(.2,.92,.24,1);
+  --ease-rise:cubic-bezier(.19,1,.22,1);
+  --ease-reveal:cubic-bezier(.24,.94,.32,1);
+  --ease-curtain:cubic-bezier(.62,.02,.2,1);
+}
+/* A tablet gets its own reading scale, and nothing else.
+   It was given its own drawing width (1024 instead of 1500), which changes the unit the whole
+   page is built from: every rem grew by 1.47x while the screen did not, so the page was simply
+   zoomed. The detail's painting swelled, its neighbours were squeezed to make room, the controls
+   moved. A unit that everything is measured in cannot be changed for the sake of one thing that
+   is measured in it. The type on About is what wanted to be larger, so that is what is larger. */
+/* The phone's scale walks down to meet the desktop's instead of dropping onto it.
+   A phone at 390 gets 10px, exactly what it always got. As the window widens the phone's drawing
+   does not grow — it has more room, it does not need to be bigger — and by 699 it has eased to
+   8px, which is the floor the desktop's scale sits on at 700. The two bands now meet at the same
+   number: rem is continuous across the breakpoint, and nothing snaps. What still changes there is
+   the drawing itself (seven paintings abreast become sixteen), and no amount of scaling can ease
+   that: it is a different composition, not a different size.
+   12.5243 - 0.64725vw is the line through (390, 10px) and (699, 8px). */
+@media (max-width:699px){:root{--size:390;--rem-min:8px;--rem-max:10px}}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{
+  /* The whole page is drawn in rem and the root em tracks the viewport, so the layout is a
+     proportional scale of its design mock: narrow the window and everything shrinks with it.
+     Two mocks, two references — the phone's 390 and the desktop's 1500.
+
+     Holding the root em flat between them (a single "continuous" scale) removes the jump at
+     the crossover but also removes the scaling itself: content would keep its size while the
+     window shrinks. The proportional scale IS the responsiveness here, so it stays. */
+  /* the page is drawn at its mock's width and scaled to the screen — that scaling IS the
+     responsiveness. But a phone's drawing, scaled up, is still a phone's drawing: at 699px the
+     390 mock ran at 1.79x and the menu's buttons came out 79px across, bigger than they are on
+     any phone. It grows with the screen and then it stops. */
+  font-size:clamp(var(--rem-min,8px),calc(10 * 100vw / var(--size)),var(--rem-max,20px));
+  -webkit-text-size-adjust:none;
+  -webkit-font-smoothing:antialiased;
+  background:#fff;color:#000;
+  overscroll-behavior:none;width:100%;
+}
+/* The phone's scale walks down to meet the desktop's instead of dropping onto it.
+   A phone at 390 gets 10px, exactly what it always got. As the window widens the phone's drawing
+   does not grow — it has more room, it does not need to be bigger — and by 699 it has eased to
+   8px, which is the floor the desktop's scale rests on at 700. The two bands meet at the same
+   number, so rem is continuous across the breakpoint and nothing snaps. What still changes there
+   is the drawing itself — seven paintings abreast become sixteen — and no easing reaches that:
+   it is a different composition, not a different size.
+   12.5243 - 0.64725vw is the line through (390, 10px) and (699, 8px). */
+@media (max-width:699px){
+  html{font-size:clamp(8px,calc(12.5243px - 0.64725vw),10px)}
+}
+body{font-family:sans,system-ui,sans-serif;font-weight:400;line-height:1.5}
+body.lock{overflow:hidden}
+html{scrollbar-width:none}
+html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}
+a{color:inherit;text-decoration:none}
+button{font:inherit;background:none;border:0;color:inherit;cursor:pointer}
+img{max-width:100%;display:block}
+
+/* the page's background, set per view in the admin. It sits under everything the site draws
+   (the views start at z-index 1), scaled a little so a drifting picture never shows its edge. */
+.site-bg{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-size:cover;background-position:center;
+  opacity:0;transition:opacity .6s ease;
+  will-change:transform;
+}
+
+/* JetBrains Mono has no Hangul. Left to itself the stack fell past it to the generic
+   monospace, whose Korean face is 굴림 — so a group's name, a month's category, anything
+   Korean set in the mono voice, came out in the one font this page would never choose. Spoqa
+   sits between them: the Latin and the figures are still JetBrains, and the Hangul is the
+   type the rest of the page is set in. */
+.label{
+  font-family:mono,sans,ui-monospace,monospace;
+  font-size:1.4rem;
+  text-transform:uppercase;
+  letter-spacing:.01em;
+}
+
+/* ---------- intro gate ---------- */
+/* transparent overlay: the home builds underneath while the intro leaves */
+/* intro: the month list and the enter button stack under the (fixed) wordmark */
+.intro{
+  position:fixed;inset:0;z-index:50;
+  overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;
+  /* The list starts below the wordmark, which is centred at 27vh and whose height grows with
+     the root em — so 44vh alone stops clearing it on a short screen (the two collided at
+     320x568). Take whichever of the two floors is lower down: the vh rule while the window
+     is tall, the wordmark's own half-height in rem once it is not. */
+  padding-top:max(calc(39vh + 2rem),calc(27vh + 11rem));gap:3rem;   /* the list sits higher, off the button */
+}
+.intro.is-leaving{pointer-events:none}
+/* a short window cannot hold a full-size wordmark, the list and the button with air between
+   them — the title gives up some size rather than the layout giving up its spacing */
+@media (max-height:780px){
+  .intro{padding-top:max(calc(40vh + 0rem),calc(27vh + 11rem));gap:2.2rem}
+}
+/* A short desktop window makes the intro's wordmark give up a fifth of its size. That used to
+   be a font-size (.9rem -> .72rem), and font-size does not transition: the moment the intro
+   let go of the wordmark the type snapped back to full size — the logo ballooned and only
+   then eased down to its resting scale. Give the same reduction as scale, which the existing
+   transform transition carries, and the exit becomes one continuous move.
+   (The phone is left alone: its wordmark is .4rem and shrinking it further is pointless.) */
+@media (max-height:780px) and (min-width:700px){
+  .wordmark.at-intro{--intro-scale:.8}   /* .72rem / .9rem */
+}
+
+/* wordmark: persistent site logo (big, top) — sits mid-screen during the intro.
+   It blends against whatever is behind it, so it reads black on white and white over a
+   painting; the lines clip-reveal upward, staggered. */
+.wordmark{
+  /* rest below the ruler (top:4.4rem + height:6rem = 10.4rem) or the ticks run through
+     the letters on the timeline view. The intro offset below is derived from this. */
+  --rest-top:11.5rem;
+  --rest-shift:0rem;   /* a view may lift the wordmark — see .view--articles below */
+  position:fixed;left:50%;top:var(--rest-top);
+  /* the move between views rides the transform, which is the one thing here that transitions:
+     shifting `top` instead would snap the logo into place with no travel at all */
+  transform:translateX(-50%) translateY(var(--rest-shift)) scale(.62);transform-origin:top center;
+  width:90em;max-width:100vw;
+  font-size:min(calc(2.244px + 0.45045vw),.9rem);
+  pointer-events:none;user-select:none;
+  z-index:20;   /* above the ruler so difference-blend inverts the ticks through the letters */
+  display:flex;flex-direction:column;align-items:center;
+  color:#fff;mix-blend-mode:difference;
+  /* transform-only move (animating `top` reflows every frame and stutters) */
+  transition:transform 1.5s var(--ease-rise);
+  will-change:transform;
+}
+/* That 1.5s transition is for the intro→home move. During a resize the wordmark's target is
+   recomputed from vh/rem, so the same transition fires on every frame of the drag and the
+   logo crawls after the window instead of tracking it. While the window is being resized it
+   has nothing to animate to — it simply belongs where the new size puts it. */
+html.is-resizing .wordmark{transition:none}
+/* --rest-top clears the home's ruler. The index has no ruler, and on a phone the wordmark
+   sat low enough to collide with the first month label — there it rides up, on the transform
+   so the move is a travel and not a jump. */
+@media (max-width:699px){
+  body:has(.view--articles) .wordmark{--rest-shift:-6.5rem}
+}
+/* the wordmark had two sizes with a wall between them — .4rem on the phone and .9rem past 700px,
+   which is 3.2px and 7.2px on either side of a single pixel of window. One line through both. */
+/* during the intro the wordmark sits higher than the middle: the month list and the enter
+   button live underneath it, and they need the room */
+.wordmark.at-intro{
+  transform:translateX(-50%) translateY(calc(27vh - var(--rest-top) - 50%)) scale(var(--intro-scale,1));
+}
+.wordmark .line{
+  display:flex;gap:0 .175em;
+  font-size:11.7em;font-weight:700;line-height:.85;letter-spacing:-.01em;
+  text-transform:uppercase;overflow:hidden;
+}
+.wordmark .line-in{
+  display:block;
+  transform:translateY(105%);
+  clip-path:inset(0 0 100% 0);
+  transition:transform 1.5s var(--ease-travel),clip-path 1.5s var(--ease-travel);
+  transition-delay:var(--ld,0s);
+  will-change:transform;
+}
+.wordmark.is-ready .line-in{transform:translateY(0);clip-path:inset(0 0 -20% 0)}
+/* the intro reveals the title by scrambling its letters — the same effect the month list uses — so
+   the line shows in place with no rise or clip; the JS rolls the text from random glyphs to the name */
+.wordmark.is-scramble .line-in{transform:none;clip-path:none;transition:none}
+/* a picture logo sits in the same slot and rides the same reveal. The difference-blend is for
+   type — it inverts whatever is behind it, which turns a photograph inside out — so a picture
+   logo is drawn plainly, and sized against the wordmark's own em so it scales with everything
+   else on the page. */
+.wordmark--image{mix-blend-mode:normal;color:inherit}
+.wordmark--image .line{font-size:1em;overflow:hidden}
+.wordmark--image img{
+  display:block;width:auto;max-width:100%;
+  height:var(--logo-h,26em);object-fit:contain;
+}
+
+/* month list — centred between the wordmark and the enter button. Three columns: an
+   archive spanning several years has ~27 rows, and two columns would run past the fold.
+
+   The rows never wrap (a month must read as one line), so the three columns can only fit a
+   phone if the type and the gutters shrink with the viewport. Left at the desktop's 5rem
+   gutter and 14px type the block came to 714px on a 360px screen and was cut in half by the
+   intro's overflow — invisible, because the clipping happens inside a fixed overlay. */
+.intro-months{
+  display:grid;grid-template-columns:repeat(3,auto);
+  gap:0 min(5rem,4vw);
+  text-align:left;z-index:5;line-height:1.9;   /* under the wordmark: it blends over us */
+}
+.intro-months .col{display:flex;flex-direction:column}
+.intro-months .row{white-space:nowrap;overflow:hidden}
+.intro-months .row .in{display:block;min-height:1.5em}
+.intro-months .row .n{opacity:.5;margin-left:.4em}
+.intro-months .row .c{margin-left:1.2em}
+/* A phone cannot hold month + year + category + count three times over: the category is the
+   one field the timeline itself repeats, so it stands down and the rest stays legible. */
+@media (max-width:699px){
+  .intro-months{font-size:min(1.4rem,2.3vw);gap:0 1.6vw}
+  .intro-months .row .c{display:none}
+}
+
+/* enter gate — one button, centred under the list */
+.intro-gate{
+  display:flex;flex-direction:column;align-items:center;gap:1.8rem;
+  z-index:12;
+  opacity:0;transition:opacity .5s ease-out 1.2s;   /* duration-500 */
+}
+.intro.is-ready .intro-gate{opacity:1}
+.intro.is-leaving .intro-gate{opacity:0;transition:opacity .5s ease-out}
+.intro-gate .btn{
+  position:relative;overflow:hidden;   /* the fill bar is clipped to the capsule */
+  display:flex;align-items:center;gap:.7em;
+  border:1px solid #000;border-radius:999px;padding:1rem 2.2rem;   /* capsule, like the menu chips */
+  font-size:1.7rem;font-weight:500;
+  transition:background .25s ease,color .25s ease;
+}
+.intro-gate .btn{color:#000}
+.intro-gate .btn:hover{background:#000;color:#fff}
+/* the countdown, two waves deep (app.js drives the clip-path polygons — rippling sine curves washing
+   left to right). The grey wave leads on a second wavelength, behind the word, for depth; the black
+   wave is the main body and flips the word to white under its edge. The resting black label shows
+   wherever neither has reached. */
+.intro-gate .btn__wave{
+  position:absolute;inset:0;z-index:0;
+  background:#bcbcbc;clip-path:inset(0 100% 0 0);pointer-events:none;
+}
+.intro-gate .btn__label{position:relative;z-index:1}
+.intro-gate .btn__reveal{
+  position:absolute;inset:0;z-index:2;
+  display:flex;align-items:center;justify-content:center;
+  background:#000;color:#fff;
+  clip-path:inset(0 100% 0 0);pointer-events:none;
+}
+.intro-gate .alt{font-size:1.5rem;font-weight:500;opacity:.35}
+.intro-gate .alt:hover{opacity:.7;transition:opacity .25s ease}
+
+/* ---------- app shell after enter ---------- */
+.site-logo{
+  position:fixed;left:50%;top:1.5rem;transform:translateX(-50%);
+  z-index:40;user-select:none;
+  opacity:0;transition:opacity .8s ease .2s;
+}
+.site-logo.is-in{opacity:1}
+
+.view{min-height:100vh}
+.view-stub{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+}
+
+/* ---------- home carousel ---------- */
+.carousel{
+  position:fixed;inset:0;z-index:1;
+  display:flex;align-items:flex-end;
+  overflow:hidden;cursor:grab;user-select:none;touch-action:pan-y;
+}
+.carousel.is-active{cursor:grabbing}
+.carousel__track{
+  display:flex;align-items:center;
+  padding-bottom:16vh;padding-left:2rem;
+}
+/* the card's width and the gap after it are set by the carousel in JS (resize), because JS
+   builds the scroll step from the same two numbers. Read from the stylesheet as a fixed 28.1rem
+   while JS had moved to a width that scales continuously with the viewport, the two agreed only
+   at the exact widths each was written for, and everywhere else the strip drifted itself apart
+   as it scrolled — the left of it emptying out. One source now. */
+.car-item{
+  position:relative;flex:0 0 var(--car-w,28.1rem);max-width:var(--car-w,28.1rem);
+  margin-right:var(--car-gap,2rem);cursor:pointer;
+}
+/* perspective must sit on the DIRECT parent of the rotated .car-content */
+.car-entr{perspective:1000px;transform-style:preserve-3d}
+/* motion skew (rotateY) is applied inline by JS to VISIBLE items only —
+   a CSS var here would restyle all 390 items every frame and drop frames */
+.car-content{position:relative}
+/* the slot never clips — the frame inside it does, and the frame is what flies
+   between views */
+.car-media{position:relative;width:100%}
+/* the travelling frame: one class for every view, so a painting that flies from the
+   grid into the carousel is styled by the same rule it had before it left */
+.lse-frame{position:relative;width:100%;height:100%;overflow:hidden;background:#f2f2f2}
+.car-media img{width:100%;height:100%;object-fit:cover;pointer-events:none}
+.car-label{
+  position:absolute;left:0;overflow:hidden;
+  font-family:mono,sans,ui-monospace,monospace;
+  font-size:1.4rem;text-transform:uppercase;
+}
+.car-label--top{bottom:100%;margin-bottom:1.5rem}
+.car-label--bottom{top:100%;margin-top:1.5rem}
+.car-label__in{
+  transition:transform .7s var(--ease-rise);
+}
+.car-label--top .car-label__in{transform:translateY(100%)}
+.car-label--bottom .car-label__in{transform:translateY(-100%)}
+.car-item:hover .car-label__in{transform:translateY(0)}
+@media (max-width:699px){.car-label{display:none}}
+
+/* entrance: each slide rises from just below the viewport by its own distance
+   (from y = viewportBottom - itemTop —
+   the cascade comes from the differing travel distances) */
+.view--home .car-entr{
+  transform:translateY(var(--ey,110vh));
+  transition:transform 1.5s var(--ease-rise);
+}
+.view--home.is-in .car-entr{transform:translateY(0)}
+/* arriving from another view: the paintings fly in (flip/rise) — no intro rise underneath */
+.view--home.no-rise .car-entr{transform:none;transition:none}
+/* instant reset for the re-entrance replay (detail close) */
+.view--home.no-trans .car-entr,.view--home.no-trans .ruler{transition:none !important}
+/* items receiving a reverse flip stay in place (the ghost flies to them) */
+.view--home .car-item.flip-back .car-entr{transform:translateY(0) !important;transition:none !important}
+/* the home marks its arrival with .is-in and the ruler rides that. The flow deck does not —
+   its cards carry their own entrance — so its ruler is turned on by hand once the deck is up,
+   and the delay in the transition keeps the two views' timelines appearing at the same beat. */
+.view--home .ruler,.view--flow .ruler{opacity:0;transition:opacity .5s ease 1.1s}   /* .5s power1 */
+.view--home.is-in .ruler,.view--flow .ruler.is-on{opacity:1}
+
+/* ---------- top timeline ruler (flipped: line on top, ticks hang down) ---------- */
+.ruler{
+  position:fixed;top:4.4rem;left:0;right:0;height:6rem;
+  z-index:10;   /* pointer events ON: boosts ticks near the mouse */
+}
+/* the string is the ruler's own ticks with their ends joined, so it lives in the ruler's own
+   height: there is nothing extra to give it */
+.ruler__canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.ruler__labels{position:absolute;left:0;bottom:100%;margin-bottom:.5rem;height:2rem;pointer-events:none;overflow:visible}
+.ruler__track{position:absolute;inset-block:0;left:0;will-change:transform}
+/* The name is set from the tick where its month begins and runs the way its month runs, so a
+   name and the inked ticks beneath it are plainly the same stretch of time.
+
+   Its size is capped. June 2026 holds a single painting, so its name and March's start 96px
+   apart on the ruler however wide the screen is — that gap is made of paintings, not pixels. The
+   labels are set in rem, so on a 2560 screen the same name is 24px tall and half again as wide,
+   and it no longer fits in the 96px it has. I had been lifting the loser onto a second line,
+   which reads as a name that has climbed on top of its neighbour. A ruler's labels are not
+   reading copy — they do not have to grow with the page, and if they do not grow they do not
+   collide. */
+.ruler__label{
+  position:absolute;transform:translateX(0);white-space:nowrap;padding-left:.6rem;
+  font-size:min(1.4rem,15px);
+  opacity:.42;transition:opacity .35s ease;
+}
+/* the month you are standing in rides at the centre in a capsule — the sideways sticky header.
+   A shadow lifts it off the ground so the pill reads even where that ground is white. */
+.ruler__label.is-live{
+  opacity:1;padding:.2rem .85rem;border-radius:999px;
+  background:rgba(255,255,255,.86);backdrop-filter:blur(4px);
+  box-shadow:0 2px 9px rgba(0,0,0,.16);
+}
+.ruler__label::after{content:" " attr(data-year);opacity:.5}
+
+/* ---------- menu: solid buttons, same face as the detail's controls ----------
+   It used to be white type under mix-blend-mode:difference, which inverted whatever was
+   behind it — elegant over the paintings, but a different object from the detail's bottom
+   bar, which is a plain white chip with a black icon. One site, one button: the menu now
+   wears that same face. The selected one inverts (black chip, white icon) so the current
+   page still announces itself without the blend. */
+.menu{
+  position:fixed;left:50%;bottom:2.6rem;transform:translate(-50%,180%);
+  transition:transform .7s var(--ease-reveal),opacity .5s ease .2s;
+  opacity:0;
+  z-index:45;display:flex;gap:1.4rem;align-items:center;
+  color:#111;
+  --btn:4.4rem;                  /* one size drives the chip and the mark inside it */
+}
+/* the drop: over the white capsule, under the marks, so an icon is never hidden by the thing
+   that is meant to be behind it */
+.menu__drop{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  transition:opacity .3s ease;
+}
+.menu__drop.is-off{opacity:0}       /* a detail view is open: nothing here is current */
+.menu__blob{
+  position:absolute;left:0;top:0;width:var(--btn);height:var(--btn);
+  border-radius:50%;background:#111;transform-origin:50% 50%;
+  will-change:transform;
+}
+.menu.is-in{transform:translate(-50%,0);opacity:1}
+/* no z-index here. Giving the capsule one made it a stacking context, and its buttons — set
+   above the drop — were sealed inside it, so the whole capsule sank under the drop and the
+   black body swallowed the mark it was supposed to sit behind. Left alone, the capsule's
+   background paints below the drop and its buttons paint above it, which is the whole idea. */
+.menu__capsule{
+  position:relative;
+  display:flex;align-items:center;gap:.6rem;
+  background:#fff;border:1px solid #e0e0e0;border-radius:999px;padding:1px;
+}
+.menu__about{
+  display:flex;align-items:center;justify-content:center;
+  align-self:stretch;aspect-ratio:1;width:auto;height:auto;padding:1px;
+  background:#fff;border:1px solid #e0e0e0;border-radius:50%;
+  transition:background-color .3s var(--ease-reveal);
+}
+.menu__about a{width:100%;height:100%}
+.menu a{
+  position:relative;z-index:2;                                /* the mark rides over the drop */
+  display:inline-flex;align-items:center;justify-content:center;
+  width:var(--btn);height:var(--btn);border-radius:999px;
+  transition:background-color .3s var(--ease-reveal);
+}
+/* The button paints over the drop — it has to, or the drop would swallow its mark. So the
+   hover tint painted over it too: click a button and the cursor stays on it, and #f5f5f5 went
+   down on top of the black body. The drop was never grey; it was buried under a hover.
+   The current button is already marked by the drop and wants no tint of its own, and a finger
+   does not hover — a phone that keeps :hover stuck after a tap would grey the button it just
+   left standing on. */
+@media (hover:hover){
+  .menu a:not(.active):hover{background:#f5f5f5}             /* same hover as .dt-ctl */
+}
+/* the black chip is gone: the drop is the black. The mark turns white as the drop lands on it
+   and black the moment it leaves — flipped on arrival, not on the click, or a white icon would
+   sit on a white capsule for the length of the journey. */
+.menu .ic,.menu .ic *{transition:fill .18s ease}
+.menu a.active .ic,.menu a.active .ic *{fill:#fff;transition:fill .2s ease .28s}
+/* About sits in its own ring — the whole ring inverts when it is the selected one */
+.menu__about{transition:background-color .3s var(--ease-reveal) .26s,border-color .3s var(--ease-reveal) .26s}
+.menu__about:has(a.active){background:#111;border-color:#111}
+.menu__about:has(a.active) .ic,.menu__about:has(a.active) .ic *{fill:#fff}
+.menu__about a.active{background:none}
+/* The icon used to carry a 22px floor of its own, so once the page scaled below the
+   width where a chip is 34px the mark stopped shrinking with it and grew to fill — at 700px
+   it was 96% of the chip it sits in. It is a fraction of the chip now, and a fraction stays
+   a fraction at every width. */
+.menu .ic{width:calc(var(--btn) * .636);height:calc(var(--btn) * .636);display:block;fill:#111}
+.menu .ic *{fill:#111}
+.ic--timeline{transform:scale(.90)}
+.ic--flow{transform:scale(.84)}
+.ic--collage{transform:scale(1.08)}
+.ic--profile{transform:scale(.90)}
+.menu__txt{display:none}
+
+/* the menu is one design everywhere: the icon capsule above. On a phone the root rem is
+   10px, so its 4.4rem buttons land at 44px — the tap target holds without a second layout. */
+
+/* ---------- detail view (overlay above home; transition values) ---------- */
+.detail{position:fixed;inset:0;z-index:60}
+.detail.is-wait{visibility:hidden}   /* the pre-transition beat */
+/* while it is leaving (~1.1s) the detail still covers the screen, fading — but it must not keep
+   catching clicks, or a press on the bottom menu underneath lands on the transparent detail instead */
+.detail.is-off{pointer-events:none}
+.dt-bg{
+  position:absolute;inset:0;background:#fff;
+  opacity:0;transition:opacity .35s ease;   /* : old page autoAlpha .35 power1 */
+}
+.detail.is-on .dt-bg{opacity:1}
+/* close: drop the veil at once — the reverse flights happen in the HOME layer and
+   must be visible immediately */
+.detail.is-off .dt-bg{opacity:0;transition:opacity .15s ease}
+/* right panel: outer mask slides from +100%, inner from -100% */
+/* The split is a fraction of the screen, so it is written as one. It used to say 61.5rem, which
+   equals 41% of the viewport — but only while rem is 1/150th of it. The moment a band scales the
+   unit (the tablet draws at 1024, so its rem is 1.47x what the desktop's would be at that width)
+   61.5rem stopped meaning 41% and started meaning 60%: on a 778px window the panel closed from
+   59% of the screen to 40%. Type belongs in rem. A proportion of the viewport does not. */
+.dt-panel{
+  position:absolute;top:0;right:0;bottom:0;left:41%;
+  border-left:1px solid rgba(0,0,0,.1);background:#fff;overflow:hidden;
+  z-index:12;   /* s:z-[12] — the strip images slide UNDER this panel */
+  transform:translateX(100%);
+  transition:transform 1s var(--ease-travel);
+}
+.dt-panel__in{
+  position:absolute;inset:0;overflow:hidden;background:#fff;
+  transform:translateX(-100%);
+  transition:transform 1s var(--ease-travel);
+}
+.detail.is-on .dt-panel,.detail.is-on .dt-panel__in{transform:translateX(0)}
+.detail.is-off .dt-panel{transform:translateX(100%)}
+.detail.is-off .dt-panel__in{transform:translateX(-100%)}
+.dt-scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+.dt-scroll::-webkit-scrollbar{display:none}
+
+/* the side margins are a share of the panel, not a fixed rem. While rem tracks the viewport the
+   two are the same thing — 11rem is 12.4% of the panel — but below 1200px rem is floored and the
+   margins stopped shrinking with the panel, so they ate a growing share of it (12.4% out to 16.6%
+   at 900px) and the reading column was pinched. As a percentage they hold their share at any width. */
+.dt-content{padding:8rem 12.4% 6rem}
+@media (max-width:699px){.dt-content{padding:4rem 2rem 6rem}}
+.dt-meta{display:flex;align-items:center;gap:1rem}
+/* .dt-meta prefix outranks the later .dt-reveal>*{display:block} — keeps the
+   inline-flex vertical centring (text sat high as a block) */
+.dt-meta .dt-chip{
+  display:inline-flex;align-items:center;height:2.8rem;padding:0 1rem;
+  border-radius:.4rem;font-size:1.4rem;line-height:1;
+  color:rgb(125 69 180);background:rgb(238 227 249);
+}
+.dt-month{opacity:.6}
+.dt-title{
+  margin-top:3rem;
+  font-size:5.7rem;font-weight:700;text-transform:uppercase;
+  line-height:1.12;   /* .9 clips Hangul ascenders/descenders inside the reveal mask */
+}
+.dt-spec{margin-top:2.4rem;display:flex;flex-direction:column;gap:.6rem}
+.dt-spec__k{opacity:.5;margin-right:1.2rem;min-width:6rem;display:inline-block}
+.dt-spec__v{font-size:1.6rem}
+.dt-body{margin-top:4rem;font-size:2rem;line-height:1.5;max-width:72rem}
+.dt-body p{margin:0 0 1.5em}
+.dt-fig{margin:3rem 0;display:flex;flex-direction:column}
+.dt-fig--left{align-items:flex-start}
+.dt-fig--center{align-items:center}
+.dt-fig--right{align-items:flex-end}
+.dt-fig img{max-width:50%;height:auto;display:block}   /* attached media at half the content width */
+.dt-zoomable{cursor:zoom-in}
+
+/* lightbox: -size image in a modal */
+.dt-lightbox{
+  position:fixed;inset:0;z-index:120;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1.6rem;
+  background:rgba(255,255,255,.96);cursor:zoom-out;
+  opacity:0;transition:opacity .35s ease;
+}
+.dt-lightbox.is-on{opacity:1}
+.dt-lightbox img{
+  max-width:92vw;max-height:88vh;display:block;
+  transform:scale(.96);transition:transform .5s var(--ease-reveal);
+}
+.dt-lightbox.is-on img{transform:scale(1)}
+.dt-lightbox__cap{opacity:.6}
+.dt-fig figcaption{margin-top:.8rem;opacity:.6}
+.dt-video{position:relative;width:100%;aspect-ratio:16/9}
+.dt-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+
+/* left strip: prev / current / next.
+   Its width is the panel's edge, and the same fraction of the screen — written as one, for the
+   same reason: 61.5rem is 41% of the viewport only while rem is 1/150th of it, and it is not
+   on a tablet. The strip and the panel would have parted company and left a seam between them. */
+.dt-strip{
+  position:absolute;top:0;bottom:0;left:0;width:41%;
+  display:flex;align-items:center;z-index:2;
+}
+/* the prev/next paintings bleed past the strip's edges by a share of the strip — 5rem is 8.1% of
+   it while rem tracks the viewport, but below 1200px rem is floored and the bleed grew as a share
+   of the narrowing strip (8.1% out to 10.8% at 900). As the percentage it already equals, the
+   peek holds at any width. */
+.dt-strip__row{
+  position:relative;display:flex;align-items:center;gap:2rem;
+  margin:0 -8.1%;width:calc(100% + 16.2%);
+}
+/* the three read as one proportion: the current painting 1.86× the width of each neighbour, at
+   every viewport. It used to be a fixed 32.5rem in the middle with the neighbours filling what
+   was left — fine while rem tracked the viewport, but below 1200px rem is floored and the centre
+   stopped shrinking while the strip did, so the neighbours were crushed (the ratio ran from 1.86
+   out to 3.3 at 900px). Sizing all three by flex holds the proportion wherever the strip goes. */
+.dt-side{position:relative;flex:1 1 0;cursor:pointer;min-width:0}
+.dt-side .dt-media{transition:opacity .25s ease}
+.dt-side:hover .dt-media{opacity:.7}
+.dt-cur{
+  display:flex;flex-direction:column;gap:1.2rem;
+  flex:1.86 1.86 0;min-width:0;
+}
+/* the detail's slot does not clip either — its .lse-frame does, and that frame
+   is what flies home when the detail closes */
+.dt-media{position:relative;width:100%}
+.dt-media img{width:100%;height:100%;object-fit:cover;display:block}
+/* prev/next navigation: the current painting slides in/out: xPercent ±100, 1s snappy) */
+.dt-cur__media{transition:transform 1s var(--ease-travel)}
+/* leaving strip: labels fade; the images slide/fly at full opacity */
+.dt-strip--out .dt-reveal,
+.detail.is-off .dt-strip{
+  opacity:0;transition:opacity .35s ease;
+}
+
+/* masked text reveals — lse-reveal-slide: yPercent 105 -> 0, 1.15s expo.
+   Keyed on .is-rev (not .is-on) so prev/next replay them without moving the panel */
+.dt-reveal{overflow:hidden}
+.dt-reveal>*{
+  display:block;transform:translateY(105%);
+  transition:transform 1.15s var(--ease-rise) .25s;
+}
+.detail.is-rev .dt-reveal>*{transform:translateY(0)}
+.dt-title .dt-reveal>*{transition-delay:.35s}
+/* body — lse-reveal-up: alpha 0 + y 5rem, 1.15s expo at .25 */
+.dt-fade{
+  opacity:0;transform:translateY(5rem);
+  transition:opacity 1.15s var(--ease-rise) .25s,transform 1.15s var(--ease-rise) .25s;
+}
+.detail.is-rev .dt-fade{opacity:1;transform:translateY(0)}
+.detail.is-off .dt-fade{opacity:0;transition:opacity .2s ease}
+/* item→item: outgoing content fades .35, incoming content follows) */
+.dt-scroll--out{opacity:0 !important;transition:opacity .35s ease !important}
+.dt-scroll--in{animation:dtFadeIn .35s ease .35s backwards}
+@keyframes dtFadeIn{from{opacity:0}to{opacity:1}}
+/* controls fade in with the content */
+.dt-controls{opacity:0;transition:opacity .35s ease .3s}
+.detail.is-rev .dt-controls{opacity:1}
+/* …and out on close. This must follow the .is-rev rule: both weigh the same, so the earlier
+   one loses and the controls used to sit at full opacity until the panel was ripped out —
+   the one piece of the detail that left with no exit at all. No delay: it leads the exit. */
+.detail.is-off .dt-controls{opacity:0;transition:opacity .35s ease}
+
+/* mobile detail: no strip, full-width panel, bottom controls */
+@media (max-width:699px){
+  .dt-panel{left:0;border-left:0}
+  .dt-controls{left:0}          /* the panel is the whole screen here, so its middle is too */
+  .dt-strip{display:none}
+  .dt-body{max-width:none}
+  .dt-fig img{max-width:100%}
+  /* a phone has no strip, so the paintings never fly and the panel curtain would slide a full-screen
+     sheet across the view. Drop the curtain and cross-fade the whole overlay instead: it opens and
+     closes as one soft fade, the way the reference reveals a work on a phone. Scoped to .detail so it
+     cannot touch anything else. */
+  .detail{opacity:0;transition:opacity .45s ease}
+  .detail.is-on{opacity:1}
+  .dt-panel,.dt-panel__in,
+  .detail.is-on .dt-panel,.detail.is-on .dt-panel__in,
+  .detail.is-off .dt-panel,.detail.is-off .dt-panel__in{transform:none;transition:none}
+}
+
+/* bottom controls — the panel's one way out (and its prev/next), at every width.
+   They belong to the panel, so they are centred in the panel. Stretched across the whole screen
+   they centred on the screen instead, and the screen's middle is not the panel's: the panel
+   begins at 41%, so the row of buttons sat straddling the seam with its left half out on the
+   strip, at every width. */
+.dt-controls{
+  position:absolute;bottom:2rem;left:41%;right:0;
+  display:flex;justify-content:center;gap:.8rem;z-index:13;
+}
+.dt-ctl{
+  display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
+  height:4rem;min-width:4rem;padding:0 1.5rem;
+  background:#fff;border:1px solid #e0e0e0;border-radius:999px;   /* the site's capsule, at every width */
+  font-size:1.5rem;
+}
+.dt-ctl svg{width:1.2rem;min-width:12px}
+.dt-ctl--prev svg{transform:scaleX(-1)}   /* one arrow, pointed the other way */
+.dt-ctl--close svg{width:1.6rem;min-width:14px}
+.dt-ctl:hover{background:#f5f5f5}
+/* on a phone there is no strip, so the controls centre on the whole screen — this has to sit after
+   the base left:41% above to win it */
+@media (max-width:699px){.dt-controls{left:0}}
+
+/* live flight (reparented img, way): the slot frees its clipping */
+.is-flying{overflow:visible !important;background:transparent !important}
+/* old strip images slide with the same curve while leaving; no clicks while dying */
+.dt-strip--out{pointer-events:none}
+.dt-strip--out *{pointer-events:none !important}
+.dt-strip--out .dt-media{transition:transform 1s var(--ease-travel)}
+
+/* ---------- FLOW: floating card deck ---------- */
+/* touch-action:none — the deck's drag is a horizontal one, and without this a phone hands that
+   gesture to its own back-swipe / overscroll and cancels the pointer mid-drag (the carousel already
+   reserves it with pan-y). This is why the drag died on some devices. */
+.flow{position:fixed;inset:0;z-index:1;overflow:hidden;user-select:none;cursor:grab;touch-action:none}
+.flow:active{cursor:grabbing}
+.flow__inner{position:relative;display:flex;align-items:center;height:100%}
+.flow__deck{
+  display:grid;place-items:end;min-width:20rem;max-width:20rem;
+  perspective:1000px;transform-style:preserve-3d;   /* .flow-carousel */
+}
+.flow__deck>*{grid-area:1/1}
+/* no will-change per card: a compositing layer for each of the 195 cards takes them out
+   of the deck's 3D depth sorting, so a hovered card draws on the wrong side of its
+   neighbours until something forces a restack */
+.flow-item{position:relative;cursor:pointer}
+.flow-item__media{position:relative}
+/* stable hover/click target: it covers the card's own spot and never moves */
+.flow-item__hit{position:absolute;inset:0}
+@media (hover:hover) and (pointer:fine){
+  .flow-item__media{transition:transform .75s var(--ease-rise)}
+  .flow-item:hover .flow-item__media{transform:translate(75%) rotate(10deg)}
+}
+.flow-item__box{width:20rem}
+.flow-item__box img{width:100%;height:100%;object-fit:cover;pointer-events:none}
+.flow__label{
+  position:fixed;right:2rem;bottom:1.8rem;z-index:3;text-align:right;
+  opacity:0;transition:opacity .25s ease;
+}
+.flow__label.is-on{opacity:1}
+
+/* ---------- INDEX: 12-per-row collage grid ---------- */
+/* the grid scrolls natively — same as the detail panel, so a finger gets the system's own
+   momentum and the two pages feel like one site. The wheel is still lerped in script. */
+.agrid{
+  position:fixed;inset:0;z-index:1;
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+  scrollbar-width:none;
+}
+.agrid::-webkit-scrollbar{display:none}
+.agrid__in{
+  display:flex;flex-direction:column;gap:11.5rem;
+  padding:40rem 2rem 2rem;
+}
+.agrid__row{
+  display:grid;gap:2rem;   /* the column count is the cell count — set in views.js */
+  align-items:start;transform-origin:top center;
+}
+/* On a phone the tilt is not the script's to draw. iOS runs its momentum scroll on the
+   compositor and the main thread does not get a frame in — the rows kept their angle from
+   the moment the finger left the glass, so the effect existed everywhere except the one
+   place it was asked for. A scroll-driven animation is run by the compositor itself, so it
+   keeps drawing through the glide. It leans on the row's position in the scrollport rather
+   than the scroll's speed: a row arrives tilted, straightens as it crosses the middle, and
+   leans away as it leaves. (views.js stands down where this applies.) */
+/* One vanishing point, at the middle of the screen, for every row — that is what makes the
+   lean read as a trapezoid instead of a row that merely swells. Each row carrying its own
+   perspective() put the vanishing point at its own centre, so every row was distorted the
+   same way wherever it sat, which the eye reads as a scale, not a tilt. Perspective on the
+   scrollport means a row leans away from the viewer as it climbs and towards them at the
+   bottom: the top edge of a high row is further off than its bottom edge, and it draws
+   narrower. */
+@keyframes rowTilt{
+  from{transform:rotateX(16deg)}
+  50% {transform:rotateX(0deg)}
+  to  {transform:rotateX(-16deg)}
+}
+@supports (animation-timeline: view()){
+  .agrid{perspective:900px;perspective-origin:50% 50%}
+  /* perspective reaches direct children only; the column between the scrollport and the rows
+     would flatten it back out unless it keeps the 3D context alive */
+  .agrid__in{transform-style:preserve-3d}
+  .agrid__row{
+    animation:rowTilt linear both;
+    animation-timeline:view(block);
+    animation-range:entry 0% exit 100%;
+    transform-style:preserve-3d;
+  }
+}
+@media (max-width:699px){
+  .agrid__in{gap:7rem;padding-top:25rem}   /* clear the wordmark AND the two-row Color palette under it */
+  .agrid__row{gap:1rem}
+}
+.agrid__cell{position:relative;cursor:pointer}
+.agrid__media{position:relative;width:100%}
+.agrid__media img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.agrid__cell:hover .agrid__media{opacity:.75;transition:opacity .25s ease}
+/* the month sits above its column of cells, and a long one — SEPTEMBER 2024 — is wider than a
+   cell in a twelve-across grid, so held on one line it ran past the cell into its neighbour. It
+   wraps within the cell now (the year drops to a second line), growing upward into the row gap
+   above rather than sideways over the next column. */
+.agrid__month{position:absolute;bottom:calc(100% + 1rem);left:0;width:100%;text-transform:uppercase}
+/* month + year, set the same way as the timeline ruler's labels */
+/* the year sits on its own line, always — so a short month (JUNE) and a long one (SEPTEMBER)
+   read the same two-line way instead of one wrapping and the other not. display:block drops it
+   below the month whether or not the month would have fit beside it. */
+.agrid__month .label[data-year]:not([data-year=""])::after{content:attr(data-year);display:block;opacity:.5}
+
+/* the index sort control: a quiet row of labels top-right, the chosen one lit. Sits above the
+   grid but under the menu and any detail, and leaves with the view (it is the view's own child). */
+.agrid-sort{
+  position:fixed;left:50%;top:30vh;transform:translateX(-50%);z-index:14;   /* top set by views.js, under the wordmark */
+  display:flex;align-items:stretch;overflow:hidden;   /* Size's arrow reveals as the box widens to it */
+  padding:.4rem;border-radius:999px;   /* even inset all round, so the black chip sits concentric inside the capsule */
+  background:rgba(255,255,255,.66);backdrop-filter:blur(6px);   /* lift it off the busy ground */
+  opacity:0;transition:opacity .9s ease;   /* fades in with the wordmark as the index arrives */
+}
+.view--articles.is-in .agrid-sort{opacity:1}
+.agrid-sort__row{position:relative;display:flex;gap:.4rem;align-items:stretch}
+/* the travelling drop, under the words; the chosen word rides over it and turns white */
+.agrid-sort__drop{position:absolute;inset:0;z-index:1;pointer-events:none}
+.agrid-sort__blob{
+  position:absolute;left:0;top:0;border-radius:999px;background:#111;
+  transform-origin:50% 50%;will-change:transform;
+}
+.agrid-sort__btn{
+  position:relative;z-index:2;white-space:nowrap;   /* Size gains " ↓" — never let it break to a second line */
+  /* the inline padding clears the chip's own corner radius (half its height), so the word sits in the
+     chip's straight run, never crossing where its rounded end begins */
+  background:none;border:0;padding:.4rem 1.5rem;border-radius:999px;cursor:pointer;color:inherit;
+  opacity:.62;transition:opacity .25s ease,color .2s ease;
+}
+@media (hover:hover){.agrid-sort__btn:not(.is-on):hover{opacity:.9}}
+.agrid-sort__btn.is-on{opacity:1;color:#fff;transition:color .2s ease .18s}   /* white once the drop lands */
+/* the colour palette: its own capsule under the sort bar (top set by views.js), not a stretch of
+   the bar. It rises and fades in when Color opens it, and folds away the same when Color is left. */
+.agrid-pal{
+  position:fixed;left:50%;transform:translateX(-50%) translateY(-6px) scale(.96);z-index:14;
+  display:flex;gap:.7rem;align-items:center;justify-content:center;
+  padding:.55rem .9rem;border-radius:999px;
+  background:rgba(255,255,255,.66);backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;
+  transition:opacity .3s ease,transform .38s var(--ease-rise);
+}
+.agrid-pal.is-open{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0) scale(1)}
+.agrid-sw{
+  width:2.6rem;height:1.5rem;border-radius:999px;padding:0;cursor:pointer;   /* capsule swatch, not a dot */
+  border:2px solid transparent;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);
+  transition:transform .2s ease,border-color .2s ease;
+}
+@media (hover:hover){.agrid-sw:not(.is-on):hover{transform:scale(1.1)}}
+.agrid-sw.is-on{border-color:#111;transform:scale(1.06)}
+@media (max-width:699px){
+  .agrid-sort{padding:.3rem}
+  .agrid-sort__row{gap:.1rem}
+  .agrid-sort__btn{padding:.4rem 1.4rem}
+  .agrid-pal{padding:.45rem .7rem;gap:.5rem}
+  .agrid-sw{width:2.1rem;height:1.3rem}
+}
+
+/* ---------- ABOUT: black page ---------- */
+.about{position:fixed;inset:0;z-index:4}
+.about__mask{
+  position:absolute;inset:0;overflow:hidden;
+  transform:translateY(100%);transition:transform 1s var(--ease-travel);
+}
+.about__mask-in{
+  position:absolute;inset:0;background:#000;color:#fff;
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:none;
+  transform:translateY(-100%);transition:transform 1s var(--ease-travel);
+}
+/* About paints itself black, which sat right on top of a background the admin had set — the
+   picture was there, under a solid page. Where a background exists the page steps back to a
+   veil: enough dark to keep white type legible over a photograph, not so much that the
+   photograph is gone. (background.js marks the body while a background is up.) */
+body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
+/* the veil eases with the picture behind it, so the page does not switch colour in one frame */
+.about__mask-in{transition:transform 1s var(--ease-travel),background-color .6s ease}
+.about__mask-in::-webkit-scrollbar{display:none}
+.view--about.is-in .about__mask,.view--about.is-in .about__mask-in{transform:translateY(0)}
+/* about exit: curtains leave the way they came */
+.view--about.is-out .about__mask{transform:translateY(-100%)}
+.view--about.is-out .about__mask-in{transform:translateY(100%)}
+/* generic page exit: the page being left just fades */
+.view.is-exit{opacity:0 !important;transition:opacity .35s ease !important;pointer-events:none}
+/* the incoming view is measured before it paints — its slots are put in their from-state
+   in the same frame, so they never flash at their end position */
+.view.is-pre{visibility:hidden}
+/* a flying frame scales from its top-left corner */
+.lse-frame{transform-origin:0 0}
+/* one load-gate for every framed painting: it fades in when it loads and STAYS visible
+   wherever it later lands — a frame that flies between views carries its .ok with it */
+.lse-frame img{opacity:0;transition:opacity .5s ease-out}
+.lse-frame img.ok{opacity:1}
+.about__scroll{
+  container-type:inline-size;   /* the CV asks this column how wide it is, not the window */padding:0 2rem}
+/* the head holds the two small labels. It used to stand a full screen tall, so the page
+   opened on an empty view and the title only arrived after a scroll — enough height to
+   breathe, not enough to hide what the page is. */
+.about__head{
+  height:40svh;display:flex;align-items:center;justify-content:space-between;
+}
+/* .875 is a Latin display line-height: it packs the caps tight because a cap is short. A
+   Hangul glyph fills 1.26em, so on the Korean lines the type ran into the line above it —
+   42px of overlap on a desktop. The lines need room for the tallest thing that can sit in
+   them, and that is 한글. */
+.about__title{
+  font-size:calc(min(calc(7.541px + 7.2973vw),11.7rem) * var(--sz,1));font-weight:700;line-height:var(--lh,1.1);
+  text-transform:uppercase;text-align:center;margin:0 0 calc(22.5rem * var(--gap,1));
+}
+@media (max-width:699px){.about__title{margin-bottom:calc(15rem * var(--gap,1))}}
+.about__line{overflow:hidden}
+.about__line-in{
+  display:block;transform:translateY(105%);
+  transition:transform 1.15s var(--ease-rise);
+}
+.view--about.is-in .about__line-in{transform:translateY(0)}
+.about__line:nth-child(1) .about__line-in{transition-delay:.5s}
+.about__line:nth-child(2) .about__line-in{transition-delay:.6s}
+.about__line:nth-child(3) .about__line-in{transition-delay:.7s}
+.about__line:nth-child(4) .about__line-in{transition-delay:.8s}
+.about__line:nth-child(5) .about__line-in{transition-delay:.9s}
+/* line-height:1 is a Latin setting — a cap is short and the lines still clear each other. A
+   Hangul glyph fills 1.26em, so the body copy, which is the one block here that actually
+   wraps onto many lines, ran into itself: 앉은 sat on 습니다. The lines get room for the
+   tallest thing they can hold. */
+.about__intro{
+  font-size:calc(min(calc(18.161px + 2.5225vw),5.6rem) * var(--sz,1));font-weight:700;line-height:var(--lh,1.35);text-transform:uppercase;
+  max-width:110rem;margin:0 auto calc(28.5rem * var(--gap,1));display:flex;flex-direction:column;gap:6rem;
+}
+@media (max-width:699px){.about__intro{margin-bottom:calc(15rem * var(--gap,1))}}
+/* an image block: it shares the copy's column so pictures and paragraphs line up, and it
+   carries the same bottom margin as a text block so any block order keeps one rhythm.
+   Each picture keeps its own aspect ratio rather than being cropped to a fixed cell. */
+/* A CV group as a painter's profile has it: the group's name (초대 개인전, 수상, 現…) stands
+   in its own column, right-aligned against the entries it heads, and each entry is the work
+   followed by the year and the place, set quiet and small beside it. On a phone there is no
+   second column to give: the group's name sits above its entries. */
+.about__cv{
+  max-width:110rem;margin:0 auto calc(12rem * var(--gap,1));
+  /* the group's column widens with the type it holds — a name set larger in a column that
+     stayed put is a name broken across four lines */
+  display:grid;grid-template-columns:22.4rem 1fr;gap:0 3rem;align-items:start;
+}
+.about__cv-label{
+  text-align:right;opacity:.75;padding-top:.5rem;white-space:nowrap;
+  font-size:calc(min(calc(12.032px + 0.5045vw),1.96rem) * var(--sz-label,1));
+}
+.about__cv-items{display:flex;flex-direction:column;gap:1.4rem}
+.about__cv-row{
+  display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap;
+}
+.about__cv-label{white-space:normal}
+/* the entry: its Korean, and under it — smaller, quieter — its English. They ride the same
+   size control, so the pair keeps its proportion whatever size the group is set to. */
+.about__cv-main{display:flex;flex-direction:column;gap:.2rem;min-width:0}
+.about__cv-meta{display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap}
+.about__cv-t{font-size:calc(min(calc(13.87px + 1.3153vw),3.36rem) * var(--sz-t,1));line-height:1.45}
+.about__cv-en{font-size:calc(min(calc(13.751px + 0.5766vw),2.24rem) * var(--sz-t,1));opacity:.5;line-height:1.35}
+.about__cv-label-ko{line-height:1.3}
+.about__cv-label-en{opacity:.55;font-size:.85em;line-height:1.3}
+/* a date may be several years — "2023, 2022, 2021, 2019, 2018" — and held on one line it ran off
+   the edge. It wraps now, at the spaces between the years; a single date like 2024.10 has no
+   space to break at, so it stays whole. */
+.about__cv-d{font-size:calc(min(calc(11.049px + 0.7568vw),2.24rem) * var(--sz-n,1));opacity:.75;line-height:1.45;
+  font-family:mono,sans,ui-monospace,monospace}
+.about__cv-n{font-size:calc(min(calc(11.049px + 0.7568vw),2.24rem) * var(--sz-n,1));opacity:.5;line-height:1.45}
+/* the group's alignment moves its entries within their column. The group's name keeps its own
+   side of the gutter — it is the spine the entries hang from, and swinging it about would
+   just break the column. */
+.about__cv.about__al--center .about__cv-row{justify-content:center}
+.about__cv.about__al--right .about__cv-row{justify-content:flex-end}
+/* The CV stacks when the CV has no room, not when the window crosses a number somebody chose.
+   The group's name needs a column of 22.4rem beside the entries; where the copy is narrower than
+   about 560px there is no such column to give, and the name goes above its entries instead. It is
+   the copy's own width that decides — so a page whose text column is narrow stacks even on a wide
+   screen, and the switch happens where it is actually needed. */
+@container (max-width:560px){
+  .about__cv{
+    grid-template-columns:1fr;gap:.8rem;margin-bottom:calc(8rem * var(--gap,1));
+  }
+  /* stacked, the group's name was just another small line among the entries. It becomes a
+     header: brighter, spaced, and ruled off from the column it heads. */
+  .about__cv-label{
+    text-align:left;padding-top:0;opacity:1;
+    display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap;
+    padding-bottom:.9rem;margin-bottom:1.8rem;
+    border-bottom:1px solid rgba(255,255,255,.22);
+  }
+  .about__cv-label-ko{font-weight:700;letter-spacing:.06em}
+  .about__cv-items{gap:2.2rem}
+  /* the entry stacks: its name, its English, then the year and the place on one line under */
+  .about__cv-row{flex-direction:column;align-items:stretch;gap:.4rem}
+  .about__cv-meta{gap:.8rem}
+}
+.about__fig{
+  max-width:110rem;margin:0 auto calc(28.5rem * var(--gap,1));
+}
+/* half fills half the column; the picture's own ratio decides its height either way, so a
+   size never crops it. The alignment says which side the spare half goes to — with margin
+   auto on the free edge, not a transform, so the caption travels with the picture. */
+.about__fig--half{max-width:55rem}
+.about__fig--left{margin-left:0;margin-right:auto}
+.about__fig--right{margin-left:auto;margin-right:0}
+.about__fig--center{margin-left:auto;margin-right:auto}
+.about__fig img{
+  display:block;width:100%;height:auto;
+  opacity:0;transition:opacity .5s ease-out;
+}
+.about__fig img.ok{opacity:1}
+.about__fig figcaption{margin-top:.8rem;opacity:.6}
+/* a phone column has no room to give away: a half-width picture there is just a small one */
+@media (max-width:699px){
+  .about__fig{margin-bottom:calc(15rem * var(--gap,1))}
+  .about__fig--half{max-width:70%}
+}
+/* a copy block's alignment, set in the admin. These sit after .about__title's own centring so
+   they can override it — until now the title was centred and nothing else could be moved. */
+/* size is a multiple of what the block already was, never a fixed px: the page is drawn on a
+   scale that tracks the viewport, and a hard size would opt one block out of it. */
+/* the gap under a block, as a multiple of the gap it already had — same reason as the size:
+   a fixed px would step outside the page's scale. The steps run wide: a CV group's own gap is
+   only 12rem, so a half-and-a-half range moved it by a few dozen pixels and read as nothing. */
+/* the title used to pull itself up by 10rem, which quietly ate the gap the block above it had
+   been given: a 274px setting drew as 178px. Only the title that opens the page — the one right
+   after the head — still does that; anywhere else a title honours the space above it. */
+.about__head + .about__title{margin-top:-10rem}
+@media (max-width:699px){.about__head + .about__title{margin-top:-2.5rem}}
+.about__gap--none{--gap:0}
+.about__gap--sm{--gap:.35}
+.about__gap--md{--gap:1}
+.about__gap--lg{--gap:2}
+.about__gap--xl{--gap:3.2}
+.about__al--left{text-align:left}
+.about__al--center{text-align:center}
+.about__al--right{text-align:right}
+.about__fade{
+  opacity:0;transform:translateY(5rem);
+  transition:opacity 1.15s var(--ease-rise) 1s,transform 1.15s var(--ease-rise) 1s;
+}
+.view--about.is-in .about__fade{opacity:1;transform:translateY(0)}
+/* month labels on the grid use the shared reveal mask */
+.view--articles.is-in .dt-reveal>*{transform:translateY(0)}
+.about__thanks{
+  font-size:calc(min(calc(7.541px + 7.2973vw),11.7rem) * var(--sz,1));font-weight:700;line-height:var(--lh,1.1);text-transform:uppercase;
+  margin-bottom:calc(5rem * var(--gap,1));
+}
+
+.about__thanks div:nth-child(even){text-align:right}
+.about__credits{opacity:.5;padding-bottom:6rem;display:flex;flex-direction:column;gap:.6rem}
+
+/* ---------- film-grain noise overlay) ---------- */
+.noise{position:fixed;inset:0;pointer-events:none;will-change:transform;z-index:9999;overflow:hidden}
+/* the grain is a texture over the paintings; About is type on a flat panel, where it only
+   reads as dirt on the screen. The overlay lives on <body>, so the active view turns it off. */
+body:has(.view--about) .noise{display:none}
+/* About scrolls its own type under the fixed wordmark, and the two ran through each other —
+   the page's title, and the Korean lines behind it, crossed the logo. But the logo belongs at
+   the top of a page that has not moved yet; hiding it outright left the head bare. So it holds
+   its place while About sits at rest and steps aside the moment the copy climbs towards it
+   (views.js marks the body). */
+.wordmark{opacity:1;transition:transform 1.5s var(--ease-rise),opacity .45s ease}
+body.about-scrolled:has(.view--about) .wordmark{opacity:0}
+.noise::before{
+  content:"";position:absolute;top:-10rem;left:-10rem;
+  width:calc(100% + 20rem);height:calc(100% + 20rem);
+  background-image:url(/site/assets/noise.png);
+  opacity:.5;pointer-events:none;
+  animation:noise 1s steps(2) infinite;
+}
+/* the grain tile jitters so the fixed pattern never reads as a texture. Our own offsets,
+   over our own tile (site/assets/noise.png is generated, not taken from anywhere). */
+@keyframes noise{
+  0%{transform:translate3d(-6rem,3rem,0)}
+  12%{transform:translate3d(5rem,-7rem,0)}
+  25%{transform:translate3d(-3rem,-2rem,0)}
+  37%{transform:translate3d(8rem,5rem,0)}
+  50%{transform:translate3d(-8rem,-6rem,0)}
+  62%{transform:translate3d(1rem,8rem,0)}
+  75%{transform:translate3d(7rem,-3rem,0)}
+  87%{transform:translate3d(-5rem,6rem,0)}
+  to{transform:translate3d(4rem,-8rem,0)}
+}
