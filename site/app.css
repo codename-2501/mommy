@@ -984,11 +984,13 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
 .about__al--left{text-align:left}
 .about__al--center{text-align:center}
 .about__al--right{text-align:right}
+/* each block rises in as it scrolls into view (driven by an observer in views.js), rather than the
+   whole page revealing at once on entrance */
 .about__fade{
   opacity:0;transform:translateY(5rem);
-  transition:opacity 1.15s var(--ease-rise) 1s,transform 1.15s var(--ease-rise) 1s;
+  transition:opacity 1.05s var(--ease-rise),transform 1.05s var(--ease-rise);
 }
-.view--about.is-in .about__fade{opacity:1;transform:translateY(0)}
+.about__fade.is-seen{opacity:1;transform:translateY(0)}
 /* month labels on the grid use the shared reveal mask */
 .view--articles.is-in .dt-reveal>*{transform:translateY(0)}
 .about__thanks{

@@ -1006,11 +1006,27 @@ function mountAbout(view, content) {
 
   const sc = smoothTilt(maskInner, scroller);
 
+  /* each block rises in as it scrolls into view — revealed once its top climbs past ~88% up the
+     scroller. A sweep, not a one-shot observer: a fast throw or a jump to the bottom would let an
+     observer miss a block it never saw cross, leaving it blank. Anything at or above the line
+     counts as seen, so a skipped block is caught the moment the scroll settles. */
+  const fades = [].slice.call(scroller.querySelectorAll('.about__fade'));
+  const revealSeen = () => {
+    const top0 = maskInner.getBoundingClientRect().top;
+    const line = maskInner.clientHeight * 0.88;
+    for (let k = 0; k < fades.length; k++) {
+      const n = fades[k];
+      if (n.classList.contains('is-seen')) continue;
+      if (n.getBoundingClientRect().top - top0 < line) n.classList.add('is-seen');
+    }
+  };
+
   /* The wordmark is fixed and About scrolls its own type under it, so the two ran through each
      other. Hiding it outright left the top of the page bare — it belongs there while the page
      is at rest. It steps aside only once the copy starts climbing towards it. */
   const onScroll = () => {
     document.body.classList.toggle('about-scrolled', maskInner.scrollTop > 24);
+    revealSeen();
   };
   maskInner.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
@@ -1024,6 +1040,7 @@ function mountAbout(view, content) {
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
     view.classList.add('is-in');
+    revealSeen();                    // curtain is opening: reveal whatever the first screen shows
     setTimeout(() => sc.measure(), 600);
   }));
   sc.reset = () => sc.glideTo(0);   // re-tap the active tab: glide back to the top
