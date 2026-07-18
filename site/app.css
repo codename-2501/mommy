@@ -987,8 +987,8 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
 /* each block rises in as it scrolls into view (driven by an observer in views.js), rather than the
    whole page revealing at once on entrance */
 .about__fade{
-  opacity:0;transform:translateY(5rem);
-  transition:opacity 1.05s var(--ease-rise),transform 1.05s var(--ease-rise);
+  opacity:0;transform:translateY(2.4rem);
+  transition:opacity 1.15s var(--ease-rise),transform 1.15s var(--ease-rise);
 }
 .about__fade.is-seen{opacity:1;transform:translateY(0)}
 /* month labels on the grid use the shared reveal mask */
