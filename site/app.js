@@ -572,9 +572,13 @@ function renderView(name, mount) {
      as they do from the timeline. Only what is actually on screen can travel. */
   const openFrom = (s, box) => {
     healView();   // make the view whole before hiding the next three (see the carousel handler)
-    const slides = content.slides || [];
-    const n = slides.length;
-    const i = slides.findIndex((x) => x.id === s.id);
+    /* the neighbours that fly out — and the order the detail then pages through — follow THIS view's
+       order (the index's sort/colour filter), not the archive's own; else the flight and the detail's
+       next/prev would jump to works that are not beside the one on screen */
+    const order = (activeView && activeView.order && activeView.order())
+      || (content.slides || []).map((x) => x.id);
+    const n = order.length;
+    const i = order.indexOf(s.id);
     const pack = (slot) => {
       const img = slot && slot.querySelector('img');
       if (!slot || !img) return null;
@@ -583,13 +587,14 @@ function renderView(name, mount) {
       return { el: slot, src: img.currentSrc || img.src };
     };
     const slotFor = (k) => {
-      const id = n && slides[((k % n) + n) % n].id;
+      const id = n && order[((k % n) + n) % n];
       return id ? view.querySelector('.lse-slot[data-id="' + id + '"]') : null;
     };
     pendingFlip = {
       cur: pack(box),
       prev: i < 0 ? null : pack(slotFor(i - 1)),
       next: i < 0 ? null : pack(slotFor(i + 1)),
+      order: order,
     };
     flipSources = [pendingFlip.cur, pendingFlip.prev, pendingFlip.next]
       .filter(Boolean).map((f) => ({ box: f.el, src: f.src }));
@@ -1044,6 +1049,7 @@ function render() {
     pendingFlip = null;
     window.LSEDetail.open(app, {
       content, aspects,
+      order: flip && flip.order,     // page prev/next in the order the opening view showed (index sort etc.)
       closePath: lastViewPath,
       onSync: (i) => { if (carousel) carousel.goTo(i); },
       onLeave: flyDetailHome,     // the paintings fly back into the view +

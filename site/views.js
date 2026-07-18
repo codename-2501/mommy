@@ -489,6 +489,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   const content = el('div', 'agrid__in');
   outer.appendChild(content);
   view.appendChild(outer);
+  let orderedIds = [];   // the ids in the order they are shown — handed to the detail for prev/next
 
   const perRow = Math.round(tween(4, 12));
   const years = yearsByMonth(slides);
@@ -514,6 +515,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     if (buildRAF) { cancelAnimationFrame(buildRAF); buildRAF = 0; }
     let pairs = orderIndex(slides, colors, indexSort, indexSizeDir);
     if (indexSort === 'color' && indexColor) pairs = pairs.filter((p) => bucketOfPair(p) === indexColor);
+    orderedIds = pairs.map((p) => p.s.id);   // the order (and colour filter) the detail pages through
     const dateMode = indexSort.slice(0, 4) === 'date';
     const withLabels = dateMode || indexSort === 'size';   // months in time, 호 by size, nothing by colour
     content.replaceChildren();
@@ -815,7 +817,8 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     removeEventListener('resize', onResize);
     sc.destroy();
   }
-  return { ready, destroy, measure: sc.measure, scrollTo: sc.scrollTo, reset: () => sc.glideTo(0) };
+  return { ready, destroy, measure: sc.measure, scrollTo: sc.scrollTo, reset: () => sc.glideTo(0),
+    order: () => orderedIds.slice() };
 }
 
 /* One CV entry, whichever shape the admin saved it in.

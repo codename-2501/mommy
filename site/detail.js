@@ -318,7 +318,13 @@ function smoothScroll(sc) {
 
 function render(container, opts, id, flip, dir) {
   const { content, aspects } = opts;
-  const slides = content.slides || [];
+  const all = content.slides || [];
+  /* prev/next follow the order of the view the detail was opened from — the index's chosen sort, a
+     colour filter, and so on — so paging through the detail matches what was on screen. No order given
+     (timeline, flow) means the archive's own order. */
+  const slides = (opts.order && opts.order.length)
+    ? opts.order.map((oid) => all.find((s) => s.id === oid)).filter(Boolean)
+    : all;
   const i = slideIdx(slides, id);
   const s = slides[i];
   curId = id;
