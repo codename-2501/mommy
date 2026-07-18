@@ -715,12 +715,23 @@ function clearFlight(node) {
   node.style.transformOrigin = '';   // a deck-exit flight pivoted at centre; hand the frame back at 0 0
 }
 
+/* the flat layer paintings leaving the deck fly in — outside any preserve-3d, so z-index holds */
+function flipAir() {
+  let air = document.querySelector('.flip-air');
+  if (!air) { air = el('div', 'flip-air'); app.appendChild(air); }
+  return air;
+}
+
 /* the painting's own frame moves house into its new slot and flies the delta home.
-   No clone, no second <img> — the same pixels travel. */
-function prepareFlip(fromFlips, toFlips, noStagger) {
+   No clone, no second <img> — the same pixels travel.
+   flatFly (leaving the deck): the frame flies in a flat overlay instead of straight into its slot,
+   because the destination is drawn in 3D (timeline tilt, index grid) where z-index is ignored and the
+   painting would otherwise be drawn behind its neighbours mid-flight. It lands in the slot on finish. */
+function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
   const byId = new Map(toFlips.map((t) => [t.el.dataset.id, t]));
   const flights = [];
   const owners = [];
+  const air = flatFly ? flipAir() : null;
   const myGen = navGen;   // a later navigation may re-fly these frames; its cleanup, not ours, owns them
   for (const from of fromFlips) {
     const to = byId.get(from.el.dataset.id);
@@ -730,7 +741,21 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
     const srcCard = from.el.closest('.lse-card');
     const roty = srcCard && typeof srcCard._roty === 'number' ? srcCard._roty : 0;
     let endT = '';                      // where the flight lands — see the roty branch for why it matters
-    to.el.replaceChildren(from.el);
+    if (air) {
+      /* fly in the flat overlay: the frame's rest box IS the destination slot (viewport coords), so the
+         same centre-delta transform below still carries it from the deck to the slot. The slot waits
+         empty meanwhile; z-index (which works here) keeps the painting above the arriving view. */
+      air.appendChild(from.el);
+      from.el.style.left = to.bounds.left + 'px';
+      from.el.style.top = to.bounds.top + 'px';
+      from.el.style.width = to.bounds.width + 'px';
+      from.el.style.height = to.bounds.height + 'px';
+      from.el.style.margin = '0';
+      from.el.style.zIndex = String(100 + flights.length);
+      to.el.replaceChildren();
+    } else {
+      to.el.replaceChildren(from.el);
+    }
     to.el.style.visibility = '';        // a slot that lent its frame out was hidden — it is back
     if (roty) {
       /* a painting leaving the deck stands at its deck angle: fly from that angle to flat, turning and
@@ -778,7 +803,7 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
        jerk at the finish. A gentler ease-out spreads the deceleration across the whole flight. */
     const ease = roty ? 'cubic-bezier(.33,1,.68,1)' : 'var(--ease-travel)';
     from.el._flightGen = myGen;   // stamp who owns this flight now
-    flights.push({ el: from.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease });
+    flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease });
   }
   if (!flights.length) return null;
   return () => {
@@ -790,7 +815,23 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
     setTimeout(() => {
       /* only tidy a frame if a newer navigation has not adopted it — else we would wipe the transform
          that a transition still in flight depends on, snapping the painting mid-move */
-      for (const f of flights) { if (f.el._flightGen === myGen && settled(f.el)) clearFlight(f.el); }
+      for (const f of flights) {
+        if (f.el._flightGen !== myGen) continue;
+        if (air) {
+          /* land the overlay painting in its slot (or drop it if the destination view is already gone —
+             heal rebuilds a missing frame on the next open), then tidy */
+          if (f.to.isConnected) {
+            f.to.replaceChildren(f.el);
+            f.el.style.left = ''; f.el.style.top = ''; f.el.style.width = ''; f.el.style.height = '';
+            f.el.style.margin = ''; f.el.style.zIndex = '';
+            clearFlight(f.el);
+          } else {
+            f.el.remove();
+          }
+        } else if (settled(f.el)) {
+          clearFlight(f.el);
+        }
+      }
       for (const o of owners) { if (settled(o)) o.style.zIndex = ''; }
     }, FLIP.dur + last.delay + 50);
   };
@@ -933,7 +974,7 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
 
   const skipFlip = flags.fromFlow && flags.toAbout;     // About has no slots to receive the paintings
   const playFlip = fromFlips.length && !skipFlip
-    ? prepareFlip(fromFlips, toFlips, flags.toFlow)
+    ? prepareFlip(fromFlips, toFlips, flags.toFlow, flags.fromFlow)   // leaving the deck flies in the flat overlay
     : null;
   const playRise = prepareRise(targets, flags.fromFlow, flags.toFlow);
 
