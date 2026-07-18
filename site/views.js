@@ -681,29 +681,16 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   }
   paintBar();
 
-  /* the bar rides just under the wordmark, centred. The wordmark scales differently on a phone than
-     on a desktop, so no fixed rem sits under it on both — its foot is measured. And the wordmark
-     rides up into place over 1.5s as the index arrives, so the bar is glued to it frame by frame for
-     that window: they move as one, rather than the bar sitting still and snapping up at the end. */
   const wm = document.querySelector('.wordmark');
-  const STICKY_TOP = 18;   // where the bar catches near the top — a gap, not flush against the edge
+  const STICKY_TOP = 18;   // where the desktop bar catches near the top — a gap, not flush against the edge
 
-  /* The title slides up with the scroll and the bar follows, then catches near the top. The grid
-     scrolls on the compositor; if the title and bar moved by `top` (a layout property, on the main
-     thread) they would stutter against it — so once the title has ridden in they move by `translate`
-     instead, which the compositor draws, and they track the grid smoothly. During the ride-in the
-     bar is glued to the title's measured foot (the scroll is idle then); after it, the resting tops
-     are fixed once and only translate changes. */
+  /* DESKTOP: the title and bar move by `translate` each frame, tracking the wheel scroll and catching
+     near the top. The grid scrolls on the compositor; moving them by `top` (a layout property, on the
+     main thread) would stutter against it, so they move by `translate`, which the compositor draws.
+     (A phone does none of this in script — the touch fling starves the main thread, so the bar is
+     position:sticky in the scroller and the title fades on a scroll-threshold toggle; see .agrid__stick
+     and body.index-scrolled. The bar's rest offset there is a CSS margin, not a measured one.) */
   let frameRAF = 0, lastS = -1, frame0 = null, wmFoot = null, barH = null, onScroll = null;
-  /* MOBILE: the sticky bar rides on the compositor; the only thing script does is set where it starts
-     (under the measured wordmark foot, once) and fade the title out on scroll — a threshold toggle, not
-     a per-frame position, so nothing tracks the scroll on the starved main thread. */
-  function placeStick() {
-    if (!wm || !stick) return;
-    const foot = wm.getBoundingClientRect().bottom + outer.scrollTop;   // undo the scroll: the rest foot
-    if (foot) stick.style.marginTop = Math.round(foot + 16) + 'px';
-  }
-  /* DESKTOP: the title and bar move by `translate` each frame, tracking the wheel scroll. */
   function frameLoop(ts) {
     if (frame0 === null) frame0 = ts;
     const settling = ts - frame0 < 1700;   // the wordmark's rise lasts 1.5s
@@ -724,12 +711,11 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   }
   function onResize() {
     wmFoot = null; barH = null; frame0 = null; lastS = -1;
-    if (isMobile) placeStick();
     placeBlob(false);
   }
   if (isMobile) {
-    requestAnimationFrame(placeStick);
-    setTimeout(placeStick, 1700);   // re-measure once the title has ridden into place
+    /* the title slides up and fades as the grid scrolls — a threshold toggle (CSS), not a per-frame
+       position, so nothing tracks the fling on the starved main thread */
     onScroll = () => document.body.classList.toggle('index-scrolled', outer.scrollTop > 24);
     outer.addEventListener('scroll', onScroll, { passive: true });
     onScroll();

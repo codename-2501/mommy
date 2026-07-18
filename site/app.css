@@ -772,6 +772,11 @@ html.is-resizing .wordmark{transition:none}
 .agrid__stick{
   position:sticky;top:18px;z-index:14;
   display:flex;flex-direction:column;align-items:center;
+  /* the bar rests 16px under the wordmark's foot. That foot is not a flat rem across phone widths — the
+     wordmark's type carries a vw term — so a fixed rem drifts into the title at the wide end (699). This
+     tracks the measured foot (~105px + 5vw for the two-line wordmark) instead, holding the 16px gap at
+     every phone width, and needs no per-frame measuring that could inflate on re-entry. */
+  margin-top:calc(121px + 5vw);
   pointer-events:none;
 }
 .agrid__stick .agrid-sort{position:static;left:auto;top:auto;transform:none;pointer-events:auto}
@@ -780,8 +785,15 @@ html.is-resizing .wordmark{transition:none}
   transform:translateX(-50%) translateY(-6px) scale(.96);
 }
 .agrid__stick .agrid-pal.is-open{transform:translateX(-50%) translateY(0) scale(1)}
-/* the title is not moved per-frame on a phone (that judders); it fades out as the grid scrolls up */
-body.index-scrolled .wordmark{opacity:0}
+/* the title slides up and out as the grid scrolls — a threshold toggle, not a per-frame position, so it
+   rides the compositor on a CSS transition and never judders. translate (not transform) is used, so the
+   view-move's own transform transition is left alone; the two compose. Phone only. */
+@media (max-width:699px){
+  body:has(.view--articles) .wordmark{
+    transition:transform 1.5s var(--ease-rise),translate .5s var(--ease-rise),opacity .45s ease;
+  }
+  body.index-scrolled .wordmark{translate:0 -14rem;opacity:0}
+}
 .agrid-sort__row{position:relative;display:flex;gap:.4rem;align-items:stretch}
 /* the travelling drop, under the words; the chosen word rides over it and turns white */
 .agrid-sort__drop{position:absolute;inset:0;z-index:1;pointer-events:none}
