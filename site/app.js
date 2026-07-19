@@ -843,8 +843,13 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
         for (let k = 0; k <= N; k++) {
           const t = k / N;
           const p = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;   // ease-in-out over time
+          /* the angle unwinds LATER than the card travels and shrinks. Unwinding it early reads as the card
+             "letting go" of its deck tilt the instant you click; lagging it (qa < p) holds the deck angle
+             through the first half and flattens the card as it settles into its cell — the turn lands with
+             the painting instead of releasing up front. Size still follows p, so it shrinks smoothly. */
+          const qa = p * p;
           const tw = W0 + (W1 - W0) * p, th = H0 + (H1 - H0) * p;            // targets: straight down, no bump
-          const ang = roty * (1 - p), rx = cx * (1 - p), ry = cy * (1 - p);
+          const ang = roty * (1 - qa), rx = cx * (1 - p), ry = cy * (1 - p);
           const frame = (fx, fy) => 'translate3d(' + rx + 'px,' + ry + 'px,0) scaleX(' + fx + ') scaleY(' + fy + ') rotateY(' + ang + 'deg)';
           /* solve BOTH scales by measurement — width foreshortens with the angle and height picks up a little
              perspective too, so guess flat then correct each toward its target. */
