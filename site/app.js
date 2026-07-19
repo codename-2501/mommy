@@ -817,22 +817,25 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       f.el.style.transform = f.end;
     }
     const last = flights[flights.length - 1];
-    /* drop each 3D-layer painting into its slot once the flight has fully settled it — the carousel
-       (and the index) sit FLAT at rest, so a flat painting moving into a flat slot is a pure DOM move:
-       no resize, no snap. The size change is already spent, smoothly, over the flight itself. */
+    /* drop each 3D-layer painting into its slot the moment ITS OWN flight settles — not all of them at
+       once at the very end. Waiting for the last of a staggered set left the early arrivals hovering in
+       the air layer, then swapped the whole batch into place together, which read as "placed by the
+       motion, then a look-alike laid in behind and switched". Per-frame, each is the same object simply
+       arriving. The carousel and the index sit flat at rest, so a flat painting into a flat slot is a
+       pure DOM move — no resize, no snap; the size change is already spent over the flight. */
     if (air) {
-      setTimeout(() => {
-        for (const f of flights) {
-          if (f.el._flightGen !== myGen) continue;
+      for (const f of flights) {
+        setTimeout(() => {
+          if (f.el._flightGen !== myGen) return;
           if (f.to.isConnected) {
             f.to.replaceChildren(f.el);
             f.el.style.position = ''; f.el.style.left = ''; f.el.style.top = '';
             f.el.style.width = ''; f.el.style.height = ''; f.el.style.margin = '';
             clearFlight(f.el);
           } else { f.el.remove(); }            // destination gone — heal rebuilds it
-        }
-        for (const o of owners) { if (settled(o)) o.style.zIndex = ''; }
-      }, FLIP.dur + last.delay + 50);
+        }, FLIP.dur + f.delay + 40);
+      }
+      setTimeout(() => { for (const o of owners) { if (settled(o)) o.style.zIndex = ''; } }, FLIP.dur + last.delay + 60);
       return;
     }
     setTimeout(() => {
@@ -959,7 +962,11 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
   const retired = () => gen !== navGen || !view || !view.isConnected;
 
   await nextFrame();                    // rects exist only once the view is in the document
-  if (toCarousel) await whenReady(inst);
+  /* wait for the incoming view to settle its layout before the flip is measured — the timeline centres
+     its hand-over, and the index lays out and sizes its first rows, in a frame of their own. Measuring
+     the destination slots before that read a size the grid had not taken yet, so a painting flew to the
+     wrong size and snapped when it landed (worst arriving at the index, which has no such wait before). */
+  if (toCarousel || path === '/articles') await whenReady(inst);
   await nextFrame();
   if (retired()) {
     if (view) view.classList.remove('is-pre');
