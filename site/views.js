@@ -809,10 +809,15 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   requestAnimationFrame(() => {
     sc.measure();
     const idx = parseInt(document.body.dataset.index, 10);
+    /* land the handed work at the SAME reference the departure reads it from — the middle of the screen
+       (handOverIndex takes the row nearest innerHeight/2). Landing it at the top instead, as before, left
+       a gap between the two: on the desktop the tall top padding hid it, but on a phone the arrival top and
+       the departure middle sat a row apart, so every flow<->index round-trip drifted the centred work down
+       a row. Same reference both ways = no drift. */
     const cell = idx > 0 ? content.querySelector('[data-index="' + idx + '"]') : null;
-    const first = content.querySelector('[data-index]');
-    if (cell && first) {
-      sc.scrollTo(cell.getBoundingClientRect().top - first.getBoundingClientRect().top);
+    if (cell) {
+      const r = cell.getBoundingClientRect();
+      sc.scrollTo(r.top - innerHeight / 2);
     }
     markReady();
   });
