@@ -653,6 +653,11 @@ html.is-resizing .wordmark{transition:none}
 
 /* live flight (reparented img, way): the slot frees its clipping */
 .is-flying{overflow:visible !important;background:transparent !important}
+/* the layer the deck's paintings fly in on the way out: it carries the deck's perspective (origin set in
+   app.js) so the rotateY foreshortens the same, and preserve-3d makes translateZ order the overlap — the
+   painting keeps the deck's stacking until it drops into its slot. Above the views, under the menu/detail. */
+.flip-air{position:fixed;inset:0;z-index:15;pointer-events:none;perspective:1000px;transform-style:preserve-3d}
+.flip-air>.lse-frame{position:absolute}
 /* old strip images slide with the same curve while leaving; no clicks while dying */
 .dt-strip--out{pointer-events:none}
 .dt-strip--out *{pointer-events:none !important}
