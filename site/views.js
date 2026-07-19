@@ -491,16 +491,17 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   view.appendChild(outer);
   let orderedIds = [];   // the ids in the order they are shown — handed to the detail for prev/next
 
-  /* every cell is the deck's own 20rem card width — fixed px — so a painting is the same size in the deck,
-     the timeline and here, and the flip only moves and turns it, never resizes. The row holds as many as
-     fit and centres them: about seven on a desktop, and on a phone a single wide column (the trade for a
-     flip that stays continuous everywhere, the size the archive's owner chose). */
+  /* the desktop cell is the deck's own 20rem card width — fixed px — so there the flip never resizes. A phone
+     is too narrow to hold that width more than once and a single column read too sparse, so the phone keeps
+     a four-up overview; the painting resizes into the smaller cell on the way from the deck, but the flip
+     starts it at the deck's own size and eases it down smoothly (app.js), so it is one continuous move, not
+     a snap. */
   const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
   const mobile = innerWidth <= 699;
   const cardW = 20 * rem;
   const colGap = (mobile ? 1 : 2) * rem;
-  const perRow = Math.max(1, Math.floor((innerWidth - 4 * rem + colGap) / (cardW + colGap)));
-  const gridCols = 'repeat(' + perRow + ',' + Math.round(cardW) + 'px)';
+  const perRow = mobile ? 4 : Math.max(1, Math.floor((innerWidth - 4 * rem + colGap) / (cardW + colGap)));
+  const gridCols = mobile ? 'repeat(4,1fr)' : 'repeat(' + perRow + ',' + Math.round(cardW) + 'px)';
   const years = yearsByMonth(slides);
 
   /* the grid is torn down and laid out again on every sort change; the month bands only mean
