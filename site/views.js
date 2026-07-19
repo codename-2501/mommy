@@ -504,10 +504,10 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   let orderedIds = [];   // the ids in the order they are shown — handed to the detail for prev/next
 
   /* the desktop cell is the deck's own 20rem card width — fixed px — so there the flip never resizes. A phone
-     holds four across for a denser overview. The four-column cell is smaller than the deck card's angled-and-
-     foreshortened on-screen width, so the flip un-foreshortens (grows) as it also shrinks to the cell — a
-     small mid-flight bump is the cost of the denser grid. (Two columns removed the bump, the cell being wider
-     than the foreshortened card so the resize ran one way; the trade is fewer works in view.) */
+     holds four across for a denser overview. The four-column cell is narrower than the deck card's angled-and-
+     foreshortened on-screen width, so a flight that simply unwinds the angle would widen the card before it
+     settles (a grow-then-shrink bump). The deck-exit flight solves that by driving the projected width down
+     monotonically (see monotoneShrink in app.js) — the card only ever shrinks into its cell, no bump. */
   const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
   const mobile = innerWidth <= 699;
   const cardW = 20 * rem;

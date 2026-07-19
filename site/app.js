@@ -726,6 +726,7 @@ function finalizeFlights() {
   const air = document.querySelector('.flip-air');
   if (!air || !air.firstChild) return;
   for (const f of [...air.children]) {
+    f.getAnimations().forEach((a) => a.cancel());   // a big-shrink flight holds a keyframe animation; drop it
     const to = f._flightTo;
     if (to && to.isConnected) {
       to.replaceChildren(f);
@@ -806,16 +807,15 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
         scale *= from.bounds.width / shown;
       }
     };
+    /* how much the deck card must shrink to fit its destination slot. ~1 for every ->timeline (same size)
+       and the desktop; >1 only for the phone's smaller index cell. */
+    const shrink = from.boxW && to.bounds.width ? from.boxW / to.bounds.width : 1;
+    let monoFrames = null;
     if (roty && air) {
       /* fly in the deck's own perspective layer (set on .flip-air above). Sitting the frame at its slot
          and shifting it back to the deck spot (cx,cy) with the deck angle renders it as the deck did — no
-         per-frame perspective, no reparent snap. Where the destination is a DIFFERENT size than the deck
-         (the phone's smaller index cell), start the frame scaled to the deck's OWN size and ease that scale
-         to 1 over the flight, so the painting begins exactly as it looked in the deck and shrinks into its
-         slot smoothly, instead of snapping to the slot size the instant the flip takes over. When the sizes
-         already match (desktop, and every ->timeline), the start scale is 1 and nothing changes. It travels
-         to the slot (cx,cy -> 0), turns flat (rotateY -> 0) and resizes as one move; the slot waits empty. */
-      let startScale = to.bounds.width ? (from.boxW || from.bounds.width) / to.bounds.width : 1;
+         per-frame perspective, no reparent snap. It travels to the slot (cx,cy -> 0), turns flat
+         (rotateY -> 0) and resizes as one move; the slot waits empty. */
       air.appendChild(from.el);
       from.el._flightTo = to.el;   // so a navigation that interrupts this flight can land it (finalizeFlights)
       from.el.style.position = 'absolute';
@@ -825,20 +825,58 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       from.el.style.transformOrigin = '50% 50%';
       from.el.style.transition = 'none';
       to.el.replaceChildren();
-      const pose = (s) => 'translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + s + ') rotateY(' + roty + 'deg)';
-      /* Match the deck's rendered width EXACTLY at the start. from.boxW/to.width is the right scale in theory,
-         but the flight layer's perspective foreshortens a hair harder than the deck did, so that scale renders
-         ~9% narrow — a small but real snap the instant the flip takes over (the "clicks and it shrinks now"
-         feel). Converge the scale until the shown width equals the deck card's (from.bounds.width), the same
-         trick the non-air branch already uses, so the flight begins pixel-for-pixel where the deck left off. */
-      for (let pass = 0; pass < 4; pass++) {
+      if (shrink > 1.25) {
+        /* A big shrink (deck -> the phone's small index cell) cannot just unwind the angle: unwinding
+           UN-foreshortens the card, which WIDENS it before it can shrink — a grow-then-shrink bump that reads
+           as "click and it swells, then drops". So don't drive the transform and let the size fall out of it;
+           drive the SIZE directly. Sample the flight, and at each step hold the angle and position it has
+           there and MEASURE the scale that renders the target width and height, so the projected box only ever
+           shrinks — width AND height fall monotonically from the deck's rendered size to the flat cell.
+           Width and height need their OWN scale: rotateY squeezes width but not height, and the layer's
+           perspective foreshortens a hair unlike the deck, so a single uniform scale that matched one would
+           snap the other (matching width alone inflated the height — the "height grows on click"). */
+        const W0 = from.bounds.width, H0 = from.bounds.height;   // the deck's rendered box (start)
+        const W1 = to.bounds.width, H1 = to.bounds.height;       // the flat cell (end)
+        const cellH = to.bounds.height || 1;
+        const N = 8;
+        monoFrames = [];
+        for (let k = 0; k <= N; k++) {
+          const t = k / N;
+          const p = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;   // ease-in-out over time
+          const tw = W0 + (W1 - W0) * p, th = H0 + (H1 - H0) * p;            // targets: straight down, no bump
+          const ang = roty * (1 - p), rx = cx * (1 - p), ry = cy * (1 - p);
+          const frame = (fx, fy) => 'translate3d(' + rx + 'px,' + ry + 'px,0) scaleX(' + fx + ') scaleY(' + fy + ') rotateY(' + ang + 'deg)';
+          /* solve BOTH scales by measurement — width foreshortens with the angle and height picks up a little
+             perspective too, so guess flat then correct each toward its target. */
+          let sx = tw / W1, sy = th / cellH;
+          for (let pass = 0; pass < 3; pass++) {
+            from.el.style.transform = frame(sx, sy);
+            const r = from.el.getBoundingClientRect();
+            if (r.width < 2) break;
+            const okW = Math.abs(r.width - tw) < 0.4, okH = Math.abs(r.height - th) < 0.4;
+            if (okW && okH) break;
+            if (!okW) sx *= tw / r.width;
+            if (!okH) sy *= th / r.height;
+          }
+          monoFrames.push(frame(sx, sy));
+        }
+        from.el.style.transform = monoFrames[0];        // start pose = the deck's exact box, no snap
+        endT = monoFrames[monoFrames.length - 1];
+      } else {
+        /* same-size (->timeline, desktop): unwind the angle as one eased move. Converge the start scale so
+           the flight begins pixel-for-pixel where the deck left off (the layer foreshortens a hair unlike
+           the deck, so the plain from.boxW/to.width would snap a few percent). */
+        let startScale = to.bounds.width ? (from.boxW || from.bounds.width) / to.bounds.width : 1;
+        const pose = (s) => 'translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + s + ') rotateY(' + roty + 'deg)';
+        for (let pass = 0; pass < 4; pass++) {
+          from.el.style.transform = pose(startScale);
+          const shown = from.el.getBoundingClientRect().width;
+          if (shown < 2 || Math.abs(shown - from.bounds.width) < 0.5) break;
+          startScale *= from.bounds.width / shown;
+        }
         from.el.style.transform = pose(startScale);
-        const shown = from.el.getBoundingClientRect().width;
-        if (shown < 2 || Math.abs(shown - from.bounds.width) < 0.5) break;
-        startScale *= from.bounds.width / shown;
+        endT = 'translate3d(0px,0px,0) scale(1) rotateY(0deg)';
       }
-      from.el.style.transform = pose(startScale);
-      endT = 'translate3d(0px,0px,0) scale(1) rotateY(0deg)';
     } else {
       to.el.replaceChildren(from.el);
       to.el.style.visibility = '';        // a slot that lent its frame out was hidden — it is back
@@ -854,25 +892,29 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
         from.el.style.transform = 'translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + scale + ')';
       }
     }
-    /* A painting leaving the deck for a SMALLER slot (the phone's index cell) both shrinks and unwinds its
-       angle. The deck-turn ease (.33,1,.68,1) front-loads — nearly done by a third of the flight — which is
-       right when the size holds (every ->timeline: only the angle unwinds, and a quick, decisive turn reads
-       well). But with a big shrink added, front-loading collapses the width and untwists the card the instant
-       the flip takes over: it reads as a snap, not a glide. So when the slot is much smaller than the deck
-       card, ease IN — start from near-zero speed so the painting lingers at its deck size and eases into the
-       shrink-and-turn, spreading it across the whole flight instead of the first third. */
-    const shrink = from.boxW && to.bounds.width ? from.boxW / to.bounds.width : 1;
-    const ease = shrink > 1.25 ? 'cubic-bezier(.4,0,.2,1)'          // deck -> smaller slot: ease into the shrink
-      : (roty || noStagger) ? 'cubic-bezier(.33,1,.68,1)'          // same-size deck turn / deck arrival
-      : 'var(--ease-travel)';                                       // flat flights
+    /* the deck-turn ease (.33,1,.68,1) front-loads — nearly done by a third of the flight — which reads well
+       when only the angle unwinds (->timeline, same size). A big shrink drives its own eased keyframes above
+       (monoFrames), so this ease covers the rest: deck arrivals and same-size deck turns take the gentle
+       ease-out, flat flights the travel ease. */
+    const ease = (roty || noStagger) ? 'cubic-bezier(.33,1,.68,1)' : 'var(--ease-travel)';
     from.el._flightGen = myGen;   // stamp who owns this flight now
-    flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease });
+    flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease, mono: monoFrames });
   }
   if (!flights.length) return null;
   return () => {
     for (const f of flights) {
-      f.el.style.transition = 'transform ' + FLIP.dur + 'ms ' + f.ease + ' ' + f.delay + 'ms';
-      f.el.style.transform = f.end;
+      if (f.mono) {
+        /* the big-shrink flight rides pre-solved keyframes (monoFrames) so its projected box only shrinks —
+           a plain transition would let the un-foreshorten bump back in. Values are already time-eased, so
+           the animation runs them linearly. fill:both holds the start until the (staggered) delay and the
+           end after; the landing cancels it once the frame is a real cell child. */
+        f.el.style.transition = 'none';
+        f.anim = f.el.animate(f.mono.map((tf) => ({ transform: tf })),
+          { duration: FLIP.dur, delay: f.delay, easing: 'linear', fill: 'both' });
+      } else {
+        f.el.style.transition = 'transform ' + FLIP.dur + 'ms ' + f.ease + ' ' + f.delay + 'ms';
+        f.el.style.transform = f.end;
+      }
     }
     const last = flights[flights.length - 1];
     /* drop each 3D-layer painting into its slot the moment ITS OWN flight settles — not all of them at
@@ -890,7 +932,8 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
             f.el.style.position = ''; f.el.style.left = ''; f.el.style.top = '';
             f.el.style.width = ''; f.el.style.height = ''; f.el.style.margin = '';
             clearFlight(f.el);
-          } else { f.el.remove(); }            // destination gone — heal rebuilds it
+            if (f.anim) f.anim.cancel();        // drop the keyframe hold; the frame is now a flat cell child
+          } else { if (f.anim) f.anim.cancel(); f.el.remove(); }   // destination gone — heal rebuilds it
         }, FLIP.dur + f.delay + 40);
       }
       setTimeout(() => { for (const o of owners) { if (settled(o)) o.style.zIndex = ''; } }, FLIP.dur + last.delay + 60);
