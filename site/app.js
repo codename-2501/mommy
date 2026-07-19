@@ -953,6 +953,11 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
   viewEl = view;                        // current from this moment on, even mid-flight
   const inst = activeView || carousel;
 
+  /* the index scrolls its own container natively, and it is scrollable the instant it mounts — so a
+     scroll during the arrival would slide the grid while the paintings are still flying in on their
+     own fixed-layer transforms, and they float free. Hold the grid until the flight has landed. */
+  if (path === '/articles' && inst && inst.lockScroll) inst.lockScroll();
+
   /* if this interrupted a flight, stop it NOW — before the awaits below (a to-flow/-timeline leg waits
      for the incoming deck to be ready, and the interrupted paintings would drift the whole time, so the
      later measure would read them somewhere they no longer visually are). Freeze at the click. */
@@ -1001,6 +1006,15 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
     if (playRise) playRise();
   });
   if (path === '/') setTimeout(() => view.classList.remove('no-rise'), FLIP.dur + 200);
+  if (path === '/articles' && inst && inst.unlockScroll) {
+    if (playFlip) {
+      /* let the grid scroll again once the last painting has landed (staggered flights land latest) */
+      const settle = FLIP.dur + fromFlips.length * FLIP.stagger + 120;
+      setTimeout(() => { if (activeView === inst) inst.unlockScroll(); }, settle);
+    } else {
+      inst.unlockScroll();   // nothing flying in (fresh load / rise-only) — nothing to float over
+    }
+  }
 }
 
 /* ---------- router ---------- */

@@ -823,8 +823,14 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     removeEventListener('resize', onResize);
     sc.destroy();
   }
+  /* hold the grid still while the paintings are still flying in: an early scroll would carry the grid
+     out from under the frames mid-flight (they ride their own fixed-layer transforms, not the scroll),
+     and they read as floating. Programmatic scrollTop still works under overflow:hidden, so the arrival
+     hand-over that lands you on the work you left is unaffected. */
   return { ready, destroy, measure: sc.measure, scrollTo: sc.scrollTo, reset: () => sc.glideTo(0),
-    order: () => orderedIds.slice() };
+    order: () => orderedIds.slice(),
+    lockScroll: () => { outer.style.overflowY = 'hidden'; },
+    unlockScroll: () => { outer.style.overflowY = ''; } };
 }
 
 /* One CV entry, whichever shape the admin saved it in.
