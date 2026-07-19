@@ -773,7 +773,10 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       /* fly in the 3D layer: it carries the deck's perspective (no inline perspective() here), so the
          angle matches; translateZ ordered on screen x (leftmost most forward) keeps the deck's left-in-
          front overlap and eases to 0 as the cards spread. The slot waits empty until the landing. */
-      const lift = Math.max(0, Math.round((innerWidth - from.bounds.left) * 0.25));
+      /* only the ORDER of the lift matters (it just sorts the overlap in this preserve-3d); keep the value
+         small so the perspective zoom it adds — which the linear scale can only cancel at the ends, not
+         mid-flight — stays imperceptible. A big lift (it was ~x0.25 of the width) breathed on the desktop. */
+      const lift = Math.max(0, Math.min(48, Math.round((1 - from.bounds.left / innerWidth) * 40)));
       air.appendChild(from.el);
       from.el.style.position = 'absolute';
       from.el.style.left = to.bounds.left + 'px'; from.el.style.top = to.bounds.top + 'px';
