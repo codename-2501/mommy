@@ -96,29 +96,18 @@ function mount(view, slides, aspects, opts, onOpen) {
   });
 
   /* single set of slides — each one wraps around individually every frame
-     (the track never becomes one huge moving layer, which would blow up the composite).
-     Built lazily: only the slides on (or near) the screen are made at first, the rest as the
-     deck carries them into view. Building all ~200 at the click — nodes, images, and a layout
-     of the whole row — was the synchronous cost that stiffened leaving the deck for the timeline.
-     Position is index-based (pad + k*step, set as a transform every frame), so DOM/append order
-     does not matter: a slide dropped in late still lands exactly where its index puts it. */
-  const N = slides.length;
+     (the track never becomes one huge moving layer, which would blow up the composite) */
   let moved = false;
-  const items = new Array(N).fill(null);
-  const contents = new Array(N).fill(null);
-  const onScreen = new Uint8Array(N);
-  const placed = new Uint8Array(N);               // has this slide ever been given a transform?
-
-  function build(i) {
-    if (items[i]) return items[i];
-    const s = slides[i];
+  const items = [], contents = [];
+  slides.forEach((s, i) => {
     const item = buildItem(s, i, ratios[i]);
     item.addEventListener('click', () => { if (!moved) onOpen(s, item); });
     track.appendChild(item);
-    items[i] = item;
-    contents[i] = item.firstChild.firstChild;     // .car-entr > .car-content
-    return item;
-  }
+    items.push(item);
+    contents.push(item.firstChild.firstChild);   // .car-entr > .car-content
+  });
+  const onScreen = new Uint8Array(items.length);
+  const placed = new Uint8Array(items.length);   // has this slide ever been given a transform?
 
   /* ---------- geometry ---------- */
   let rem = rootPx();
@@ -139,7 +128,7 @@ function mount(view, slides, aspects, opts, onOpen) {
     const a = wrapIdx(Math.round(cur / step));
     if (a === active) return;
     if (items[active]) items[active].classList.remove('lse-centred');
-    build(a).classList.add('lse-centred');        // the centred slide always exists to carry the flip
+    items[a].classList.add('lse-centred');
     active = a;
   }
 
@@ -181,16 +170,14 @@ function mount(view, slides, aspects, opts, onOpen) {
         const sx = left - d;                   // on-screen x of the slide
         const vis = sx > -step && sx < innerWidth + step;
         if (vis) {
-          const item = items[k] || build(k);    // carry it into view the moment it belongs on screen
-          item.style.transform = 'translate3d(' + (-d) + 'px,0,0)';
+          items[k].style.transform = 'translate3d(' + (-d) + 'px,0,0)';
           if (ry) contents[k].style.transform = ry;
           onScreen[k] = 1;
           placed[k] = 1;
-        } else if (items[k] && (onScreen[k] || !placed[k])) {
-          /* only slides already built need parking. !placed: a built slide that has never been
-             positioned still sits at its natural flex spot — which is ON screen. Starting anywhere
-             but slide 0 (the index handover) would leave it there, overlapping the slides that
-             belong in that spot. An unbuilt slide is simply absent, so it needs no parking. */
+        } else if (onScreen[k] || !placed[k]) {
+          /* !placed: a slide that has never been positioned still sits at its natural flex
+             spot — which is ON screen. Starting anywhere but slide 0 (the index handover)
+             would leave it there, overlapping the slides that belong in that spot. */
           items[k].style.transform = 'translate3d(' + (-d) + 'px,0,0)';   // park just off-screen
           onScreen[k] = 0;
           placed[k] = 1;
@@ -263,12 +250,6 @@ function mount(view, slides, aspects, opts, onOpen) {
     const j = idx >= 0 ? idx : 0;
     const slideW = step - tween(1.2, 2) * rem;
     target = cur = j * step - (innerWidth * 0.5 - 2 * rem - slideW / 2);
-    /* build the slides that arrive on this first screen NOW, before the flip is measured (app.js):
-       the paintings leaving the deck fly into these very slots, and a destination the measure cannot
-       find is a painting that does not fly. The deck shows at most ~16 abreast, so a generous window
-       either side of the centred work covers every flip target plus the timeline's own first screen. */
-    const W = Math.max(24, Math.ceil(innerWidth / step) + 8);
-    for (let o = -W; o <= W; o++) build(wrapIdx(j + o));
     markActive();
     /* entrance offsets — each item enters from y = viewportBottom - itemTop.
        item rects are safe to read: only children carry the entrance/wrap transforms.
@@ -277,7 +258,6 @@ function mount(view, slides, aspects, opts, onOpen) {
        frame of a flip-in (e.g. leaving the deck for the timeline). */
     if (!view.classList.contains('no-rise')) {
       for (const item of items) {
-        if (!item) continue;
         const top = item.getBoundingClientRect().top;
         item.firstChild.style.setProperty('--ey', Math.max(0, innerHeight - top + 40) + 'px');
       }
@@ -292,9 +272,9 @@ function mount(view, slides, aspects, opts, onOpen) {
     reset() { const slideW = step - tween(1.2, 2) * rem; target = -(innerWidth * 0.5 - 2 * rem - slideW / 2); },   // re-tap the active tab: glide (target only) back to the first work
     freeze() {                                      // halt drift + clear skew (flip measure)
       target = cur;
-      for (let k = 0; k < contents.length; k++) { if (contents[k]) contents[k].style.transform = ''; }
+      for (let k = 0; k < contents.length; k++) contents[k].style.transform = '';
     },
-    itemAt(i) { return build(i); },                 // a caller that reaches for a slide gets it built
+    itemAt(i) { return items[i] || null; },
     destroy() {
       cancelAnimationFrame(raf);
       ruler.destroy();
