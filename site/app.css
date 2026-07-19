@@ -727,23 +727,6 @@ html.is-resizing .wordmark{transition:none}
    scrollport means a row leans away from the viewer as it climbs and towards them at the
    bottom: the top edge of a high row is further off than its bottom edge, and it draws
    narrower. */
-@keyframes rowTilt{
-  from{transform:rotateX(16deg)}
-  50% {transform:rotateX(0deg)}
-  to  {transform:rotateX(-16deg)}
-}
-@supports (animation-timeline: view()){
-  .agrid{perspective:900px;perspective-origin:50% 50%}
-  /* perspective reaches direct children only; the column between the scrollport and the rows
-     would flatten it back out unless it keeps the 3D context alive */
-  .agrid__in{transform-style:preserve-3d}
-  .agrid__row{
-    animation:rowTilt linear both;
-    animation-timeline:view(block);
-    animation-range:entry 0% exit 100%;
-    transform-style:preserve-3d;
-  }
-}
 @media (max-width:699px){
   .agrid__in{gap:7rem;padding-top:7.5rem}   /* top clearance now comes from the sticky bar's margin (views.js) */
   .agrid__row{gap:1rem}
