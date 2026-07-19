@@ -134,7 +134,7 @@ function mount(view, slides, aspects, opts, onOpen) {
 
   function resize() {
     rem = rootPx();
-    const slideW = tween(20, 28.1) * rem;
+    const slideW = 20 * rem;   // the deck's own card width — kept 20rem everywhere so the flip never resizes
     const gap = tween(1.2, 2) * rem;
     const prevStep = step;
     step = slideW + gap;

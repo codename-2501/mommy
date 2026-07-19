@@ -116,11 +116,11 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
   let hoverIdx = -1;              // the card the cursor is lifting (see mouseenter above)
 
   function measure() {
-    /* a deck card is the same width as a timeline card (~20rem on a phone, ~28.1rem on the desktop), so
-       a painting flying between the deck and the timeline keeps its size — the flip turns and travels it
-       without also resizing it. Set before the bounds are read so they measure the real card. */
+    /* the deck keeps its own 20rem card — the timeline and the index are matched DOWN to it (not the deck
+       widened up to them), so a painting flying between views keeps its size and the flip never resizes it.
+       Set before the bounds are read so they measure the real card. */
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
-    deck.style.setProperty('--flow-w', (tween(20, 28.1) * rem) + 'px');
+    deck.style.setProperty('--flow-w', (20 * rem) + 'px');
     const P = Math.round(tween(7, 16));   // cards abreast across the viewport
     const spread = innerWidth / P;
     rest = (innerHeight / (P * 1.5)) * 0.4;   // bob amplitude
@@ -491,16 +491,16 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   view.appendChild(outer);
   let orderedIds = [];   // the ids in the order they are shown — handed to the detail for prev/next
 
-  /* the desktop cell is EXACTLY the timeline/deck card width (tween ~28.1rem) — fixed px — so a painting
-     keeps its size and the flip never resizes it there. A phone is too narrow to hold that width more than
-     once, and a single column read too sparse, so the phone keeps a four-up overview (the painting does
-     resize into it on the way from the deck, but smoothly over the flight). */
+  /* every cell is the deck's own 20rem card width — fixed px — so a painting is the same size in the deck,
+     the timeline and here, and the flip only moves and turns it, never resizes. The row holds as many as
+     fit and centres them: about seven on a desktop, and on a phone a single wide column (the trade for a
+     flip that stays continuous everywhere, the size the archive's owner chose). */
   const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
   const mobile = innerWidth <= 699;
-  const cardW = tween(20, 28.1) * rem;
+  const cardW = 20 * rem;
   const colGap = (mobile ? 1 : 2) * rem;
-  const perRow = mobile ? 4 : Math.max(1, Math.floor((innerWidth - 4 * rem + colGap) / (cardW + colGap)));
-  const gridCols = mobile ? 'repeat(4,1fr)' : 'repeat(' + perRow + ',' + Math.round(cardW) + 'px)';
+  const perRow = Math.max(1, Math.floor((innerWidth - 4 * rem + colGap) / (cardW + colGap)));
+  const gridCols = 'repeat(' + perRow + ',' + Math.round(cardW) + 'px)';
   const years = yearsByMonth(slides);
 
   /* the grid is torn down and laid out again on every sort change; the month bands only mean
