@@ -196,7 +196,12 @@ function mount(view, slides, aspects, opts, onOpen) {
   raf = requestAnimationFrame(frame);
 
   /* ---------- input ---------- */
+  /* held true while the paintings are still flying in (app.js): a scroll then would slide the arriving
+     slides while the frames ride their own fixed-layer flight, and they float free of the timeline.
+     Programmatic moves (the arrival hand-over) go through target directly and are unaffected. */
+  let inputLocked = false;
   function onDown(e) {
+    if (inputLocked) return;
     dragging = true; moved = false;
     startX = e.clientX; startY = e.clientY; startTarget = target;
     wrap.classList.add('is-active');
@@ -212,6 +217,7 @@ function mount(view, slides, aspects, opts, onOpen) {
     wrap.classList.remove('is-active');
   }
   function onWheel(e) {
+    if (inputLocked) return;
     if (window.LSEDetail && window.LSEDetail.isOpen) return;   // detail owns the wheel
     // wheelDeltaY where the browser gives it (it is the smoother of the two signals)
     const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
@@ -221,6 +227,7 @@ function mount(view, slides, aspects, opts, onOpen) {
     return Math.round(target / step);
   }
   function onKey(e) {
+    if (inputLocked) return;
     if (window.LSEDetail && window.LSEDetail.isOpen) return;
     if (document.activeElement && document.activeElement.nodeName === 'INPUT') return;
     if (e.key === 'ArrowUp') { target -= KEY_STEP; }
@@ -275,6 +282,8 @@ function mount(view, slides, aspects, opts, onOpen) {
       for (let k = 0; k < contents.length; k++) contents[k].style.transform = '';
     },
     itemAt(i) { return items[i] || null; },
+    lockScroll() { inputLocked = true; },
+    unlockScroll() { inputLocked = false; },
     destroy() {
       cancelAnimationFrame(raf);
       ruler.destroy();
