@@ -116,6 +116,11 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
   let hoverIdx = -1;              // the card the cursor is lifting (see mouseenter above)
 
   function measure() {
+    /* a deck card is the same width as a timeline card (~20rem on a phone, ~28.1rem on the desktop), so
+       a painting flying between the deck and the timeline keeps its size — the flip turns and travels it
+       without also resizing it. Set before the bounds are read so they measure the real card. */
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
+    deck.style.setProperty('--flow-w', (tween(20, 28.1) * rem) + 'px');
     const P = Math.round(tween(7, 16));   // cards abreast across the viewport
     const spread = innerWidth / P;
     rest = (innerHeight / (P * 1.5)) * 0.4;   // bob amplitude
@@ -497,7 +502,10 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   view.appendChild(outer);
   let orderedIds = [];   // the ids in the order they are shown — handed to the detail for prev/next
 
-  const perRow = Math.round(tween(4, 12));
+  /* fewer, larger cells so a painting is the same size here as in the timeline (~28rem wide on the
+     desktop): the flip between the two no longer has to resize it. The overview reads less at a glance
+     as a result — the trade the archive's owner asked for. */
+  const perRow = Math.round(tween(2, 5));
   const years = yearsByMonth(slides);
 
   /* the grid is torn down and laid out again on every sort change; the month bands only mean
