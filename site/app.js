@@ -842,11 +842,17 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
         from.el.style.transform = 'translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + scale + ')';
       }
     }
-    /* --ease-travel front-loads hard, so a card races in then brakes. That reads fine over the timeline's
-       long, spread-out flights, but the index grid is clustered near centre: the same ease over a short
-       hop lands too abruptly. Deck arrivals (noStagger) and the deck-angle turn (roty) both use a gentler
-       ease-out that spreads the deceleration across the flight, so index->flow reads like timeline->flow. */
-    const ease = (roty || noStagger) ? 'cubic-bezier(.33,1,.68,1)' : 'var(--ease-travel)';
+    /* A painting leaving the deck for a SMALLER slot (the phone's index cell) both shrinks and unwinds its
+       angle. The deck-turn ease (.33,1,.68,1) front-loads — nearly done by a third of the flight — which is
+       right when the size holds (every ->timeline: only the angle unwinds, and a quick, decisive turn reads
+       well). But with a big shrink added, front-loading collapses the width and untwists the card the instant
+       the flip takes over: it reads as a snap, not a glide. So when the slot is much smaller than the deck
+       card, ease IN — start from near-zero speed so the painting lingers at its deck size and eases into the
+       shrink-and-turn, spreading it across the whole flight instead of the first third. */
+    const shrink = from.boxW && to.bounds.width ? from.boxW / to.bounds.width : 1;
+    const ease = shrink > 1.25 ? 'cubic-bezier(.4,0,.2,1)'          // deck -> smaller slot: ease into the shrink
+      : (roty || noStagger) ? 'cubic-bezier(.33,1,.68,1)'          // same-size deck turn / deck arrival
+      : 'var(--ease-travel)';                                       // flat flights
     from.el._flightGen = myGen;   // stamp who owns this flight now
     flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease });
   }
