@@ -847,7 +847,10 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
 
 /* slots with no painting of their own coming in rise from below the fold */
 function prepareRise(targets, fromFlow, toFlow) {
-  const start = fromFlow ? RISE.fromFlow : RISE.start;
+  /* the arriving grid/track rises on the same beat whichever view you left — leaving the deck used to
+     hold it back (RISE.fromFlow) so the fold read first, but that made flow->index start lower and later
+     than timeline->index, a visible mismatch. One start for all. */
+  const start = RISE.start;
   const risers = [];
   for (const t of targets) {
     const b = t.bounds;

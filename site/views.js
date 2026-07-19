@@ -490,15 +490,16 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   view.appendChild(outer);
   let orderedIds = [];   // the ids in the order they are shown — handed to the detail for prev/next
 
-  /* a cell is EXACTLY the timeline/deck card width (tween 20rem->28.1rem) — fixed px, not a fraction of
-     the row — so a painting is the same size here as everywhere and the flip between views never resizes
-     it. The row holds as many as fit and centres them. On a phone that is one wide column; on the desktop
-     about five. The overview reads less at a glance as a result — the trade the archive's owner asked for. */
+  /* the desktop cell is EXACTLY the timeline/deck card width (tween ~28.1rem) — fixed px — so a painting
+     keeps its size and the flip never resizes it there. A phone is too narrow to hold that width more than
+     once, and a single column read too sparse, so the phone keeps a four-up overview (the painting does
+     resize into it on the way from the deck, but smoothly over the flight). */
   const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
+  const mobile = innerWidth <= 699;
   const cardW = tween(20, 28.1) * rem;
-  const colGap = (innerWidth <= 699 ? 1 : 2) * rem;
-  const perRow = Math.max(1, Math.floor((innerWidth - 4 * rem + colGap) / (cardW + colGap)));
-  const gridCols = 'repeat(' + perRow + ',' + Math.round(cardW) + 'px)';
+  const colGap = (mobile ? 1 : 2) * rem;
+  const perRow = mobile ? 4 : Math.max(1, Math.floor((innerWidth - 4 * rem + colGap) / (cardW + colGap)));
+  const gridCols = mobile ? 'repeat(4,1fr)' : 'repeat(' + perRow + ',' + Math.round(cardW) + 'px)';
   const years = yearsByMonth(slides);
 
   /* the grid is torn down and laid out again on every sort change; the month bands only mean
