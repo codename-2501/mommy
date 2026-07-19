@@ -715,6 +715,25 @@ function clearFlight(node) {
   node.style.transformOrigin = '';   // a deck-exit flight pivoted at centre; hand the frame back at 0 0
 }
 
+/* A navigation can arrive while deck-exit paintings are still up in .flip-air. Drop them into their slots
+   at once: the view they were flying to then holds real paintings, so the next flip finds them and carries
+   them on. Without this, an interrupted flight left its paintings off in the air layer, the incoming measure
+   saw empty slots where they should have been, and the next view only rose in — no carry motion. */
+function finalizeFlights() {
+  const air = document.querySelector('.flip-air');
+  if (!air || !air.firstChild) return;
+  for (const f of [...air.children]) {
+    const to = f._flightTo;
+    if (to && to.isConnected) {
+      to.replaceChildren(f);
+      f.style.position = ''; f.style.left = ''; f.style.top = '';
+      f.style.width = ''; f.style.height = ''; f.style.margin = '';
+      clearFlight(f);
+    } else { f.remove(); }
+    f._flightTo = null;
+  }
+}
+
 /* a flat-hierarchy preserve-3d layer the deck's paintings fly in on the way out. It has no perspective of
    its own — each painting keeps its own inline perspective() for the turn (frame-centred, symmetric, the
    same natural shape the in-slot flight draws) — so translateZ here only orders the overlap (depth) and
@@ -780,6 +799,7 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
          flat (rotateY -> 0) as one move; at flat, the perspective no longer foreshortens, so it lands at
          its true slot size. The slot waits empty until the landing. */
       air.appendChild(from.el);
+      from.el._flightTo = to.el;   // so a navigation that interrupts this flight can land it (finalizeFlights)
       from.el.style.position = 'absolute';
       from.el.style.left = to.bounds.left + 'px'; from.el.style.top = to.bounds.top + 'px';
       from.el.style.width = to.bounds.width + 'px'; from.el.style.height = to.bounds.height + 'px';
@@ -935,6 +955,8 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
     toAbout: path === '/about',
   };
   const toCarousel = path === '/' || path === '/flow';   // the views that jump to an index
+
+  finalizeFlights();   // land any paintings still in the air from an interrupted flight, so this measure sees them
 
   handOverIndex(oldPath, path === '/articles', oldCar, oldEl, oldInst);
   if (oldCar) oldCar.freeze();          // hold the paintings still while they are measured
@@ -1186,6 +1208,9 @@ function navigate(href) {
     /* a painting whose detail overlay is gone but whose URL is still /p/… (a reopen that lost a race,
        or any teardown) must reopen on the next click — not sit stuck. Re-render to bring it back. */
     if (to.indexOf('/p/') === 0 && !(window.LSEDetail && window.LSEDetail.isOpen)) { render(); return; }
+    /* still arriving? ignore the re-tap. Resetting now would scroll the grid/track to the top while the
+       paintings are still flying in on the fixed flight layer, and they'd float free of it for a moment. */
+    if (leaving) return;
     /* tapping the tab you are already on returns the view to its start — the first work / the top —
        rather than tearing it down and replaying its arrival */
     const v = activeView || carousel;
