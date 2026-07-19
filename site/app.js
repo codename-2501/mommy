@@ -734,6 +734,7 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
   const byId = new Map(toFlips.map((t) => [t.el.dataset.id, t]));
   const flights = [];
   const owners = [];
+  const pending = [];   // deck-exit paintings whose start pose is converged in one batched pass below
   const air = flatFly ? flipAir() : null;
   const myGen = navGen;   // a later navigation may re-fly these frames; its cleanup, not ours, owns them
   for (const from of fromFlips) {
@@ -763,21 +764,24 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       }
     };
     if (roty && air) {
-      /* fly in the 3D layer: it carries the deck's perspective (no inline perspective() here), so the
-         angle matches; translateZ ordered on screen x (leftmost most forward) keeps the deck's left-in-
-         front overlap and eases to 0 as the cards spread. The slot waits empty until the landing. */
-      /* only the ORDER of the lift matters — it sorts the overlap in this (perspective-less) preserve-3d
-         layer, so it moves the painting in depth without resizing it at all. Leftmost sits forward, which
-         is the deck's own left-in-front order. */
+      /* fly in the 3D layer, its own inline perspective() (frame-centred, symmetric — the same shape the
+         flat flight draws). translateZ, ordered on screen x (leftmost forward), keeps the deck's left-in-
+         front overlap; with no perspective on the layer it only sorts depth, never resizes. The slot waits
+         empty until the landing. The convergence is deferred and batched below — running it per painting
+         forced a reflow each pass and stiffened the very start of the transition. */
       const lift = Math.max(0, Math.round((1 - from.bounds.left / innerWidth) * 40));
       air.appendChild(from.el);
       from.el.style.position = 'absolute';
       from.el.style.left = to.bounds.left + 'px'; from.el.style.top = to.bounds.top + 'px';
       from.el.style.width = to.bounds.width + 'px'; from.el.style.height = to.bounds.height + 'px';
       from.el.style.margin = '0';
+      from.el.style.transformOrigin = '50% 50%';
+      from.el.style.transition = 'none';
       to.el.replaceChildren();
-      converge((sc) =>
-        'translateZ(' + lift + 'px) perspective(1000px) translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + sc + ') rotateY(' + roty + 'deg)');
+      const poseFn = (sc) =>
+        'translateZ(' + lift + 'px) perspective(1000px) translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + sc + ') rotateY(' + roty + 'deg)';
+      from.el.style.transform = poseFn(1);
+      pending.push({ el: from.el, poseFn, scale: 1, target: from.bounds.width, done: false });
       endT = 'translateZ(0px) perspective(1000px) translate3d(0px,0px,0) scale(1) rotateY(0deg)';
     } else {
       to.el.replaceChildren(from.el);
@@ -800,6 +804,22 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
     from.el._flightGen = myGen;   // stamp who owns this flight now
     flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease });
   }
+  /* converge every deck-exit start pose together: each pass writes all the poses, THEN reads all the
+     widths — so a pass costs one reflow, not one per painting. The perspective foreshortening is non-
+     linear, hence the iterate-to-fit rather than a computed scale. Doing this per painting inside the
+     loop above forced 4xN reflows synchronously at the click and that is what stiffened the start. */
+  for (let pass = 0; pass < 4 && pending.length; pass++) {
+    for (const p of pending) { if (!p.done) p.el.style.transform = p.poseFn(p.scale); }
+    let any = false;
+    for (const p of pending) {
+      if (p.done) continue;
+      const shown = p.el.getBoundingClientRect().width;
+      if (shown < 2 || Math.abs(shown - p.target) < 0.5) { p.done = true; continue; }
+      p.scale *= p.target / shown; any = true;
+    }
+    if (!any) break;
+  }
+  for (const p of pending) { p.el.style.transform = p.poseFn(p.scale); }
   if (!flights.length) return null;
   return () => {
     for (const f of flights) {
