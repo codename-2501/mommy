@@ -287,14 +287,26 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     /* re-tap the active tab: glide the deck (target only, cur lerps) back to the first work —
        the same landing spot the hand-over uses for idx 0 */
     reset() { if (bounds[0]) target = bounds[0].left + bounds[0].width * 0.5 - innerWidth * 0.5; },
-    /* the work under the centre line, measured as the card nearest the middle. Handed to the next
-       view so it opens on the same paintings flow is showing — then each has a slot to fly to. */
-    /* hand over the exact work the ruler is showing under the centre line — the ruler is the single
-       source of truth for "the work you are on", so the timeline lands on the same one and its month
-       label does not jump. (The deck's own nearest-card and its continuous position each rounded a
-       shade differently from the ruler at a month's edge; taking the ruler's own answer removes it.) */
+    /* Hand over the work actually centred on screen — the deck card whose box sits under the middle —
+       NOT the ruler's index. The ruler reads a lap fraction (f % lapWorks), and the deck loops every
+       lapWorks works, which is a hair more than the archive holds; across that seam (around work 0) a
+       sub-pixel wobble in f can wrap the lap and pull the ruler's answer a work or two off the card the
+       eye reads as centred. On the desktop f lands clean and the two agree, but a phone's rounding does
+       not, and a flow<->view round-trip then drifts the centred work by that gap each pass. The visual
+       centre is seam-free by construction — it is a card index, 0..N-1, never wrapped — so handing it
+       over makes the next view open on the very painting flow was showing, and the round-trip holds.
+       (The ruler still takes the lap fraction for its own month label, which wants the smooth read.) */
     activeIndex() {
-      return ruler && ruler.liveWork ? ruler.liveWork() : 0;
+      const cx = innerWidth * 0.5;
+      let best = 0, bd = Infinity;
+      for (let i = 0; i < items.length; i++) {
+        const p = items[i].el._pos;
+        if (!p) continue;
+        const mid = p[0] + bounds[i].width * 0.5;
+        const dd = Math.abs(mid - cx);
+        if (dd < bd) { bd = dd; best = i; }
+      }
+      return best;
     },
     /* Leaving, the deck holds still to be measured, then hands its paintings to the next view. It
        does NOT fold first: each painting carries its deck angle into the flight and unwinds to flat
