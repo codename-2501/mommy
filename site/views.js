@@ -236,12 +236,13 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
   requestAnimationFrame(() => {
     measure();                      // after insertion — detached rects are all zero
     const idx = parseInt(document.body.dataset.index, 10);
-    /* land the handed work under the centre line — the exact inverse of what the ruler reports:
-       it reads (cur + innerWidth/2 - bounds[0].left) * slides.length / total as the live work, so
-       one work is total/slides.length px of cur (the lap is stretched over the whole archive, which
-       is why it is not cardGap — that would land a work short). The old bounds[idx].left sat the work
-       innerWidth/2 (~half the cards abreast) to one side, so work 0 fell off the left edge. */
-    if (idx >= 0 && bounds[idx]) { target = cur = idx * (total / slides.length) - innerWidth * 0.5 + bounds[0].left + bounds[0].width * 0.5; }
+    /* land the handed work under the centre line — the exact inverse of what the frame loop reads as the
+       live work: f = (cur + innerWidth/2 - bounds[0].left - bounds[0].width/2) / cardGap. So one work is
+       cardGap px of cur, and centring work idx means f === idx. (It used to feed the ruler a stretched
+       index and centre with total/slides.length to match; the ruler now takes the work straight, so the
+       centring must use cardGap too — the old formula left liveWork reading idx+1-ish, and a flow<->timeline
+       round-trip drifted the centred work up by one each time.) */
+    if (idx >= 0 && bounds[idx]) { target = cur = idx * cardGap - innerWidth * 0.5 + bounds[0].left + bounds[0].width * 0.5; }
     markReady();
   });
   raf = requestAnimationFrame(frame);
