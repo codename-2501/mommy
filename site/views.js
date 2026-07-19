@@ -492,16 +492,17 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   let orderedIds = [];   // the ids in the order they are shown — handed to the detail for prev/next
 
   /* the desktop cell is the deck's own 20rem card width — fixed px — so there the flip never resizes. A phone
-     is too narrow to hold that width more than once and a single column read too sparse, so the phone keeps
-     a four-up overview; the painting resizes into the smaller cell on the way from the deck, but the flip
-     starts it at the deck's own size and eases it down smoothly (app.js), so it is one continuous move, not
-     a snap. */
+     holds two of those across; the cell (~half the width) is a little smaller than a deck card, so a painting
+     leaving the deck resizes gently INTO it, and because the cell is still wider than the deck's angled-and-
+     foreshortened on-screen width, that resize runs one way — it opens up smoothly, no mid-flight bump. (Four
+     columns made the cell smaller than the foreshortened card, so the flip grew then shrank; two is the size
+     that both keeps an overview and lets the flip stay a single continuous move.) */
   const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
   const mobile = innerWidth <= 699;
   const cardW = 20 * rem;
   const colGap = (mobile ? 1 : 2) * rem;
-  const perRow = mobile ? 4 : Math.max(1, Math.floor((innerWidth - 4 * rem + colGap) / (cardW + colGap)));
-  const gridCols = mobile ? 'repeat(4,1fr)' : 'repeat(' + perRow + ',' + Math.round(cardW) + 'px)';
+  const perRow = mobile ? 2 : Math.max(1, Math.floor((innerWidth - 4 * rem + colGap) / (cardW + colGap)));
+  const gridCols = mobile ? 'repeat(2,1fr)' : 'repeat(' + perRow + ',' + Math.round(cardW) + 'px)';
   const years = yearsByMonth(slides);
 
   /* the grid is torn down and laid out again on every sort change; the month bands only mean
