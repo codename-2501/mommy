@@ -339,13 +339,10 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
    on a phone meant a scroll that neither carried the system's momentum nor bounced at the
    ends — beside the detail's native scroll it read as a different page. The container scrolls
    natively now: the finger gets the OS's own physics, and the wheel gets the same lerp the
-   detail uses. The rows still tilt, driven by the speed the scroll is actually running at. -------- */
+   detail uses. (The rows used to tilt with the scroll; that is gone — the grid sits flat.) -------- */
 function smoothTilt(outer, content) {
-  let over = 0, prevTop = 0, lastTs = 0, raf = 0;
+  let over = 0, lastTs = 0, raf = 0;
   const OVER_MAX = 60;   // the give at an end, px
-  const tilts = () => content.querySelectorAll('.lse-row');
-  const cssTilt = () =>
-    typeof CSS !== 'undefined' && CSS.supports && CSS.supports('animation-timeline', 'view()');
   const limit = () => Math.max(0, outer.scrollHeight - outer.clientHeight);
 
   /* the browser scrolls the page — native, instant, with the OS's own momentum (no lerp, no lag). We
@@ -365,20 +362,11 @@ function smoothTilt(outer, content) {
   function frame(ts) {
     const ratio = lastTs ? Math.min(3, (ts - lastTs) / (1000 / 60)) : 1;
     lastTs = ts;
-    const v = outer.scrollTop - prevTop;
-    prevTop = outer.scrollTop;
     /* the end stretch springs back to the edge, riding the content's own transform */
     if (over !== 0) {
       over += (0 - over) * 0.14 * ratio;
       if (Math.abs(over) < 0.3) over = 0;
       content.style.transform = over ? 'translateY(' + over.toFixed(1) + 'px)' : '';
-    }
-    /* the row tilt rides the speed the page is actually moving at (skip where the compositor draws it
-       itself — a phone, app.css: rowTilt — or an inline transform would fight it) */
-    if (!cssTilt()) {
-      const deg = Math.max(-22, Math.min(22, v * 0.45));
-      const ry = 'perspective(600px) rotateX(' + deg + 'deg)';
-      tilts().forEach((t) => { t.style.transform = ry; });
     }
     raf = requestAnimationFrame(frame);
   }
