@@ -743,18 +743,18 @@ function finalizeFlights() {
    never resizes it, and the deck's left-in-front stacking is held without the angle looking off. */
 function flipAir() {
   let air = document.querySelector('.flip-air');
-  if (!air) {
-    air = el('div', 'flip-air');
-    /* On a phone the index's sort bar rides INSIDE .agrid as position:sticky, and .agrid is position:fixed
-       — which makes it a stacking context. A flip layer parented to `app` (z-15) then paints OVER the bar:
-       the bar's z-16 is only local to .agrid, whose own z-1 sinks the whole subtree below the app-level
-       flight. (Chrome's compositor happens to mask this; iOS Safari honours it, so the arriving paintings
-       cover the bar there.) Hosting the flight inside .agrid puts it in the bar's own context, where z-15
-       sits under the bar's z-16 and still over the grid cells. .agrid carries no transform on a phone, so a
-       position:fixed layer inside it stays viewport-true and is not clipped by its overflow. */
-    const grid = matchMedia('(max-width:699px)').matches ? document.querySelector('.agrid') : null;
-    (grid || app).appendChild(air);
-  }
+  if (!air) air = el('div', 'flip-air');
+  /* On a phone the index's sort bar rides INSIDE .agrid as position:sticky, and .agrid is position:fixed
+     — which makes it a stacking context. A flip layer parented to `app` (z-15) then paints OVER the bar:
+     the bar's z-16 is only local to .agrid, whose own z-1 sinks the whole subtree below the app-level
+     flight. (Chrome's compositor happens to mask this; iOS Safari honours it, so the arriving paintings
+     cover the bar there.) Hosting the flight inside .agrid puts it in the bar's own context, where z-15
+     sits under the bar's z-16 and still over the grid cells. .agrid carries no transform on a phone, so a
+     position:fixed layer inside it stays viewport-true and is not clipped by its overflow. The element is
+     never removed once made, so re-home it EVERY flight: an air made in `app` on an earlier ->timeline hop
+     would otherwise stay in `app` and cover the bar on the next ->index. */
+  const host = (matchMedia('(max-width:699px)').matches && document.querySelector('.agrid')) || app;
+  if (air.parentElement !== host) host.appendChild(air);
   return air;
 }
 
@@ -815,7 +815,7 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
          slot smoothly, instead of snapping to the slot size the instant the flip takes over. When the sizes
          already match (desktop, and every ->timeline), the start scale is 1 and nothing changes. It travels
          to the slot (cx,cy -> 0), turns flat (rotateY -> 0) and resizes as one move; the slot waits empty. */
-      const startScale = to.bounds.width ? (from.boxW || from.bounds.width) / to.bounds.width : 1;
+      let startScale = to.bounds.width ? (from.boxW || from.bounds.width) / to.bounds.width : 1;
       air.appendChild(from.el);
       from.el._flightTo = to.el;   // so a navigation that interrupts this flight can land it (finalizeFlights)
       from.el.style.position = 'absolute';
@@ -825,7 +825,19 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       from.el.style.transformOrigin = '50% 50%';
       from.el.style.transition = 'none';
       to.el.replaceChildren();
-      from.el.style.transform = 'translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + startScale + ') rotateY(' + roty + 'deg)';
+      const pose = (s) => 'translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + s + ') rotateY(' + roty + 'deg)';
+      /* Match the deck's rendered width EXACTLY at the start. from.boxW/to.width is the right scale in theory,
+         but the flight layer's perspective foreshortens a hair harder than the deck did, so that scale renders
+         ~9% narrow — a small but real snap the instant the flip takes over (the "clicks and it shrinks now"
+         feel). Converge the scale until the shown width equals the deck card's (from.bounds.width), the same
+         trick the non-air branch already uses, so the flight begins pixel-for-pixel where the deck left off. */
+      for (let pass = 0; pass < 4; pass++) {
+        from.el.style.transform = pose(startScale);
+        const shown = from.el.getBoundingClientRect().width;
+        if (shown < 2 || Math.abs(shown - from.bounds.width) < 0.5) break;
+        startScale *= from.bounds.width / shown;
+      }
+      from.el.style.transform = pose(startScale);
       endT = 'translate3d(0px,0px,0) scale(1) rotateY(0deg)';
     } else {
       to.el.replaceChildren(from.el);
