@@ -715,14 +715,13 @@ function clearFlight(node) {
   node.style.transformOrigin = '';   // a deck-exit flight pivoted at centre; hand the frame back at 0 0
 }
 
-/* a flat-hierarchy 3D layer the deck's paintings fly in, carrying the DECK's own perspective (its
-   vanishing point) so the rotateY foreshortens exactly as it did in the deck — no angle/aspect snap.
-   Its children are direct, so translateZ actually orders their stacking (it does not inside the
-   destination's nested 3D), which is how the deck's left-in-front overlap is kept through the flight. */
-function flipAir(ox, oy) {
+/* a flat-hierarchy preserve-3d layer the deck's paintings fly in on the way out. It has no perspective of
+   its own — each painting keeps its own inline perspective() for the turn (frame-centred, symmetric, the
+   same natural shape the in-slot flight draws) — so translateZ here only orders the overlap (depth) and
+   never resizes it, and the deck's left-in-front stacking is held without the angle looking off. */
+function flipAir() {
   let air = document.querySelector('.flip-air');
   if (!air) { air = el('div', 'flip-air'); app.appendChild(air); }
-  air.style.perspectiveOrigin = (ox != null) ? (ox + 'px ' + oy + 'px') : '50% 50%';
   return air;
 }
 
@@ -735,13 +734,7 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
   const byId = new Map(toFlips.map((t) => [t.el.dataset.id, t]));
   const flights = [];
   const owners = [];
-  let air = null;
-  if (flatFly) {
-    const deck = document.querySelector('.flow__deck');
-    let ox = null, oy = null;
-    if (deck) { const r = deck.getBoundingClientRect(); ox = r.left + r.width / 2; oy = r.top + r.height / 2; }
-    air = flipAir(ox, oy);
-  }
+  const air = flatFly ? flipAir() : null;
   const myGen = navGen;   // a later navigation may re-fly these frames; its cleanup, not ours, owns them
   for (const from of fromFlips) {
     const to = byId.get(from.el.dataset.id);
@@ -773,10 +766,10 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       /* fly in the 3D layer: it carries the deck's perspective (no inline perspective() here), so the
          angle matches; translateZ ordered on screen x (leftmost most forward) keeps the deck's left-in-
          front overlap and eases to 0 as the cards spread. The slot waits empty until the landing. */
-      /* only the ORDER of the lift matters (it just sorts the overlap in this preserve-3d); keep the value
-         small so the perspective zoom it adds — which the linear scale can only cancel at the ends, not
-         mid-flight — stays imperceptible. A big lift (it was ~x0.25 of the width) breathed on the desktop. */
-      const lift = Math.max(0, Math.min(48, Math.round((1 - from.bounds.left / innerWidth) * 40)));
+      /* only the ORDER of the lift matters — it sorts the overlap in this (perspective-less) preserve-3d
+         layer, so it moves the painting in depth without resizing it at all. Leftmost sits forward, which
+         is the deck's own left-in-front order. */
+      const lift = Math.max(0, Math.round((1 - from.bounds.left / innerWidth) * 40));
       air.appendChild(from.el);
       from.el.style.position = 'absolute';
       from.el.style.left = to.bounds.left + 'px'; from.el.style.top = to.bounds.top + 'px';
@@ -784,8 +777,8 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       from.el.style.margin = '0';
       to.el.replaceChildren();
       converge((sc) =>
-        'translateZ(' + lift + 'px) translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + sc + ') rotateY(' + roty + 'deg)');
-      endT = 'translateZ(0px) translate3d(0px,0px,0) scale(1) rotateY(0deg)';
+        'translateZ(' + lift + 'px) perspective(1000px) translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + sc + ') rotateY(' + roty + 'deg)');
+      endT = 'translateZ(0px) perspective(1000px) translate3d(0px,0px,0) scale(1) rotateY(0deg)';
     } else {
       to.el.replaceChildren(from.el);
       to.el.style.visibility = '';        // a slot that lent its frame out was hidden — it is back
