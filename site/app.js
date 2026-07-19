@@ -1007,10 +1007,11 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
   viewEl = view;                        // current from this moment on, even mid-flight
   const inst = activeView || carousel;
 
-  /* the index scrolls its own container natively, and it is scrollable the instant it mounts — so a
-     scroll during the arrival would slide the grid while the paintings are still flying in on their
-     own fixed-layer transforms, and they float free. Hold the grid until the flight has landed. */
-  if (path === '/articles' && inst && inst.lockScroll) inst.lockScroll();
+  /* the index scrolls its own container and the timeline its own lerp, both live the instant they mount —
+     so a scroll during the arrival would move the grid/track while the paintings are still flying in on
+     their own fixed-layer transforms, and they float free. Hold the incoming view until the flight lands. */
+  const lockable = (path === '/articles' || path === '/') && inst && inst.lockScroll ? inst : null;
+  if (lockable) lockable.lockScroll();
 
   /* if this interrupted a flight, stop it NOW — before the awaits below (a to-flow/-timeline leg waits
      for the incoming deck to be ready, and the interrupted paintings would drift the whole time, so the
@@ -1060,13 +1061,15 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
     if (playRise) playRise();
   });
   if (path === '/') setTimeout(() => view.classList.remove('no-rise'), FLIP.dur + 200);
-  if (path === '/articles' && inst && inst.unlockScroll) {
+  if (lockable) {
+    /* still the live view? the timeline lives in `carousel`, the index in `activeView` */
+    const live = () => activeView === lockable || carousel === lockable;
     if (playFlip) {
-      /* let the grid scroll again once the last painting has landed (staggered flights land latest) */
+      /* let it scroll again once the last painting has landed (staggered flights land latest) */
       const settle = FLIP.dur + fromFlips.length * FLIP.stagger + 120;
-      setTimeout(() => { if (activeView === inst) inst.unlockScroll(); }, settle);
+      setTimeout(() => { if (live()) lockable.unlockScroll(); }, settle);
     } else {
-      inst.unlockScroll();   // nothing flying in (fresh load / rise-only) — nothing to float over
+      lockable.unlockScroll();   // nothing flying in (fresh load / rise-only) — nothing to float over
     }
   }
 }
