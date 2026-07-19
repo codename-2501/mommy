@@ -831,9 +831,11 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
         from.el.style.transform = 'translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + scale + ')';
       }
     }
-    /* the deck-angle turn eases more evenly than the flat flights: --ease-travel front-loads hard, so a
-       turning card raced in and braked. A gentler ease-out spreads the deceleration across the flight. */
-    const ease = roty ? 'cubic-bezier(.33,1,.68,1)' : 'var(--ease-travel)';
+    /* --ease-travel front-loads hard, so a card races in then brakes. That reads fine over the timeline's
+       long, spread-out flights, but the index grid is clustered near centre: the same ease over a short
+       hop lands too abruptly. Deck arrivals (noStagger) and the deck-angle turn (roty) both use a gentler
+       ease-out that spreads the deceleration across the flight, so index->flow reads like timeline->flow. */
+    const ease = (roty || noStagger) ? 'cubic-bezier(.33,1,.68,1)' : 'var(--ease-travel)';
     from.el._flightGen = myGen;   // stamp who owns this flight now
     flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease });
   }
