@@ -715,12 +715,33 @@ function clearFlight(node) {
   node.style.transformOrigin = '';   // a deck-exit flight pivoted at centre; hand the frame back at 0 0
 }
 
+/* a flat-hierarchy 3D layer the deck's paintings fly in, carrying the DECK's own perspective (its
+   vanishing point) so the rotateY foreshortens exactly as it did in the deck — no angle/aspect snap.
+   Its children are direct, so translateZ actually orders their stacking (it does not inside the
+   destination's nested 3D), which is how the deck's left-in-front overlap is kept through the flight. */
+function flipAir(ox, oy) {
+  let air = document.querySelector('.flip-air');
+  if (!air) { air = el('div', 'flip-air'); app.appendChild(air); }
+  air.style.perspectiveOrigin = (ox != null) ? (ox + 'px ' + oy + 'px') : '50% 50%';
+  return air;
+}
+
 /* the painting's own frame moves house into its new slot and flies the delta home.
-   No clone, no second <img> — the same pixels travel. */
-function prepareFlip(fromFlips, toFlips, noStagger) {
+   No clone, no second <img> — the same pixels travel.
+   flatFly (leaving the deck): the frame flies in the 3D layer above, keeping the deck's perspective and
+   overlap order, and drops into its slot only once the cards have spread apart — so the overlap never
+   flips and the angle never breaks. */
+function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
   const byId = new Map(toFlips.map((t) => [t.el.dataset.id, t]));
   const flights = [];
   const owners = [];
+  let air = null;
+  if (flatFly) {
+    const deck = document.querySelector('.flow__deck');
+    let ox = null, oy = null;
+    if (deck) { const r = deck.getBoundingClientRect(); ox = r.left + r.width / 2; oy = r.top + r.height / 2; }
+    air = flipAir(ox, oy);
+  }
   const myGen = navGen;   // a later navigation may re-fly these frames; its cleanup, not ours, owns them
   for (const from of fromFlips) {
     const to = byId.get(from.el.dataset.id);
@@ -730,32 +751,13 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
     const srcCard = from.el.closest('.lse-card');
     const roty = srcCard && typeof srcCard._roty === 'number' ? srcCard._roty : 0;
     let endT = '';                      // where the flight lands — see the roty branch for why it matters
-    to.el.replaceChildren(from.el);
-    to.el.style.visibility = '';        // a slot that lent its frame out was hidden — it is back
-    if (roty) {
-      /* a painting leaving the deck stands at its deck angle: fly from that angle to flat, turning and
-         travelling as one move. The catch — the deck's perspective lives on .flow__deck (a viewport
-         parent) and foreshortens toward the SCREEN centre, while an inline perspective() vanishes to the
-         frame's own centre, so a naive reconstruction started a shade narrower and snapped sideways (the
-         "움찔"). So: pose the angle at unit scale, measure the width the inline perspective actually
-         renders, then scale so the flight STARTS at the card's exact on-screen size. Pivot at the centre
-         (translate by the centre delta) — the box then matches the deck's, and only the turn is left. */
-      const cx = from.bounds.left + from.bounds.width / 2 - (to.bounds.left + to.bounds.width / 2);
-      const cy = from.bounds.top + from.bounds.height / 2 - (to.bounds.top + to.bounds.height / 2);
-      /* Scale so the ROTATED start renders at the card's exact on-screen width — then the box matches
-         the deck's, the pivot (centre delta) matches its position, and only the turn is left to play.
-         Perspective foreshortening is non-linear in width and the grid adds its own perspective on top,
-         so a single computed scale misses. Converge instead: pose the angle, read what it renders, nudge
-         the scale toward the target width, repeat a few times. Two or three passes land within a pixel. */
-      /* the deck stacks left-in-front (every card tilts the one way); the destination stacks by its own
-         3D, so a naive reparent flips the overlap the instant the flight begins. Push each frame forward
-         in the destination's OWN 3D by a lift ordered on screen x (leftmost most forward) so the overlap
-         keeps the deck's order, then ease the lift to 0 as the cards separate into their slots. The
-         convergence below reads the rendered width and cancels the lift's perspective zoom, so only the
-         stacking changes, not the size. */
-      const lift = Math.max(0, Math.round((innerWidth - from.bounds.left) * 0.25));
-      const pose = (sc) =>
-        'perspective(1000px) translate3d(' + cx + 'px,' + cy + 'px,' + lift + 'px) scale(' + sc + ') rotateY(' + roty + 'deg)';
+    /* a painting leaving the deck stands at its deck angle: fly from that angle to flat, turning and
+       travelling as one move. Pose the angle, measure the width the perspective actually renders, then
+       scale so the flight STARTS at the card's exact on-screen size (the perspective foreshortening is
+       non-linear, so converge rather than compute). Pivot at the centre so the box matches the deck's. */
+    const cx = from.bounds.left + from.bounds.width / 2 - (to.bounds.left + to.bounds.width / 2);
+    const cy = from.bounds.top + from.bounds.height / 2 - (to.bounds.top + to.bounds.height / 2);
+    const converge = (pose) => {
       from.el.style.transformOrigin = '50% 50%';
       from.el.style.transition = 'none';
       let scale = 1;
@@ -766,26 +768,41 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
         if (Math.abs(shown - from.bounds.width) < 0.5) break;
         scale *= from.bounds.width / shown;
       }
-      /* land on the SAME function list the start uses (identity values), not '' — a matching list makes
-         CSS interpolate translate/scale/rotateY each on its own, in lockstep, so the turn and the travel
-         run as one. Interpolating to 'none' decomposes to a matrix and lets the travel outrun the turn. */
-      endT = 'perspective(1000px) translate3d(0px,0px,0) scale(1) rotateY(0deg)';
+    };
+    if (roty && air) {
+      /* fly in the 3D layer: it carries the deck's perspective (no inline perspective() here), so the
+         angle matches; translateZ ordered on screen x (leftmost most forward) keeps the deck's left-in-
+         front overlap and eases to 0 as the cards spread. The slot waits empty until the landing. */
+      const lift = Math.max(0, Math.round((innerWidth - from.bounds.left) * 0.25));
+      air.appendChild(from.el);
+      from.el.style.position = 'absolute';
+      from.el.style.left = to.bounds.left + 'px'; from.el.style.top = to.bounds.top + 'px';
+      from.el.style.width = to.bounds.width + 'px'; from.el.style.height = to.bounds.height + 'px';
+      from.el.style.margin = '0';
+      to.el.replaceChildren();
+      converge((sc) =>
+        'translateZ(' + lift + 'px) translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + sc + ') rotateY(' + roty + 'deg)');
+      endT = 'translateZ(0px) translate3d(0px,0px,0) scale(1) rotateY(0deg)';
     } else {
-      /* centre-delta, not left-delta: the scale pivots at the centre (transform-origin 50% 50%), so
-         aligning left edges leaves the box (from.width - to.width)/2 off — invisible when the sizes
-         match, but on an interrupted flight the frame flies between very different sizes and it snapped. */
-      const dx = from.bounds.left + from.bounds.width / 2 - (to.bounds.left + to.bounds.width / 2);
-      const dy = from.bounds.top + from.bounds.height / 2 - (to.bounds.top + to.bounds.height / 2);
-      const scale = to.bounds.width ? from.bounds.width / to.bounds.width : 1;
-      from.el.style.transition = 'none';
-      from.el.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + scale + ')';
+      to.el.replaceChildren(from.el);
+      to.el.style.visibility = '';        // a slot that lent its frame out was hidden — it is back
+      if (roty) {
+        converge((sc) =>
+          'perspective(1000px) translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + sc + ') rotateY(' + roty + 'deg)');
+        endT = 'perspective(1000px) translate3d(0px,0px,0) scale(1) rotateY(0deg)';
+      } else {
+        /* centre-delta, not left-delta: the scale pivots at the centre, so aligning left edges leaves the
+           box (from.width - to.width)/2 off — it snapped on an interrupted flight between different sizes */
+        const scale = to.bounds.width ? from.bounds.width / to.bounds.width : 1;
+        from.el.style.transition = 'none';
+        from.el.style.transform = 'translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + scale + ')';
+      }
     }
-    /* the deck-angle turn eases more evenly than the flat flights: --ease-travel front-loads hard
-       (92% of the way by a fifth of the time), so a turning card raced in and braked, which read as a
-       jerk at the finish. A gentler ease-out spreads the deceleration across the whole flight. */
+    /* the deck-angle turn eases more evenly than the flat flights: --ease-travel front-loads hard, so a
+       turning card raced in and braked. A gentler ease-out spreads the deceleration across the flight. */
     const ease = roty ? 'cubic-bezier(.33,1,.68,1)' : 'var(--ease-travel)';
     from.el._flightGen = myGen;   // stamp who owns this flight now
-    flights.push({ el: from.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease });
+    flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease });
   }
   if (!flights.length) return null;
   return () => {
@@ -794,9 +811,24 @@ function prepareFlip(fromFlips, toFlips, noStagger) {
       f.el.style.transform = f.end;
     }
     const last = flights[flights.length - 1];
+    /* land the 3D-layer paintings in their slots once the flight has separated and settled them, when the
+       stacking no longer shows; a newer navigation that adopted a frame owns it instead */
+    if (air) {
+      setTimeout(() => {
+        for (const f of flights) {
+          if (f.el._flightGen !== myGen) continue;
+          if (f.to.isConnected) {
+            f.to.replaceChildren(f.el);
+            f.el.style.position = ''; f.el.style.left = ''; f.el.style.top = '';
+            f.el.style.width = ''; f.el.style.height = ''; f.el.style.margin = '';
+            clearFlight(f.el);
+          } else { f.el.remove(); }         // the destination view is gone — heal rebuilds it
+        }
+        for (const o of owners) { if (settled(o)) o.style.zIndex = ''; }
+      }, FLIP.dur + last.delay + 50);
+      return;
+    }
     setTimeout(() => {
-      /* only tidy a frame if a newer navigation has not adopted it — else we would wipe the transform
-         that a transition still in flight depends on, snapping the painting mid-move */
       for (const f of flights) { if (f.el._flightGen === myGen && settled(f.el)) clearFlight(f.el); }
       for (const o of owners) { if (settled(o)) o.style.zIndex = ''; }
     }, FLIP.dur + last.delay + 50);
@@ -940,7 +972,7 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
 
   const skipFlip = flags.fromFlow && flags.toAbout;     // About has no slots to receive the paintings
   const playFlip = fromFlips.length && !skipFlip
-    ? prepareFlip(fromFlips, toFlips, flags.toFlow)
+    ? prepareFlip(fromFlips, toFlips, flags.toFlow, flags.fromFlow)   // leaving the deck flies in the 3D layer
     : null;
   const playRise = prepareRise(targets, flags.fromFlow, flags.toFlow);
 
