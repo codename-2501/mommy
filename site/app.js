@@ -680,7 +680,10 @@ function measureFlips(oldEl, newEl, fromFlow) {
   const seen = [];
   for (const node of flipEls) {
     const b = node.getBoundingClientRect();
-    if (inView(b) || node.closest('.lse-centred')) seen.push({ el: node, bounds: b });
+    /* boxW is the card's UN-foreshortened layout width (offsetWidth), not the angled deck's projected
+       bounds — the flight scales its start pose off the real card size so the deck's size is matched, not
+       the thinner width the rotation happens to draw. */
+    if (inView(b) || node.closest('.lse-centred')) seen.push({ el: node, bounds: b, boxW: node.offsetWidth });
   }
   let ids = new Set(seen.map((f) => f.el.dataset.id));
   const toFlips = [];
@@ -794,10 +797,14 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
     };
     if (roty && air) {
       /* fly in the deck's own perspective layer (set on .flip-air above). Sitting the frame at its slot
-         and shifting it back to the deck spot (cx,cy) with the deck angle renders it exactly as the deck
-         did — no scale, no per-frame perspective, no snap. It travels to the slot (cx,cy -> 0) and turns
-         flat (rotateY -> 0) as one move; at flat, the perspective no longer foreshortens, so it lands at
-         its true slot size. The slot waits empty until the landing. */
+         and shifting it back to the deck spot (cx,cy) with the deck angle renders it as the deck did — no
+         per-frame perspective, no reparent snap. Where the destination is a DIFFERENT size than the deck
+         (the phone's smaller index cell), start the frame scaled to the deck's OWN size and ease that scale
+         to 1 over the flight, so the painting begins exactly as it looked in the deck and shrinks into its
+         slot smoothly, instead of snapping to the slot size the instant the flip takes over. When the sizes
+         already match (desktop, and every ->timeline), the start scale is 1 and nothing changes. It travels
+         to the slot (cx,cy -> 0), turns flat (rotateY -> 0) and resizes as one move; the slot waits empty. */
+      const startScale = to.bounds.width ? (from.boxW || from.bounds.width) / to.bounds.width : 1;
       air.appendChild(from.el);
       from.el._flightTo = to.el;   // so a navigation that interrupts this flight can land it (finalizeFlights)
       from.el.style.position = 'absolute';
@@ -807,8 +814,8 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       from.el.style.transformOrigin = '50% 50%';
       from.el.style.transition = 'none';
       to.el.replaceChildren();
-      from.el.style.transform = 'translate3d(' + cx + 'px,' + cy + 'px,0) rotateY(' + roty + 'deg)';
-      endT = 'translate3d(0px,0px,0) rotateY(0deg)';
+      from.el.style.transform = 'translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + startScale + ') rotateY(' + roty + 'deg)';
+      endT = 'translate3d(0px,0px,0) scale(1) rotateY(0deg)';
     } else {
       to.el.replaceChildren(from.el);
       to.el.style.visibility = '';        // a slot that lent its frame out was hidden — it is back
