@@ -743,7 +743,18 @@ function finalizeFlights() {
    never resizes it, and the deck's left-in-front stacking is held without the angle looking off. */
 function flipAir() {
   let air = document.querySelector('.flip-air');
-  if (!air) { air = el('div', 'flip-air'); app.appendChild(air); }
+  if (!air) {
+    air = el('div', 'flip-air');
+    /* On a phone the index's sort bar rides INSIDE .agrid as position:sticky, and .agrid is position:fixed
+       — which makes it a stacking context. A flip layer parented to `app` (z-15) then paints OVER the bar:
+       the bar's z-16 is only local to .agrid, whose own z-1 sinks the whole subtree below the app-level
+       flight. (Chrome's compositor happens to mask this; iOS Safari honours it, so the arriving paintings
+       cover the bar there.) Hosting the flight inside .agrid puts it in the bar's own context, where z-15
+       sits under the bar's z-16 and still over the grid cells. .agrid carries no transform on a phone, so a
+       position:fixed layer inside it stays viewport-true and is not clipped by its overflow. */
+    const grid = matchMedia('(max-width:699px)').matches ? document.querySelector('.agrid') : null;
+    (grid || app).appendChild(air);
+  }
   return air;
 }
 
