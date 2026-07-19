@@ -807,35 +807,22 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       f.el.style.transform = f.end;
     }
     const last = flights[flights.length - 1];
-    /* hand each 3D-layer painting to its slot a moment BEFORE the flight ends — while it is still
-       moving and near-flat, so the slot's own tilt takes over under motion rather than snapping in at
-       rest (which read as the aspect changing after it landed). Pick up its exact spot, then let the
-       last stretch finish inside the slot. Overlap is long gone by here, so the stacking never shows. */
+    /* drop each 3D-layer painting into its slot once the flight has fully settled it — the carousel
+       (and the index) sit FLAT at rest, so a flat painting moving into a flat slot is a pure DOM move:
+       no resize, no snap. The size change is already spent, smoothly, over the flight itself. */
     if (air) {
-      const HANDOFF = 140;                     // ms before the end to drop into the slot
-      for (const f of flights) {
-        setTimeout(() => {
-          if (f.el._flightGen !== myGen) return;
-          if (!f.to.isConnected) { f.el.remove(); return; }   // destination gone — heal rebuilds it
-          const r = f.el.getBoundingClientRect();
-          f.el.style.transition = 'none';
-          f.to.replaceChildren(f.el);
-          f.el.style.position = ''; f.el.style.left = ''; f.el.style.top = '';
-          f.el.style.width = ''; f.el.style.height = ''; f.el.style.margin = '';
-          const nr = f.el.getBoundingClientRect();            // the slot's rest rect
-          const dx = r.left + r.width / 2 - (nr.left + nr.width / 2);
-          const dy = r.top + r.height / 2 - (nr.top + nr.height / 2);
-          const sc = nr.width ? r.width / nr.width : 1;
-          f.el.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0) scale(' + sc + ')';
-          void f.el.offsetWidth;
-          f.el.style.transition = 'transform ' + HANDOFF + 'ms ' + f.ease;
-          f.el.style.transform = '';
-        }, Math.max(0, FLIP.dur - HANDOFF) + f.delay);
-      }
       setTimeout(() => {
-        for (const f of flights) { if (f.el._flightGen === myGen && settled(f.el)) clearFlight(f.el); }
+        for (const f of flights) {
+          if (f.el._flightGen !== myGen) continue;
+          if (f.to.isConnected) {
+            f.to.replaceChildren(f.el);
+            f.el.style.position = ''; f.el.style.left = ''; f.el.style.top = '';
+            f.el.style.width = ''; f.el.style.height = ''; f.el.style.margin = '';
+            clearFlight(f.el);
+          } else { f.el.remove(); }            // destination gone — heal rebuilds it
+        }
         for (const o of owners) { if (settled(o)) o.style.zIndex = ''; }
-      }, FLIP.dur + last.delay + 80);
+      }, FLIP.dur + last.delay + 50);
       return;
     }
     setTimeout(() => {
