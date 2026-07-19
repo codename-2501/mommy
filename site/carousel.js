@@ -252,10 +252,15 @@ function mount(view, slides, aspects, opts, onOpen) {
     target = cur = j * step - (innerWidth * 0.5 - 2 * rem - slideW / 2);
     markActive();
     /* entrance offsets — each item enters from y = viewportBottom - itemTop.
-       item rects are safe to read: only children carry the entrance/wrap transforms */
-    for (const item of items) {
-      const top = item.getBoundingClientRect().top;
-      item.firstChild.style.setProperty('--ey', Math.max(0, innerHeight - top + 40) + 'px');
+       item rects are safe to read: only children carry the entrance/wrap transforms.
+       Skip it entirely when the flip drives the slides in (.no-rise): the entrance transform is
+       off then, so --ey is unread, and reading every item's rect here only stiffened the hand-off
+       frame of a flip-in (e.g. leaving the deck for the timeline). */
+    if (!view.classList.contains('no-rise')) {
+      for (const item of items) {
+        const top = item.getBoundingClientRect().top;
+        item.firstChild.style.setProperty('--ey', Math.max(0, innerHeight - top + 40) + 'px');
+      }
     }
     markReady();
   });
