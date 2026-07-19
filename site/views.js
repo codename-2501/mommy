@@ -184,7 +184,13 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
       const f = (cur + innerWidth * 0.5 - bounds[0].left - bounds[0].width * 0.5) / cardGap;   // work under the line
       let lap = f % lapWorks;
       if (lap < 0) lap += lapWorks;
-      ruler.update(lap * (slides.length / lapWorks), ratio);
+      /* name the work the deck actually centres. `lap` IS that work's index; feed it straight so the
+         ruler's month/year stay locked to the centred painting. (Stretching it by slides.length/lapWorks
+         made the ruler's sweep finish exactly as the deck looped, but squeezed every mid-lap work a
+         fraction early — the drift grew the deeper you scrolled and the month fell off the painting
+         around, e.g., May 2024. The ruler wraps at the archive length on its own, so the only cost of
+         the straight feed is a work-or-so hop as the deck crosses its loop seam, once a lap.) */
+      ruler.update(lap, ratio);
     }
     raf = requestAnimationFrame(frame);
   }
