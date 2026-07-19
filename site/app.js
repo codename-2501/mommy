@@ -725,32 +725,6 @@ function flipAir() {
   return air;
 }
 
-/* Leaving the deck, a painting's turn (rotateY, back to flat) and its travel used to share one transition.
-   The perspective un-foreshortens fast at the start of the turn, so the cards looked flat while they were
-   still bunched and only then spread out — it read as "flatten, THEN rearrange". Driving the angle on its
-   own registered custom property lets it lag behind the travel (a back-loaded ease): the cards carry their
-   deck angle as they spread apart and lie flat only as they land — one move, straight out of the deck's own
-   layout. Registered properties are needed to animate them; where they are missing the flight falls back to
-   the single-transform turn-and-travel below, unchanged. */
-let flipSplitState = 0;   // 0 untried, 1 usable, -1 unavailable
-function flipSplitOK() {
-  if (flipSplitState) return flipSplitState === 1;
-  flipSplitState = -1;
-  if (!(window.CSS && CSS.registerProperty)) return false;
-  try {
-    CSS.registerProperty({ name: '--flx', syntax: '<length>', inherits: false, initialValue: '0px' });
-    CSS.registerProperty({ name: '--fly', syntax: '<length>', inherits: false, initialValue: '0px' });
-    CSS.registerProperty({ name: '--flz', syntax: '<length>', inherits: false, initialValue: '0px' });
-    CSS.registerProperty({ name: '--flsc', syntax: '<number>', inherits: false, initialValue: '1' });
-    CSS.registerProperty({ name: '--flry', syntax: '<angle>', inherits: false, initialValue: '0deg' });
-    flipSplitState = 1;
-  } catch (e) { flipSplitState = -1; }
-  return flipSplitState === 1;
-}
-const FLIP_SPLIT_TRANSFORM =
-  'translateZ(var(--flz)) perspective(1000px) translate3d(var(--flx),var(--fly),0) scale(var(--flsc)) rotateY(var(--flry))';
-const FLIP_ROT_EASE = 'cubic-bezier(.6,0,.9,.4)';   // back-loaded: hold the deck angle, flatten into the landing
-
 /* the painting's own frame moves house into its new slot and flies the delta home.
    No clone, no second <img> — the same pixels travel.
    flatFly (leaving the deck): the frame flies in the 3D layer above, keeping the deck's perspective and
@@ -760,9 +734,20 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
   const byId = new Map(toFlips.map((t) => [t.el.dataset.id, t]));
   const flights = [];
   const owners = [];
-  const pending = [];   // deck-exit paintings whose start pose is converged in one batched pass below
   const air = flatFly ? flipAir() : null;
-  const splitOK = air ? flipSplitOK() : false;   // fly the turn on its own lagging track (see flipSplitOK)
+  /* the flight layer borrows the DECK'S OWN perspective — same 1000px, same vanishing point (the centre
+     of the deck box, off to the left). A painting flying at its deck position and angle then renders
+     exactly as it did in the deck, so the hand-off has no snap: the even fan does not collapse into a
+     bunched, flatter cluster the instant the flip takes over. Paintings are the same size in every view
+     now, so no scale is needed either — the turn to flat is the only shape change. */
+  if (air) {
+    const deckEl = document.querySelector('.flow__deck');
+    if (deckEl) {
+      const dr = deckEl.getBoundingClientRect();
+      air.style.perspective = '1000px';
+      air.style.perspectiveOrigin = (dr.left + dr.width / 2) + 'px ' + (dr.top + dr.height / 2) + 'px';
+    } else { air.style.perspective = ''; air.style.perspectiveOrigin = ''; }
+  }
   const myGen = navGen;   // a later navigation may re-fly these frames; its cleanup, not ours, owns them
   for (const from of fromFlips) {
     const to = byId.get(from.el.dataset.id);
@@ -772,11 +757,8 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
     const srcCard = from.el.closest('.lse-card');
     const roty = srcCard && typeof srcCard._roty === 'number' ? srcCard._roty : 0;
     let endT = '';                      // where the flight lands — see the roty branch for why it matters
-    let flightSplit = false;            // deck-exit turn flown on its own lagging track (splitOK path)
     /* a painting leaving the deck stands at its deck angle: fly from that angle to flat, turning and
-       travelling as one move. Pose the angle, measure the width the perspective actually renders, then
-       scale so the flight STARTS at the card's exact on-screen size (the perspective foreshortening is
-       non-linear, so converge rather than compute). Pivot at the centre so the box matches the deck's. */
+       travelling as one move. Pivot at the centre so the box matches the deck's. */
     const cx = from.bounds.left + from.bounds.width / 2 - (to.bounds.left + to.bounds.width / 2);
     const cy = from.bounds.top + from.bounds.height / 2 - (to.bounds.top + to.bounds.height / 2);
     const converge = (pose) => {
@@ -792,12 +774,11 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       }
     };
     if (roty && air) {
-      /* fly in the 3D layer, its own inline perspective() (frame-centred, symmetric — the same shape the
-         flat flight draws). translateZ, ordered on screen x (leftmost forward), keeps the deck's left-in-
-         front overlap; with no perspective on the layer it only sorts depth, never resizes. The slot waits
-         empty until the landing. The convergence is deferred and batched below — running it per painting
-         forced a reflow each pass and stiffened the very start of the transition. */
-      const lift = Math.max(0, Math.round((1 - from.bounds.left / innerWidth) * 40));
+      /* fly in the deck's own perspective layer (set on .flip-air above). Sitting the frame at its slot
+         and shifting it back to the deck spot (cx,cy) with the deck angle renders it exactly as the deck
+         did — no scale, no per-frame perspective, no snap. It travels to the slot (cx,cy -> 0) and turns
+         flat (rotateY -> 0) as one move; at flat, the perspective no longer foreshortens, so it lands at
+         its true slot size. The slot waits empty until the landing. */
       air.appendChild(from.el);
       from.el.style.position = 'absolute';
       from.el.style.left = to.bounds.left + 'px'; from.el.style.top = to.bounds.top + 'px';
@@ -806,12 +787,8 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       from.el.style.transformOrigin = '50% 50%';
       from.el.style.transition = 'none';
       to.el.replaceChildren();
-      const poseFn = (sc) =>
-        'translateZ(' + lift + 'px) perspective(1000px) translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + sc + ') rotateY(' + roty + 'deg)';
-      from.el.style.transform = poseFn(1);
-      pending.push({ el: from.el, poseFn, scale: 1, target: from.bounds.width, done: false, cx, cy, lift, roty });
-      endT = 'translateZ(0px) perspective(1000px) translate3d(0px,0px,0) scale(1) rotateY(0deg)';
-      flightSplit = splitOK;
+      from.el.style.transform = 'translate3d(' + cx + 'px,' + cy + 'px,0) rotateY(' + roty + 'deg)';
+      endT = 'translate3d(0px,0px,0) rotateY(0deg)';
     } else {
       to.el.replaceChildren(from.el);
       to.el.style.visibility = '';        // a slot that lent its frame out was hidden — it is back
@@ -831,54 +808,13 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
        turning card raced in and braked. A gentler ease-out spreads the deceleration across the flight. */
     const ease = roty ? 'cubic-bezier(.33,1,.68,1)' : 'var(--ease-travel)';
     from.el._flightGen = myGen;   // stamp who owns this flight now
-    flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease, split: flightSplit });
-  }
-  /* converge every deck-exit start pose together: each pass writes all the poses, THEN reads all the
-     widths — so a pass costs one reflow, not one per painting. The perspective foreshortening is non-
-     linear, hence the iterate-to-fit rather than a computed scale. Doing this per painting inside the
-     loop above forced 4xN reflows synchronously at the click and that is what stiffened the start. */
-  for (let pass = 0; pass < 4 && pending.length; pass++) {
-    for (const p of pending) { if (!p.done) p.el.style.transform = p.poseFn(p.scale); }
-    let any = false;
-    for (const p of pending) {
-      if (p.done) continue;
-      const shown = p.el.getBoundingClientRect().width;
-      if (shown < 2 || Math.abs(shown - p.target) < 0.5) { p.done = true; continue; }
-      p.scale *= p.target / shown; any = true;
-    }
-    if (!any) break;
-  }
-  for (const p of pending) { p.el.style.transform = p.poseFn(p.scale); }
-  if (splitOK) {
-    /* re-express the converged start pose through the custom properties, so the flight can animate the
-       turn (--flry) apart from the travel. Same pixels on screen — only how they are addressed changes. */
-    for (const p of pending) {
-      p.el.style.setProperty('--flx', p.cx + 'px');
-      p.el.style.setProperty('--fly', p.cy + 'px');
-      p.el.style.setProperty('--flz', p.lift + 'px');
-      p.el.style.setProperty('--flsc', String(p.scale));
-      p.el.style.setProperty('--flry', p.roty + 'deg');
-      p.el.style.transform = FLIP_SPLIT_TRANSFORM;
-    }
+    flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease });
   }
   if (!flights.length) return null;
   return () => {
     for (const f of flights) {
-      if (f.split) {
-        /* travel eases out (f.ease); the turn lags on a back-loaded ease, same duration so both land together */
-        const posT = FLIP.dur + 'ms ' + f.ease + ' ' + f.delay + 'ms';
-        f.el.style.transition =
-          '--flx ' + posT + ',--fly ' + posT + ',--flz ' + posT + ',--flsc ' + posT +
-          ',--flry ' + FLIP.dur + 'ms ' + FLIP_ROT_EASE + ' ' + f.delay + 'ms';
-        f.el.style.setProperty('--flx', '0px');
-        f.el.style.setProperty('--fly', '0px');
-        f.el.style.setProperty('--flz', '0px');
-        f.el.style.setProperty('--flsc', '1');
-        f.el.style.setProperty('--flry', '0deg');
-      } else {
-        f.el.style.transition = 'transform ' + FLIP.dur + 'ms ' + f.ease + ' ' + f.delay + 'ms';
-        f.el.style.transform = f.end;
-      }
+      f.el.style.transition = 'transform ' + FLIP.dur + 'ms ' + f.ease + ' ' + f.delay + 'ms';
+      f.el.style.transform = f.end;
     }
     const last = flights[flights.length - 1];
     /* drop each 3D-layer painting into its slot once the flight has fully settled it — the carousel
