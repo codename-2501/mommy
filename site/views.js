@@ -490,10 +490,15 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   view.appendChild(outer);
   let orderedIds = [];   // the ids in the order they are shown — handed to the detail for prev/next
 
-  /* fewer, larger cells so a painting is the same size here as in the timeline (~28rem wide on the
-     desktop): the flip between the two no longer has to resize it. The overview reads less at a glance
-     as a result — the trade the archive's owner asked for. */
-  const perRow = Math.round(tween(2, 5));
+  /* a cell is EXACTLY the timeline/deck card width (tween 20rem->28.1rem) — fixed px, not a fraction of
+     the row — so a painting is the same size here as everywhere and the flip between views never resizes
+     it. The row holds as many as fit and centres them. On a phone that is one wide column; on the desktop
+     about five. The overview reads less at a glance as a result — the trade the archive's owner asked for. */
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
+  const cardW = tween(20, 28.1) * rem;
+  const colGap = (innerWidth <= 699 ? 1 : 2) * rem;
+  const perRow = Math.max(1, Math.floor((innerWidth - 4 * rem + colGap) / (cardW + colGap)));
+  const gridCols = 'repeat(' + perRow + ',' + Math.round(cardW) + 'px)';
   const years = yearsByMonth(slides);
 
   /* the grid is torn down and laid out again on every sort change; the month bands only mean
@@ -526,8 +531,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
       const s = p.s;
       if (pos % perRow === 0) {
         row = el('div', 'agrid__row lse-row');
-        /* the row is as many columns wide as it holds — one owner of the count (see git blame). */
-        row.style.gridTemplateColumns = 'repeat(' + perRow + ',1fr)';
+        row.style.gridTemplateColumns = gridCols;   // fixed-width columns, matched to the timeline card
         content.appendChild(row);
       }
       const cell = el('article', 'agrid__cell lse-card');

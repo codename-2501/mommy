@@ -710,7 +710,7 @@ html.is-resizing .wordmark{transition:none}
   padding:40rem 2rem 2rem;
 }
 .agrid__row{
-  display:grid;gap:2rem;   /* the column count is the cell count — set in views.js */
+  display:grid;gap:2rem;justify-content:center;   /* fixed-width columns (views.js), centred in the row */
   align-items:start;transform-origin:top center;
 }
 /* On a phone the tilt is not the script's to draw. iOS runs its momentum scroll on the
