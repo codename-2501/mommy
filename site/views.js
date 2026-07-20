@@ -152,8 +152,14 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     if (inside) prog = 1 - Math.max(0, Math.min(1, 1 + (wrapped - b.left - b.width) / (innerWidth + b.width)));
     const p = 1 - prog;
     const xo = p - 0.5;
-    const bob = Math.sin(time + xo * Math.PI * 2) * rest * (1 + vel * 0.01);
+    const bobPhase = time + xo * Math.PI * 2;
+    const bobAmp = rest * (1 + vel * 0.01);
+    const bob = Math.sin(bobPhase) * bobAmp;
     const y = innerHeight * 0.5 * xo + bob;
+    /* the card's vertical bob VELOCITY right now (px/s): d/dt of the bob, where the phase advances
+       ~1.32 rad/s (time += 0.022 per 1/60s frame). Read on the way out so the flight can carry the
+       float's momentum into its start instead of the deck freezing it dead — see app.js carryBob. */
+    items[i].el._bobVy = Math.cos(bobPhase) * bobAmp * 1.32;
     /* all tilted the one way, but least at the centre and most at the edges: 60deg on the centre
        line (the most open), closing to 83deg toward either edge — a symmetric close, no sign flip */
     const rotY = -(60 + 23 * Math.abs(p - 0.5) * 2) * deckK;

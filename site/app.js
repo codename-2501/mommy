@@ -713,9 +713,30 @@ function settled(node) {
 }
 
 function clearFlight(node) {
+  node.getAnimations().forEach((a) => a.cancel());   // drop any held flight/bob keyframe fill before clearing
   node.style.transition = '';
   node.style.transform = '';
+  node.style.translate = '';         // the carried bob rode the independent translate property
   node.style.transformOrigin = '';   // a deck-exit flight pivoted at centre; hand the frame back at 0 0
+}
+
+/* Carry the deck float's momentum into the flight. A card leaving the deck was bobbing — it had a vertical
+   velocity — but freezing the deck to measure it kills that velocity dead, so the flight starts from a stop
+   and the motion reads stiff (float -> frozen -> slide). Give the frame a decaying vertical drift that
+   STARTS at the bob's own velocity and rings down to nothing over the flight: the float melts into the
+   slide instead of snapping. It rides the `translate` property, which composes with (and is applied on top
+   of, in screen space) the flight's own `transform` — so the flight mechanism is untouched, iOS-natural CSS
+   transition and all. Starts and ends at 0 offset, so the landing stays aligned. */
+function carryBob(el, vy) {
+  if (!vy || Math.abs(vy) < 3) return null;
+  const TAU = 0.34, W = 1.32, N = 10, dur = FLIP.dur / 1000;
+  const frames = [];
+  for (let k = 0; k <= N; k++) {
+    const s = (k / N) * dur;
+    const y = k === N ? 0 : (vy / W) * Math.exp(-s / TAU) * Math.sin(W * s);
+    frames.push({ translate: '0 ' + y.toFixed(2) + 'px' });
+  }
+  return el.animate(frames, { duration: FLIP.dur, easing: 'linear', fill: 'both' });
 }
 
 /* A navigation can arrive while deck-exit paintings are still up in .flip-air. Drop them into their slots
@@ -903,7 +924,7 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
        ease-out, flat flights the travel ease. */
     const ease = (roty || noStagger) ? 'cubic-bezier(.33,1,.68,1)' : 'var(--ease-travel)';
     from.el._flightGen = myGen;   // stamp who owns this flight now
-    flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease, mono: monoFrames });
+    flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease, mono: monoFrames, bobVy: (srcCard && srcCard._bobVy) || 0 });
   }
   if (!flights.length) return null;
   return () => {
@@ -920,6 +941,7 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
         f.el.style.transition = 'transform ' + FLIP.dur + 'ms ' + f.ease + ' ' + f.delay + 'ms';
         f.el.style.transform = f.end;
       }
+      f.bobAnim = carryBob(f.el, f.bobVy);   // continue the deck float's momentum into the flight (separate property)
     }
     const last = flights[flights.length - 1];
     /* drop each 3D-layer painting into its slot the moment ITS OWN flight settles — not all of them at
