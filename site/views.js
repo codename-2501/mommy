@@ -154,9 +154,13 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     const xo = p - 0.5;
     const bob = Math.sin(time + xo * Math.PI * 2) * rest * (1 + vel * 0.01);
     const y = innerHeight * 0.5 * xo + bob;
-    /* all tilted the one way, but least at the centre and most at the edges: 60deg on the centre
-       line (the most open), closing to 83deg toward either edge — a symmetric close, no sign flip */
-    const rotY = -(60 + 23 * Math.abs(p - 0.5) * 2) * deckK;
+    /* all tilted the one way, but least at the centre and most at the edges: 45deg on the centre line
+       (the most open — and the one that flies out), closing to 83deg toward either edge. The centre is
+       shallower than it looks natural for alone because iOS Safari can't fully hold a flight's 3D angle
+       through the deck->index keyframe turn: it releases some of it on click. A shallower centre means
+       there is less angle to release, so that uncontrollable bit of unwind is small instead of a visible
+       snap — while the edges keep their depth. A symmetric close, no sign flip. */
+    const rotY = -(45 + 38 * Math.abs(p - 0.5) * 2) * deckK;
     /* the hovered card slides 75% sideways — pull it forward in the deck's 3D space so it
        passes OVER its neighbours instead of under them */
     const z = i === hoverIdx ? 60 : 0;
