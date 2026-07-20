@@ -349,11 +349,15 @@ function renderIntro(logoStart) {
    right (eased) over durMs. onDone fires when full; the returned stop() lets a click enter early. */
 function waveFill(reveal, grey, durMs, onDone) {
   const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  /* the leading edge is a DIAGONAL: its x leans across the height (TILT), so the tide washes in on the
+     slant — bottom-left first, up to the top-right — with the sine still rippling along the slanted line. */
+  const TILT = 40;
   const poly = (level, amp, waves, phase) => {
     const N = 18, pts = ['0% 0%', '0% 100%'];
     for (let i = N; i >= 0; i--) {                   // the wavy leading edge, bottom to top
       const y = i / N;
-      pts.push((level + amp * Math.sin(y * waves * Math.PI * 2 + phase)).toFixed(2) + '% ' + (y * 100).toFixed(2) + '%');
+      const x = level + TILT * (y - 0.5) + amp * Math.sin(y * waves * Math.PI * 2 + phase);
+      pts.push(x.toFixed(2) + '% ' + (y * 100).toFixed(2) + '%');
     }
     return 'polygon(' + pts.join(',') + ')';
   };
@@ -361,7 +365,7 @@ function waveFill(reveal, grey, durMs, onDone) {
   function frame(ts) {
     if (t0 === null) t0 = ts;
     const lin = Math.min(1, (ts - t0) / durMs);
-    const level = ease(lin) * 114 - 7;               // mean x, running well past both ends
+    const level = ease(lin) * 166 - 33;              // mean x; wider run so the slanted edge clears both ends
     const t = (ts - t0) / 1000;
     /* same wavelength, but its ripple runs at its own rate and its lead breathes, so it drifts with
        the black rather than marching locked to it */
