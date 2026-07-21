@@ -2881,6 +2881,10 @@
    "src": "/images/photo_2026-07-13_14.52.42.jpeg",
    "motion": "invert",
    "opacity": 0.45
+  },
+  "/flow": {
+   "src": "/images/nadi-spasibenko-xlYCfXnpldo-unsplash.jpg",
+   "motion": "fixed"
   }
  }
 }
