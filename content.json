@@ -2851,14 +2851,16 @@
     "type": "image",
     "src": "/images/02ece5a890247.png",
     "caption": "ㅋㅋ",
-    "size": "full",
-    "align": "center",
+    "size": "half",
+    "align": "left",
     "gap": "sm"
    },
    {
     "type": "image",
     "src": "/images/1f7ffa08880a9.jpg",
-    "caption": "헤헿"
+    "caption": "헤헿",
+    "size": "half",
+    "align": "right"
    },
    {
     "type": "thanks",
