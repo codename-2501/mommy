@@ -123,11 +123,11 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
   let hoverIdx = -1;              // the card the cursor is lifting (see mouseenter above)
 
   function measure() {
-    /* the deck keeps its own 20rem card — the timeline and the index are matched DOWN to it (not the deck
-       widened up to them), so a painting flying between views keeps its size and the flip never resizes it.
-       Set before the bounds are read so they measure the real card. */
+    /* the deck card is sized to the timeline's own card (--car-w, 28.1rem) so a painting flying between
+       flow and the timeline keeps its size and that flip never resizes it; the ->index flip still shrinks
+       to the smaller grid cell. Set before the bounds are read so they measure the real card. */
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
-    deck.style.setProperty('--flow-w', (20 * rem) + 'px');
+    deck.style.setProperty('--flow-w', (28.1 * rem) + 'px');
     const P = Math.round(tween(7, 16));   // cards abreast across the viewport
     const spread = innerWidth / P;
     rest = (innerHeight / (P * 1.5)) * 0.4;   // bob amplitude
