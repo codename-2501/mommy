@@ -923,10 +923,14 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       }
     }
     /* the deck-turn ease (.33,1,.68,1) front-loads — nearly done by a third of the flight — which reads well
-       when only the angle unwinds (->timeline, same size). A big shrink drives its own eased keyframes above
-       (monoFrames), so this ease covers the rest: deck arrivals and same-size deck turns take the gentle
-       ease-out, flat flights the travel ease. */
-    const ease = (roty || noStagger) ? 'cubic-bezier(.33,1,.68,1)' : 'var(--ease-travel)';
+       when the angle unwinds out of the deck (flow->timeline, same size). But arriving INTO flow from a flat
+       source (index->flow: no angle to unwind, the frame just travels while the deck fans its angle in) that
+       same front-load makes the paintings snap into place up front — "확 바뀐다". Give that case an ease-in-out
+       so the travel starts soft and settles soft, in step with the angle easing open. A big shrink drives its
+       own eased keyframes above (monoFrames); flat non-deck flights take the travel ease. */
+    const ease = roty ? 'cubic-bezier(.33,1,.68,1)'
+      : noStagger ? 'cubic-bezier(.42,0,.2,1)'
+      : 'var(--ease-travel)';
     from.el._flightGen = myGen;   // stamp who owns this flight now
     flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease, mono: monoFrames, bobVy: (srcCard && srcCard._bobVy) || 0 });
   }

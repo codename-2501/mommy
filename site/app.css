@@ -678,7 +678,7 @@ html.is-resizing .wordmark{transition:none}
 .flow:active{cursor:grabbing}
 .flow__inner{position:relative;display:flex;align-items:center;height:100%}
 .flow__deck{
-  display:grid;place-items:end;min-width:28.1rem;max-width:28.1rem;
+  display:grid;place-items:end;min-width:20rem;max-width:20rem;
   perspective:1000px;transform-style:preserve-3d;   /* .flow-carousel */
 }
 .flow__deck>*{grid-area:1/1}
@@ -693,7 +693,7 @@ html.is-resizing .wordmark{transition:none}
   .flow-item__media{transition:transform .75s var(--ease-rise)}
   .flow-item:hover .flow-item__media{transform:translate(75%) rotate(10deg)}
 }
-.flow-item__box{width:var(--flow-w,28.1rem)}
+.flow-item__box{width:var(--flow-w,20rem)}
 .flow-item__box img{width:100%;height:100%;object-fit:cover;pointer-events:none}
 .flow__label{
   position:fixed;right:2rem;bottom:1.8rem;z-index:3;text-align:right;
