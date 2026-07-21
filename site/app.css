@@ -107,6 +107,19 @@ img{max-width:100%;display:block}
   letter-spacing:.01em;
 }
 
+/* long-press peek: hold a list painting to see it large, release to dismiss */
+.lse-peek{
+  position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
+  background:rgba(245,245,245,.9);opacity:0;transition:opacity .18s ease;
+  touch-action:none;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+}
+.lse-peek.on{opacity:1}
+.lse-peek img{
+  max-width:88%;max-height:82%;object-fit:contain;
+  box-shadow:0 2rem 6rem rgba(0,0,0,.28);transform:scale(.95);transition:transform .18s cubic-bezier(.2,.9,.25,1);
+}
+.lse-peek.on img{transform:scale(1)}
+
 /* ---------- intro gate ---------- */
 /* transparent overlay: the home builds underneath while the intro leaves */
 /* intro: the month list and the enter button stack under the (fixed) wordmark */
@@ -864,6 +877,9 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
 .view--about.is-out .about__mask-in{transform:translateY(100%)}
 /* generic page exit: the page being left just fades */
 .view.is-exit{opacity:0 !important;transition:opacity .35s ease !important;pointer-events:none}
+/* fade mode: the arriving view dissolves up in place (no flip) */
+.view--fadein{animation:lseViewFadeIn .42s ease both}
+@keyframes lseViewFadeIn{from{opacity:0}to{opacity:1}}
 /* the incoming view is measured before it paints — its slots are put in their from-state
    in the same frame, so they never flash at their end position */
 .view.is-pre{visibility:hidden}
