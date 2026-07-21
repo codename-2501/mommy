@@ -165,6 +165,17 @@
       <input type="file" id="uploader" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer">
     </label>
     <span class="count" id="countImg"></span>
+    <span class="sp"></span>
+    <label style="font-size:12px;color:var(--mut)">정렬</label>
+    <select id="imgSortSel" class="blk-sel">
+      <option value="date-desc">업로드 최신순</option>
+      <option value="date-asc">업로드 오래된순</option>
+      <option value="size-desc">용량 큰순</option>
+      <option value="size-asc">용량 작은순</option>
+      <option value="dim-desc">해상도 큰순</option>
+      <option value="dim-asc">해상도 작은순</option>
+      <option value="name">이름순</option>
+    </select>
     <span class="hint" style="margin:0">사용 중인 이미지는 삭제 시 확인합니다.</span>
   </div>
   <main><div class="grid" id="imgGrid"></div></main>
@@ -671,6 +682,7 @@ function openPicker(){
 function closePicker(){$('#picker').classList.remove('open'); pickMode='thumb';}
 $('#pickClose').onclick=closePicker;
 $('#pickSort').addEventListener('change',e=>{ imgSort=e.target.value; openPicker(); });
+$('#imgSortSel').addEventListener('change',e=>{ imgSort=e.target.value; renderImages(); });
 $('#picker').addEventListener('click',e=>{if(e.target.id==='picker')closePicker();});
 $('#pickUpload').onchange=e=>doUpload(e,()=>openPicker());
 
@@ -841,21 +853,30 @@ function fmtBytes(b){
   return (b/1048576).toFixed(1)+' MB';
 }
 function imgSpec(name){
-  const i=imageInfo[name]; if(!i) return '';
-  const dim=(i.w&&i.h)?i.w+'×'+i.h:''; const sz=fmtBytes(i.bytes);
-  return [dim,sz].filter(Boolean).join(' · ');
+  const d=imageDims[name];
+  const dim=d?d[0]+'×'+d[1]:'';
+  return [dim,fmtSize(imageSizes[name])].filter(Boolean).join(' · ');
 }
 function renderImages(){
   const g=$('#imgGrid'); g.innerHTML='';
-  images.forEach(name=>{
+  const ss=$('#imgSortSel'); if(ss) ss.value=imgSort;
+  let pending=false;
+  sortedImages().forEach(name=>{
     const u=usageCount(name);
-    const spec=imgSpec(name);
     const c=document.createElement('div'); c.className='imgcard';
     c.innerHTML=`<div class="ph"><img loading="lazy" src="/images/${name}"></div>
-      <div class="meta"><div><div class="nm" title="${name}">${name}</div>
-      ${spec?`<div class="spec">${spec}</div>`:''}
+      <div class="meta"><div style="min-width:0"><div class="nm" title="${name}">${name}</div>
+      <div class="spec">${imgSpec(name)}</div>
       <div class="use">${u}개 슬라이드 사용</div></div>
       <button class="btn sm danger" data-del="${name}">삭제</button></div>`;
+    const img=c.querySelector('img'), spec=c.querySelector('.spec');
+    img.addEventListener('load',()=>{
+      if(!img.naturalWidth) return;
+      const isNew=!imageDims[name];
+      imageDims[name]=[img.naturalWidth,img.naturalHeight];
+      spec.textContent=imgSpec(name);
+      if(isNew && (imgSort==='dim-desc'||imgSort==='dim-asc') && !pending){ pending=true; setTimeout(()=>renderImages(),200); }
+    },{once:true});
     g.appendChild(c);
   });
   $('#countImg').textContent=images.length+'개 이미지';
