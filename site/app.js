@@ -929,7 +929,7 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
        so the travel starts soft and settles soft, in step with the angle easing open. A big shrink drives its
        own eased keyframes above (monoFrames); flat non-deck flights take the travel ease. */
     const ease = roty ? 'cubic-bezier(.33,1,.68,1)'
-      : noStagger ? 'cubic-bezier(.42,0,.2,1)'
+      : noStagger ? 'cubic-bezier(.42,0,.58,1)'
       : 'var(--ease-travel)';
     from.el._flightGen = myGen;   // stamp who owns this flight now
     flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease, mono: monoFrames, bobVy: (srcCard && srcCard._bobVy) || 0 });
