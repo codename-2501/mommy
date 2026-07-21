@@ -134,6 +134,13 @@ def main():
     shutil.copytree(os.path.join(ROOT, "icons"), os.path.join(DIST, "icons"))
     shutil.copy(os.path.join(ROOT, "content.json"), os.path.join(DIST, "content.json"))
 
+    # the custom domain. An Actions-based Pages deploy serves whatever the artifact holds, so the CNAME
+    # must live IN the artifact or a push can drop the domain. It also fixes what the domain serves: the
+    # custom domain mounts at the ROOT (lsegallery.art/), so the site must be built with an empty base —
+    # a /<repo>/ base would point every asset at /<repo>/... which 404s at the domain root (blank screen).
+    with open(os.path.join(DIST, "CNAME"), "w") as f:
+        f.write("lsegallery.art\n")
+
     # the shell carries the favicon and the link-preview tags. A static host has no request
     # to read the hostname from, so og:image can only be absolute if meta.siteUrl says where
     # the site will live — without it a shared link shows no thumbnail.

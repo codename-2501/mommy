@@ -23,8 +23,10 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install pillow
-      # the site is a project page at /<repo>/, so it is built with that mount
-      - run: python build_static.py --base=/${{ github.event.repository.name }}
+      # served from the custom domain lsegallery.art at the ROOT, so build with an empty base — assets stay
+      # root-relative (/site/...). (A /<repo>/ base is only right for the github.io/<repo>/ URL, which now
+      # just 301-redirects to the custom domain, so it is not served directly.)
+      - run: python build_static.py
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
