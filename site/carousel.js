@@ -66,8 +66,10 @@ function buildItem(s, i, ratio) {
   img.loading = 'eager';
   img.decoding = 'async';
   img.draggable = false;
-  if (img.complete) img.classList.add('ok');
-  else img.addEventListener('load', () => img.classList.add('ok'), { once: true });
+  const _ok = () => img.classList.add('ok');   // reveal only once decoded — see gateLoad in views.js
+  const _settle = () => { if (img.decode) img.decode().then(_ok, () => { if (img.naturalWidth) _ok(); }); else _ok(); };
+  if (img.complete) _settle();
+  else img.addEventListener('load', _settle, { once: true });
   frame.appendChild(img);
   box.appendChild(frame);
   const cap = el('div', 'car-label car-label--bottom');
