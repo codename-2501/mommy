@@ -117,9 +117,10 @@
   .sheet .shead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
   .sheet .sbody{padding:16px;overflow:auto}
   .picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(110px,100%),1fr));gap:10px}
-  .pick{border:2px solid transparent;border-radius:8px;overflow:hidden;cursor:pointer;background:#000;aspect-ratio:1}
+  .pick{position:relative;border:2px solid transparent;border-radius:8px;overflow:hidden;cursor:pointer;background:#000;aspect-ratio:1}
   .pick img{width:100%;height:100%;object-fit:cover;display:block}
   .pick:hover{border-color:#4a4d57}
+  .pick__meta{position:absolute;left:0;right:0;bottom:0;padding:3px 5px;font-size:10px;line-height:1.3;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.72));text-shadow:0 1px 2px #000;pointer-events:none;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -249,6 +250,15 @@
 <div class="modal" id="picker">
   <div class="sheet">
     <div class="shead"><strong>이미지 선택</strong><div class="sp"></div>
+      <select id="pickSort" title="정렬" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:12px">
+        <option value="date-desc">업로드 최신순</option>
+        <option value="date-asc">업로드 오래된순</option>
+        <option value="size-desc">용량 큰순</option>
+        <option value="size-asc">용량 작은순</option>
+        <option value="dim-desc">해상도 큰순</option>
+        <option value="dim-asc">해상도 작은순</option>
+        <option value="name">이름순</option>
+      </select>
       <label class="btn ghost sm" style="position:relative;overflow:hidden">업로드
         <input type="file" id="pickUpload" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
       <button class="btn ghost sm" id="pickClose">닫기</button></div>
@@ -357,7 +367,7 @@ async function downscaleToDataURL(file, max, quality){
   } finally { URL.revokeObjectURL(url); }
 }
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-let cfg=null, images=[], imageInfo={}, pickTarget=null, curPage='/about', nid=0, baseVersion=null;
+let cfg=null, images=[], imageInfo={}, imageSizes={}, imageDates={}, imageDims={}, imgSort='date-desc', pickTarget=null, curPage='/about', nid=0, baseVersion=null;
 function setStatus(m,c=''){const e=$('#status');e.textContent=m;e.className='status '+c;}
 /* 게시: 저장된 content.json + 이미지를 커밋·푸시하면 배포 워크플로우가 공개 사이트를 다시 빌드한다.
    편집은 저장 시점에 로컬에만 반영되고, 게시가 그것을 인터넷으로 올린다. */
@@ -382,7 +392,7 @@ async function load(){
     fetch('/api/images?t='+Date.now()).then(r=>r.json()),
     fetch('/api/pages?t='+Date.now()).then(r=>r.json())
   ]);
-  cfg=c; baseVersion=cfg._version||null; delete cfg._version; images=im.images||[]; imageInfo=im.info||{};
+  cfg=c; baseVersion=cfg._version||null; delete cfg._version; images=im.images||[]; imageInfo=im.info||{}; imageSizes=im.sizes||{}; imageDates=im.dates||{};
   const sel=$('#pageSel'); sel.innerHTML=(pg.pages||['/']).map(p=>`<option value="${p}">${p}</option>`).join('');
   loadWordmark(); loadMeta(); renderBg();
   $('#orderMode').value=orderMode();
@@ -596,11 +606,41 @@ $('#slideGrid').addEventListener('dragover',e=>{e.preventDefault();const c=e.tar
 $('#slideGrid').addEventListener('drop',e=>{e.preventDefault();if(orderMode()!=='manual')return;const c=e.target.closest('.card');if(!c||dragI==null)return;const to=+c.dataset.i;const S=cfg.slides;const[m]=S.splice(dragI,1);S.splice(to,0,m);dragI=null;renderSlides();dirty();});
 
 /* ---------- image picker ---------- */
+function fmtSize(b){ if(!b) return ''; return b<1024?b+'B':b<1048576?Math.round(b/1024)+'KB':(b/1048576).toFixed(1)+'MB'; }
+/* order the library for the picker. Name/size/date come from the API; pixel size (해상도) uses the
+   dimensions cached as thumbnails load, so it sharpens once the images have been seen once. */
+function sortedImages(){
+  const arr=images.slice(), s=imgSort;
+  const area=n=>{const d=imageDims[n];return d?d[0]*d[1]:0;};
+  const t=n=>imageDates[n]?Date.parse(imageDates[n]):0;
+  const byName=(a,b)=>a.localeCompare(b);
+  if(s==='name') arr.sort(byName);
+  else if(s==='size-desc') arr.sort((a,b)=>((imageSizes[b]||0)-(imageSizes[a]||0))||byName(a,b));
+  else if(s==='size-asc') arr.sort((a,b)=>((imageSizes[a]||0)-(imageSizes[b]||0))||byName(a,b));
+  else if(s==='dim-desc') arr.sort((a,b)=>(area(b)-area(a))||byName(a,b));
+  else if(s==='dim-asc') arr.sort((a,b)=>(area(a)-area(b))||byName(a,b));
+  else if(s==='date-asc') arr.sort((a,b)=>(t(a)-t(b))||byName(a,b));
+  else arr.sort((a,b)=>(t(b)-t(a))||byName(a,b));   // date-desc (최신 먼저) — default
+  return arr;
+}
 function openPicker(){
   const g=$('#pickGrid'); g.innerHTML='';
-  images.forEach(name=>{
+  const ss=$('#pickSort'); if(ss) ss.value=imgSort;
+  let pending=false;   // one reflow after a batch of new dimensions lands (only matters for 해상도 sort)
+  sortedImages().forEach(name=>{
     const d=document.createElement('div'); d.className='pick';
-    d.innerHTML=`<img loading="lazy" src="/images/${name}">`;
+    const sz=fmtSize(imageSizes[name]);
+    const cached=imageDims[name];
+    const metaTxt=(cached?cached[0]+'×'+cached[1]:'')+(cached&&sz?' · ':'')+sz;
+    d.innerHTML=`<img loading="lazy" src="/images/${name}"><span class="pick__meta">${metaTxt}</span>`;
+    const img=d.querySelector('img'), lab=d.querySelector('.pick__meta');
+    img.addEventListener('load',()=>{
+      if(!img.naturalWidth) return;
+      const isNew=!imageDims[name];
+      imageDims[name]=[img.naturalWidth,img.naturalHeight];
+      lab.textContent=img.naturalWidth+'×'+img.naturalHeight+(sz?' · '+sz:'');
+      if(isNew && (imgSort==='dim-desc'||imgSort==='dim-asc') && !pending){ pending=true; setTimeout(()=>openPicker(),200); }
+    },{once:true});
     d.onclick=()=>{
       if(pickMode==='media'){ closePicker(); addMediaImage('/images/'+name); }
       else if(pickMode==='about'){ closePicker(); addAboutImage('/images/'+name); }
@@ -620,6 +660,7 @@ function openPicker(){
 }
 function closePicker(){$('#picker').classList.remove('open'); pickMode='thumb';}
 $('#pickClose').onclick=closePicker;
+$('#pickSort').addEventListener('change',e=>{ imgSort=e.target.value; openPicker(); });
 $('#picker').addEventListener('click',e=>{if(e.target.id==='picker')closePicker();});
 $('#pickUpload').onchange=e=>doUpload(e,()=>openPicker());
 
@@ -707,10 +748,13 @@ function showEditPicker(mode){
   editPickMode=mode;
   $('#editPickerTitle').textContent = mode==='thumb'?'대표 이미지 선택':'추가할 이미지 선택';
   const g=$('#editPickerGrid'); g.innerHTML='';
-  images.forEach(name=>{
+  sortedImages().forEach(name=>{   // recent-upload first, same as the main picker
     const d=document.createElement('div');
-    d.style.cssText='aspect-ratio:1;background:#000;border-radius:6px;overflow:hidden;cursor:pointer;border:2px solid transparent';
-    d.innerHTML=`<img loading="lazy" src="/images/${name}" style="width:100%;height:100%;object-fit:cover">`;
+    d.style.cssText='position:relative;aspect-ratio:1;background:#000;border-radius:6px;overflow:hidden;cursor:pointer;border:2px solid transparent';
+    const sz=fmtSize(imageSizes[name]);
+    d.innerHTML=`<img loading="lazy" src="/images/${name}" style="width:100%;height:100%;object-fit:cover"><span class="pick__meta">${sz}</span>`;
+    const im2=d.querySelector('img'), lb2=d.querySelector('.pick__meta');
+    im2.addEventListener('load',()=>{ if(im2.naturalWidth){ imageDims[name]=[im2.naturalWidth,im2.naturalHeight]; lb2.textContent=im2.naturalWidth+'×'+im2.naturalHeight+(sz?' · '+sz:''); } },{once:true});
     d.onmouseenter=()=>d.style.borderColor='#4a4d57'; d.onmouseleave=()=>d.style.borderColor='transparent';
     d.onclick=()=>{
       const src='/images/'+name;
