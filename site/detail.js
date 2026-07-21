@@ -50,7 +50,7 @@ function mediaCell(s, aspects, cls) {
   img.src = thumb(s.image, 600);
   img.alt = s.title || s.bottom || '';
   img.draggable = false;
-  if (img.complete) img.classList.add('ok');
+  if (img.complete && img.naturalWidth) img.classList.add('ok');   // not a broken/404 img — see gateLoad
   else img.addEventListener('load', () => img.classList.add('ok'), { once: true });
   frame.appendChild(img);
   box.appendChild(frame);

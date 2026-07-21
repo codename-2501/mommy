@@ -21,7 +21,10 @@ function thumb(src, w) {
 
 /* every framed painting fades in when it loads, and keeps that .ok wherever it flies to */
 function gateLoad(img) {
-  if (img.complete) img.classList.add('ok');
+  // .ok fades the frame in; only grant it once the image actually HAS pixels. A broken src (a cached 404,
+  // e.g. a thumb that 404'd before it was built) reports complete=true with naturalWidth 0 — marking that
+  // .ok showed the browser's broken-image box at the slot's size during a flip. Held back, it stays hidden.
+  if (img.complete && img.naturalWidth) img.classList.add('ok');
   else img.addEventListener('load', () => img.classList.add('ok'), { once: true });
 }
 
