@@ -1,6 +1,6 @@
 // GET    /api/images  — list the image library (names), plus an (empty) info map the UI tolerates
 // DELETE /api/images?name=X  — remove an image, refusing if the archive still points at it
-const { ghGet, ghDelete, authed, need } = require('./_gh');
+const { ghGet, ghDelete, ghCommits, authed, need } = require('./_gh');
 
 const ALLOWED = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
 const isImg = (n) => ALLOWED.includes((n.match(/\.[^.]+$/) || [''])[0].toLowerCase());
@@ -31,10 +31,32 @@ module.exports = async (req, res) => {
       if (r.status === 404) return res.status(200).json({ images: [], info: {} });
       if (!r.ok) return res.status(502).json({ error: 'list failed: ' + r.status });
       const arr = await r.json();
-      const images = (Array.isArray(arr) ? arr : []).filter((e) => e.type === 'file' && isImg(e.name)).map((e) => e.name).sort();
+      const files = (Array.isArray(arr) ? arr : []).filter((e) => e.type === 'file' && isImg(e.name));
+      const images = files.map((e) => e.name).sort();
+      const sizes = {};                       // bytes, straight from the dir listing
+      files.forEach((e) => { sizes[e.name] = e.size || 0; });
+      // upload dates: each upload commits "image: <name> 업로드", so recent commit messages date the files.
+      // A couple of pages cover the recent uploads; anything older (bulk-added) simply has no date.
+      const dates = {};
+      try {
+        for (let page = 1; page <= 2; page++) {
+          const cr = await ghCommits('images', page);
+          if (!cr.ok) break;
+          const cs = await cr.json();
+          if (!Array.isArray(cs) || !cs.length) break;
+          for (const c of cs) {
+            const msg = (c.commit && c.commit.message) || '';
+            const m = msg.match(/^image:\s*(.+?)\s+업로드/);
+            if (m && !dates[m[1]]) {
+              dates[m[1]] = (c.commit.committer && c.commit.committer.date) || (c.commit.author && c.commit.author.date) || '';
+            }
+          }
+          if (cs.length < 100) break;
+        }
+      } catch (_) { /* dates are a nicety; the list still works without them */ }
       res.setHeader('Cache-Control', 'no-store');
       // info (aspect/colour hints) is computed at build time by build_static.py; the admin tolerates {}
-      return res.status(200).json({ images, info: {} });
+      return res.status(200).json({ images, sizes, dates, info: {} });
     }
 
     if (req.method === 'DELETE') {

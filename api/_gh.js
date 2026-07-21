@@ -31,6 +31,12 @@ async function ghPut(path, contentB64, message, sha) {
   });
 }
 
+// list commits touching a path (newest first), one page of up to 100. Used to date the image library:
+// every upload commits "image: <name> 업로드", so the messages carry the filename and the commit its date.
+async function ghCommits(pathPrefix, page) {
+  return fetch(`${API}/repos/${REPO}/commits?sha=${BRANCH}&path=${encodeURIComponent(pathPrefix)}&per_page=100&page=${page || 1}`, { headers: headers() });
+}
+
 async function ghDelete(path, message, sha) {
   return fetch(`${API}/repos/${REPO}/contents/${encodeURIComponent(path).replace(/%2F/g, '/')}`, {
     method: 'DELETE', headers: headers(), body: JSON.stringify({ message, sha, branch: BRANCH }),
@@ -53,4 +59,4 @@ function need(res) {
   return res.status(403).json({ error: 'read-only' });
 }
 
-module.exports = { REPO, BRANCH, API, ghGet, ghPut, ghDelete, authed, need };
+module.exports = { REPO, BRANCH, API, ghGet, ghPut, ghDelete, ghCommits, authed, need };
