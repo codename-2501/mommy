@@ -931,7 +931,22 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
            box (from.width - to.width)/2 off — it snapped on an interrupted flight between different sizes */
         const scale = to.bounds.width ? from.bounds.width / to.bounds.width : 1;
         from.el.style.transition = 'none';
-        from.el.style.transform = 'translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + scale + ')';
+        from.el.style.transformOrigin = '50% 50%';
+        let ax = cx, ay = cy;
+        from.el.style.transform = 'translate3d(' + ax + 'px,' + ay + 'px,0) scale(' + scale + ')';
+        /* the destination flow slot sits inside the deck's perspective layer, so a plain screen-space
+           translate can land the start tens of px off the source cell on a narrow (phone) viewport — the
+           arrival read as a "툭". Converge it like the deck branches converge their scale: measure the
+           residual and fold it into the translate, so the flight always begins exactly on the cell it left. */
+        for (let pass = 0; pass < 3; pass++) {
+          const r = from.el.getBoundingClientRect();
+          if (r.width < 2) break;
+          const ex = (from.bounds.left + from.bounds.width / 2) - (r.left + r.width / 2);
+          const ey = (from.bounds.top + from.bounds.height / 2) - (r.top + r.height / 2);
+          if (Math.abs(ex) < 0.5 && Math.abs(ey) < 0.5) break;
+          ax += ex; ay += ey;
+          from.el.style.transform = 'translate3d(' + ax + 'px,' + ay + 'px,0) scale(' + scale + ')';
+        }
       }
     }
     /* the deck-turn ease (.33,1,.68,1) front-loads — nearly done by a third of the flight — which reads well
