@@ -1,0 +1,1195 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LSE GALLERY — 관리자</title>
+<style>
+  :root{--bg:#0f0f11;--panel:#17181c;--panel2:#1d1f24;--line:#2a2c33;--ink:#eceae4;--mut:#8a8c94;--acc:#e85c4a;--ok:#3fb56b;--blue:#4a90d9}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:14px/1.5 "Helvetica Neue",Arial,sans-serif}
+  /* fluid: every row wraps and every min-width yields to the viewport, so the panel bends
+     from phone to desktop on one layout — no second set of rules to keep in sync */
+  header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:12px clamp(12px,3vw,20px);
+    background:rgba(15,15,17,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  header h1{font-size:13px;letter-spacing:.18em;text-transform:uppercase;font-weight:700}
+  .tabs{display:flex;gap:4px;flex-wrap:wrap}
+  .tab{padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--mut);border:1px solid transparent}
+  .tab.active{background:var(--panel2);color:var(--ink);border-color:var(--line)}
+  .sp{flex:1 1 0;min-width:0}
+  .btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 13px;border-radius:8px;
+    font-size:13px;cursor:pointer;transition:.15s;white-space:nowrap}
+  .btn:hover{border-color:#4a4d57}
+  .btn.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+  .btn.ghost{background:transparent}
+  .btn.sm{padding:4px 9px;font-size:12px}
+  .btn.danger{color:#ff9a8f;border-color:#5a2c28}
+  /* the status text pushed the header past the viewport: let it wrap to its own line */
+  .status{font-size:12px;color:var(--mut);text-align:right;flex:1 1 100%;min-width:0}
+  .status.ok{color:var(--ok)} .status.err{color:var(--acc)}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px clamp(12px,3vw,20px);
+    border-bottom:1px solid var(--line)}
+  .toolbar input[type=search],.toolbar select{background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:8px 12px;max-width:100%}
+  .toolbar input[type=search]{flex:1 1 min(180px,100%);min-width:0}
+  .count{font-size:12px;color:var(--mut)}
+  main{padding:18px clamp(12px,3vw,20px) 90px}
+  .view{display:none} .view.active{display:block}
+  img{max-width:100%}
+
+  /* slides / images grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(230px,100%),1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+  .card.drag{opacity:.4} .card.over{outline:2px dashed var(--blue)}
+  .thumb{position:relative;aspect-ratio:4/3;background:#000;cursor:pointer;overflow:hidden}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .badge{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.72);color:#fff;font-size:11px;padding:2px 7px;border-radius:6px}
+  .card.card--bad{outline:2px solid #e5484d;outline-offset:-2px}
+  .badge.badge--bad{background:#e5484d}
+  .req::after{content:" *";color:#e5484d}
+  .grip{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.72);color:#fff;font-size:11px;padding:2px 7px;border-radius:6px;cursor:grab}
+  .change{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);
+    color:#fff;font-size:12px;opacity:0;transition:.15s}
+  .thumb:hover .change{opacity:1}
+  .fields{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px}
+  .fields label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+  .fields input{width:100%;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 8px;font-size:13px}
+  .fields input:focus{outline:none;border-color:#4a4d57}
+  .rowbtns{display:flex;gap:6px;margin-top:2px;flex-wrap:wrap}
+
+  /* image library */
+  .imgcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .imgcard .ph{aspect-ratio:1;background:#000}
+  .imgcard img{width:100%;height:100%;object-fit:cover;display:block}
+  .imgcard .meta{padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+  .imgcard .nm{font-size:11px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .use{font-size:10px;color:var(--mut)}
+  .imgcard .spec{font-size:10px;color:var(--mut);opacity:.8;margin-top:1px}
+
+  /* block editor: only the grip drags, so a textarea keeps its own text selection.
+     The row wraps — on a narrow screen the buttons drop under the field instead of
+     pushing the whole panel sideways. */
+  .blk{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;background:var(--panel2);
+    border:1px solid var(--line);border-radius:10px;padding:10px}
+  .blk.drag{opacity:.4}
+  .blk.over{outline:2px dashed var(--blue)}
+  .blk .grip2{flex:none;align-self:stretch;display:flex;align-items:center;padding:0 2px;color:var(--mut);
+    cursor:grab;user-select:none;font-size:16px}
+  .blk .grip2:active{cursor:grabbing}
+  .blk-add{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .blk__body{flex:1 1 min(260px,100%);min-width:0}
+  .blk__nav{display:flex;gap:4px;flex:none;flex-direction:column}
+  .blk-ta{width:100%;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;
+    padding:12px 14px;resize:vertical;font-family:inherit;font-size:15px;line-height:1.7;min-height:96px}
+  .blk-ta:focus{outline:none;border-color:#4a4d57}
+  /* a CV item: date and text sit side by side while there is room, and stack when there is not */
+  .cv-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .cv-date,.cv-text{background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;
+    padding:9px 11px;font-size:14px;font-family:inherit;min-width:0}
+  .cv-date{flex:0 1 110px}
+  .cv-text{flex:1 1 min(200px,100%)}
+  .cv-date:focus,.cv-text:focus{outline:none;border-color:#4a4d57}
+  .blk-sel{background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;
+    padding:7px 9px;font-size:13px;font-family:inherit;max-width:100%}
+  .blk-sel:focus{outline:none;border-color:#4a4d57}
+  /* every block's options read as one row of the same shape: a label of fixed width, then a
+     select of fixed width. Left to size themselves, the labels and the selects took the width
+     of their own words and no two blocks lined up. */
+  .blk-opts{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:8px}
+  .blk-opt{display:flex;align-items:center;gap:6px}
+  .blk-opt > span{font-size:12px;color:var(--mut);white-space:nowrap;flex:none;width:52px;text-align:right}
+  .blk-opt > .blk-sel{flex:none;width:118px}
+
+  /* text editor */
+  .textlist{display:flex;flex-direction:column;gap:10px;max-width:900px}
+  .titem{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:10px;align-items:center}
+  .titem .orig{font-size:12px;color:var(--mut);white-space:pre-wrap;word-break:break-word}
+  .titem textarea{width:100%;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;
+    padding:7px 9px;font-size:13px;resize:vertical;min-height:38px;font-family:inherit}
+  .titem.changed{border-color:#4a5a3a}
+  .hint{font-size:12px;color:var(--mut);margin-bottom:12px}
+
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:clamp(10px,3vw,24px)}
+  .modal.open{display:flex}
+  .sheet{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(900px,96vw);max-height:86vh;display:flex;flex-direction:column}
+  .sheet .shead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .sheet .sbody{padding:16px;overflow:auto}
+  .picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(110px,100%),1fr));gap:10px}
+  .pick{border:2px solid transparent;border-radius:8px;overflow:hidden;cursor:pointer;background:#000;aspect-ratio:1}
+  .pick img{width:100%;height:100%;object-fit:cover;display:block}
+  .pick:hover{border-color:#4a4d57}
+</style>
+</head>
+<body>
+<header>
+  <h1>LSE GALLERY · 관리자</h1>
+  <div class="tabs">
+    <div class="tab active" data-view="slides">작품</div>
+    <div class="tab" data-view="images">이미지</div>
+    <div class="tab" data-view="text">페이지</div>
+    <div class="tab" data-view="site">사이트</div>
+  </div>
+  <div class="sp"></div>
+  <button class="btn ghost" id="openSite">사이트 열기 ↗</button>
+  <button class="btn primary" id="save">저장</button>
+  <button class="btn ghost" id="publish" title="저장된 내용을 공개 사이트(GitHub Pages)에 반영합니다">게시 ↑</button>
+  <div class="status" id="status">불러오는 중…</div>
+</header>
+
+<!-- ===== SLIDES ===== -->
+<section class="view active" id="view-slides">
+  <div class="toolbar">
+    <button class="btn" id="addSlide">+ 슬라이드 추가</button>
+    <input type="search" id="qSlide" placeholder="번호·문구로 검색">
+    <span class="count" id="countSlide"></span>
+    <span class="sp"></span>
+    <label style="font-size:12px;color:var(--mut)">정렬</label>
+    <select id="orderMode" class="blk-sel">
+      <option value="date">날짜순 (최신 먼저)</option>
+      <option value="manual">수동 (드래그 순서)</option>
+    </select>
+    <button class="btn ghost" id="bulkBottom">표시분 아래문구 일괄변경…</button>
+  </div>
+  <div class="hint" id="orderHint" style="padding:0 clamp(12px,3vw,20px);margin:10px 0 0"></div>
+  <main><div class="grid" id="slideGrid"></div></main>
+</section>
+
+<!-- ===== IMAGES ===== -->
+<section class="view" id="view-images">
+  <div class="toolbar">
+    <label class="btn" style="position:relative;overflow:hidden">
+      + 이미지 업로드
+      <input type="file" id="uploader" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer">
+    </label>
+    <span class="count" id="countImg"></span>
+    <span class="hint" style="margin:0">사용 중인 이미지는 삭제 시 확인합니다.</span>
+  </div>
+  <main><div class="grid" id="imgGrid"></div></main>
+</section>
+
+<!-- ===== TEXT ===== -->
+<section class="view" id="view-text">
+  <div class="toolbar">
+    <label>페이지</label>
+    <select id="pageSel"></select>
+  </div>
+  <main>
+    <div class="hint">블록을 쌓아 페이지를 구성합니다. 위에서 아래 순서 그대로 사이트에 렌더됩니다. ↑↓ 로 글과 이미지를 섞어 배치하세요. 빈 블록은 렌더되지 않습니다.</div>
+    <div class="blk-add">
+      <button class="btn ghost" data-add="title">+ 제목</button>
+      <button class="btn ghost" data-add="text">+ 글</button>
+      <button class="btn ghost" data-add="thanks">+ 맺음말</button>
+      <button class="btn ghost" data-add="image">+ 이미지</button>
+      <button class="btn ghost" data-add="list">+ 이력</button>
+      <span class="sp"></span>
+      <span class="count" id="countBlocks"></span>
+    </div>
+    <div id="blockList" style="display:flex;flex-direction:column;gap:8px"></div>
+  </main>
+</section>
+
+<!-- ===== SITE (설정: 한 번 정하면 잘 바뀌지 않는 것들) ===== -->
+<section class="view" id="view-site">
+  <main>
+    <div style="background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
+      <div style="font-weight:600;margin-bottom:4px">로고 / 워드마크 <span style="color:var(--mut);font-weight:400;font-size:12px">(인트로·홈 상단)</span></div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:12px">워드마크 3줄을 편집합니다. 비워두면 기본값(LSE GALLERY)이 표시됩니다.</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <img id="wm-img" style="height:44px;max-width:180px;object-fit:contain;border-radius:6px;background:#101116;border:1px solid var(--line);padding:4px">
+        <div>
+          <div style="font-size:12px;color:var(--mut);margin-bottom:4px">이미지 로고 (선택) — 넣으면 아래 3줄 대신 이 이미지가 쓰입니다</div>
+          <button class="btn ghost btn sm" id="pickLogo">이미지</button>
+          <button class="btn ghost btn sm" id="clearLogo">지움</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;max-width:min(520px,100%)">
+        <input id="wm-l1" placeholder="갤러리명 (예: LSE GALLERY)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="wm-l2" placeholder="부제 (선택)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="wm-l3" placeholder="연도 표기 (선택)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+      </div>
+    </div>
+    <div style="background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
+      <div style="font-weight:600;margin-bottom:4px">사이트 <span style="color:var(--mut);font-weight:400;font-size:12px">(파비콘 · 링크 공유 미리보기)</span></div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:12px">카카오톡 등에 링크를 붙이면 아래 제목·설명·이미지가 썸네일로 보입니다.</div>
+      <div style="display:flex;flex-direction:column;gap:8px;max-width:min(640px,100%)">
+        <input id="mt-title" placeholder="사이트 제목 (탭·공유 제목)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="mt-desc" placeholder="설명 (공유 시 제목 아래 문구)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="mt-url" placeholder="사이트 주소 (정적 배포용 · 예: https://lse.pages.dev)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px">
+          <div style="display:flex;gap:10px;align-items:center">
+            <img id="mt-fav-img" style="width:44px;height:44px;object-fit:cover;border-radius:8px;background:#101116;border:1px solid var(--line)">
+            <div>
+              <div style="font-size:12px;color:var(--mut);margin-bottom:4px">파비콘</div>
+              <button class="btn ghost btn sm" id="pickFavicon">선택</button>
+              <button class="btn ghost btn sm" id="clearFavicon">지움</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <img id="mt-og-img" style="width:78px;height:44px;object-fit:cover;border-radius:8px;background:#101116;border:1px solid var(--line)">
+            <div>
+              <div style="font-size:12px;color:var(--mut);margin-bottom:4px">공유 썸네일 (OG 이미지)</div>
+              <button class="btn ghost btn sm" id="pickOg">선택</button>
+              <button class="btn ghost btn sm" id="clearOg">지움</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
+      <div style="font-weight:600;margin-bottom:4px">배경 <span style="color:var(--mut);font-weight:400;font-size:12px">(페이지별)</span></div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:12px">페이지마다 배경 이미지와 움직임을 따로 정합니다. 배경 없음이 기본입니다 — 그림이 주인공인 페이지는 비워두는 편이 낫습니다.</div>
+      <div id="bgList" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </main>
+</section>
+
+<!-- image picker modal -->
+<div class="modal" id="picker">
+  <div class="sheet">
+    <div class="shead"><strong>이미지 선택</strong><div class="sp"></div>
+      <label class="btn ghost sm" style="position:relative;overflow:hidden">업로드
+        <input type="file" id="pickUpload" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
+      <button class="btn ghost sm" id="pickClose">닫기</button></div>
+    <div class="sbody"><div class="picker" id="pickGrid"></div></div>
+  </div>
+</div>
+
+<!-- media manager modal -->
+<!-- slide edit modal (roomy) -->
+<div class="modal" id="editModal">
+  <div class="sheet">
+    <div class="shead"><strong>슬라이드 편집</strong><span id="editSub" style="color:var(--mut);font-size:12px;margin-left:8px"></span><div class="sp"></div>
+      <button class="btn ghost sm" id="editClose">닫기</button></div>
+    <div class="sbody" style="max-height:78vh;overflow:auto">
+      <div style="display:flex;gap:20px;flex-wrap:wrap">
+        <div style="flex:0 0 240px">
+          <div id="editThumb" style="aspect-ratio:4/3;background:#000;border-radius:8px;overflow:hidden;cursor:pointer;position:relative">
+            <img id="editThumbImg" style="width:100%;height:100%;object-fit:cover">
+          </div>
+          <button class="btn sm" id="editPickImg" style="width:100%;margin-top:8px">대표 이미지 변경</button>
+        </div>
+        <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:14px">
+          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">위 문구 (번호) · 자동</label>
+            <input id="ed-top" readonly title="이미지 순서에 따라 자동 부여됩니다 (순서 변경 시 자동 갱신)" style="width:100%;margin-top:4px;background:#0a0b0e;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:9px 11px;cursor:not-allowed">
+            <div style="font-size:11px;color:var(--mut);margin-top:4px">이미지 순서에 따라 자동 부여 — 순서를 바꾸면 번호도 자동으로 바뀝니다.</div></div>
+          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">카테고리 (뱃지)</label>
+            <input id="ed-category" placeholder="예: Inspire / Showcase / Educate" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+            <div style="font-size:11px;color:var(--mut);margin-top:4px">상세·홈의 보라색 뱃지로 표시됩니다. 비우면 아래 문구의 괄호 앞부분을 사용.</div></div>
+          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">아래 문구 (홈 라벨)</label>
+            <input id="ed-bottom" placeholder="예: Inspire (March)" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
+          <div><label class="req" style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">날짜 (타임라인 연·월)</label>
+            <input type="month" id="ed-date" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;color-scheme:dark">
+            <div style="font-size:11px;color:var(--mut);margin-top:4px">하단 타임라인·좌우 순서가 이 날짜(연·월) 기준으로 정렬됩니다. 날짜순 모드에선 필수 — 비우면 작품이 맨 끝에 그룹 없이 묻힙니다.</div></div>
+          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">상세 제목 (클릭 시)</label>
+            <input id="ed-title" placeholder="작품 제목" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
+          <div style="display:flex;gap:10px">
+            <div style="flex:1"><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">제품 규격</label>
+              <input id="ed-size" placeholder="예: 72.7 × 60.6 cm (20호)" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
+            <div style="flex:1"><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">제품 타입</label>
+              <input id="ed-ptype" placeholder="예: Oil on canvas" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
+          </div>
+          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">상세 설명 (클릭 시)</label>
+            <textarea id="ed-desc" placeholder="작품 설명…" style="width:100%;margin-top:4px;min-height:100px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:inherit;resize:vertical"></textarea></div>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--line);margin-top:18px;padding-top:16px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <strong style="font-size:14px">🎞 미디어 (상세 본문)</strong>
+          <span id="editMediaSub" style="color:var(--mut);font-size:12px"></span>
+          <div class="sp" style="flex:1"></div>
+          <button class="btn ghost sm" id="editAddImg">+ 이미지</button>
+          <button class="btn ghost sm" id="editAddVid">+ 영상(유튜브)</button>
+        </div>
+        <div id="editMediaList" style="display:flex;flex-direction:column;gap:10px;margin-top:12px"></div>
+        <div id="editPickerWrap" style="display:none;margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--panel2)">
+          <div style="display:flex;align-items:center;margin-bottom:8px"><strong id="editPickerTitle" style="font-size:12px">이미지 선택</strong>
+            <div class="sp" style="flex:1"></div>
+            <label class="btn ghost sm" style="position:relative;overflow:hidden">업로드<input type="file" id="editPickUpload" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
+            <button class="btn ghost sm" id="editPickerCancel">취소</button></div>
+          <div id="editPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;max-height:260px;overflow:auto"></div>
+        </div>
+        <div class="hint" style="margin-top:10px">상세 클릭 시 이 순서대로 이미지·영상이 <b>세로로</b> 표시됩니다(원본 양식). 순서(위치)는 각 항목의 ↑ ↓ 로 조정합니다. 비우면 대표 이미지 1장만 나옵니다.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Remote admin: this editor lives at a public URL, so every WRITE carries a key the serverless functions
+   check (reads stay open). The key is entered once and kept in localStorage; a wrapper adds it to /api/
+   calls, and a 403 (missing/wrong key) asks for it again. A small floating button re-enters it any time. */
+(function(){
+  const KEY='lse_admin_key';
+  const getKey=()=>localStorage.getItem(KEY)||'';
+  window.__promptKey=function(){ const k=prompt('관리자 키'); if(k){ localStorage.setItem(KEY,k.trim()); location.reload(); } };
+  const orig=window.fetch.bind(window);
+  window.fetch=function(url,opts){
+    opts=Object.assign({},opts);
+    const u=(typeof url==='string')?url:((url&&url.url)||'');
+    const isApi=u.indexOf('/api/')!==-1;
+    if(isApi){ const h=new Headers(opts.headers||{}); const k=getKey(); if(k) h.set('X-Admin-Key',k); opts.headers=h; }
+    return orig(url,opts).then(function(r){
+      if(isApi && r.status===403){ localStorage.removeItem(KEY);
+        setTimeout(function(){ if(confirm('관리자 키가 필요하거나 틀렸습니다. 다시 입력할까요?')) window.__promptKey(); },30); }
+      return r;
+    });
+  };
+  addEventListener('DOMContentLoaded',function(){
+    const b=document.createElement('button');
+    b.textContent='🔑'; b.title='관리자 키 입력';
+    b.style.cssText='position:fixed;right:12px;bottom:12px;z-index:99999;width:40px;height:40px;border-radius:20px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:18px';
+    b.onclick=window.__promptKey; document.body.appendChild(b);
+  });
+})();
+/* downscale a picked image in the browser before upload: keeps the request under the serverless body
+   limit AND the repo lean, while 2400px is ample for the web (the build makes the small thumbs anyway). */
+async function downscaleToDataURL(file, max, quality){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});
+    let w=img.naturalWidth, h=img.naturalHeight;
+    if(Math.max(w,h)>max){ const s=max/Math.max(w,h); w=Math.round(w*s); h=Math.round(h*s); }
+    const c=document.createElement('canvas'); c.width=w; c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    return c.toDataURL('image/jpeg', quality||0.85);
+  } finally { URL.revokeObjectURL(url); }
+}
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let cfg=null, images=[], imageInfo={}, pickTarget=null, curPage='/about', nid=0, baseVersion=null;
+function setStatus(m,c=''){const e=$('#status');e.textContent=m;e.className='status '+c;}
+/* 게시: 저장된 content.json + 이미지를 커밋·푸시하면 배포 워크플로우가 공개 사이트를 다시 빌드한다.
+   편집은 저장 시점에 로컬에만 반영되고, 게시가 그것을 인터넷으로 올린다. */
+$('#publish').addEventListener('click',async()=>{
+  if(dirtyState){ setStatus('먼저 저장하세요','err'); return; }
+  const b=$('#publish'); b.disabled=true; const label=b.textContent; b.textContent='게시 중…';
+  setStatus('공개 사이트에 게시 중… (빌드까지 1~2분)','');
+  try{
+    const r=await fetch('/api/publish',{method:'POST'}).then(r=>r.json());
+    if(r.error){ setStatus('게시 실패: '+r.error,'err'); }
+    else if(r.nothing){ setStatus('게시할 변경이 없습니다 (이미 최신)','ok'); }
+    else { setStatus('게시됨 · 1~2분 뒤 공개 사이트에 반영됩니다','ok'); }
+  }catch(e){ setStatus('게시 실패: '+e.message,'err'); }
+  b.disabled=false; b.textContent=label;
+});
+let dirtyState=false;
+function dirty(){dirtyState=true;setStatus('저장되지 않은 변경 있음 (게시하려면 먼저 저장)','err');}
+
+async function load(){
+  const [c,im,pg]=await Promise.all([
+    fetch('/api/content?t='+Date.now()).then(r=>r.json()),
+    fetch('/api/images?t='+Date.now()).then(r=>r.json()),
+    fetch('/api/pages?t='+Date.now()).then(r=>r.json())
+  ]);
+  cfg=c; baseVersion=cfg._version||null; delete cfg._version; images=im.images||[]; imageInfo=im.info||{};
+  const sel=$('#pageSel'); sel.innerHTML=(pg.pages||['/']).map(p=>`<option value="${p}">${p}</option>`).join('');
+  loadWordmark(); loadMeta(); renderBg();
+  $('#orderMode').value=orderMode();
+  renderSlides(); renderImages();
+  setStatus(cfg.slides.length+'개 슬라이드 · '+images.length+'개 이미지','ok');
+}
+
+/* ---------- tabs ---------- */
+$$('.tab').forEach(t=>t.onclick=()=>{
+  $$('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active');
+  $$('.view').forEach(v=>v.classList.remove('active'));
+  $('#view-'+t.dataset.view).classList.add('active');
+  /* 각 탭은 들어올 때 자기 화면을 다시 그린다 — 다른 탭에서 바꾼 값이 반영돼야 한다 */
+  if(t.dataset.view==='text') loadText();
+  if(t.dataset.view==='site'){ loadWordmark(); loadMeta(); renderBg(); }
+});
+
+/* ---------- slides CRUD ---------- */
+/* 이미지가 쓰이는 모든 자리 — 대표 이미지만 보던 탓에 배경·로고·파비콘·About 블록·
+   상세 본문에 쓰인 이미지는 '사용 안 함'으로 보여 경고 없이 지워졌다. */
+function imageUses(name){
+  const ref='/images/'+name, hit=v=>typeof v==='string'&&v.endsWith(ref), out=[];
+  (cfg.slides||[]).forEach(s=>{
+    if(hit(s.image)) out.push(['슬라이드 대표', s.id||'']);
+    (s.media||[]).forEach(m=>{ if(hit(m.src)) out.push(['상세 본문', s.id||'']); });
+  });
+  Object.entries(cfg.blocks||{}).forEach(([page,bs])=>(bs||[]).forEach(b=>{
+    if(b.type==='image'&&hit(b.src)) out.push(['페이지 블록', page]);
+  }));
+  Object.entries(cfg.backgrounds||{}).forEach(([page,bg])=>{ if(hit(bg&&bg.src)) out.push(['배경', page]); });
+  if(hit((cfg.wordmark||{}).image)) out.push(['로고','']);
+  if(hit((cfg.meta||{}).favicon)) out.push(['파비콘','']);
+  if(hit((cfg.meta||{}).ogImage)) out.push(['공유 썸네일','']);
+  return out;
+}
+function usageCount(name){ return imageUses(name).length; }
+/* 크기는 작게/보통/크게 세 칸뿐이라, 한 단계가 28% 였다. 사이 값을 못 잡으니 원하는 크기에
+   닿을 수가 없었다. 이제 %, 그리고 행간은 아예 없던 조절이다. */
+const SIZE_STEPS=[60,70,80,90,100,110,120,130,140,160,180,200];
+const LH_STEPS=[1,1.1,1.2,1.3,1.4,1.5,1.6,1.8,2];
+const SZ_WORD={sm:72,md:100,lg:140};
+function sizePct(v){
+  if(SZ_WORD[v]!=null) return SZ_WORD[v];
+  const n=parseFloat(v);
+  if(!isFinite(n)||n<=0) return 100;
+  return n>5?Math.round(n):Math.round(n*100);
+}
+/* 강제 삭제하면 남은 참조는 전부 끊는다 — 남겨두면 사이트에 깨진 이미지가 뜨고
+   정적 빌드는 아예 실패한다 */
+function clearImageRefs(name){
+  const ref='/images/'+name, hit=v=>typeof v==='string'&&v.endsWith(ref);
+  (cfg.slides||[]).forEach(s=>{
+    if(hit(s.image)) s.image='';
+    if(Array.isArray(s.media)) s.media=s.media.filter(m=>!hit(m.src));
+  });
+  Object.keys(cfg.blocks||{}).forEach(p=>{
+    cfg.blocks[p]=(cfg.blocks[p]||[]).filter(b=>!(b.type==='image'&&hit(b.src)));
+  });
+  Object.keys(cfg.backgrounds||{}).forEach(p=>{ if(hit(cfg.backgrounds[p].src)) delete cfg.backgrounds[p]; });
+  if(hit((cfg.wordmark||{}).image)) delete cfg.wordmark.image;
+  if(hit((cfg.meta||{}).favicon)) delete cfg.meta.favicon;
+  if(hit((cfg.meta||{}).ogImage)) delete cfg.meta.ogImage;
+}
+/* ---------- 로고 / 워드마크 ---------- */
+function loadWordmark(){
+  const w=(cfg&&cfg.wordmark)||{};
+  ['l1','l2','l3'].forEach(k=>{ const el=$('#wm-'+k); if(el) el.value=w[k]||''; });
+  const img=$('#wm-img');
+  if(img){ img.src=w.image||''; img.style.visibility=w.image?'visible':'hidden'; }
+}
+function wmObj(){ if(!cfg.wordmark||typeof cfg.wordmark!=='object') cfg.wordmark={}; return cfg.wordmark; }
+$('#pickLogo').onclick=()=>{ pickMode='logo'; openPicker(); };
+$('#clearLogo').onclick=()=>{ delete wmObj().image; loadWordmark(); dirty(); };
+function setLogo(src){ wmObj().image=src; loadWordmark(); dirty(); }
+['l1','l2','l3'].forEach(k=>{ const el=$('#wm-'+k); if(el) el.addEventListener('input',()=>{ if(!cfg)return; cfg.wordmark=cfg.wordmark||{}; const v=el.value.trim(); if(v) cfg.wordmark[k]=v; else delete cfg.wordmark[k]; if(!Object.keys(cfg.wordmark).length) delete cfg.wordmark; dirty(); }); });
+
+/* ---------- site meta: favicon + link-preview (content.json → meta) ---------- */
+function siteMeta(){ if(!cfg.meta||typeof cfg.meta!=='object') cfg.meta={}; return cfg.meta; }
+function loadMeta(){
+  const m=(cfg&&cfg.meta)||{};
+  $('#mt-title').value=m.title||'';
+  $('#mt-desc').value=m.description||'';
+  $('#mt-url').value=m.siteUrl||'';
+  renderMetaImages();
+}
+function renderMetaImages(){
+  const m=siteMeta();
+  const fav=$('#mt-fav-img'), og=$('#mt-og-img');
+  fav.src=m.favicon||''; fav.style.visibility=m.favicon?'visible':'hidden';
+  og.src=m.ogImage||'';  og.style.visibility=m.ogImage?'visible':'hidden';
+}
+[['#mt-title','title'],['#mt-desc','description'],['#mt-url','siteUrl']].forEach(([sel,key])=>{
+  $(sel).addEventListener('input',()=>{
+    const m=siteMeta(); const v=$(sel).value.trim();
+    if(v) m[key]=v; else delete m[key];
+    dirty();
+  });
+});
+$('#pickFavicon').onclick=()=>{ pickMode='favicon'; openPicker(); };
+$('#pickOg').onclick=()=>{ pickMode='og'; openPicker(); };
+$('#clearFavicon').onclick=()=>{ delete siteMeta().favicon; renderMetaImages(); dirty(); };
+$('#clearOg').onclick=()=>{ delete siteMeta().ogImage; renderMetaImages(); dirty(); };
+function setMetaImage(kind,src){ siteMeta()[kind]=src; renderMetaImages(); dirty(); }
+
+/* ---------- order: date or manual (content.json → meta.order, read by site/app.js) ---------- */
+function orderMode(){ return siteMeta().order==='manual' ? 'manual' : 'date'; }
+/* the site sorts by date unless the mode says otherwise; in date mode the admin keeps its own
+   array in that same order, so what the editor sees is what the visitor gets */
+function sortByDate(){
+  cfg.slides.sort((a,b)=>{
+    const da=String(a.date||''), db=String(b.date||'');
+    if(da===db) return 0;
+    if(!da) return 1;             // 날짜 없는 작품은 뒤로
+    if(!db) return -1;
+    return da<db ? 1 : -1;        // 최신 먼저
+  });
+}
+function applyOrder(){ if(orderMode()==='date') sortByDate(); }
+$('#orderMode').addEventListener('change',()=>{
+  const v=$('#orderMode').value;
+  if(v==='manual') siteMeta().order='manual'; else delete siteMeta().order;
+  applyOrder(); renderSlides(); dirty();
+});
+function renderOrderHint(){
+  const date=orderMode()==='date';
+  $('#orderHint').textContent = date
+    ? '날짜 내림차순으로 자동 정렬됩니다 (사이트와 동일). 순서를 바꾸려면 작품의 날짜를 바꾸세요 — 드래그는 잠겨 있습니다.'
+    : '드래그로 정한 순서가 사이트에 그대로 나갑니다. 날짜는 표기용으로만 쓰입니다.';
+}
+
+function renumber(){ cfg.slides.forEach((s,i)=>{ s.top=String(i+1); }); }  // 순번은 항상 배열 순서 = 번호
+function renderSlides(){
+  applyOrder();   // 날짜순 모드면 배열 자체를 정렬 — 관리자와 사이트가 같은 순서를 본다
+  renumber();     // 순서변경/추가/삭제 후 자동 재번호
+  renderOrderHint();
+  const manual = orderMode()==='manual';
+  const dateMode = orderMode()==='date';
+  const q=($('#qSlide').value||'').toLowerCase().trim();
+  const g=$('#slideGrid'); g.innerHTML=''; let shown=0;
+  cfg.slides.forEach((s,i)=>{
+    const hay=(i+1)+' '+(s.top||'')+' '+(s.bottom||'');
+    if(q && !hay.toLowerCase().includes(q)) return; shown++;
+    /* a work with no image shows nothing; in date order a work with no date is buried at the end
+       with no month band — both read as "it never registered". Flag them so they cannot hide. */
+    const noImg=!((s.image||'').trim()), noDate=dateMode && !((s.date||'').trim());
+    const bad=noImg||noDate;
+    const c=document.createElement('div'); c.className='card'+(bad?' card--bad':''); c.draggable=manual; c.dataset.i=i;
+    c.dataset.manual=manual?'1':'';
+    const badgeTxt = noImg ? '이미지 없음' : noDate ? '날짜 없음' : '#'+(i+1)+(s.date?' · '+String(s.date).slice(0,7):'');
+    c.innerHTML=`
+      <div class="thumb" data-pick="${i}">
+        <img loading="lazy" src="${s.image||''}" alt="">
+        <span class="badge${bad?' badge--bad':''}">${badgeTxt}</span>${manual?'<span class="grip" title="드래그로 순서변경">⠿</span>':''}
+        <span class="change">이미지 변경</span>
+      </div>
+      <div class="fields">
+        <div style="font-size:13px;font-weight:600;line-height:1.3;min-height:18px">${esc(s.title)||'<span style="color:var(--mut);font-weight:400">제목 없음</span>'}</div>
+        <div style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em">${esc(s.bottom)||'—'} · 🎞 ${(s.media&&s.media.length)||1}</div>
+        <div class="rowbtns" style="margin-top:6px">
+          <button class="btn sm primary" data-act="edit" data-i="${i}" style="flex:1">편집</button>
+        </div>
+        <div class="rowbtns">
+          <button class="btn sm" data-act="up" data-i="${i}">↑</button>
+          <button class="btn sm" data-act="down" data-i="${i}">↓</button>
+          <button class="btn sm" data-act="dup" data-i="${i}">복제</button>
+          <button class="btn sm danger" data-act="del" data-i="${i}">삭제</button>
+        </div>
+      </div>`;
+    g.appendChild(c);
+  });
+  $('#countSlide').textContent=shown+' / '+cfg.slides.length;
+}
+function esc(v){return (v==null?'':String(v)).replace(/"/g,'&quot;');}
+
+$('#slideGrid').addEventListener('input',e=>{
+  const t=e.target; if(t.tagName!=='INPUT'&&t.tagName!=='TEXTAREA')return;
+  if(t.dataset.i==null||t.dataset.k==null)return;
+  cfg.slides[+t.dataset.i][t.dataset.k]=t.value; dirty();
+});
+$('#slideGrid').addEventListener('click',e=>{
+  const pk=e.target.closest('[data-pick]');
+  if(pk){pickTarget=+pk.dataset.pick; openPicker(); return;}
+  const b=e.target.closest('button[data-act]'); if(!b)return;
+  const i=+b.dataset.i, S=cfg.slides;
+  if(b.dataset.act==='edit'){openEditModal(i);return;}
+  if(b.dataset.act==='up'&&i>0){[S[i-1],S[i]]=[S[i],S[i-1]];}
+  if(b.dataset.act==='down'&&i<S.length-1){[S[i+1],S[i]]=[S[i],S[i+1]];}
+  if(b.dataset.act==='dup'){const n={...S[i],id:'n'+Date.now()+'_'+(nid++)};S.splice(i+1,0,n);}
+  if(b.dataset.act==='del'){if(!confirm('#'+(i+1)+' 슬라이드를 삭제할까요?'))return;S.splice(i,1);}
+  renderSlides(); dirty();
+});
+$('#addSlide').onclick=()=>{
+  const last=cfg.slides[cfg.slides.length-1]||{};
+  cfg.slides.push({id:'n'+Date.now()+'_'+(nid++),image:last.image||(images[0]?'/images/'+images[0]:''),top:String(cfg.slides.length+1),bottom:'Inspire'});
+  renderSlides(); dirty(); window.scrollTo(0,document.body.scrollHeight);
+};
+$('#qSlide').addEventListener('input',renderSlides);
+$('#bulkBottom').onclick=()=>{
+  const q=($('#qSlide').value||'').toLowerCase().trim();
+  const v=prompt('표시된 슬라이드들의 "아래 문구"를 일괄 변경:'); if(v==null)return;
+  cfg.slides.forEach((s,i)=>{const hay=((i+1)+' '+(s.top||'')+' '+(s.bottom||'')).toLowerCase();if(!q||hay.includes(q))s.bottom=v;});
+  renderSlides(); dirty();
+};
+/* drag reorder */
+let dragI=null;
+$('#slideGrid').addEventListener('dragstart',e=>{
+  if(orderMode()!=='manual'){e.preventDefault();return;}   // 날짜순 모드: 순서는 날짜가 정한다
+  const c=e.target.closest('.card');if(!c)return;dragI=+c.dataset.i;c.classList.add('drag');});
+$('#slideGrid').addEventListener('dragend',e=>{const c=e.target.closest('.card');if(c)c.classList.remove('drag');$$('.card.over').forEach(x=>x.classList.remove('over'));});
+$('#slideGrid').addEventListener('dragover',e=>{e.preventDefault();const c=e.target.closest('.card');if(!c)return;$$('.card.over').forEach(x=>x.classList.remove('over'));c.classList.add('over');});
+$('#slideGrid').addEventListener('drop',e=>{e.preventDefault();if(orderMode()!=='manual')return;const c=e.target.closest('.card');if(!c||dragI==null)return;const to=+c.dataset.i;const S=cfg.slides;const[m]=S.splice(dragI,1);S.splice(to,0,m);dragI=null;renderSlides();dirty();});
+
+/* ---------- image picker ---------- */
+function openPicker(){
+  const g=$('#pickGrid'); g.innerHTML='';
+  images.forEach(name=>{
+    const d=document.createElement('div'); d.className='pick';
+    d.innerHTML=`<img loading="lazy" src="/images/${name}">`;
+    d.onclick=()=>{
+      if(pickMode==='media'){ closePicker(); addMediaImage('/images/'+name); }
+      else if(pickMode==='about'){ closePicker(); addAboutImage('/images/'+name); }
+      else if(pickMode==='bg'){ closePicker(); setBgImage('/images/'+name); }
+      else if(pickMode==='logo'){ closePicker(); setLogo('/images/'+name); }
+      else if(pickMode==='favicon'){ closePicker(); setMetaImage('favicon','/images/'+name); }
+      else if(pickMode==='og'){ closePicker(); setMetaImage('ogImage','/images/'+name); }
+      else {
+        cfg.slides[pickTarget].image='/images/'+name; dirty(); closePicker();
+        if($('#editModal').classList.contains('open')){ $('#editThumbImg').src='/images/'+name; }
+        else renderSlides();
+      }
+    };
+    g.appendChild(d);
+  });
+  $('#picker').classList.add('open');
+}
+function closePicker(){$('#picker').classList.remove('open'); pickMode='thumb';}
+$('#pickClose').onclick=closePicker;
+$('#picker').addEventListener('click',e=>{if(e.target.id==='picker')closePicker();});
+$('#pickUpload').onchange=e=>doUpload(e,()=>openPicker());
+
+/* ---------- media manager (detail images + videos) ---------- */
+let mediaTarget=null, pickMode='thumb';
+function slideMedia(i){
+  const s=cfg.slides[i];
+  if(!Array.isArray(s.media)) s.media = s.image ? [{type:'image',src:s.image,caption:''}] : [];
+  return s.media;
+}
+function ytId(url){
+  if(!url) return '';
+  const m=String(url).match(/(?:v=|\/embed\/|youtu\.be\/|\/shorts\/)([A-Za-z0-9_-]{6,})/);
+  return m?m[1]:(/^[A-Za-z0-9_-]{6,}$/.test(url)?url:'');
+}
+/* media lives inside the edit modal (mediaTarget === editTarget) */
+function descParas(i){
+  const d=(cfg.slides[i]&&cfg.slides[i].desc)||'';
+  return d.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+}
+function posOptions(P,cur){
+  // slots 0..P : 0=맨 위, 1..P-1=문단 뒤, 맨 아래=빈 값 sentinel(문단 수 바뀌어도 항상 하단 유지)
+  const unset=(cur==null||cur==='');
+  const n=unset?null:Math.max(0,Math.min(P,+cur));
+  let html='';
+  for(let v=0;v<=P;v++){
+    const isBottom=v===P;
+    const val=isBottom?'':v;
+    const label=v===0?'맨 위(글 앞)':(isBottom?'맨 아래(글 뒤)':v+'번째 문단 뒤');
+    const on=isBottom?(unset||n>=P):(!unset&&n===v);
+    html+=`<option value="${val}"${on?' selected':''}>${label}</option>`;
+  }
+  return html;
+}
+function alignOptions(cur){
+  const c=cur||'center';   // default 가운데
+  return ['left','center','right'].map(v=>{
+    const lbl=v==='left'?'좌':(v==='center'?'중앙':'우');
+    return `<option value="${v}"${v===c?' selected':''}>${lbl}</option>`;
+  }).join('');
+}
+function renderMediaList(){
+  const i=mediaTarget, media=slideMedia(i);
+  $('#editMediaSub').textContent=media.length+'개';
+  const P=descParas(i).length;
+  const L=$('#editMediaList'); L.innerHTML='';
+  media.forEach((m,k)=>{
+    const isVid=m.type==='video';
+    const thumb=isVid ? `https://i.ytimg.com/vi/${ytId(m.videoId||m.url)}/hqdefault.jpg` : (m.src||m.image||'');
+    const selStyle='background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:12px';
+    const posCtrl = P>0
+      ? `<select data-mk="${k}" data-mf="pos" title="본문 대비 세로 위치" style="flex:1;min-width:0;${selStyle}">${posOptions(P,m.pos)}</select>`
+      : `<div style="flex:1;font-size:11px;color:var(--mut);align-self:center">본문 없음</div>`;
+    const alignCtrl = `<select data-mk="${k}" data-mf="align" title="가로 정렬(종횡비 유지)" style="flex:0 0 auto;${selStyle}">${alignOptions(m.align)}</select>`;
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px';
+    row.innerHTML=`
+      <div style="width:90px;height:64px;flex:0 0 auto;background:#000;border-radius:6px;overflow:hidden;position:relative">
+        <img src="${thumb}" style="width:100%;height:100%;object-fit:cover">
+        ${isVid?'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px">▶</span>':''}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">${isVid?'영상':'이미지'} #${k+1}</div>
+        <input data-mk="${k}" data-mf="caption" value="${escAttr(m.caption)}" placeholder="캡션(선택)" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:12px">
+        <div style="display:flex;gap:6px;margin-top:5px">${posCtrl}${alignCtrl}</div>
+      </div>
+      <div class="rowbtns">
+        <button class="btn sm" data-mact="up" data-mk="${k}">↑</button>
+        <button class="btn sm" data-mact="down" data-mk="${k}">↓</button>
+        <button class="btn sm danger" data-mact="del" data-mk="${k}">삭제</button>
+      </div>`;
+    L.appendChild(row);
+  });
+}
+function addMediaImage(src){ slideMedia(mediaTarget).push({type:'image',src:src,caption:'',align:'center'}); renderMediaList(); dirty(); }
+
+/* inline image picker (inside the edit modal — no separate layer) */
+let editPickMode='media';
+function showEditPicker(mode){
+  editPickMode=mode;
+  $('#editPickerTitle').textContent = mode==='thumb'?'대표 이미지 선택':'추가할 이미지 선택';
+  const g=$('#editPickerGrid'); g.innerHTML='';
+  images.forEach(name=>{
+    const d=document.createElement('div');
+    d.style.cssText='aspect-ratio:1;background:#000;border-radius:6px;overflow:hidden;cursor:pointer;border:2px solid transparent';
+    d.innerHTML=`<img loading="lazy" src="/images/${name}" style="width:100%;height:100%;object-fit:cover">`;
+    d.onmouseenter=()=>d.style.borderColor='#4a4d57'; d.onmouseleave=()=>d.style.borderColor='transparent';
+    d.onclick=()=>{
+      const src='/images/'+name;
+      if(editPickMode==='thumb'){ cfg.slides[editTarget].image=src; $('#editThumbImg').src=src; }
+      else { addMediaImage(src); }
+      dirty(); hideEditPicker();
+    };
+    g.appendChild(d);
+  });
+  $('#editPickerWrap').style.display='block';
+  $('#editPickerWrap').scrollIntoView({block:'nearest'});
+}
+function hideEditPicker(){ $('#editPickerWrap').style.display='none'; }
+$('#editPickerCancel').onclick=hideEditPicker;
+$('#editPickUpload').onchange=e=>doUpload(e,()=>showEditPicker(editPickMode));
+$('#editAddImg').onclick=()=>showEditPicker('media');
+$('#editAddVid').onclick=()=>{
+  const url=prompt('유튜브 URL 또는 영상 ID를 붙여넣으세요:'); if(!url)return;
+  const id=ytId(url.trim()); if(!id){ alert('유튜브 ID를 인식하지 못했습니다.'); return; }
+  slideMedia(mediaTarget).push({type:'video',videoId:id,caption:'',align:'center'}); renderMediaList(); dirty();
+};
+function editMediaField(t){
+  if(t.dataset.mk==null)return;
+  const m=slideMedia(mediaTarget)[+t.dataset.mk];
+  if(t.dataset.mf==='pos'){ if(t.value==='') delete m.pos; else m.pos=+t.value; }  // '' = 하단(unset)
+  else m[t.dataset.mf]=t.value;
+  dirty();
+}
+$('#editMediaList').addEventListener('input',e=>editMediaField(e.target));
+$('#editMediaList').addEventListener('change',e=>editMediaField(e.target)); // <select>
+$('#editMediaList').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-mact]'); if(!b)return;
+  const k=+b.dataset.mk, M=slideMedia(mediaTarget);
+  if(b.dataset.mact==='up'&&k>0){[M[k-1],M[k]]=[M[k],M[k-1]];}
+  if(b.dataset.mact==='down'&&k<M.length-1){[M[k+1],M[k]]=[M[k],M[k+1]];}
+  if(b.dataset.mact==='del'){M.splice(k,1);}
+  renderMediaList(); dirty();
+});
+
+/* ---------- slide edit modal (roomy) ---------- */
+let editTarget=null;
+function openEditModal(i){
+  editTarget=i; mediaTarget=i; const s=cfg.slides[i];
+  $('#editSub').textContent='#'+(i+1);
+  $('#ed-top').value=s.top||''; $('#ed-bottom').value=s.bottom||'';
+  $('#ed-category').value=s.category||'';
+  $('#ed-title').value=s.title||''; $('#ed-desc').value=s.desc||'';
+  $('#ed-size').value=s.size||''; $('#ed-ptype').value=s.ptype||'';
+  $('#ed-date').value=(s.date||'').slice(0,7);
+  $('#editThumbImg').src=s.image||'';
+  renderMediaList(); hideEditPicker();
+  $('#editModal').classList.add('open');
+}
+$('#ed-date').addEventListener('input',e=>{
+  if(editTarget==null)return;
+  const v=e.target.value; cfg.slides[editTarget].date = v ? v+'-01' : ''; dirty();
+});
+function closeEditModal(){ $('#editModal').classList.remove('open'); renderSlides(); }
+$('#editClose').onclick=closeEditModal;
+$('#editModal').addEventListener('click',e=>{ if(e.target.id==='editModal')closeEditModal(); });
+[['ed-bottom','bottom'],['ed-category','category'],['ed-title','title'],['ed-desc','desc'],['ed-size','size'],['ed-ptype','ptype']].forEach(([id,key])=>{
+  $('#'+id).addEventListener('input',e=>{ if(editTarget!=null){ cfg.slides[editTarget][key]=e.target.value; dirty(); } });
+});
+// paragraph count changes live -> refresh position options so the shown slot always matches
+// the current text (prevents Ctrl+S saving a media at a slot different from the visible one)
+$('#ed-desc').addEventListener('input',()=>{ if(editTarget!=null) renderMediaList(); });
+$('#editPickImg').onclick=$('#editThumb').onclick=()=>showEditPicker('thumb');
+
+/* ---------- images CRUD ---------- */
+function fmtBytes(b){
+  if(!b) return '';
+  if(b<1024) return b+' B';
+  if(b<1048576) return (b/1024).toFixed(0)+' KB';
+  return (b/1048576).toFixed(1)+' MB';
+}
+function imgSpec(name){
+  const i=imageInfo[name]; if(!i) return '';
+  const dim=(i.w&&i.h)?i.w+'×'+i.h:''; const sz=fmtBytes(i.bytes);
+  return [dim,sz].filter(Boolean).join(' · ');
+}
+function renderImages(){
+  const g=$('#imgGrid'); g.innerHTML='';
+  images.forEach(name=>{
+    const u=usageCount(name);
+    const spec=imgSpec(name);
+    const c=document.createElement('div'); c.className='imgcard';
+    c.innerHTML=`<div class="ph"><img loading="lazy" src="/images/${name}"></div>
+      <div class="meta"><div><div class="nm" title="${name}">${name}</div>
+      ${spec?`<div class="spec">${spec}</div>`:''}
+      <div class="use">${u}개 슬라이드 사용</div></div>
+      <button class="btn sm danger" data-del="${name}">삭제</button></div>`;
+    g.appendChild(c);
+  });
+  $('#countImg').textContent=images.length+'개 이미지';
+}
+$('#imgGrid').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-del]'); if(!b)return;
+  const name=b.dataset.del, uses=imageUses(name);
+  if(uses.length){
+    const where=uses.map(([k,w])=>w?`${k}(${w})`:k).join(', ');
+    if(!confirm(`${name} 은(는) ${uses.length}곳에서 사용 중입니다:\n\n${where}\n\n삭제하면 그 자리의 이미지도 함께 제거됩니다. 계속할까요?`)) return;
+  } else if(!confirm(name+' 을(를) 삭제할까요?')) return;
+  const r=await fetch('/api/images?name='+encodeURIComponent(name)+(uses.length?'&force=1':''),{method:'DELETE'}).then(r=>r.json());
+  if(r.error){setStatus('삭제 실패: '+r.error,'err');return;}
+  images=images.filter(n=>n!==name);
+  if(uses.length){ clearImageRefs(name); dirty(); }   // 참조를 끊고, 저장이 필요함을 알린다
+  renderImages(); renderSlides(); renderBlocks(); renderBg(); loadWordmark(); loadMeta();
+  setStatus(name+' 삭제됨'+(uses.length?` · ${uses.length}곳의 참조 제거 (저장 필요)`:''), 'ok');
+});
+$('#uploader').onchange=e=>doUpload(e);
+async function doUpload(e,after){
+  const files=[...e.target.files]; if(!files.length)return; let done=0;
+  setStatus('업로드 중… (0/'+files.length+')');
+  for(const f of files){
+    try{
+      const dataUrl=await downscaleToDataURL(f, 2400, 0.85);          // shrink in-browser, then send as JSON
+      const name=f.name.replace(/\.[^.]+$/,'')+'.jpg';               // re-encoded to jpeg on the canvas
+      const r=await fetch('/api/upload?name='+encodeURIComponent(name),
+        {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:dataUrl})}).then(r=>r.json());
+      if(r.error)throw new Error(r.error);
+    }catch(err){setStatus('업로드 실패: '+err.message,'err');}
+    done++; setStatus('업로드 중… ('+done+'/'+files.length+')');
+  }
+  const im=await fetch('/api/images?t='+Date.now()).then(r=>r.json()); images=im.images||[];
+  renderImages(); setStatus(files.length+'개 업로드 완료','ok'); e.target.value=''; if(after)after();
+}
+
+/* ---------- backgrounds: one per page (content.json → backgrounds[path]) ---------- */
+const BG_PAGES=[['/','홈 (타임라인 캐러셀)'],['/flow','Flow'],['/articles','인덱스'],['/about','About']];
+const BG_MOTION=[['none','배경 없음'],['fixed','고정'],['follow','마우스 따라 (같은 방향)'],
+                 ['invert','마우스 반대 방향'],['parallax','스크롤 패럴랙스']];
+function backgrounds(){ if(!cfg.backgrounds||typeof cfg.backgrounds!=='object') cfg.backgrounds={}; return cfg.backgrounds; }
+function renderBg(){
+  const L=$('#bgList'); if(!L) return;
+  const bgs=backgrounds();
+  L.innerHTML=BG_PAGES.map(([path,label])=>{
+    const b=bgs[path]||{};
+    const motion=BG_MOTION.some(([v])=>v===b.motion)?b.motion:'none';
+    const op=b.opacity!=null?b.opacity:1;
+    return `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#101116;border:1px solid var(--line);border-radius:10px;padding:10px">
+      <div style="flex:none;width:120px;font-size:13px">${label}</div>
+      <img src="${escAttr(b.src||'')}" style="width:64px;height:40px;object-fit:cover;border-radius:6px;background:var(--panel);border:1px solid var(--line);${b.src?'':'visibility:hidden'}">
+      <button class="btn ghost btn sm" data-bgpick="${path}">이미지</button>
+      <button class="btn ghost btn sm" data-bgclear="${path}">지움</button>
+      <select class="blk-sel" data-bgmotion="${path}">
+        ${BG_MOTION.map(([v,l])=>`<option value="${v}"${v===motion?' selected':''}>${l}</option>`).join('')}
+      </select>
+      <label style="font-size:12px;color:var(--mut)">투명도</label>
+      <input type="range" min="0.1" max="1" step="0.05" value="${op}" data-bgop="${path}" style="width:110px">
+      <span style="font-size:12px;color:var(--mut);width:34px">${Number(op).toFixed(2)}</span>
+    </div>`;
+  }).join('');
+}
+$('#bgList').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const bgs=backgrounds();
+  if(b.dataset.bgpick!=null){ pickMode='bg'; bgTarget=b.dataset.bgpick; openPicker(); }
+  else if(b.dataset.bgclear!=null){ delete bgs[b.dataset.bgclear]; renderBg(); dirty(); }
+});
+$('#bgList').addEventListener('change',e=>{
+  const t=e.target, bgs=backgrounds();
+  if(t.dataset.bgmotion!=null){
+    const p=t.dataset.bgmotion;
+    bgs[p]=bgs[p]||{};
+    if(t.value==='none') delete bgs[p].motion; else bgs[p].motion=t.value;
+    if(!bgs[p].src && t.value==='none') delete bgs[p];
+    renderBg(); dirty();
+  }
+});
+$('#bgList').addEventListener('input',e=>{
+  const t=e.target, bgs=backgrounds();
+  if(t.dataset.bgop!=null){
+    const p=t.dataset.bgop; bgs[p]=bgs[p]||{}; bgs[p].opacity=parseFloat(t.value);
+    t.nextElementSibling.textContent=Number(t.value).toFixed(2); dirty();
+  }
+});
+let bgTarget=null;
+function setBgImage(src){
+  const bgs=backgrounds();
+  bgs[bgTarget]=bgs[bgTarget]||{};
+  bgs[bgTarget].src=src;
+  if(!bgs[bgTarget].motion) bgs[bgTarget].motion='fixed';   // 이미지를 골랐는데 '없음' 이면 보이지 않는다
+  renderBg(); dirty();
+}
+
+/* ---------- block editor: the page IS this list (content.json → blocks[page]) ---------- */
+const BLOCK_LABEL={title:'제목',text:'글',thanks:'맺음말',image:'이미지',list:'이력'};
+const BLOCK_HINT={
+  title:'큰 제목. 줄바꿈으로 행을 나눕니다.',
+  text:'본문. 빈 줄로 문단을 나눕니다.',
+  thanks:'맺음말. 가장 큰 글씨로 놓입니다.',
+};
+/* a body paragraph is the block people actually write in — give it room to write in */
+const BLOCK_ROWS={title:4, text:12, thanks:4};
+function loadText(){ curPage=$('#pageSel').value||'/about'; renderBlocks(); }
+function pageBlocks(){
+  if(!cfg.blocks||typeof cfg.blocks!=='object') cfg.blocks={};
+  if(!Array.isArray(cfg.blocks[curPage])) cfg.blocks[curPage]=[];
+  return cfg.blocks[curPage];
+}
+function renderBlocks(){
+  const L=$('#blockList'); if(!L) return;
+  const list=pageBlocks(); L.innerHTML='';
+  list.forEach((b,i)=>{
+    const row=document.createElement('div');
+    row.className='blk'; row.dataset.i=i;
+    const grip=`<div class="grip2" draggable="true" title="끌어서 순서 변경">≡</div>`;
+    const nav=`<div class="blk__nav">
+        <button class="btn ghost" data-up="${i}" ${i===0?'disabled':''}>↑</button>
+        <button class="btn ghost" data-down="${i}" ${i===list.length-1?'disabled':''}>↓</button>
+        <button class="btn ghost" data-del="${i}">삭제</button>
+      </div>`;
+    const tag=`<div style="flex:none;width:56px;font-size:12px;color:var(--mut);padding-top:8px">${BLOCK_LABEL[b.type]||b.type}</div>`;
+    /* 아래 여백은 블록 종류를 가리지 않는다 — 글·이미지·이력 모두 같은 컨트롤을 쓴다 */
+    const gp=['none','sm','md','lg','xl'].includes(b.gap)?b.gap:'md';
+    const gopt=(v,label)=>`<option value="${v}"${v===gp?' selected':''}>${label}</option>`;
+    const gapOpt=`<label class="blk-opt"><span>아래 간격</span>
+        <select class="blk-sel" data-gap="${i}">
+          ${gopt('none','없음')}${gopt('sm','좁게')}${gopt('md','보통')}${gopt('lg','넓게')}${gopt('xl','아주 넓게')}
+        </select></label>`;
+    let body;
+    if(b.type==='image'){
+      const size=b.size==='half'?'half':'full';
+      const align=['left','right'].includes(b.align)?b.align:'center';
+      const opt=(v,cur,label)=>`<option value="${v}"${v===cur?' selected':''}>${label}</option>`;
+      body=`<div class="blk__body">
+           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+             <img src="${escAttr(b.src||'')}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;flex:none">
+             <input class="cv-text" data-cap="${i}" value="${escAttr(b.caption||'')}" placeholder="설명 (선택)">
+           </div>
+           <div class="blk-opts">
+             <label class="blk-opt"><span>크기</span>
+               <select class="blk-sel" data-size="${i}">
+                 ${opt('full',size,'원본')}${opt('half',size,'절반')}
+               </select></label>
+             <label class="blk-opt"><span>정렬</span>
+               <select class="blk-sel" data-align="${i}">
+                 ${opt('left',align,'좌측')}${opt('center',align,'중앙')}${opt('right',align,'우측')}
+               </select></label>
+             ${gapOpt}
+           </div>
+         </div>`;
+    } else if(b.type==='list'){
+      const items=Array.isArray(b.items)?b.items:(b.items=[]);
+      const lal=['left','center','right'].includes(b.align)?b.align:'left';
+      const V=(x,d)=>['sm','md','lg'].includes(x)?x:d;
+      const lszL=V(b.sizeLabel,'md'), lszT=V(b.sizeText, V(b.size,'md')), lszN=V(b.sizeNote,'md');
+      const lopt=(v,cur,label)=>`<option value="${v}"${v===cur?' selected':''}>${label}</option>`;
+      /* 옛 형식 호환: {date,text} 와 {text,note:'2024.10, 루브르'} 를 제목/연월/장소로 읽는다 */
+      const cv=(it)=>{
+        let date=(it.date||'').trim(), place=(it.place||'').trim();
+        if(!date && !place && it.note){
+          const n=String(it.note).trim(), c=n.indexOf(',');
+          const head=(c<0?n:n.slice(0,c)).trim(), tail=c<0?'':n.slice(c+1).trim();
+          if(/\d/.test(head)){ date=head; place=tail; } else { place=n; }
+        }
+        return {text:it.text||'', date, place};
+      };
+      const rows=items.map((it,j)=>{ const v=cv(it); return `
+        <div class="cv-row">
+          <input class="cv-text" data-li="${i}" data-lj="${j}" data-lk="text" value="${escAttr(v.text)}"
+                 placeholder="항목 (예: 프랑스 루브르 아트페어)">
+          <input class="cv-text" data-li="${i}" data-lj="${j}" data-lk="textEn" value="${escAttr(it.textEn||'')}"
+                 placeholder="영문 (선택)" style="flex:1 1 min(160px,100%);opacity:.85">
+          <input class="cv-date" data-li="${i}" data-lj="${j}" data-lk="date" value="${escAttr(v.date)}"
+                 placeholder="2024.10">
+          <input class="cv-text" data-li="${i}" data-lj="${j}" data-lk="place" value="${escAttr(v.place)}"
+                 placeholder="장소 (예: 루브르박물관)" style="flex:1 1 min(160px,100%)">
+          <button class="btn ghost btn sm" data-lup="${i}" data-lj="${j}" ${j===0?'disabled':''}>↑</button>
+          <button class="btn ghost btn sm" data-ldown="${i}" data-lj="${j}" ${j===items.length-1?'disabled':''}>↓</button>
+          <button class="btn ghost btn sm" data-ldel="${i}" data-lj="${j}">×</button>
+        </div>`; }).join('');
+      body=`<div class="blk__body" style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <input class="cv-text" data-label="${i}" value="${escAttr(b.label||'')}"
+                       placeholder="그룹명 (예: 초대 개인전)" style="font-weight:600">
+                <input class="cv-text" data-labelen="${i}" value="${escAttr(b.labelEn||'')}"
+                       placeholder="그룹명 영문 (선택) — 예: Invited Solo Exhibitions"
+                       style="flex:1 1 min(220px,100%);opacity:.85">
+              </div>
+              ${rows||'<div style="font-size:12px;color:var(--mut)">항목이 없습니다. 아래에서 추가하세요.</div>'}
+              <div><button class="btn ghost btn sm" data-ladd="${i}">+ 항목 추가</button></div>
+              <div class="blk-opts">
+                <label class="blk-opt"><span>정렬</span>
+                  <select class="blk-sel" data-align="${i}">
+                    ${lopt('left',lal,'좌측')}${lopt('center',lal,'중앙')}${lopt('right',lal,'우측')}
+                  </select></label>
+                <label class="blk-opt"><span>그룹명</span>
+                  <select class="blk-sel" data-szlabel="${i}">
+                    ${lopt('sm',lszL,'작게')}${lopt('md',lszL,'보통')}${lopt('lg',lszL,'크게')}
+                  </select></label>
+                <label class="blk-opt"><span>항목</span>
+                  <select class="blk-sel" data-sztext="${i}">
+                    ${lopt('sm',lszT,'작게')}${lopt('md',lszT,'보통')}${lopt('lg',lszT,'크게')}
+                  </select></label>
+                <label class="blk-opt"><span>연월·장소</span>
+                  <select class="blk-sel" data-sznote="${i}">
+                    ${lopt('sm',lszN,'작게')}${lopt('md',lszN,'보통')}${lopt('lg',lszN,'크게')}
+                  </select></label>
+                ${gapOpt}
+              </div>
+            </div>`;
+    } else {
+      /* 정렬·크기를 안 정하면 사이트가 그리던 그대로: 제목은 중앙, 글·맺음말은 좌측, 크기는 보통 */
+      const def={title:'center',text:'left',thanks:'left'}[b.type]||'left';
+      const al=['left','center','right'].includes(b.align)?b.align:def;
+      const sz=sizePct(b.size);          // 옛 작게/보통/크게 → 72/100/140 으로 읽는다
+      const lh=b.lh?String(b.lh):'';
+      const opt=(v,cur,label)=>`<option value="${v}"${v===cur?' selected':''}>${label}</option>`;
+      const szOpts=SIZE_STEPS.map(v=>opt(String(v),String(sz),v+'%')).join('');
+      const lhOpts=opt('',lh,'기본')+LH_STEPS.map(v=>opt(String(v),lh,String(v))).join('');
+      body=`<div class="blk__body">
+           <textarea class="blk-ta" data-text="${i}" rows="${BLOCK_ROWS[b.type]||6}"
+             placeholder="${escAttr(BLOCK_HINT[b.type]||'')}">${escHtml(b.text||'')}</textarea>
+           <div class="blk-opts">
+             <label class="blk-opt"><span>정렬</span>
+               <select class="blk-sel" data-align="${i}">
+                 ${opt('left',al,'좌측')}${opt('center',al,'중앙')}${opt('right',al,'우측')}
+               </select></label>
+             <label class="blk-opt"><span>크기</span>
+               <select class="blk-sel" data-size="${i}">${szOpts}</select></label>
+             <label class="blk-opt"><span>행간</span>
+               <select class="blk-sel" data-lh="${i}">${lhOpts}</select></label>
+             ${gapOpt}
+           </div>
+         </div>`;
+    }
+    row.innerHTML=grip+tag+body+nav;
+    L.appendChild(row);
+  });
+  $('#countBlocks').textContent=list.length+'개 블록';
+}
+
+/* drag to reorder — the grip is the only draggable part, so typing in a block still works */
+let dragB=null;
+$('#blockList').addEventListener('dragstart',e=>{
+  const g=e.target.closest('.grip2'); if(!g){e.preventDefault();return;}
+  const row=g.closest('.blk'); dragB=+row.dataset.i; row.classList.add('drag');
+  e.dataTransfer.effectAllowed='move';
+});
+$('#blockList').addEventListener('dragend',()=>{
+  dragB=null;
+  $$('.blk.drag').forEach(x=>x.classList.remove('drag'));
+  $$('.blk.over').forEach(x=>x.classList.remove('over'));
+});
+$('#blockList').addEventListener('dragover',e=>{
+  if(dragB==null) return;
+  e.preventDefault(); e.dataTransfer.dropEffect='move';
+  const row=e.target.closest('.blk'); if(!row) return;
+  $$('.blk.over').forEach(x=>x.classList.remove('over'));
+  if(+row.dataset.i!==dragB) row.classList.add('over');
+});
+$('#blockList').addEventListener('drop',e=>{
+  e.preventDefault();
+  const row=e.target.closest('.blk'); if(!row||dragB==null) return;
+  const to=+row.dataset.i; if(to===dragB) return;
+  const list=pageBlocks();
+  const [m]=list.splice(dragB,1);
+  list.splice(to,0,m);
+  dragB=null; renderBlocks(); dirty();
+});
+function addAboutImage(src){ pageBlocks().push({type:'image',src:src,caption:''}); renderBlocks(); dirty(); }
+$$('[data-add]').forEach(btn=>btn.onclick=()=>{
+  const t=btn.dataset.add;
+  if(t==='image'){ pickMode='about'; openPicker(); return; }
+  if(t==='list'){ pageBlocks().push({type:'list',label:'',items:[{text:'',date:'',place:''}]}); renderBlocks(); dirty(); return; }
+  pageBlocks().push({type:t,text:''}); renderBlocks(); dirty();
+});
+$('#blockList').addEventListener('input',e=>{
+  const t=e.target, list=pageBlocks();
+  if(t.dataset.li!=null){                       // 이력 항목의 제목/부가정보
+    const it=list[+t.dataset.li].items[+t.dataset.lj];
+    it[t.dataset.lk]=t.value;
+    if(t.dataset.lk==='note') delete it.date;    // 옛 필드는 note 로 흡수된다
+    dirty();
+  }
+  else if(t.dataset.label!=null){                // 이력 그룹명
+    list[+t.dataset.label].label=t.value; dirty();
+  }
+  else if(t.dataset.labelen!=null){              // 이력 그룹명 (영문)
+    list[+t.dataset.labelen].labelEn=t.value; dirty();
+  }
+  else if(t.dataset.text!=null){ list[+t.dataset.text].text=t.value; dirty(); }
+  else if(t.dataset.cap!=null){ list[+t.dataset.cap].caption=t.value; dirty(); }
+});
+/* a <select> fires change, not input — hung on the wrong event it would never save */
+$('#blockList').addEventListener('change',e=>{
+  const t=e.target, list=pageBlocks();
+  if(t.dataset.size!=null){
+    const b2=list[+t.dataset.size];
+    /* 이미지는 size 가 원본/절반이라 숫자로 바꾸면 안 된다 */
+    b2.size = b2.type==='image' ? t.value : Number(t.value);
+    dirty();
+  }
+  else if(t.dataset.lh!=null){
+    const b2=list[+t.dataset.lh];
+    if(t.value) b2.lh=Number(t.value); else delete b2.lh;   // 기본은 값을 두지 않는다
+    dirty();
+  }
+  else if(t.dataset.align!=null){ list[+t.dataset.align].align=t.value; dirty(); }
+  else if(t.dataset.gap!=null){ list[+t.dataset.gap].gap=t.value; dirty(); }
+  else if(t.dataset.szlabel!=null){ list[+t.dataset.szlabel].sizeLabel=t.value; dirty(); }
+  else if(t.dataset.sztext!=null){ const b2=list[+t.dataset.sztext]; b2.sizeText=t.value; delete b2.size; dirty(); }
+  else if(t.dataset.sznote!=null){ list[+t.dataset.sznote].sizeNote=t.value; dirty(); }
+});
+$('#blockList').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const list=pageBlocks();
+  const swap=(arr,a,c)=>{ [arr[a],arr[c]]=[arr[c],arr[a]]; };
+
+  // 이력 블록 안의 항목 조작 (블록 자체가 아니라 items 를 다룬다)
+  const li=b.dataset.ladd ?? b.dataset.ldel ?? b.dataset.lup ?? b.dataset.ldown;
+  if(li!=null){
+    const items=list[+li].items, j=+b.dataset.lj;
+    if(b.dataset.ladd!=null) items.push({text:'',date:'',place:''});
+    else if(b.dataset.ldel!=null) items.splice(j,1);
+    else if(b.dataset.lup!=null) swap(items,j,j-1);
+    else if(b.dataset.ldown!=null) swap(items,j,j+1);
+    renderBlocks(); dirty(); return;
+  }
+
+  if(b.dataset.del!=null) list.splice(+b.dataset.del,1);
+  else if(b.dataset.up!=null) swap(list,+b.dataset.up,+b.dataset.up-1);
+  else if(b.dataset.down!=null) swap(list,+b.dataset.down,+b.dataset.down+1);
+  else return;
+  renderBlocks(); dirty();
+});
+function escHtml(v){return (v==null?'':String(v)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escAttr(v){return escHtml(v).replace(/"/g,'&quot;');}
+$('#pageSel').addEventListener('change',loadText);
+
+/* ---------- save ---------- */
+$('#save').onclick=async()=>{
+  /* required fields: a work needs an image always, and a date whenever the site orders by date
+     (without one it lands at the very end, ungrouped — the "I registered it but it's not there"). */
+  {
+    const dateMode=orderMode()==='date';
+    const noImg=cfg.slides.filter(s=>!((s.image||'').trim())).length;
+    const noDate=dateMode?cfg.slides.filter(s=>!((s.date||'').trim())).length:0;
+    if(noImg||noDate){
+      $('.tab[data-view="slides"]').classList.add('active');
+      $$('.tab').forEach(x=>{if(x!==$('.tab[data-view="slides"]'))x.classList.remove('active');});
+      $$('.view').forEach(v=>v.classList.remove('active')); $('#view-slides').classList.add('active');
+      $('#qSlide').value=''; renderSlides();
+      const parts=[]; if(noDate)parts.push(noDate+'개 날짜 없음'); if(noImg)parts.push(noImg+'개 이미지 없음');
+      setStatus('저장 불가 — '+parts.join(', ')+' · 빨간 테두리 작품을 채워주세요','err');
+      const first=$('#slideGrid').querySelector('.card--bad');
+      if(first)first.scrollIntoView({behavior:'smooth',block:'center'});
+      return;
+    }
+  }
+  setStatus('저장 중…');
+  try{
+    // an empty block renders nothing, so it has no business being saved
+    if(cfg.blocks){
+      const filled=b=>{
+        if(b.type==='image') return !!b.src;
+        if(b.type==='list'){
+          b.items=(b.items||[]).filter(it=>(it.text||'').trim()||(it.textEn||'').trim()||(it.date||'').trim()||(it.place||'').trim()||(it.note||'').trim());
+          return b.items.length>0 || (b.label||'').trim().length>0 || (b.labelEn||'').trim().length>0;
+        }
+        return (b.text||'').trim();
+      };
+      Object.keys(cfg.blocks).forEach(p=>{
+        cfg.blocks[p]=cfg.blocks[p].filter(filled);
+        if(!cfg.blocks[p].length) delete cfg.blocks[p];
+      });
+      if(!Object.keys(cfg.blocks).length) delete cfg.blocks;
+    }
+    // tell the server which version of the file this tab is editing, so a save that would
+    // clobber someone else's change is refused rather than silently winning
+    const payload=Object.assign({},cfg,{_version:baseVersion});
+    const r=await fetch('/api/content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json());
+    if(r.stale){ setStatus('다른 곳에서 변경됨 — 새로고침 후 다시 편집하세요','err'); return; }
+    if(r.error)throw new Error(r.error);
+    baseVersion=r.version||null;
+    dirtyState=false;
+    setStatus('저장 완료 · 게시하면 공개 사이트에 반영','ok');
+  }catch(err){setStatus('저장 실패: '+err.message,'err');}
+};
+$('#openSite').onclick=()=>window.open('/','_blank');
+window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();$('#save').click();}if(e.key==='Escape')closePicker();});
+
+load().catch(e=>setStatus('불러오기 실패: '+e.message,'err'));
+</script>
+</body>
+</html>
