@@ -1,8 +1,9 @@
 name: Deploy to GitHub Pages
 
+# The live site now serves from Vercel (lsegallery.art), which auto-deploys on push and runs the admin's
+# serverless functions Pages cannot. This workflow is kept as a manual fallback only — it no longer runs on
+# every push, so a commit does not trigger a second, orphaned build.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
