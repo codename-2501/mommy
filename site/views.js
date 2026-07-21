@@ -20,9 +20,16 @@ function thumb(src, w) {
 }
 
 /* every framed painting fades in when it loads, and keeps that .ok wherever it flies to */
+/* Fade the frame in only once the image is fully DECODED, not merely loaded. On iOS Safari a frame shown
+   in the window between `load` and decode paints as the broken "?" placeholder for a beat — most visible
+   after a detail visit, when cached images report complete=true instantly. img.decode() resolves when the
+   bitmap is ready to paint; a genuinely broken image rejects and stays hidden (opacity 0) rather than
+   flashing the box. Opacity-only, so nothing toggles visibility mid-transition. */
 function gateLoad(img) {
-  if (img.complete) img.classList.add('ok');
-  else img.addEventListener('load', () => img.classList.add('ok'), { once: true });
+  const ok = () => img.classList.add('ok');
+  const settle = () => { if (img.decode) img.decode().then(ok, () => { if (img.naturalWidth) ok(); }); else ok(); };
+  if (img.complete) settle();
+  else img.addEventListener('load', settle, { once: true });
 }
 
 /* The page has two drawings, a phone's and a desktop's, and it used to switch between their
