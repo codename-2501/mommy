@@ -1124,6 +1124,25 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
   const lockable = (path === '/articles' || path === '/') && inst && inst.lockScroll ? inst : null;
   if (lockable) lockable.lockScroll();
 
+  /* fade mode (admin: meta.transition): the paintings do not fly — the leaving view dissolves and the
+     arriving one fades up in its place. No flip, no rise; the deck simply opens where it stands. */
+  if ((content.meta && content.meta.transition) === 'fade') {
+    if (inst && inst.unfreeze) inst.unfreeze();          // a ->flow deck opens without a flight
+    if (lockable) lockable.unlockScroll();
+    view.classList.remove('is-pre');
+    view.classList.add('view--fadein');
+    view.classList.add('is-in');                         // put slots/sort-bar/curtain at rest — the fade is the only motion
+    if (path === '/') view.classList.add('no-rise');     // the carousel snaps to rest under the fade, no separate rise
+    finalizeFlights();
+    if (oldInst) oldInst.destroy();
+    if (oldCar) oldCar.destroy();
+    if (oldEl) {
+      oldEl.classList.add('is-exit');                    // the .35s opacity fade already defined for is-exit
+      leaving = { el: oldEl, timer: setTimeout(() => { if (leaving && leaving.el === oldEl) finalizeLeaving(); }, FADE + 140) };
+    }
+    return;
+  }
+
   /* if this interrupted a flight, stop it NOW — before the awaits below (a to-flow/-timeline leg waits
      for the incoming deck to be ready, and the interrupted paintings would drift the whole time, so the
      later measure would read them somewhere they no longer visually are). Freeze at the click. */
@@ -1392,6 +1411,48 @@ addEventListener('resize', () => {
   resizeEnd = setTimeout(() => document.documentElement.classList.remove('is-resizing'), 160);
 });
 
+/* ---------- long-press peek ---------- */
+/* Hold a painting in the timeline or the index to see it large; release to dismiss. A short tap still
+   opens the detail — the peek only fires on a real hold that did not move (a move is a scroll, not a peek). */
+function installPeek() {
+  let holdT = null, peek = null, held = null, sx = 0, sy = 0, shown = false;
+  const HOLD = 360, MOVE = 12;
+  const close = () => { if (peek) { peek.remove(); peek = null; } shown = false; held = null; clearTimeout(holdT); };
+  const open = (img) => {
+    shown = true;
+    peek = el('div', 'lse-peek');
+    const big = document.createElement('img');
+    big.src = img.currentSrc || img.src;
+    big.draggable = false;
+    peek.appendChild(big);
+    document.body.appendChild(peek);
+    requestAnimationFrame(() => peek && peek.classList.add('on'));
+  };
+  addEventListener('pointerdown', (e) => {
+    if (window.LSEDetail && window.LSEDetail.isOpen) return;
+    const p = route();
+    if (p !== '/' && p !== '/articles') return;                 // timeline + index only
+    const frame = e.target.closest && e.target.closest('.lse-frame');
+    if (!frame || !frame.closest('.car-item,.agrid__cell')) return;
+    const img = frame.querySelector('img');
+    if (!img) return;
+    held = frame; sx = e.clientX; sy = e.clientY;
+    clearTimeout(holdT);
+    holdT = setTimeout(() => open(img), HOLD);
+  }, { passive: true });
+  addEventListener('pointermove', (e) => {
+    if (!held || shown) return;
+    if (Math.abs(e.clientX - sx) > MOVE || Math.abs(e.clientY - sy) > MOVE) { clearTimeout(holdT); held = null; }
+  }, { passive: true });
+  const end = () => { const was = shown; clearTimeout(holdT); close(); if (was) suppressNextClick(); };
+  addEventListener('pointerup', end);
+  addEventListener('pointercancel', end);
+  /* the click that trails a peek must not open the detail */
+  let swallow = false;
+  const suppressNextClick = () => { swallow = true; setTimeout(() => { swallow = false; }, 500); };
+  addEventListener('click', (e) => { if (swallow) { e.stopPropagation(); e.preventDefault(); swallow = false; } }, true);
+}
+
 /* ---------- boot ---------- */
 
 Promise.all([loadContent(), loadAspects(), loadIcons(), loadColors()]).then(([c, a, , t]) => {
@@ -1414,6 +1475,7 @@ Promise.all([loadContent(), loadAspects(), loadIcons(), loadColors()]).then(([c,
   requestAnimationFrame(() => placeBlob(false));
   addEventListener('resize', () => placeBlob(false));
   document.body.appendChild(el('div', 'noise'));   // film grain, above everything
+  installPeek();
   render();
 });
 })();
