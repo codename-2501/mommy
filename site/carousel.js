@@ -66,7 +66,7 @@ function buildItem(s, i, ratio) {
   img.loading = 'eager';
   img.decoding = 'async';
   img.draggable = false;
-  if (img.complete && img.naturalWidth) img.classList.add('ok');   // not a broken/404 img — see gateLoad
+  if (img.complete) img.classList.add('ok');
   else img.addEventListener('load', () => img.classList.add('ok'), { once: true });
   frame.appendChild(img);
   box.appendChild(frame);

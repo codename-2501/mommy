@@ -863,11 +863,8 @@ body.has-bg .about__mask-in{background:rgba(0,0,0,.55)}
 .lse-frame{transform-origin:0 0}
 /* one load-gate for every framed painting: it fades in when it loads and STAYS visible
    wherever it later lands — a frame that flies between views carries its .ok with it */
-/* opacity:0 hides a not-yet-loaded frame image, but iOS Safari can still paint its broken/loading "?"
-   placeholder box for a moment (a sized img with no pixels) — visibility:hidden suppresses that paint
-   entirely. On .ok (image has real pixels — see gateLoad) it becomes visible and fades in. */
-.lse-frame img{opacity:0;visibility:hidden;transition:opacity .5s ease-out}
-.lse-frame img.ok{opacity:1;visibility:visible}
+.lse-frame img{opacity:0;transition:opacity .5s ease-out}
+.lse-frame img.ok{opacity:1}
 .about__scroll{
   container-type:inline-size;   /* the CV asks this column how wide it is, not the window */padding:0 2rem}
 /* the head holds the two small labels. It used to stand a full screen tall, so the page
