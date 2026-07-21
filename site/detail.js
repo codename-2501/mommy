@@ -76,7 +76,7 @@ function buildBody(s) {
   const emit = (i) => {
     for (const m of media) {
       if (slot(m) !== i) continue;
-      const fig = el('figure', 'dt-fig dt-fig--' + (m.align || 'center'));
+      const fig = el('figure', 'dt-fig dt-fig--' + (m.align || 'center') + (m.size === 'full' ? ' dt-fig--full' : ''));
       if (m.type === 'video' && (m.videoId || m.url)) {
         const vid = m.videoId || (String(m.url).match(/(?:v=|\/embed\/|youtu\.be\/|\/shorts\/)([\w-]{6,})/) || [])[1];
         if (!vid) continue;
