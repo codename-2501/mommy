@@ -527,7 +527,8 @@ html.is-resizing .wordmark{transition:none}
 .dt-fig--left{align-items:flex-start}
 .dt-fig--center{align-items:center}
 .dt-fig--right{align-items:flex-end}
-.dt-fig img{max-width:50%;height:auto;display:block}   /* attached media at half the content width */
+.dt-fig img{max-width:50%;height:auto;display:block}   /* attached media at half the content width (default) */
+.dt-fig--full img{max-width:100%}                      /* admin set this one to 원본(full) */
 .dt-zoomable{cursor:zoom-in}
 
 /* lightbox: -size image in a modal */

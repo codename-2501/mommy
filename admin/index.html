@@ -661,6 +661,10 @@ function alignOptions(cur){
     return `<option value="${v}"${v===c?' selected':''}>${lbl}</option>`;
   }).join('');
 }
+function sizeOptions(cur){
+  const c=cur==='full'?'full':'half';   // default 절반 (지금 상세의 기본 렌더와 동일)
+  return [['half','절반'],['full','원본']].map(([v,l])=>`<option value="${v}"${v===c?' selected':''}>${l}</option>`).join('');
+}
 function renderMediaList(){
   const i=mediaTarget, media=slideMedia(i);
   $('#editMediaSub').textContent=media.length+'개';
@@ -674,6 +678,7 @@ function renderMediaList(){
       ? `<select data-mk="${k}" data-mf="pos" title="본문 대비 세로 위치" style="flex:1;min-width:0;${selStyle}">${posOptions(P,m.pos)}</select>`
       : `<div style="flex:1;font-size:11px;color:var(--mut);align-self:center">본문 없음</div>`;
     const alignCtrl = `<select data-mk="${k}" data-mf="align" title="가로 정렬(종횡비 유지)" style="flex:0 0 auto;${selStyle}">${alignOptions(m.align)}</select>`;
+    const sizeCtrl = isVid ? '' : `<select data-mk="${k}" data-mf="size" title="이미지 크기(PC): 절반=본문 폭 50%, 원본=100%" style="flex:0 0 auto;${selStyle}">${sizeOptions(m.size)}</select>`;
     const row=document.createElement('div');
     row.style.cssText='display:flex;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px';
     row.innerHTML=`
@@ -684,7 +689,7 @@ function renderMediaList(){
       <div style="flex:1;min-width:0">
         <div style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">${isVid?'영상':'이미지'} #${k+1}</div>
         <input data-mk="${k}" data-mf="caption" value="${escAttr(m.caption)}" placeholder="캡션(선택)" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:12px">
-        <div style="display:flex;gap:6px;margin-top:5px">${posCtrl}${alignCtrl}</div>
+        <div style="display:flex;gap:6px;margin-top:5px">${posCtrl}${sizeCtrl}${alignCtrl}</div>
       </div>
       <div class="rowbtns">
         <button class="btn sm" data-mact="up" data-mk="${k}">↑</button>
