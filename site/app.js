@@ -944,7 +944,7 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       : noStagger ? 'cubic-bezier(.42,0,.58,1)'
       : 'var(--ease-travel)';
     from.el._flightGen = myGen;   // stamp who owns this flight now
-    flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease, mono: monoFrames, bobVy: (srcCard && srcCard._bobVy) || 0, srcBounds: from.bounds });
+    flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease, mono: monoFrames, bobVy: (srcCard && srcCard._bobVy) || 0, srcBounds: from.bounds, dstBounds: to.bounds });
   }
   if (!flights.length) return null;
   /* DIAG (temporary): the start pose is set now — measure how far each flying frame renders from the source
@@ -953,12 +953,13 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
   try {
     let worst = null;
     for (const f of flights) {
-      const r = f.el.getBoundingClientRect(), s = f.srcBounds;
-      const d = { L: Math.round(r.left - s.left), T: Math.round(r.top - s.top), W: Math.round(r.width - s.width), H: Math.round(r.height - s.height) };
-      const mag = Math.abs(d.L) + Math.abs(d.T) + Math.abs(d.W) + Math.abs(d.H);
-      if (!worst || mag > worst.mag) worst = { mag, d, id: (f.el.dataset.id || '').slice(-6) };
+      const r = f.el.getBoundingClientRect(), s = f.srcBounds, t = f.dstBounds;
+      const srcL = Math.round(r.left - s.left), srcT = Math.round(r.top - s.top);   // frame vs where it should START (source)
+      const dstL = Math.round(r.left - t.left), dstT = Math.round(r.top - t.top);   // frame vs its destination slot
+      const mag = Math.abs(srcL) + Math.abs(srcT);
+      if (!worst || mag > worst.mag) worst = { mag, srcL, srcT, dstL, dstT, id: (f.el.dataset.id || '').slice(-6) };
     }
-    if (worst) showFlipDiag('START Δ  ' + worst.id + '   L' + worst.d.L + ' T' + worst.d.T + ' W' + worst.d.W + ' H' + worst.d.H + '   (' + flights.length + ' fly' + (flatFly ? ', air' : '') + ')');
+    if (worst) showFlipDiag('Δsrc L' + worst.srcL + ' T' + worst.srcT + '  Δdst L' + worst.dstL + ' T' + worst.dstT + '  (' + flights.length + (flatFly ? ' air' : '') + ')');
   } catch (e) { showFlipDiag('diag err: ' + e); }
   return () => {
     for (const f of flights) {
