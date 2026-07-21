@@ -635,18 +635,6 @@ const FLIP = { dur: 900, stagger: 40 };                              // a painti
 const RISE = { dur: 1100, stagger: 40, start: 220, fromFlow: 540 };  // slots arriving
 const FADE = 320;                                                    // the page leaving
 
-/* DIAG (temporary): a fixed on-screen readout of the flight start-pose delta, so it can be read off a phone. */
-function showFlipDiag(msg) {
-  let el = document.getElementById('flipdiag');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'flipdiag';
-    el.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;background:#000;color:#0f0;font:12px/1.4 monospace;padding:4px 6px;pointer-events:none;white-space:pre;max-width:100vw';
-    document.body.appendChild(el);
-  }
-  el.textContent = msg;
-}
-
 function nextFrame() {
   return new Promise((res) => requestAnimationFrame(() => res()));
 }
@@ -959,23 +947,9 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
       : noStagger ? 'cubic-bezier(.42,0,.58,1)'
       : 'var(--ease-travel)';
     from.el._flightGen = myGen;   // stamp who owns this flight now
-    flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease, mono: monoFrames, bobVy: (srcCard && srcCard._bobVy) || 0, srcBounds: from.bounds, dstBounds: to.bounds });
+    flights.push({ el: from.el, to: to.el, delay: noStagger ? 0 : flights.length * FLIP.stagger, end: endT, ease, mono: monoFrames, bobVy: (srcCard && srcCard._bobVy) || 0 });
   }
   if (!flights.length) return null;
-  /* DIAG (temporary): the start pose is set now — measure how far each flying frame renders from the source
-     cell it should begin on (from.bounds). A seamless FLIP starts at 0; anything else is the "시작 위치/사이즈가
-     달라" the video shows. Surface the worst on a screen overlay so it can be read from a phone screenshot. */
-  try {
-    let worst = null;
-    for (const f of flights) {
-      const r = f.el.getBoundingClientRect(), s = f.srcBounds, t = f.dstBounds;
-      const srcL = Math.round(r.left - s.left), srcT = Math.round(r.top - s.top);   // frame vs where it should START (source)
-      const dstL = Math.round(r.left - t.left), dstT = Math.round(r.top - t.top);   // frame vs its destination slot
-      const mag = Math.abs(srcL) + Math.abs(srcT);
-      if (!worst || mag > worst.mag) worst = { mag, srcL, srcT, dstL, dstT, id: (f.el.dataset.id || '').slice(-6) };
-    }
-    if (worst) showFlipDiag('Δsrc L' + worst.srcL + ' T' + worst.srcT + '  Δdst L' + worst.dstL + ' T' + worst.dstT + '  (' + flights.length + (flatFly ? ' air' : '') + ')');
-  } catch (e) { showFlipDiag('diag err: ' + e); }
   return () => {
     for (const f of flights) {
       if (f.mono) {
