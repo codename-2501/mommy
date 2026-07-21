@@ -917,14 +917,23 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
            the deck, so the plain from.boxW/to.width would snap a few percent). */
         let startScale = to.bounds.width ? (from.boxW || from.bounds.width) / to.bounds.width : 1;
         const pose = (s) => 'translate3d(' + cx + 'px,' + cy + 'px,0) scale(' + s + ') rotateY(' + roty + 'deg)';
-        for (let pass = 0; pass < 4; pass++) {
-          from.el.style.transform = pose(startScale);
-          const shown = from.el.getBoundingClientRect().width;
-          if (shown < 2 || Math.abs(shown - from.bounds.width) < 0.5) break;
-          startScale *= from.bounds.width / shown;
-        }
+        from.el.style.transition = 'none';
         from.el.style.transform = pose(startScale);
-        convergePos(() => { from.el.style.transform = pose(startScale); });   // start exactly on the deck card
+        /* joint converge — match BOTH the deck card's width AND its centre at once. In the perspective layer
+           the two are coupled (moving the card reshapes its trapezoid, scaling it shifts its centre), so
+           converging them separately left a few px of each; iterating together lands the start on the deck's
+           exact box, trapezoid and all — roty is fixed, so a matched width + centre is a matched shape. */
+        for (let pass = 0; pass < 6; pass++) {
+          const r = from.el.getBoundingClientRect();
+          if (r.width < 2) break;
+          const ew = from.bounds.width - r.width;
+          const ex = (from.bounds.left + from.bounds.width / 2) - (r.left + r.width / 2);
+          const ey = (from.bounds.top + from.bounds.height / 2) - (r.top + r.height / 2);
+          if (Math.abs(ew) < 0.3 && Math.abs(ex) < 0.3 && Math.abs(ey) < 0.3) break;
+          startScale *= from.bounds.width / r.width;
+          cx += ex; cy += ey;
+          from.el.style.transform = pose(startScale);
+        }
         endT = 'translate3d(0px,0px,0) scale(1) rotateY(0deg)';
       }
     } else {
