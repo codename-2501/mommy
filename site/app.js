@@ -1254,13 +1254,19 @@ function render() {
     }
     const flip = pendingFlip;
     pendingFlip = null;
+    const underView = viewEl;      // the view this detail sits over; heal only IT, and only if it is still live
     window.LSEDetail.open(app, {
       content, aspects,
       order: flip && flip.order,     // page prev/next in the order the opening view showed (index sort etc.)
       closePath: lastViewPath,
       onSync: (i) => { if (carousel) carousel.goTo(i); },
       onLeave: flyDetailHome,     // the paintings fly back into the view +
-      onGone: () => { restoreFlipSources(); healView(); },   // …and whatever did not make it is healed whole
+      /* …and whatever did not make it is healed whole — but ONLY if this view is still the live one. If a
+         navigation ran while the detail was closing, viewEl is already the NEXT view (built, its slots laid
+         out); healing it here would rebuild a slot's frame at rest, on top of the new view, and it would sit
+         at its destination the instant it is added — the painting popping into place before the flip that is
+         meant to carry it in even starts. The new navigation already owns those slots, so leave them be. */
+      onGone: () => { if (viewEl !== underView) return; restoreFlipSources(); healView(); },
     }, path.slice(3), flip);
     return;
   }
