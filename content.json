@@ -2878,8 +2878,9 @@
    "opacity": 1
   },
   "/articles": {
-   "src": "/images/photo_2026-07-13_15.31.26.jpeg",
-   "motion": "invert"
+   "src": "/images/photo_2026-07-13_14.52.42.jpeg",
+   "motion": "invert",
+   "opacity": 0.45
   }
  }
 }
