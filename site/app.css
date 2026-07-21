@@ -623,7 +623,8 @@ html.is-resizing .wordmark{transition:none}
   .dt-controls{left:0}          /* the panel is the whole screen here, so its middle is too */
   .dt-strip{display:none}
   .dt-body{max-width:none}
-  .dt-fig img{max-width:100%}
+  .dt-fig img{max-width:70%}             /* 절반 — a phone's half (like About), so left/right/center shows */
+  .dt-fig--full img{max-width:100%}      /* 원본 */
   /* a phone has no strip, so the paintings never fly and the panel curtain would slide a full-screen
      sheet across the view. Drop the curtain and cross-fade the whole overlay instead: it opens and
      closes as one soft fade, the way the reference reveals a work on a phone. Scoped to .detail so it
