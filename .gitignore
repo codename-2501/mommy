@@ -14,6 +14,6 @@ dist/
 
 # local-only tooling (kept out of the published site)
 admin_server.py
-admin/
 tools/
+# admin/ is now the remote (Vercel) editor UI — it IS deployed, so it is tracked.
 REBUILD_PLAN.md

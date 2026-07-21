@@ -1,0 +1,6 @@
+{
+  "name": "lse-gallery",
+  "private": true,
+  "description": "LSE GALLERY — static site (built by build_static.py) + serverless admin (api/) on Vercel",
+  "engines": { "node": "20.x" }
+}

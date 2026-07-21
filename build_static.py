@@ -133,6 +133,10 @@ def main():
     shutil.copytree(os.path.join(ROOT, "site"), os.path.join(DIST, "site"))
     shutil.copytree(os.path.join(ROOT, "icons"), os.path.join(DIST, "icons"))
     shutil.copy(os.path.join(ROOT, "content.json"), os.path.join(DIST, "content.json"))
+    # the remote admin UI (served at /admin on Vercel; its api/ functions are deployed separately). It is
+    # a static editor that talks to the authed /api/* functions, so serving the HTML itself is harmless.
+    if os.path.isdir(os.path.join(ROOT, "admin")):
+        shutil.copytree(os.path.join(ROOT, "admin"), os.path.join(DIST, "admin"))
 
     # the custom domain. An Actions-based Pages deploy serves whatever the artifact holds, so the CNAME
     # must live IN the artifact or a push can drop the domain. It also fixes what the domain serves: the
