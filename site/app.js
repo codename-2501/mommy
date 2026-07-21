@@ -2,6 +2,34 @@
 (() => {
 'use strict';
 
+/* TEMP DIAGNOSTIC — pin the on-screen "?" box element and print what it is. Remove after diagnosing. */
+(function () {
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;left:4px;bottom:64px;z-index:2147483647;max-width:96vw;background:rgba(0,0,0,.85);color:#0f0;font:11px/1.35 monospace;padding:6px;white-space:pre-wrap;pointer-events:none;border-radius:4px';
+  box.textContent = 'diag: watching for broken img…';
+  addEventListener('DOMContentLoaded', () => document.body.appendChild(box));
+  const caught = [];
+  function chain(e) { const c = []; for (let i = 0; i < 4 && e; i++) { c.push(e.tagName.toLowerCase() + (e.className ? '.' + String(e.className).trim().replace(/\s+/g, '.') : '')); e = e.parentElement; } return c.join(' < '); }
+  function record(im, why) {
+    const r = im.getBoundingClientRect();
+    const info = '[' + why + '] ' + Math.round(r.width) + 'x' + Math.round(r.height) + ' op=' + parseFloat(getComputedStyle(im).opacity).toFixed(2) + ' nw=' + im.naturalWidth +
+      '\nsrc=…' + (im.getAttribute('src') || '(none)').slice(-42) + '\n' + chain(im);
+    if (!caught.includes(info)) { caught.push(info); box.textContent = 'CAUGHT #' + caught.length + ':\n' + info; }
+  }
+  addEventListener('error', (e) => { const t = e.target; if (t && t.tagName === 'IMG') record(t, 'ERROR'); }, true);
+  (function scan() {
+    for (const im of document.querySelectorAll('img')) {
+      const r = im.getBoundingClientRect();
+      if (r.width < 1 || r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight) continue;
+      const op = parseFloat(getComputedStyle(im).opacity);
+      if (op <= 0.05) continue;
+      if (im.complete && im.naturalWidth === 0) record(im, 'BROKEN');
+      else if (r.width < 45 && im.getAttribute('src')) record(im, 'TINY');
+    }
+    requestAnimationFrame(scan);
+  })();
+})();
+
 const MONTHS = ['January','February','March','April','May','June',
   'July','August','September','October','November','December'];
 const app = document.getElementById('app');
