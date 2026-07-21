@@ -545,8 +545,8 @@ function renderSlides(){
           <button class="btn sm primary" data-act="edit" data-i="${i}" style="flex:1">편집</button>
         </div>
         <div class="rowbtns">
-          <button class="btn sm" data-act="up" data-i="${i}">↑</button>
-          <button class="btn sm" data-act="down" data-i="${i}">↓</button>
+          ${manual?`<button class="btn sm" data-act="up" data-i="${i}">↑</button>
+          <button class="btn sm" data-act="down" data-i="${i}">↓</button>`:''}
           <button class="btn sm" data-act="dup" data-i="${i}">복제</button>
           <button class="btn sm danger" data-act="del" data-i="${i}">삭제</button>
         </div>

@@ -289,24 +289,38 @@ document.addEventListener('keydown', (e) => {
 /* panel smooth scroll — virtual-scroll feel: a long lerp glides the content and eases to a smooth
    stop at each end (clamped, no rubber-band), the same floaty feel as the index and the reference. */
 function smoothScroll(sc) {
-  let over = 0, lastTs = 0;
+  let over = 0, lastTs = 0, target = null;   // target = a wheel-smoothed scroll goal (null = follow native)
   const OVER_MAX = 60;
   const body = () => sc.firstElementChild;   // the content the stretch rides on
   const lim = () => Math.max(0, sc.scrollHeight - sc.clientHeight);
-  /* native scroll (snappy); the wheel is only taken AT an end, where it stretches and springs back */
+  /* trackpad/touch keep the OS's own momentum; a MOUSE WHEEL's coarse ~100px steps are eased toward a
+     target so PC scrolling reads as smooth as the phone. At an end the push stretches and springs back. */
   sc.addEventListener('wheel', (e) => {
-    const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;
     const max = lim();
-    const past = (raw < 0 && sc.scrollTop <= 0) || (raw > 0 && sc.scrollTop >= max - 1);
-    if (!past) return;
-    over -= raw * 0.2 * (1 - Math.abs(over) / OVER_MAX);
-    over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
+    let dy = e.deltaY;
+    if (e.deltaMode === 1) dy *= 16; else if (e.deltaMode === 2) dy *= sc.clientHeight;
+    const past = (dy < 0 && sc.scrollTop <= 0) || (dy > 0 && sc.scrollTop >= max - 1);
+    if (past) {
+      over -= dy * 0.2 * (1 - Math.abs(over) / OVER_MAX);
+      over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
+      e.preventDefault();
+      return;
+    }
+    const isWheel = e.deltaMode === 1 || Math.abs(e.deltaY) >= 40;
+    if (!isWheel) { target = null; return; }
+    if (target === null) target = sc.scrollTop;
+    target = Math.max(0, Math.min(max, target + dy));
     e.preventDefault();
   }, { passive: false });
   function tick(ts) {
     if (!sc.isConnected) return;
     const ratio = lastTs ? Math.min(3, (ts - lastTs) / (1000 / 60)) : 1;
     lastTs = ts;
+    if (target !== null) {
+      const cur = sc.scrollTop, d = target - cur;
+      if (Math.abs(d) < 0.5) { sc.scrollTop = target; target = null; }
+      else sc.scrollTop = cur + d * Math.min(1, 0.22 * ratio);
+    }
     if (over !== 0) {
       over += (0 - over) * 0.14 * ratio;
       if (Math.abs(over) < 0.3) over = 0;

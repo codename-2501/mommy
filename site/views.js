@@ -367,27 +367,42 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
    natively now: the finger gets the OS's own physics, and the wheel gets the same lerp the
    detail uses. (The rows used to tilt with the scroll; that is gone — the grid sits flat.) -------- */
 function smoothTilt(outer, content) {
-  let over = 0, lastTs = 0, raf = 0;
+  let over = 0, lastTs = 0, raf = 0, target = null;   // target = a wheel-smoothed scroll goal (null = follow native)
   const OVER_MAX = 60;   // the give at an end, px
   const limit = () => Math.max(0, outer.scrollHeight - outer.clientHeight);
 
-  /* the browser scrolls the page — native, instant, with the OS's own momentum (no lerp, no lag). We
-     only take the wheel AT an end, where a desktop's native scroll would stop dead: the extra push
-     stretches the content and springs back. (A phone overscrolls natively, so touch is left alone.) */
+  /* A trackpad and touch scroll with the OS's own momentum — smooth already, left alone. A MOUSE WHEEL,
+     though, arrives in coarse ~100px steps the browser applies as instant jumps, which read as janky beside
+     the phone's momentum. Smooth just that: accumulate the wheel into a target and ease scrollTop toward it.
+     At an end (where native scroll would stop dead) the extra push stretches the content and springs back. */
   function onWheel(e) {
     if (window.LSEDetail && window.LSEDetail.isOpen) return;
-    const raw = e.wheelDeltaY !== undefined ? -e.wheelDeltaY : e.deltaY;   // + = down
     const max = limit();
-    const past = (raw < 0 && outer.scrollTop <= 0) || (raw > 0 && outer.scrollTop >= max - 1);
-    if (!past) return;                        // in range: let the browser scroll
-    over -= raw * 0.2 * (1 - Math.abs(over) / OVER_MAX);   // progressive resistance
-    over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
+    let dy = e.deltaY;
+    if (e.deltaMode === 1) dy *= 16; else if (e.deltaMode === 2) dy *= outer.clientHeight;   // lines/pages -> px
+    const past = (dy < 0 && outer.scrollTop <= 0) || (dy > 0 && outer.scrollTop >= max - 1);
+    if (past) {
+      over -= dy * 0.2 * (1 - Math.abs(over) / OVER_MAX);   // progressive resistance
+      over = Math.max(-OVER_MAX, Math.min(OVER_MAX, over));
+      e.preventDefault();
+      return;
+    }
+    const isWheel = e.deltaMode === 1 || Math.abs(e.deltaY) >= 40;   // coarse step = mouse wheel; fine = trackpad
+    if (!isWheel) { target = null; return; }                        // trackpad: the OS momentum is smoother
+    if (target === null) target = outer.scrollTop;
+    target = Math.max(0, Math.min(max, target + dy));
     e.preventDefault();
   }
 
   function frame(ts) {
     const ratio = lastTs ? Math.min(3, (ts - lastTs) / (1000 / 60)) : 1;
     lastTs = ts;
+    /* ease scrollTop toward the wheel target — snappy but not instant */
+    if (target !== null) {
+      const cur = outer.scrollTop, d = target - cur;
+      if (Math.abs(d) < 0.5) { outer.scrollTop = target; target = null; }
+      else outer.scrollTop = cur + d * Math.min(1, 0.22 * ratio);
+    }
     /* the end stretch springs back to the edge, riding the content's own transform */
     if (over !== 0) {
       over += (0 - over) * 0.14 * ratio;
@@ -400,8 +415,9 @@ function smoothTilt(outer, content) {
   outer.addEventListener('wheel', onWheel, { passive: false });
   raf = requestAnimationFrame(frame);
   return {
-    scrollTo(y) { outer.scrollTop = Math.max(0, Math.min(limit(), y)); },
+    scrollTo(y) { target = null; outer.scrollTop = Math.max(0, Math.min(limit(), y)); },
     glideTo(y) {
+      target = null;
       const t = Math.max(0, Math.min(limit(), y));
       try { outer.scrollTo({ top: t, behavior: 'smooth' }); } catch (_) { outer.scrollTop = t; }
     },
