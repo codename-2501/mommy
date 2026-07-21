@@ -58,8 +58,14 @@ html{
   font-size:clamp(var(--rem-min,8px),calc(10 * 100vw / var(--size)),var(--rem-max,20px));
   -webkit-text-size-adjust:none;
   -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;   /* no grey flash on tap (app-like, not web-page-like) */
   background:#fff;color:#000;
   overscroll-behavior:none;width:100%;
+}
+/* the list artwork is a tap/preview target, not selectable content: a long-press must not raise the OS
+   image callout or drag-select a text block around it. (The paintings themselves are pointer-events:none.) */
+.agrid__cell,.car-item,.flow-item,.lse-slot,.lse-frame,.lse-frame img{
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
 }
 /* The phone's scale walks down to meet the desktop's instead of dropping onto it.
    A phone at 390 gets 10px, exactly what it always got. As the window widens the phone's drawing
