@@ -1129,7 +1129,10 @@ async function transition(path, oldEl, oldInst, oldCar, oldPath, gen) {
      un-interrupted leave the frames carry no inline flight transform, so this is a no-op.) */
   freezeEntrance(oldEl);
   const { fromFlips, toFlips, targets } = measureFlips(oldEl, view, flags.fromFlow);
-  if (inst && inst.unfreeze) inst.unfreeze();           // flow: the deck angle eases in
+  /* flow: the deck angle eases in — but held flat until the paintings flying in have landed (FLIP.dur), so
+     they travel at full size instead of foreshortening mid-flight ("이미지가 변형되서 시작"); the deck fans
+     open under them once home. With nothing flying in, it opens at once. */
+  if (inst && inst.unfreeze) inst.unfreeze(fromFlips.length ? FLIP.dur : 0);
 
   const skipFlip = flags.fromFlow && flags.toAbout;     // About has no slots to receive the paintings
   const playFlip = fromFlips.length && !skipFlip

@@ -262,14 +262,14 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
 
   /* : the deck angle only eases in once the transition says so (flow-unfreeze) */
   let unfrozen = false;
-  function unfreeze() {
+  function unfreeze(delay) {
     if (unfrozen) return;
     unfrozen = true;
-    const k0 = performance.now();
+    const k0 = performance.now() + (delay || 0);   // hold the deck flat through the arrival flight, THEN open
     (function step() {
-      const t = Math.min(1, (performance.now() - k0) / 1000);
-      deckK = 1 - Math.pow(1 - t, 4);
-      if (t < 1) requestAnimationFrame(step);
+      const el = performance.now() - k0;
+      deckK = el <= 0 ? 0 : 1 - Math.pow(1 - Math.min(1, el / 1000), 4);
+      if (el < 1000) requestAnimationFrame(step);
     })();
   }
 
