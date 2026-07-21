@@ -830,8 +830,23 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
     let endT = '';                      // where the flight lands — see the roty branch for why it matters
     /* a painting leaving the deck stands at its deck angle: fly from that angle to flat, turning and
        travelling as one move. Pivot at the centre so the box matches the deck's. */
-    const cx = from.bounds.left + from.bounds.width / 2 - (to.bounds.left + to.bounds.width / 2);
-    const cy = from.bounds.top + from.bounds.height / 2 - (to.bounds.top + to.bounds.height / 2);
+    let cx = from.bounds.left + from.bounds.width / 2 - (to.bounds.left + to.bounds.width / 2);
+    let cy = from.bounds.top + from.bounds.height / 2 - (to.bounds.top + to.bounds.height / 2);
+    /* how far the frame renders from the deck card it should begin ON, after its start pose is set — the air
+       layer's perspective foreshortens a hair unlike the deck, leaving a few px (measured T up to ~12). Fold
+       it back into cx,cy so the flight starts exactly on the card. Only the START uses cx,cy (the landing
+       translate is 0), so the end is untouched. */
+    const convergePos = (reapply) => {
+      for (let pass = 0; pass < 2; pass++) {
+        const r = from.el.getBoundingClientRect();
+        if (r.width < 2) break;
+        const ex = (from.bounds.left + from.bounds.width / 2) - (r.left + r.width / 2);
+        const ey = (from.bounds.top + from.bounds.height / 2) - (r.top + r.height / 2);
+        if (Math.abs(ex) < 0.5 && Math.abs(ey) < 0.5) break;
+        cx += ex; cy += ey;
+        reapply();
+      }
+    };
     const converge = (pose) => {
       from.el.style.transformOrigin = '50% 50%';
       from.el.style.transition = 'none';
@@ -876,33 +891,37 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
         const W1 = to.bounds.width, H1 = to.bounds.height;       // the flat cell (end)
         const cellH = to.bounds.height || 1;
         const N = 8;
-        monoFrames = [];
-        for (let k = 0; k <= N; k++) {
-          const t = k / N;
-          const p = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;   // ease-in-out over time
-          /* the angle unwinds LATER than the card travels and shrinks. Unwinding it early reads as the card
-             "letting go" of its deck tilt the instant you click; lagging it (qa < p) holds the deck angle
-             through the first half and flattens the card as it settles into its cell — the turn lands with
-             the painting instead of releasing up front. Size still follows p, so it shrinks smoothly. */
-          const qa = p * p;
-          const tw = W0 + (W1 - W0) * p, th = H0 + (H1 - H0) * p;            // targets: straight down, no bump
-          const ang = roty * (1 - qa), rx = cx * (1 - p), ry = cy * (1 - p);
-          const frame = (fx, fy) => 'translate3d(' + rx + 'px,' + ry + 'px,0) scaleX(' + fx + ') scaleY(' + fy + ') rotateY(' + ang + 'deg)';
-          /* solve BOTH scales by measurement — width foreshortens with the angle and height picks up a little
-             perspective too, so guess flat then correct each toward its target. */
-          let sx = tw / W1, sy = th / cellH;
-          for (let pass = 0; pass < 3; pass++) {
-            from.el.style.transform = frame(sx, sy);
-            const r = from.el.getBoundingClientRect();
-            if (r.width < 2) break;
-            const okW = Math.abs(r.width - tw) < 0.4, okH = Math.abs(r.height - th) < 0.4;
-            if (okW && okH) break;
-            if (!okW) sx *= tw / r.width;
-            if (!okH) sy *= th / r.height;
+        const buildMono = () => {
+          monoFrames = [];
+          for (let k = 0; k <= N; k++) {
+            const t = k / N;
+            const p = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;   // ease-in-out over time
+            /* the angle unwinds LATER than the card travels and shrinks. Unwinding it early reads as the card
+               "letting go" of its deck tilt the instant you click; lagging it (qa < p) holds the deck angle
+               through the first half and flattens the card as it settles into its cell — the turn lands with
+               the painting instead of releasing up front. Size still follows p, so it shrinks smoothly. */
+            const qa = p * p;
+            const tw = W0 + (W1 - W0) * p, th = H0 + (H1 - H0) * p;            // targets: straight down, no bump
+            const ang = roty * (1 - qa), rx = cx * (1 - p), ry = cy * (1 - p);
+            const frame = (fx, fy) => 'translate3d(' + rx + 'px,' + ry + 'px,0) scaleX(' + fx + ') scaleY(' + fy + ') rotateY(' + ang + 'deg)';
+            /* solve BOTH scales by measurement — width foreshortens with the angle and height picks up a little
+               perspective too, so guess flat then correct each toward its target. */
+            let sx = tw / W1, sy = th / cellH;
+            for (let pass = 0; pass < 3; pass++) {
+              from.el.style.transform = frame(sx, sy);
+              const r = from.el.getBoundingClientRect();
+              if (r.width < 2) break;
+              const okW = Math.abs(r.width - tw) < 0.4, okH = Math.abs(r.height - th) < 0.4;
+              if (okW && okH) break;
+              if (!okW) sx *= tw / r.width;
+              if (!okH) sy *= th / r.height;
+            }
+            monoFrames.push(frame(sx, sy));
           }
-          monoFrames.push(frame(sx, sy));
-        }
-        from.el.style.transform = monoFrames[0];        // start pose = the deck's exact box, no snap
+          from.el.style.transform = monoFrames[0];      // start pose = the deck's exact box, no snap
+        };
+        buildMono();
+        convergePos(buildMono);   // pull the start onto the deck card (the layer's perspective leaves a few px)
         endT = monoFrames[monoFrames.length - 1];
       } else {
         /* same-size (->timeline, desktop): unwind the angle as one eased move. Converge the start scale so
@@ -917,6 +936,7 @@ function prepareFlip(fromFlips, toFlips, noStagger, flatFly) {
           startScale *= from.bounds.width / shown;
         }
         from.el.style.transform = pose(startScale);
+        convergePos(() => { from.el.style.transform = pose(startScale); });   // start exactly on the deck card
         endT = 'translate3d(0px,0px,0) scale(1) rotateY(0deg)';
       }
     } else {
