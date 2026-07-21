@@ -199,6 +199,11 @@ def main():
         ("'/api/content'", "'/content.json'"),
         ("'/api/aspects'", "'/aspects.json'"),
         ("'/api/colors'", "'/colors.json'"),
+        # app.js rebuilds a frame image whose real frame a detail consumed (see "reclaim the real frame").
+        # Like the other views it must ask for the built .webp thumb — without this the request 404s and,
+        # under the SPA rewrite, is answered with HTML that iOS paints as a broken "?" box after a detail.
+        ("'/thumbs/600/' + encodeURIComponent(fn)",
+         "'/thumbs/600/' + encodeURIComponent(fn) + '.webp'"),
     ])
     for js in ("views.js", "detail.js"):
         patch(os.path.join(DIST, "site", js), [
