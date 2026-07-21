@@ -2885,8 +2885,9 @@
    "opacity": 0.45
   },
   "/flow": {
-   "src": "/images/nadi-spasibenko-xlYCfXnpldo-unsplash.jpg",
-   "motion": "fixed"
+   "src": "/images/maria-orlova-Ys8VpdbIYxE-unsplash.jpg",
+   "motion": "fixed",
+   "opacity": 0.45
   }
  }
 }
