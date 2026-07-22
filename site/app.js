@@ -1440,11 +1440,16 @@ function installPeek() {
   };
   addEventListener('pointerdown', (e) => {
     if (window.LSEDetail && window.LSEDetail.isOpen) return;
+    if (shown) { close(); suppressNextClick(); return; }         // a peek is up: this press only dismisses it
     const p = route();
-    if (p !== '/' && p !== '/articles') return;                 // timeline + index only
-    const frame = e.target.closest && e.target.closest('.lse-frame');
-    if (!frame || !frame.closest('.car-item,.agrid__cell')) return;
-    const img = frame.querySelector('img');
+    if (p !== '/' && p !== '/articles' && p !== '/flow') return;   // timeline + index + flow deck
+    /* resolve the painting from its cell, not from e.target: the flow deck lays a `.flow-item__hit`
+       layer over each card (the stable hover/click target), so a press there never sits inside the
+       `.lse-frame` and closest('.lse-frame') came back empty — the peek never fired on the deck. */
+    const cell = e.target.closest && e.target.closest('.car-item,.agrid__cell,.flow-item');
+    if (!cell) return;
+    const frame = cell.querySelector('.lse-frame');
+    const img = frame && frame.querySelector('img');
     if (!img) return;
     held = frame; sx = e.clientX; sy = e.clientY;
     clearTimeout(holdT);
@@ -1454,7 +1459,10 @@ function installPeek() {
     if (!held || shown) return;
     if (Math.abs(e.clientX - sx) > MOVE || Math.abs(e.clientY - sy) > MOVE) { clearTimeout(holdT); held = null; }
   }, { passive: true });
-  const end = () => { const was = shown; clearTimeout(holdT); close(); if (was) suppressNextClick(); };
+  /* releasing does NOT dismiss: once the hold has raised the peek it stays up, and the next press
+     (anywhere) is what closes it. On release we only cancel a still-pending hold and swallow the
+     click that trails the finger so it cannot open the detail underneath. */
+  const end = () => { clearTimeout(holdT); held = null; if (shown) suppressNextClick(); };
   addEventListener('pointerup', end);
   addEventListener('pointercancel', end);
   /* the click that trails a peek must not open the detail */
