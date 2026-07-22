@@ -748,10 +748,12 @@ html.is-resizing .wordmark{transition:none}
   align-items:start;justify-content:center;align-content:start;
   column-gap:clamp(1rem,2vw,2rem);
   row-gap:clamp(7rem,12vw,11.5rem);   /* the month names float in this gap, above each run's first cell */
-  /* clear the fixed sort bar, which rides below the wordmark (~82px + 19.5vw from the top): the grid's
-     first row must start below it at every width, so the clearance tracks that line + a margin, not a
-     flat vw that shrank faster than the bar and let the first row slide up under it on a narrow window */
-  padding:clamp(12.5rem,calc(112px + 20vw),40rem) 2rem 2rem;
+  /* The sort bar now rides in the scroller as sticky (.agrid__stick), whose margin clears the wordmark —
+     so this top padding is no longer clearing the bar, only the constant gap between the bar and the first
+     row (and the first month band that floats up into it). One fluid value, so the bar->grid gap holds
+     steady on a resize instead of drifting with a fixed bar's measured position. It grows mildly with the
+     width because the desktop month band's type is larger and needs a little more room above the row. */
+  padding:clamp(11.5rem,calc(8rem + 5vw),14rem) 2rem 2rem;
 }
 /* On a phone the tilt is not the script's to draw. iOS runs its momentum scroll on the
    compositor and the main thread does not get a frame in — the rows kept their angle from
@@ -795,16 +797,16 @@ html.is-resizing .wordmark{transition:none}
   opacity:0;transition:opacity .9s ease;   /* fades in with the wordmark as the index arrives */
 }
 .view--articles.is-in .agrid-sort{opacity:1}
-/* MOBILE: the bar (and palette) ride inside the scroller as one sticky block — the browser pins them
-   near the top on the compositor, smooth through a touch fling. Its start is set in views.js
-   (margin-top = the measured wordmark foot). The empty centred column lets taps fall through to the grid. */
+/* At every width the bar (and palette) ride inside the scroller as one sticky block — the browser pins
+   them near the top on the compositor, smooth through a touch fling or a wheel. The empty centred column
+   lets taps fall through to the grid. */
 .agrid__stick{
   position:sticky;top:18px;z-index:16;   /* above the flip layer (15): arriving paintings pass under the bar */
   display:flex;flex-direction:column;align-items:center;
-  /* the bar rests 16px under the wordmark's foot. That foot is not a flat rem across phone widths — the
-     wordmark's type carries a vw term — so a fixed rem drifts into the title at the wide end (699). This
-     tracks the measured foot (~105px + 5vw for the two-line wordmark) instead, holding the 16px gap at
-     every phone width, and needs no per-frame measuring that could inflate on re-entry. */
+  /* the bar rests just under the wordmark's foot. That foot is not a flat rem — the wordmark's type
+     carries a vw term (its box grows ~proportionally with the width) — so this tracks it with a matching
+     vw slope, holding the same tuck under the title at every width, and needs no per-frame measuring that
+     could inflate on re-entry. */
   margin-top:calc(121px + 5vw);
   pointer-events:none;
 }
@@ -814,15 +816,14 @@ html.is-resizing .wordmark{transition:none}
   transform:translateX(-50%) translateY(-6px) scale(.96);
 }
 .agrid__stick .agrid-pal.is-open{transform:translateX(-50%) translateY(0) scale(1)}
-/* the title slides up and out as the grid scrolls — a threshold toggle, not a per-frame position, so it
-   rides the compositor on a CSS transition and never judders. translate (not transform) is used, so the
-   view-move's own transform transition is left alone; the two compose. Phone only. */
-@media (max-width:699px){
-  body:has(.view--articles) .wordmark{
-    transition:transform 1.5s var(--ease-rise),translate .5s var(--ease-rise),opacity .45s ease;
-  }
-  body.index-scrolled .wordmark{translate:0 -14rem;opacity:0}
+/* the title slides up and out as the grid scrolls — a threshold toggle at every width now (the bar rides
+   the scroller as sticky, so nothing tracks scroll per-frame). It rides the compositor on a CSS
+   transition and never judders. translate (not transform) is used, so the view-move's own transform
+   transition is left alone; the two compose. */
+body:has(.view--articles) .wordmark{
+  transition:transform 1.5s var(--ease-rise),translate .5s var(--ease-rise),opacity .45s ease;
 }
+body.index-scrolled .wordmark{translate:0 -14rem;opacity:0}
 .agrid-sort__row{position:relative;display:flex;gap:.4rem;align-items:stretch}
 /* the travelling drop, under the words; the chosen word rides over it and turns white */
 .agrid-sort__drop{position:absolute;inset:0;z-index:1;pointer-events:none}
