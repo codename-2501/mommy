@@ -202,13 +202,13 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
       const f = (cur + innerWidth * 0.5 - bounds[0].left - bounds[0].width * 0.5) / cardGap;   // work under the line
       let lap = f % lapWorks;
       if (lap < 0) lap += lapWorks;
-      /* name the work the deck actually centres. `lap` IS that work's index; feed it straight so the
-         ruler's month/year stay locked to the centred painting. (Stretching it by slides.length/lapWorks
-         made the ruler's sweep finish exactly as the deck looped, but squeezed every mid-lap work a
-         fraction early — the drift grew the deeper you scrolled and the month fell off the painting
-         around, e.g., May 2024. The ruler wraps at the archive length on its own, so the only cost of
-         the straight feed is a work-or-so hop as the deck crosses its loop seam, once a lap.) */
-      ruler.update(lap, ratio);
+      /* Stretch the lap onto the archive's length so the ruler comes round exactly as the deck loops:
+         no work-or-so hop at the seam (the 2024<->2026 gap the straight feed left around work 0, which a
+         phone's rounding widened). The cost is the mirror of the old bug — a fraction of drift that grows
+         deeper into a lap — but it is ZERO at the start, where the seam is read, and stays small. The
+         hand-over still reads the seam-free card index (activeIndex), so this only moves the month label. */
+      const stretch = lapWorks > 0 ? slides.length / lapWorks : 1;
+      ruler.update(lap * stretch, ratio);
     }
     raf = requestAnimationFrame(frame);
   }
