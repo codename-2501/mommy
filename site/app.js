@@ -1440,6 +1440,7 @@ function installPeek() {
   };
   addEventListener('pointerdown', (e) => {
     if (window.LSEDetail && window.LSEDetail.isOpen) return;
+    if (shown) { close(); suppressNextClick(); return; }         // a peek is up: this press only dismisses it
     const p = route();
     if (p !== '/' && p !== '/articles' && p !== '/flow') return;   // timeline + index + flow deck
     /* resolve the painting from its cell, not from e.target: the flow deck lays a `.flow-item__hit`
@@ -1458,7 +1459,10 @@ function installPeek() {
     if (!held || shown) return;
     if (Math.abs(e.clientX - sx) > MOVE || Math.abs(e.clientY - sy) > MOVE) { clearTimeout(holdT); held = null; }
   }, { passive: true });
-  const end = () => { const was = shown; clearTimeout(holdT); close(); if (was) suppressNextClick(); };
+  /* releasing does NOT dismiss: once the hold has raised the peek it stays up, and the next press
+     (anywhere) is what closes it. On release we only cancel a still-pending hold and swallow the
+     click that trails the finger so it cannot open the detail underneath. */
+  const end = () => { clearTimeout(holdT); held = null; if (shown) suppressNextClick(); };
   addEventListener('pointerup', end);
   addEventListener('pointercancel', end);
   /* the click that trails a peek must not open the detail */
