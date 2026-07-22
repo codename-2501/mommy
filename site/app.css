@@ -738,17 +738,17 @@ html.is-resizing .wordmark{transition:none}
 }
 .agrid::-webkit-scrollbar{display:none}
 .agrid__in{
-  display:flex;flex-direction:column;
-  /* fluid, not a 699px step: the wordmark's type grows with the window (font-size:min(...vw,.9rem)),
-     so the top clearance has to grow with it too — a fixed 7.5rem below 700 let the bigger logo of a
-     ~600px window drop onto the first row. Scale the clearance and the row gaps continuously with the
-     width instead, from the phone's tight values up to the desktop's airy ones. */
-  gap:clamp(7rem,10vw,11.5rem);
+  /* ONE fluid grid, no 699px step: it fits as many ~20rem cells as the width holds and re-flows them
+     continuously. The cell floor scales with the width — a phone still holds a few across, the desktop
+     lands on the timeline card's 20rem — and between the column-count changes the cells stretch (1fr),
+     which views.js animates (FLIP) so the re-flow reads as motion. The top clearance grows with the
+     width too (the wordmark's type does), so the logo never drops onto the first row. */
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(clamp(9rem,26vw,20rem),1fr));
+  align-items:start;justify-content:center;align-content:start;
+  column-gap:clamp(1rem,2vw,2rem);
+  row-gap:clamp(7rem,12vw,11.5rem);   /* the month names float in this gap, above each run's first cell */
   padding:clamp(11rem,30vw,40rem) 2rem 2rem;
-}
-.agrid__row{
-  display:grid;gap:clamp(1rem,2vw,2rem);justify-content:center;   /* fixed-width columns (views.js), centred in the row */
-  align-items:start;transform-origin:top center;
 }
 /* On a phone the tilt is not the script's to draw. iOS runs its momentum scroll on the
    compositor and the main thread does not get a frame in — the rows kept their angle from
@@ -773,6 +773,8 @@ html.is-resizing .wordmark{transition:none}
    cell in a twelve-across grid, so held on one line it ran past the cell into its neighbour. It
    wraps within the cell now (the year drops to a second line), growing upward into the row gap
    above rather than sideways over the next column. */
+/* a month's name floats above its first cell, in the row gap — so the cells stay a continuous grid
+   (a one-work month does not break the run). A long name wraps within the cell, the year on its own line. */
 .agrid__month{position:absolute;bottom:calc(100% + 1rem);left:0;width:100%;text-transform:uppercase}
 /* month + year, set the same way as the timeline ruler's labels */
 /* the year sits on its own line, always — so a short month (JUNE) and a long one (SEPTEMBER)

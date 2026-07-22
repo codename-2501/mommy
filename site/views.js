@@ -581,17 +581,16 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     const dateMode = indexSort.slice(0, 4) === 'date';
     const withLabels = dateMode || indexSort === 'size';   // months in time, 호 by size, nothing by colour
     content.replaceChildren();
-    let row = null, seenGroup = '';
+    let seenGroup = '';
+    /* One fluid grid, not fixed-count rows: cells flow straight into `content`, an auto-fill track set,
+       so the browser fits as many across as the width holds and re-flows them continuously — no 699 step.
+       The run stays dense (a one-work month does not break it); the month's name floats above its first
+       cell, in the row gap, exactly as before. */
     const buildCell = (p, pos) => {
       const s = p.s;
-      if (pos % perRow === 0) {
-        row = el('div', 'agrid__row lse-row');
-        row.style.gridTemplateColumns = gridCols;   // fixed-width columns, matched to the timeline card
-        content.appendChild(row);
-      }
+      const name = String(s.image || '').split('/').pop();
       const cell = el('article', 'agrid__cell lse-card');
       cell.dataset.index = String(p.oi);       // the archive-order index the hand-over reads
-      const name = String(s.image || '').split('/').pop();
       const box = el('div', 'agrid__media lse-slot');
       box.dataset.id = s.id || '';
       box.style.aspectRatio = String(aspects[name] || 1);
@@ -605,31 +604,28 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
       frame.appendChild(img);
       box.appendChild(frame);
       cell.appendChild(box);
-      /* the band a work opens: its month (with a year under it) in the date orders, its canvas 호 in
-         Size. One is written per run, at the first work of the run. */
-      let groupKey = '', bandText = '', bandYear = '';
-      if (dateMode) {
-        const mo = month(s);
-        if (mo) {
-          groupKey = 'm:' + mo; bandText = mo;
-          const own = /^(\d{4})/.exec(String(s.date || ''));
-          bandYear = (own && own[1]) || years[mo] || '2026';   // this work's year, else the month's
+      /* the band a work opens: its month (year under it) in date orders, its 호 in Size — one per run,
+         floated above the run's first cell so the cells stay a continuous grid */
+      if (withLabels) {
+        let groupKey = '', bandText = '', bandYear = '';
+        if (dateMode) {
+          const mo = month(s);
+          if (mo) { groupKey = 'm:' + mo; bandText = mo; const own = /^(\d{4})/.exec(String(s.date || '')); bandYear = (own && own[1]) || years[mo] || '2026'; }
+        } else if (indexSort === 'size') {
+          const ho = hoOf(s);
+          if (ho > 0) { groupKey = 'h:' + ho; bandText = ho + '호'; }
         }
-      } else if (indexSort === 'size') {
-        const ho = hoOf(s);
-        if (ho > 0) { groupKey = 'h:' + ho; bandText = ho + '호'; }
+        if (groupKey && groupKey !== seenGroup) {
+          seenGroup = groupKey;
+          const lbl = el('div', 'agrid__month');
+          const rev = el('div', 'dt-reveal');
+          const txt = el('div', 'label', bandText);
+          txt.dataset.year = bandYear;
+          rev.appendChild(txt); lbl.appendChild(rev);
+          cell.appendChild(lbl);
+        }
       }
-      if (withLabels && groupKey && groupKey !== seenGroup) {
-        seenGroup = groupKey;
-        const lbl = el('div', 'agrid__month');
-        const rev = el('div', 'dt-reveal');
-        const txt = el('div', 'label', bandText);
-        txt.dataset.year = bandYear;   // the ::after only shows when this is non-empty (date only)
-        rev.appendChild(txt);
-        lbl.appendChild(rev);
-        cell.appendChild(lbl);
-      }
-      row.appendChild(cell);
+      content.appendChild(cell);
     };
     /* build the fold's worth now — plus down to the work the deck handed over, so the scroll that
        lands on it has real layout — and hand the rest off to later frames, so arriving at the grid
@@ -773,14 +769,39 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     if (barH !== null) { pal.style.top = (restTop + barH + 10) + 'px'; pal.style.translate = '0px ' + off + 'px'; }
     frameRAF = requestAnimationFrame(frameLoop);
   }
+  /* The CSS grid re-flows itself on a resize (auto-fill), so there is no rebuild — but when the column
+     count changes the cells jump to new slots, and that jump is animated with FLIP: read where each cell
+     was, let the browser re-flow, then start each at its old spot and let it travel to the new one. Only
+     fires on an actual count change, so a plain width drag (cells just stretch) costs nothing. */
+  let flipCols = 0, flipRects = null;
+  function flipReflow() {
+    const items = [...content.querySelectorAll('.agrid__cell,.agrid__month')];
+    /* cancel any in-flight FLIP so the rects read are the TRUE laid-out positions — a resize landing
+       mid-animation re-bases cleanly. Web Animations, not a transform+rAF dance, so nothing is left
+       stuck if a frame is dropped: the browser owns the from->to and reverts to no transform at the end. */
+    for (const it of items) for (const a of it.getAnimations()) if (a.id === 'agrid-flip') a.cancel();
+    const cols = getComputedStyle(content).gridTemplateColumns.split(' ').length;
+    const now = new Map();
+    for (const it of items) now.set(it, it.getBoundingClientRect());
+    if (flipRects && cols !== flipCols) {
+      for (const it of items) {
+        const was = flipRects.get(it), is = now.get(it);
+        if (!was) continue;
+        const dx = was.left - is.left, dy = was.top - is.top;
+        if (Math.abs(dx) < 1 && Math.abs(dy) < 1) continue;
+        const anim = it.animate(
+          [{ transform: 'translate(' + dx + 'px,' + dy + 'px)' }, { transform: 'translate(0,0)' }],
+          { duration: 500, easing: 'cubic-bezier(.19,1,.22,1)' }   // --ease-rise
+        );
+        anim.id = 'agrid-flip';
+      }
+    }
+    flipCols = cols; flipRects = now;
+  }
   function onResize() {
     wmFoot = null; barH = null; frame0 = null; lastS = -1;
     placeBlob(false);
-    /* re-row the grid when the width now fits a different number of columns (or crosses the phone
-       breakpoint) — a fixed-count layout read once at mount ignored the resize entirely */
-    const wasRow = perRow, wasMobile = mobile;
-    relayout();
-    if (perRow !== wasRow || mobile !== wasMobile) buildGrid();
+    flipReflow();
   }
   if (isMobile) {
     /* the title slides up and fades as the grid scrolls — a threshold toggle (CSS), not a per-frame
@@ -793,6 +814,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   }
   requestAnimationFrame(() => placeBlob(false));
   addEventListener('resize', onResize);
+  requestAnimationFrame(() => requestAnimationFrame(flipReflow));   // seed the FLIP baseline once laid out
 
   const sc = smoothTilt(outer, content);
 
@@ -900,12 +922,12 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   function centerWork() {
     const mid = innerHeight / 2;
     let best = null, bestD = Infinity;
-    content.querySelectorAll('.lse-row').forEach((row) => {
-      const d = Math.abs(row.getBoundingClientRect().top - mid);
-      if (d < bestD) { bestD = d; best = row; }
+    content.querySelectorAll('.agrid__cell[data-index]').forEach((cell) => {
+      const r = cell.getBoundingClientRect();
+      const d = Math.abs((r.top + r.bottom) / 2 - mid);
+      if (d < bestD) { bestD = d; best = cell; }
     });
-    const c = best && best.querySelector('[data-index]');
-    return c ? parseInt(c.dataset.index, 10) || 0 : 0;
+    return best ? parseInt(best.dataset.index, 10) || 0 : 0;
   }
   /* a real scroll gesture on the grid drops the anchor: from then on it hands back whatever sits under
      the middle, as before. Keyed off the gesture (wheel / touch-drag), not the scroll position, so the
