@@ -738,11 +738,16 @@ html.is-resizing .wordmark{transition:none}
 }
 .agrid::-webkit-scrollbar{display:none}
 .agrid__in{
-  display:flex;flex-direction:column;gap:11.5rem;
-  padding:40rem 2rem 2rem;
+  display:flex;flex-direction:column;
+  /* fluid, not a 699px step: the wordmark's type grows with the window (font-size:min(...vw,.9rem)),
+     so the top clearance has to grow with it too — a fixed 7.5rem below 700 let the bigger logo of a
+     ~600px window drop onto the first row. Scale the clearance and the row gaps continuously with the
+     width instead, from the phone's tight values up to the desktop's airy ones. */
+  gap:clamp(7rem,10vw,11.5rem);
+  padding:clamp(11rem,30vw,40rem) 2rem 2rem;
 }
 .agrid__row{
-  display:grid;gap:2rem;justify-content:center;   /* fixed-width columns (views.js), centred in the row */
+  display:grid;gap:clamp(1rem,2vw,2rem);justify-content:center;   /* fixed-width columns (views.js), centred in the row */
   align-items:start;transform-origin:top center;
 }
 /* On a phone the tilt is not the script's to draw. iOS runs its momentum scroll on the
@@ -759,10 +764,7 @@ html.is-resizing .wordmark{transition:none}
    scrollport means a row leans away from the viewer as it climbs and towards them at the
    bottom: the top edge of a high row is further off than its bottom edge, and it draws
    narrower. */
-@media (max-width:699px){
-  .agrid__in{gap:7rem;padding-top:7.5rem}   /* top clearance now comes from the sticky bar's margin (views.js) */
-  .agrid__row{gap:1rem}
-}
+/* (the .agrid__in / .agrid__row gaps and top clearance are fluid above — no 699px step here) */
 .agrid__cell{position:relative;cursor:pointer}
 .agrid__media{position:relative;width:100%}
 .agrid__media img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
