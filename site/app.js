@@ -1441,10 +1441,14 @@ function installPeek() {
   addEventListener('pointerdown', (e) => {
     if (window.LSEDetail && window.LSEDetail.isOpen) return;
     const p = route();
-    if (p !== '/' && p !== '/articles') return;                 // timeline + index only
-    const frame = e.target.closest && e.target.closest('.lse-frame');
-    if (!frame || !frame.closest('.car-item,.agrid__cell')) return;
-    const img = frame.querySelector('img');
+    if (p !== '/' && p !== '/articles' && p !== '/flow') return;   // timeline + index + flow deck
+    /* resolve the painting from its cell, not from e.target: the flow deck lays a `.flow-item__hit`
+       layer over each card (the stable hover/click target), so a press there never sits inside the
+       `.lse-frame` and closest('.lse-frame') came back empty — the peek never fired on the deck. */
+    const cell = e.target.closest && e.target.closest('.car-item,.agrid__cell,.flow-item');
+    if (!cell) return;
+    const frame = cell.querySelector('.lse-frame');
+    const img = frame && frame.querySelector('img');
     if (!img) return;
     held = frame; sx = e.clientX; sy = e.clientY;
     clearTimeout(holdT);
