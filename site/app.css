@@ -62,8 +62,11 @@ html{
   background:#fff;color:#000;
   overscroll-behavior:none;width:100%;
 }
-/* the list artwork is a tap/preview target, not selectable content: a long-press must not raise the OS
-   image callout or drag-select a text block around it. (The paintings themselves are pointer-events:none.) */
+/* the timeline, index and flow are tap/preview surfaces, not selectable content: a long-press must not
+   raise the OS image callout or drag-select a text block anywhere on them — not on a painting and not on
+   the labels or the gaps around it, which the per-element rule below missed. About is a reading page, and
+   the detail overlay lives outside these views (appended to #app, not the view), so both stay selectable. */
+.view--home,.view--flow,.view--articles,
 .agrid__cell,.car-item,.flow-item,.lse-slot,.lse-frame,.lse-frame img{
   -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
 }
