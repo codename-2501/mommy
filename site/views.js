@@ -529,6 +529,9 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   const outer = el('div', 'agrid');
   const content = el('div', 'agrid__in');
   outer.appendChild(content);
+  /* the work the grid arrived on (set once the build reads the hand-over), kept as its "current" until
+     the viewer actually scrolls the grid — declared at function scope so activeIndex/the scroll hooks see it */
+  let anchor = 0;
   view.appendChild(outer);
   let orderedIds = [];   // the ids in the order they are shown — handed to the detail for prev/next
 
@@ -625,6 +628,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
        does not block the main thread through the flip that carries the paintings in */
     const N = pairs.length;
     const handoff = parseInt(document.body.dataset.index, 10) || 0;
+    anchor = handoff;   // record the arrival work on the function-scoped anchor declared above
     const targetPos = handoff > 0 ? pairs.findIndex((p) => p.oi === handoff) : 0;
     const first = Math.min(N, Math.max(perRow * 5, (targetPos < 0 ? 0 : targetPos) + perRow * 2));
     let pos = 0;
@@ -867,6 +871,8 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     cancelAnimationFrame(frameRAF);
     cancelAnimationFrame(buildRAF);
     if (onScroll) outer.removeEventListener('scroll', onScroll);
+    outer.removeEventListener('wheel', dropAnchor);
+    outer.removeEventListener('touchmove', dropAnchor);
     document.body.classList.remove('index-scrolled');
     if (wm) { wm.style.top = ''; wm.style.translate = ''; }   // hand the shared wordmark back clean
     removeEventListener('resize', onResize);
@@ -876,8 +882,29 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
      out from under the frames mid-flight (they ride their own fixed-layer transforms, not the scroll),
      and they read as floating. Programmatic scrollTop still works under overflow:hidden, so the arrival
      hand-over that lands you on the work you left is unaffected. */
+  /* the work under the middle of the screen — the same reference the departure hand-over reads, used
+     only once the viewer has scrolled and the arrival anchor no longer stands for where they are */
+  function centerWork() {
+    const mid = innerHeight / 2;
+    let best = null, bestD = Infinity;
+    content.querySelectorAll('.lse-row').forEach((row) => {
+      const d = Math.abs(row.getBoundingClientRect().top - mid);
+      if (d < bestD) { bestD = d; best = row; }
+    });
+    const c = best && best.querySelector('[data-index]');
+    return c ? parseInt(c.dataset.index, 10) || 0 : 0;
+  }
+  /* a real scroll gesture on the grid drops the anchor: from then on it hands back whatever sits under
+     the middle, as before. Keyed off the gesture (wheel / touch-drag), not the scroll position, so the
+     arrival's own programmatic scroll never counts as the viewer moving. Without the anchor, the first
+     works — which cannot be centred, nothing above them — read a row below on the way out and a no-scroll
+     round-trip drifted off the opening work (visible on a phone's narrow grid). */
+  const dropAnchor = () => { anchor = null; };
+  outer.addEventListener('wheel', dropAnchor, { passive: true });
+  outer.addEventListener('touchmove', dropAnchor, { passive: true });
   return { ready, destroy, measure: sc.measure, scrollTo: sc.scrollTo, reset: () => sc.glideTo(0),
     order: () => orderedIds.slice(),
+    activeIndex: () => (anchor != null ? anchor : centerWork()),
     lockScroll: () => { outer.style.overflowY = 'hidden'; },
     unlockScroll: () => { outer.style.overflowY = ''; } };
 }

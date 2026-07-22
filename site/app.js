@@ -660,6 +660,9 @@ function handOverIndex(fromPath, toArticles, oldCar, oldEl, oldInst) {
     idx = (oldCar && oldCar.activeIndex()) || 0;   // to flow OR to index — both open on the work you were on
   } else if (fromPath === '/flow' && oldInst && oldInst.activeIndex) {
     idx = oldInst.activeIndex();          // the next view opens on the paintings flow was showing
+  } else if (fromPath === '/articles' && oldInst && oldInst.activeIndex) {
+    idx = oldInst.activeIndex();          // the grid returns the work it arrived on until you scroll it —
+                                          // the first works can't be centred, so a DOM centre-read drifted
   } else if (fromPath === '/articles' && oldEl) {
     const mid = innerHeight / 2;
     let best = null, bestD = Infinity;
