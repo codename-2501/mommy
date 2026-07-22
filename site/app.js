@@ -1300,7 +1300,8 @@ function render() {
 
   /* each view carries its own background; a detail keeps the one belonging to the page under it */
   if (window.LSEBackground && !path.startsWith('/p/')) {
-    window.LSEBackground.apply(((content && content.backgrounds) || {})[path]);
+    window.LSEBackground.apply(((content && content.backgrounds) || {})[path],
+      { transition: content && content.meta && content.meta.transition });
   }
 
   /* detail = overlay above the (kept) home — no home teardown, no flash */
