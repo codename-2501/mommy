@@ -139,16 +139,14 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
       const w = r.width;
       return { start: r.left - w - innerWidth, end: r.right + w, left: r.left, width: w };
     });
-    const last = bounds[bounds.length - 1];
-    total = Math.max(0, last ? last.end - bounds[0].width : 0);
-    /* The deck loops every `total` px, and that is not exactly one work per card-width: the
-       first card's offset and its own width ride along in it. Measured in works, a lap is
-       `lapWorks`, which is a little more than the archive holds. The ruler is given the lap as
-       a fraction and stretched over the archive, so the timeline comes round exactly when the
-       deck does — feed it the raw count instead and the ruler would jump back a work or so
-       every time the deck crossed its seam. */
     cardGap = bounds.length > 1 ? bounds[1].left - bounds[0].left : innerWidth;
-    lapWorks = cardGap > 0 ? total / cardGap : slides.length;
+    /* Loop over EXACTLY the archive's length (one card-gap per work) so the deck comes round seamlessly.
+       The old lap was measured from the last card's far edge, so its own width rode along in it and left
+       a card-wide empty GAP where the deck crossed its seam — the first and last works pulled apart. One
+       gap per work all the way round now, and the ruler laps the archive exactly too (lapWorks =
+       slides.length → its months come round with the deck, no hop). */
+    total = slides.length * cardGap;
+    lapWorks = slides.length;
     ruler.resize();
   }
 
