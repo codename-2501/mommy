@@ -29,13 +29,15 @@
      "type": "image",
      "src": "/images/ca673fec5b6b7.webp",
      "caption": "z",
-     "align": "left"
+     "align": "left",
+     "size": "full"
     },
     {
      "type": "image",
      "src": "/images/ca673fec5b6b7.webp",
      "caption": "zz",
-     "align": "right"
+     "align": "right",
+     "size": "full"
     }
    ],
    "category": "Enrich",
@@ -286,7 +288,8 @@
      "type": "image",
      "src": "/images/6d8c9cf7b9618.png",
      "caption": "Quiet Current",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Showcase",
@@ -306,7 +309,8 @@
      "type": "image",
      "src": "/images/photo_2026-07-16_14.17.08.jpeg",
      "caption": "Golden Shadow",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Inspire",
@@ -326,7 +330,8 @@
      "type": "image",
      "src": "/images/3a1a7d3b70473.png",
      "caption": "Silent Garden",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Ember",
@@ -346,7 +351,8 @@
      "type": "image",
      "src": "/images/b78e801844263.jpg",
      "caption": "Silent Meadow",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Enrich",
@@ -366,7 +372,8 @@
      "type": "image",
      "src": "/images/a92fb706592cb.png",
      "caption": "Golden Petal",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Reflect",
@@ -386,7 +393,8 @@
      "type": "image",
      "src": "/images/1f7ffa08880a9.jpg",
      "caption": "Amber Bloom",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Inspire",
@@ -406,7 +414,8 @@
      "type": "image",
      "src": "/images/486624d093849.png",
      "caption": "Deep Veil",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Muse",
@@ -426,7 +435,8 @@
      "type": "image",
      "src": "/images/c3149ecb4e4fd.jpg",
      "caption": "Pale Water",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Bloom",
@@ -446,7 +456,8 @@
      "type": "image",
      "src": "/images/02ece5a890247.png",
      "caption": "Pale Water",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Enrich",
@@ -466,7 +477,8 @@
      "type": "image",
      "src": "/images/photo_2026-07-16_14.16.58.jpeg",
      "caption": "Still Harbor",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Drift",
@@ -486,7 +498,8 @@
      "type": "image",
      "src": "/images/5fe11bac36895.jpg",
      "caption": "Quiet Garden",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Inspire",
@@ -506,7 +519,8 @@
      "type": "image",
      "src": "/images/photo_2026-07-16_14.17.18.jpeg",
      "caption": "Deep Echo",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Drift",
@@ -526,7 +540,8 @@
      "type": "image",
      "src": "/images/ca2b4eb75a03f.png",
      "caption": "Quiet Shadow",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Reflect",
@@ -546,7 +561,8 @@
      "type": "image",
      "src": "/images/photo_2026-07-16_14.16.32.jpeg",
      "caption": "Faded Bloom",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Inspire",
@@ -566,7 +582,8 @@
      "type": "image",
      "src": "/images/1aff2f008ad96.jpg",
      "caption": "Distant Water",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Enrich",
@@ -586,7 +603,8 @@
      "type": "image",
      "src": "/images/a8ef59966e56a.png",
      "caption": "Soft Field",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Vivid",
@@ -606,7 +624,8 @@
      "type": "image",
      "src": "/images/8708eb5c27359.jpg",
      "caption": "Faded Hillside",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Bloom",
@@ -626,7 +645,8 @@
      "type": "image",
      "src": "/images/97703af9e4c8f.webp",
      "caption": "Amber Harbor",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Inspire",
@@ -646,7 +666,8 @@
      "type": "image",
      "src": "/images/2fdbe4301b34e.png",
      "caption": "Golden Horizon",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Muse",
@@ -666,7 +687,8 @@
      "type": "image",
      "src": "/images/a709fc3de67fa.webp",
      "caption": "Pale Current",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Enrich",
@@ -686,7 +708,8 @@
      "type": "image",
      "src": "/images/photo_2026-07-16_14.17.11.jpeg",
      "caption": "Deep Water",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Enrich",
@@ -706,7 +729,8 @@
      "type": "image",
      "src": "/images/62ae5300bda35.png",
      "caption": "Still Hillside",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Vivid",
@@ -726,7 +750,8 @@
      "type": "image",
      "src": "/images/photo_2026-07-16_14.16.20.jpeg",
      "caption": "Pale Harbor",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Reflect",
@@ -746,7 +771,8 @@
      "type": "image",
      "src": "/images/photo_2026-07-16_14.16.41.jpeg",
      "caption": "Deep Echo",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Enrich",
@@ -766,7 +792,8 @@
      "type": "image",
      "src": "/images/102b79c0173a5.webp",
      "caption": "Golden Current",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Drift",
@@ -786,7 +813,8 @@
      "type": "image",
      "src": "/images/photo_2026-07-16_14.16.24.jpeg",
      "caption": "Amber Current",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Ember",
@@ -806,7 +834,8 @@
      "type": "image",
      "src": "/images/photo_2026-07-16_14.16.44.jpeg",
      "caption": "Deep Horizon",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Serene",
@@ -826,7 +855,8 @@
      "type": "image",
      "src": "/images/photo_2026-07-16_14.17.04.jpeg",
      "caption": "Soft Petal",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Vivid",
@@ -846,7 +876,8 @@
      "type": "image",
      "src": "/images/photo_2026-07-16_14.16.53.jpeg",
      "caption": "Golden Hillside",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Muse",
@@ -866,7 +897,8 @@
      "type": "image",
      "src": "/images/cf616f78edd58.png",
      "caption": "Morning Harbor",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Vivid",
@@ -886,7 +918,8 @@
      "type": "image",
      "src": "/images/a6ab44b7575c8.png",
      "caption": "Still Petal",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Vivid",
@@ -906,7 +939,8 @@
      "type": "image",
      "src": "/images/9b7b474e4a5e2.jpg",
      "caption": "Bright Veil",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Vivid",
@@ -926,7 +960,8 @@
      "type": "image",
      "src": "/images/9532d3c7d5d9c.jpg",
      "caption": "Faded Meadow",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Vivid",
@@ -946,7 +981,8 @@
      "type": "image",
      "src": "/images/e23e1375aacf9.png",
      "caption": "Deep Veil",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Vivid",
@@ -966,7 +1002,8 @@
      "type": "image",
      "src": "/images/069af310e5866.png",
      "caption": "Faded Shadow",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Inspire",
@@ -986,7 +1023,8 @@
      "type": "image",
      "src": "/images/92b84f6dc2382.webp",
      "caption": "Silent Harbor",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Reflect",
@@ -1006,7 +1044,8 @@
      "type": "image",
      "src": "/images/photo_2026-07-16_14.16.55.jpeg",
      "caption": "Soft Meadow",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Serene",
@@ -1026,7 +1065,8 @@
      "type": "image",
      "src": "/images/88d6731cc43a6.jpg",
      "caption": "Faded Harbor",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Reflect",
@@ -1046,7 +1086,8 @@
      "type": "image",
      "src": "/images/e1bc8b97eaea9.png",
      "caption": "Deep Field",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Enrich",
