@@ -68,8 +68,13 @@ function stop() {
   removeEventListener('pointermove', onPointer);
 }
 
-/* apply(background) — called on every route change with that view's own setting */
-function apply(bg) {
+/* apply(background, opts) — called on every route change with that view's own setting.
+   opts.transition mirrors the admin's 화면 전환 (content.meta.transition): in 'fade' the page's
+   background does not hard-swap when it changes from one picture to another — the old one fades out
+   and the new one fades up in its place, the same fade the views take. In the default ('flip') the
+   background swaps under the flight as it always did. */
+function apply(bg, opts) {
+  const prevSrc = cfg.src;                      // the picture we are leaving, read before cfg is overwritten
   cfg = {
     src: (bg && bg.src) || '',
     motion: MOTIONS.includes(bg && bg.motion) ? bg.motion : 'none',
@@ -81,39 +86,57 @@ function apply(bg) {
   token += 1;                                  // a route change mid-load must not be overtaken
   const mine = token;
 
-  if (!cfg.src || cfg.motion === 'none') {
-    el.style.opacity = '0';
-    document.body.classList.remove('has-bg');
-    /* let the fade finish before the picture is dropped, or it vanishes instead of fading */
-    setTimeout(() => { if (token === mine) el.style.backgroundImage = ''; }, 600);
-    return;
-  }
-  /* a page that paints its own ground (About is black) has to know a picture is behind it,
-     or it simply covers the picture up */
-  document.body.classList.add('has-bg');
+  /* the reveal proper — pulled out so a fade-mode picture change can run it after the old one has
+     faded out. Drops the layer when there is nothing to show, else decodes the new picture and fades
+     it up on the frame after. */
+  const reveal = () => {
+    if (token !== mine) return;
+    if (!cfg.src || cfg.motion === 'none') {
+      el.style.opacity = '0';
+      document.body.classList.remove('has-bg');
+      /* let the fade finish before the picture is dropped, or it vanishes instead of fading */
+      setTimeout(() => { if (token === mine) el.style.backgroundImage = ''; }, 600);
+      return;
+    }
+    /* a page that paints its own ground (About is black) has to know a picture is behind it,
+       or it simply covers the picture up */
+    document.body.classList.add('has-bg');
 
-  /* The background used to appear in the same frame it was asked for: the layer was created,
-     given its picture and its final opacity at once, so the browser had no earlier value to
-     ease from and the picture arrived undecoded — it snapped in, whole, over a page that was
-     still sliding into place. Decode first, and only then fade, on the frame after. */
-  const pre = new Image();
-  pre.src = window.LSEData.asset(cfg.src);
-  const show = () => {
-    if (token !== mine) return;                // a later route already took over
-    el.style.backgroundImage = 'url("' + window.LSEData.asset(cfg.src) + '")';
-    el.style.transform = 'translate3d(0,0,0)';
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (token !== mine) return;
-      el.style.opacity = String(Math.max(0, Math.min(1, cfg.opacity)));
-    }));
+    /* The background used to appear in the same frame it was asked for: the layer was created,
+       given its picture and its final opacity at once, so the browser had no earlier value to
+       ease from and the picture arrived undecoded — it snapped in, whole, over a page that was
+       still sliding into place. Decode first, and only then fade, on the frame after. */
+    const pre = new Image();
+    pre.src = window.LSEData.asset(cfg.src);
+    const show = () => {
+      if (token !== mine) return;              // a later route already took over
+      el.style.backgroundImage = 'url("' + window.LSEData.asset(cfg.src) + '")';
+      el.style.transform = 'translate3d(0,0,0)';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (token !== mine) return;
+        el.style.opacity = String(Math.max(0, Math.min(1, cfg.opacity)));
+      }));
 
-    if (cfg.motion === 'fixed') return;        // nothing to drive: it simply sits there
-    mx = my = cx = cy = 0;
-    scrollY = currentScroll();
-    addEventListener('pointermove', onPointer, { passive: true });
-    raf = requestAnimationFrame(frame);
+      if (cfg.motion === 'fixed') return;      // nothing to drive: it simply sits there
+      mx = my = cx = cy = 0;
+      scrollY = currentScroll();
+      addEventListener('pointermove', onPointer, { passive: true });
+      raf = requestAnimationFrame(frame);
+    };
+    (pre.decode ? pre.decode().catch(() => {}) : Promise.resolve()).then(show);
   };
-  (pre.decode ? pre.decode().catch(() => {}) : Promise.resolve()).then(show);
+
+  /* fade mode, and the picture is genuinely changing from one to another (not merely appearing on a
+     bare page — the reveal already fades that in): fade the old one out first, then reveal the new one
+     in its place. The 600ms matches the .6s opacity transition on .site-bg. */
+  const fadingBetween = opts && opts.transition === 'fade' &&
+    prevSrc && cfg.src && prevSrc !== cfg.src && el.style.backgroundImage;
+  if (fadingBetween) {
+    el.style.opacity = '0';
+    setTimeout(reveal, 600);
+  } else {
+    reveal();
+  }
 }
 
 /* the layer exists from the start, transparent: a transition needs something to ease from */
