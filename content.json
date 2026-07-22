@@ -30,14 +30,14 @@
      "src": "/images/ca673fec5b6b7.webp",
      "caption": "z",
      "align": "left",
-     "size": "full"
+     "size": "half"
     },
     {
      "type": "image",
      "src": "/images/ca673fec5b6b7.webp",
      "caption": "zz",
      "align": "right",
-     "size": "full"
+     "size": "half"
     }
    ],
    "category": "Enrich",
