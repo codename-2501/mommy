@@ -540,12 +540,19 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
      foreshortened on-screen width, so a flight that simply unwinds the angle would widen the card before it
      settles (a grow-then-shrink bump). The deck-exit flight solves that by driving the projected width down
      monotonically (see monotoneShrink in app.js) — the card only ever shrinks into its cell, no bump. */
-  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
-  const mobile = innerWidth <= 699;
-  const cardW = 20 * rem;
-  const colGap = (mobile ? 1 : 2) * rem;
-  const perRow = mobile ? 4 : Math.max(1, Math.floor((innerWidth - 4 * rem + colGap) / (cardW + colGap)));
-  const gridCols = mobile ? 'repeat(4,1fr)' : 'repeat(' + perRow + ',' + Math.round(cardW) + 'px)';
+  /* read fresh on every build so a window resize reflows the grid: the desktop packs as many 20rem
+     cells across as fit (and re-rows them), a phone always holds four. Kept mutable, not const, for
+     exactly that — the layout used to be measured once at mount and a desktop resize did nothing. */
+  let rem, mobile, cardW, colGap, perRow, gridCols;
+  function relayout() {
+    rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 10;
+    mobile = innerWidth <= 699;
+    cardW = 20 * rem;
+    colGap = (mobile ? 1 : 2) * rem;
+    perRow = mobile ? 4 : Math.max(1, Math.floor((innerWidth - 4 * rem + colGap) / (cardW + colGap)));
+    gridCols = mobile ? 'repeat(4,1fr)' : 'repeat(' + perRow + ',' + Math.round(cardW) + 'px)';
+  }
+  relayout();
   const years = yearsByMonth(slides);
 
   /* the grid is torn down and laid out again on every sort change; the month bands only mean
@@ -567,6 +574,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   let buildRAF = 0;
   function buildGrid() {
     if (buildRAF) { cancelAnimationFrame(buildRAF); buildRAF = 0; }
+    relayout();   // read the current width so a resize re-rows the grid to fit
     let pairs = orderIndex(slides, colors, indexSort, indexSizeDir);
     if (indexSort === 'color' && indexColor) pairs = pairs.filter((p) => bucketOfPair(p) === indexColor);
     orderedIds = pairs.map((p) => p.s.id);   // the order (and colour filter) the detail pages through
@@ -768,6 +776,11 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   function onResize() {
     wmFoot = null; barH = null; frame0 = null; lastS = -1;
     placeBlob(false);
+    /* re-row the grid when the width now fits a different number of columns (or crosses the phone
+       breakpoint) — a fixed-count layout read once at mount ignored the resize entirely */
+    const wasRow = perRow, wasMobile = mobile;
+    relayout();
+    if (perRow !== wasRow || mobile !== wasMobile) buildGrid();
   }
   if (isMobile) {
     /* the title slides up and fades as the grid scrolls — a threshold toggle (CSS), not a per-frame
