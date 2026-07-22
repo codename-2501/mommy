@@ -13,10 +13,10 @@
 (() => {
 'use strict';
 
-const TICKS_PER_SLIDE = 8;      // ruler resolution: ticks between one painting and the next
-const TICK_GAP = 16;            // px between ruler ticks — 8 to a painting is 128px, wide enough that
-                               // even the longest month name ("September 2026" at its 15px cap, ~115px)
-                               // clears the next month's start, so short consecutive months never overlap
+const TICKS_PER_SLIDE = 12;     // ruler resolution: ticks between one painting and the next — 12 keeps
+                               // the original 12px grain (only the month boundaries spread) and gives a
+                               // painting 144px, clear of the widest month name ("September 2026", ~121px)
+const TICK_GAP = 12;           // px between ruler ticks
 const TICK_MH = 11, TICK_MJH = 24, TICK_ALPHA = 0.22;   // minor / month tick, resting opacity
 const LIVE_ALPHA = 0.62;        // the ticks of the month you are standing in
 const HOVER_NEAR = 9 * TICK_GAP, HOVER_BOOST = 20, HOVER_FALL = 0.5;   // cursor swells the ruler
