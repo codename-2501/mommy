@@ -686,21 +686,16 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     pal.appendChild(b);
     return b;
   });
-  /* On a phone the touch fling scrolls on the compositor and starves the main thread, so moving the
-     bar per-frame in script judders. There the bar rides INSIDE the scroller as position:sticky
-     (compositor) — mobile Safari has no scroll-timeline here, so .agrid carries no perspective and
-     sticky composites cleanly. On the desktop the bar stays fixed and script tracks the scroll. */
-  const isMobile = matchMedia('(max-width:699px)').matches;
-  let stick = null;
-  if (isMobile) {
-    stick = el('div', 'agrid__stick');
-    stick.appendChild(bar);
-    stick.appendChild(pal);
-    outer.insertBefore(stick, content);
-  } else {
-    view.appendChild(pal);
-    view.appendChild(bar);
-  }
+  /* At every width the bar and palette ride INSIDE the scroller as one sticky block (.agrid__stick), and
+     the grid that follows holds a constant CSS gap below it — so the bar->grid spacing no longer wanders
+     with the wordmark's measured foot on a desktop resize (that drift was the inconsistent gap). The
+     browser pins the block near the top on the compositor, smooth through a touch fling or a wheel; the
+     empty centred column lets taps fall through to the grid. (Sticky composites cleanly here because
+     .agrid carries no scroll-timeline perspective — see the tilt notes below.) */
+  const stick = el('div', 'agrid__stick');
+  stick.appendChild(bar);
+  stick.appendChild(pal);
+  outer.insertBefore(stick, content);
 
   /* the drop travels to the chosen option, drawing itself thin across the gap and rounding out
      where it lands — the bottom menu's move, scaled to a word. It resizes to each option, since
@@ -740,33 +735,11 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   paintBar();
 
   const wm = document.querySelector('.wordmark');
-  const STICKY_TOP = 18;   // where the desktop bar catches near the top — a gap, not flush against the edge
-
-  /* DESKTOP: the title and bar move by `translate` each frame, tracking the wheel scroll and catching
-     near the top. The grid scrolls on the compositor; moving them by `top` (a layout property, on the
-     main thread) would stutter against it, so they move by `translate`, which the compositor draws.
-     (A phone does none of this in script — the touch fling starves the main thread, so the bar is
-     position:sticky in the scroller and the title fades on a scroll-threshold toggle; see .agrid__stick
-     and body.index-scrolled. The bar's rest offset there is a CSS margin, not a measured one.) */
-  let frameRAF = 0, lastS = -1, frame0 = null, wmFoot = null, barH = null, onScroll = null;
-  function frameLoop(ts) {
-    if (frame0 === null) frame0 = ts;
-    const settling = ts - frame0 < 1700;   // the wordmark's rise lasts 1.5s
-    const s = outer.scrollTop;
-    if (s === lastS && !settling) { frameRAF = requestAnimationFrame(frameLoop); return; }
-    lastS = s;
-    if (wm) wm.style.translate = '0px ' + (-s) + 'px';   // the title slides up and out with the scroll
-    if (settling) {   // the wordmark may still be riding in — keep reading its rest foot (undo the scroll)
-      wmFoot = wm ? wm.getBoundingClientRect().bottom + s : 0;
-      if (barH === null) { const h = bar.getBoundingClientRect().height; if (h) barH = h; }
-    }
-    const restTop = Math.round((wmFoot || 0) + 16);
-    bar.style.top = restTop + 'px';
-    const off = Math.max(STICKY_TOP - restTop, -s);      // follow the title, then catch at STICKY_TOP
-    bar.style.translate = '0px ' + off + 'px';
-    if (barH !== null) { pal.style.top = (restTop + barH + 10) + 'px'; pal.style.translate = '0px ' + off + 'px'; }
-    frameRAF = requestAnimationFrame(frameLoop);
-  }
+  /* The bar rides in the scroller as position:sticky at every width now (see .agrid__stick), so nothing
+     positions it per frame. The title fades on a scroll-threshold toggle (body.index-scrolled, CSS) — no
+     per-frame tracking that a touch fling or wheel would fight on the main thread. frameRAF stays 0 and
+     is only here so destroy()'s cancelAnimationFrame is a harmless no-op. */
+  let frameRAF = 0, onScroll = null;
   /* The CSS grid re-flows itself on a resize (auto-fill), so there is no rebuild — but when the column
      count changes the cells jump to new slots, and that jump is animated with FLIP: read where each cell
      was, let the browser re-flow, then start each at its old spot and let it travel to the new one. Only
@@ -802,19 +775,14 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     flipCols = cols; flipRects = now;
   }
   function onResize() {
-    wmFoot = null; barH = null; frame0 = null; lastS = -1;
     placeBlob(false);
     flipReflow();
   }
-  if (isMobile) {
-    /* the title slides up and fades as the grid scrolls — a threshold toggle (CSS), not a per-frame
-       position, so nothing tracks the fling on the starved main thread */
-    onScroll = () => document.body.classList.toggle('index-scrolled', outer.scrollTop > 24);
-    outer.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-  } else {
-    frameRAF = requestAnimationFrame(frameLoop);
-  }
+  /* the title fades up and out as the grid scrolls — a threshold toggle (CSS) at every width, not a
+     per-frame position, so nothing tracks the fling on the starved main thread */
+  onScroll = () => document.body.classList.toggle('index-scrolled', outer.scrollTop > 24);
+  outer.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
   requestAnimationFrame(() => placeBlob(false));
   addEventListener('resize', onResize);
   requestAnimationFrame(() => requestAnimationFrame(flipReflow));   // seed the FLIP baseline once laid out
