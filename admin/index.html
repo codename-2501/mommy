@@ -1323,7 +1323,7 @@ $('#openSite').onclick=()=>window.open('/','_blank');
 window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();$('#save').click();}if(e.key==='Escape')closePicker();});
 
 /* 큰 글씨 모드: 토글 버튼 하나로 body.big 을 켜고 끈다. 기능은 그대로이고 표시 크기만 바뀐다.
-   선택은 localStorage 에 남아 다음 접속에도 유지된다. */
+   기본은 켜짐 — 처음 들어오면 큰 글씨로 시작한다. 사용자가 끄면('0' 저장) 그 선택이 유지된다. */
 (function(){
   const BK='lse-admin-big', btn=$('#bigToggle');
   const apply=on=>{
@@ -1331,7 +1331,7 @@ window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.
     btn.classList.toggle('primary',on); btn.classList.toggle('ghost',!on);
     btn.setAttribute('aria-pressed',on?'true':'false');
   };
-  apply(localStorage.getItem(BK)==='1');
+  apply(localStorage.getItem(BK)!=='0');   // 저장값이 명시적 '0'(끔)이 아니면 켠다 → 첫 접속 기본 ON
   btn.onclick=()=>{ const on=!document.body.classList.contains('big'); apply(on); localStorage.setItem(BK,on?'1':'0'); };
 })();
 
