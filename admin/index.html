@@ -132,6 +132,10 @@
   .flab{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em}
   .card-t{font-size:13px;font-weight:600;line-height:1.3;min-height:18px}
   .card-s{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+  /* 편집모달 미디어(상세 본문) 항목의 옵션 select·캡션: 인라인이던 폰트를 클래스로(값 동일) — 큰 글씨가 닿게 */
+  .msel,.mcap{background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:12px}
+  .mnote{font-size:11px;color:var(--mut)}
+  .mopts{display:flex;gap:6px}
 
   /* ===== 큰 글씨 모드 (70대 사용자용) =====
      header의 "큰 글씨" 버튼 하나로 body.big 을 켜고 끈다. 선택은 기억된다(localStorage).
@@ -173,6 +177,17 @@
   body.big .cv-date{flex-basis:150px}
   /* 카드·이미지 격자는 최소폭을 살짝 키워, 커진 버튼이 카드 안에서 억지로 접히지 않게 한다 */
   body.big .grid{grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr))}
+  /* 편집모달 미디어(상세 본문) 옵션 영역: 큰 글씨에서 select·캡션을 키우고, 좁으면 옵션이 줄바꿈되게 —
+     이 줄바꿈이 없으면 모바일에서 select 세 개가 한 줄에 끼여 글자가 안 보였다 */
+  body.big .msel,body.big .mcap{font-size:16px;padding:8px 10px}
+  body.big .mnote{font-size:14px}
+  body.big .mopts{gap:8px;flex-wrap:wrap}
+  body.big .mopts .msel{flex:1 1 auto;min-width:130px}
+  /* 좁은 폭에서는 미디어 항목을 세로로 쌓아, 썸네일·설명·옵션·이동버튼이 서로 밀지 않게 한다 */
+  @media (max-width:560px){
+    body.big .mrow{flex-wrap:wrap}
+    body.big .mrow .rowbtns{flex-direction:row;width:100%;justify-content:flex-end}
+  }
 </style>
 </head>
 <body>
@@ -790,13 +805,13 @@ function renderMediaList(){
   media.forEach((m,k)=>{
     const isVid=m.type==='video';
     const thumb=isVid ? `https://i.ytimg.com/vi/${ytId(m.videoId||m.url)}/hqdefault.jpg` : (m.src||m.image||'');
-    const selStyle='background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:12px';
     const posCtrl = P>0
-      ? `<select data-mk="${k}" data-mf="pos" title="본문 대비 세로 위치" style="flex:1;min-width:0;${selStyle}">${posOptions(P,m.pos)}</select>`
-      : `<div style="flex:1;font-size:11px;color:var(--mut);align-self:center">본문 없음</div>`;
-    const alignCtrl = `<select data-mk="${k}" data-mf="align" title="가로 정렬(종횡비 유지)" style="flex:0 0 auto;${selStyle}">${alignOptions(m.align)}</select>`;
-    const sizeCtrl = isVid ? '' : `<select data-mk="${k}" data-mf="size" title="이미지 크기(PC): 절반=본문 폭 50%, 원본=100%" style="flex:0 0 auto;${selStyle}">${sizeOptions(m.size)}</select>`;
+      ? `<select data-mk="${k}" data-mf="pos" title="본문 대비 세로 위치" class="msel" style="flex:1 1 auto;min-width:0">${posOptions(P,m.pos)}</select>`
+      : `<div class="mnote" style="flex:1 1 auto;align-self:center">본문 없음</div>`;
+    const alignCtrl = `<select data-mk="${k}" data-mf="align" title="가로 정렬(종횡비 유지)" class="msel" style="flex:0 1 auto">${alignOptions(m.align)}</select>`;
+    const sizeCtrl = isVid ? '' : `<select data-mk="${k}" data-mf="size" title="이미지 크기(PC): 절반=본문 폭 50%, 원본=100%" class="msel" style="flex:0 1 auto">${sizeOptions(m.size)}</select>`;
     const row=document.createElement('div');
+    row.className='mrow';
     row.style.cssText='display:flex;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px';
     row.innerHTML=`
       <div style="width:90px;height:64px;flex:0 0 auto;background:#000;border-radius:6px;overflow:hidden;position:relative">
@@ -805,8 +820,8 @@ function renderMediaList(){
       </div>
       <div style="flex:1;min-width:0">
         <div class="flab">${isVid?'영상':'이미지'} #${k+1}</div>
-        <input data-mk="${k}" data-mf="caption" value="${escAttr(m.caption)}" placeholder="캡션(선택)" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:12px">
-        <div style="display:flex;gap:6px;margin-top:5px">${posCtrl}${sizeCtrl}${alignCtrl}</div>
+        <input data-mk="${k}" data-mf="caption" value="${escAttr(m.caption)}" placeholder="캡션(선택)" class="mcap" style="width:100%;margin-top:4px">
+        <div class="mopts" style="margin-top:5px">${posCtrl}${sizeCtrl}${alignCtrl}</div>
       </div>
       <div class="rowbtns">
         <button class="btn sm" data-mact="up" data-mk="${k}">↑</button>
