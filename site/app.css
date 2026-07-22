@@ -115,6 +115,9 @@ img{max-width:100%;display:block}
   position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
   background:rgba(245,245,245,.9);opacity:0;transition:opacity .18s ease;
   touch-action:none;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  /* the peek is appended to <body>, outside the gallery views, so it needs its own guard: the enlarged
+     image is a preview, not selectable content — a long-press on it must not raise a callout or block. */
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
 }
 .lse-peek.on{opacity:1}
 .lse-peek img{
