@@ -775,15 +775,20 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
      fires on an actual count change, so a plain width drag (cells just stretch) costs nothing. */
   let flipCols = 0, flipRects = null;
   function flipReflow() {
-    const items = [...content.querySelectorAll('.agrid__cell,.agrid__month')];
-    /* cancel any in-flight FLIP so the rects read are the TRUE laid-out positions — a resize landing
-       mid-animation re-bases cleanly. Web Animations, not a transform+rAF dance, so nothing is left
-       stuck if a frame is dropped: the browser owns the from->to and reverts to no transform at the end. */
-    for (const it of items) for (const a of it.getAnimations()) if (a.id === 'agrid-flip') a.cancel();
     const cols = getComputedStyle(content).gridTemplateColumns.split(' ').length;
+    /* A drag fires resize every frame, but the cells only jump when the COLUMN COUNT changes — between
+       those the CSS 1fr stretch handles the width smoothly. Bail on an unchanged count so a running FLIP
+       is never cancelled a frame after it starts (that was the "no motion": the animation was killed by
+       the next resize before it could play). */
+    if (flipCols && cols === flipCols) return;
+    const items = [...content.querySelectorAll('.agrid__cell,.agrid__month')];
+    /* the count did change: cancel any in-flight FLIP so the rects read are TRUE laid-out positions, then
+       animate each cell from its old slot to the new one (Web Animations, so a dropped frame leaves
+       nothing stuck — the browser owns the from->to and reverts to no transform at the end) */
+    for (const it of items) for (const a of it.getAnimations()) if (a.id === 'agrid-flip') a.cancel();
     const now = new Map();
     for (const it of items) now.set(it, it.getBoundingClientRect());
-    if (flipRects && cols !== flipCols) {
+    if (flipRects) {
       for (const it of items) {
         const was = flipRects.get(it), is = now.get(it);
         if (!was) continue;
