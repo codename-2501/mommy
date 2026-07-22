@@ -182,6 +182,8 @@ function create(view, slides, opts) {
   /* ---------- the ticks, drawn on a canvas ---------- */
   let madeLabels = [];           // the label spans, with their region, for the sticky pin
   let litGroup = -1;             // the month whose name is lit
+  let liveW = 0;                 // the lit label's width AS A CAPSULE — wider than its resting m.w (the pill
+                                 // adds side padding), and it is this width the centre must be figured from
   let liveWorkIdx = 0;           // the exact work under the centre line — handed over so a view that
                                  // leaves for another lands it on the same work the ruler is showing
 
@@ -194,9 +196,12 @@ function create(view, slides, opts) {
   function stickyPin(lOff) {
     const centre = cw * 0.5;
     for (const m of madeLabels) {
+      /* the lit label rides as a capsule and is wider than the m.w measured at rest; centre it by that
+         wider width or the pill's padding pushes its text off the middle line */
+      const w = (m.el.classList.contains('is-live') && liveW) ? liveW : m.w;
       const left = m.at - lOff;                       // where it has naturally scrolled to
-      const target = centre - m.w * 0.5;              // centred on the middle line
-      let x = Math.min(target, (m.end - lOff) - m.w - STICKY_GAP);   // centred, then pushed by its end
+      const target = centre - w * 0.5;                // centred on the middle line
+      let x = Math.min(target, (m.end - lOff) - w - STICKY_GAP);   // centred, then pushed by its end
       if (x < left) x = left;                         // but never ahead of its natural scroll
       const extra = x - left;
       if (Math.abs(extra - m.extra) > 0.5) {
@@ -540,9 +545,14 @@ function create(view, slides, opts) {
   function markLive(gi) {
     if (gi === litGroup) return;
     litGroup = gi;
+    let liveEl = null;
     labelTrack.querySelectorAll('.ruler__label').forEach((l) => {
-      l.classList.toggle('is-live', +l.dataset.g === gi);
+      const on = +l.dataset.g === gi;
+      l.classList.toggle('is-live', on);
+      if (on) liveEl = l;
     });
+    /* read the capsule's width once, now that it is lit — not every frame in stickyPin */
+    liveW = liveEl ? liveEl.offsetWidth : 0;
   }
 
   function onEnter() { hover = true; }
