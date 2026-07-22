@@ -23,6 +23,18 @@
      "src": "/images/ca673fec5b6b7.webp",
      "caption": "Faded Hillside",
      "pos": 0
+    },
+    {
+     "type": "image",
+     "src": "/images/ca673fec5b6b7.webp",
+     "caption": "",
+     "align": "left"
+    },
+    {
+     "type": "image",
+     "src": "/images/ca673fec5b6b7.webp",
+     "caption": "",
+     "align": "right"
     }
    ]
   },
