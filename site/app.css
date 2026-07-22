@@ -748,7 +748,10 @@ html.is-resizing .wordmark{transition:none}
   align-items:start;justify-content:center;align-content:start;
   column-gap:clamp(1rem,2vw,2rem);
   row-gap:clamp(7rem,12vw,11.5rem);   /* the month names float in this gap, above each run's first cell */
-  padding:clamp(11rem,30vw,40rem) 2rem 2rem;
+  /* clear the fixed sort bar, which rides below the wordmark (~82px + 19.5vw from the top): the grid's
+     first row must start below it at every width, so the clearance tracks that line + a margin, not a
+     flat vw that shrank faster than the bar and let the first row slide up under it on a narrow window */
+  padding:clamp(12.5rem,calc(112px + 20vw),40rem) 2rem 2rem;
 }
 /* On a phone the tilt is not the script's to draw. iOS runs its momentum scroll on the
    compositor and the main thread does not get a frame in — the rows kept their angle from
