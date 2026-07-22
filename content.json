@@ -22,7 +22,8 @@
      "type": "image",
      "src": "/images/ca673fec5b6b7.webp",
      "caption": "Faded Hillside",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     },
     {
      "type": "image",
@@ -54,7 +55,8 @@
      "type": "image",
      "src": "/images/0b77ebf1938e1.jpg",
      "caption": "Silent Harbor",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Enrich",
@@ -74,7 +76,8 @@
      "type": "image",
      "src": "/images/d58c784d25981.png",
      "caption": "Silent Meadow",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Drift",
@@ -94,7 +97,8 @@
      "type": "image",
      "src": "/images/6e53b3796caa6.jpg",
      "caption": "Red Shadow",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Ember",
@@ -114,7 +118,8 @@
      "type": "image",
      "src": "/images/photo_2026-07-16_14.16.47.jpeg",
      "caption": "Quiet Water",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Showcase",
@@ -134,7 +139,8 @@
      "type": "image",
      "src": "/images/242f1689deb00.png",
      "caption": "Winter Tide",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Bloom",
@@ -154,7 +160,8 @@
      "type": "image",
      "src": "/images/a306ef91fe377.png",
      "caption": "Distant Veil",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Ember",
@@ -174,7 +181,8 @@
      "type": "image",
      "src": "/images/09ec9c9cf4ce0.png",
      "caption": "Morning Petal",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Bloom",
@@ -194,7 +202,8 @@
      "type": "image",
      "src": "/images/photo_2026-07-16_14.17.15.jpeg",
      "caption": "Silent Veil",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Bloom",
@@ -214,7 +223,8 @@
      "type": "image",
      "src": "/images/1c91f200eb441.png",
      "caption": "Distant Horizon",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Showcase",
@@ -234,7 +244,8 @@
      "type": "image",
      "src": "/images/8f0c56e5291b1.png",
      "caption": "Silent Hillside",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Enrich",
@@ -254,7 +265,8 @@
      "type": "image",
      "src": "/images/b996087ba4b81.png",
      "caption": "Golden Bloom",
-     "pos": 0
+     "pos": 0,
+     "size": "full"
     }
    ],
    "category": "Bloom",
