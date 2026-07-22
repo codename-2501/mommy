@@ -803,12 +803,18 @@ html.is-resizing .wordmark{transition:none}
 .agrid__stick{
   position:sticky;top:18px;z-index:16;   /* above the flip layer (15): arriving paintings pass under the bar */
   display:flex;flex-direction:column;align-items:center;
-  /* the bar rests just under the wordmark's foot. That foot is not a flat rem — the wordmark's type
-     carries a vw term (its box grows ~proportionally with the width) — so this tracks it with a matching
-     vw slope, holding the same tuck under the title at every width, and needs no per-frame measuring that
-     could inflate on re-entry. */
-  margin-top:calc(121px + 5vw);
+  /* the bar rests just under the wordmark's foot + a small gap. That foot is not a flat rem — the
+     wordmark's type carries a vw term, so this tracks it with a matching vw slope and needs no per-frame
+     measuring that could inflate on re-entry. The wordmark itself rides UP by 6.5rem below 700 (it would
+     collide with the first month label there — see the media rule near .wordmark), so the bar follows it
+     up at the same 699 line: base value is the desktop foot (~118px + 10.5vw), the phone value below is
+     the lifted foot. Both hold a ~15-25px tuck under the title across their range. */
+  margin-top:calc(130px + 11vw);
   pointer-events:none;
+}
+@media (max-width:699px){
+  /* the wordmark is lifted 6.5rem here, so the bar sits higher to keep the same tuck under it */
+  .agrid__stick{margin-top:calc(121px + 5vw)}
 }
 .agrid__stick .agrid-sort{position:static;left:auto;top:auto;transform:none;pointer-events:auto}
 .agrid__stick .agrid-pal{
