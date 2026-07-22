@@ -36,7 +36,10 @@
      "caption": "zz",
      "align": "right"
     }
-   ]
+   ],
+   "category": "Enrich",
+   "size": "162.2 × 130.3 cm (100호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s1",
@@ -53,7 +56,10 @@
      "caption": "Silent Harbor",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Enrich",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s33",
@@ -70,7 +76,10 @@
      "caption": "Silent Meadow",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Drift",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s13",
@@ -87,7 +96,10 @@
      "caption": "Red Shadow",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Ember",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Watercolor on paper"
   },
   {
    "id": "n1784179185343_6",
@@ -104,7 +116,10 @@
      "caption": "Quiet Water",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Showcase",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s6",
@@ -121,7 +136,10 @@
      "caption": "Winter Tide",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Bloom",
+   "size": "162.2 × 130.3 cm (100호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s22",
@@ -138,7 +156,10 @@
      "caption": "Distant Veil",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Ember",
+   "size": "162.2 × 130.3 cm (100호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s0",
@@ -155,7 +176,10 @@
      "caption": "Morning Petal",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Bloom",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Gouache on paper"
   },
   {
    "id": "n1784179220375_13",
@@ -172,7 +196,10 @@
      "caption": "Silent Veil",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Bloom",
+   "size": "40.9 × 31.8 cm (6호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s4",
@@ -189,7 +216,10 @@
      "caption": "Distant Horizon",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Showcase",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s16",
@@ -206,7 +236,10 @@
      "caption": "Silent Hillside",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Enrich",
+   "size": "162.2 × 130.3 cm (100호)",
+   "ptype": "Watercolor on paper"
   },
   {
    "id": "s28",
@@ -223,7 +256,10 @@
      "caption": "Golden Bloom",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Bloom",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s12",
@@ -240,7 +276,10 @@
      "caption": "Quiet Current",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Showcase",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Gouache on paper"
   },
   {
    "id": "n1784179213675_11",
@@ -257,7 +296,10 @@
      "caption": "Golden Shadow",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Inspire",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Watercolor on paper"
   },
   {
    "id": "s8",
@@ -274,7 +316,10 @@
      "caption": "Silent Garden",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Ember",
+   "size": "162.2 × 130.3 cm (100호)",
+   "ptype": "Watercolor on paper"
   },
   {
    "id": "s27",
@@ -291,7 +336,10 @@
      "caption": "Silent Meadow",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Enrich",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s26",
@@ -308,7 +356,10 @@
      "caption": "Golden Petal",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Reflect",
+   "size": "162.2 × 130.3 cm (100호)",
+   "ptype": "Watercolor on paper"
   },
   {
    "id": "s5",
@@ -325,7 +376,10 @@
      "caption": "Amber Bloom",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Inspire",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s9",
@@ -342,7 +396,10 @@
      "caption": "Deep Veil",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Muse",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s29",
@@ -359,7 +416,10 @@
      "caption": "Pale Water",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Bloom",
+   "size": "40.9 × 31.8 cm (6호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s36",
@@ -376,7 +436,10 @@
      "caption": "Pale Water",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Enrich",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Gouache on paper"
   },
   {
    "id": "n1784179204159_9",
@@ -393,7 +456,10 @@
      "caption": "Still Harbor",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Drift",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s10",
@@ -410,7 +476,10 @@
      "caption": "Quiet Garden",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Inspire",
+   "size": "162.2 × 130.3 cm (100호)",
+   "ptype": "Watercolor on paper"
   },
   {
    "id": "n1784178921050_0",
@@ -427,7 +496,10 @@
      "caption": "Deep Echo",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Drift",
+   "size": "162.2 × 130.3 cm (100호)",
+   "ptype": "Watercolor on paper"
   },
   {
    "id": "s30",
@@ -444,7 +516,10 @@
      "caption": "Quiet Shadow",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Reflect",
+   "size": "40.9 × 31.8 cm (6호)",
+   "ptype": "Gouache on paper"
   },
   {
    "id": "n1784179130794_3",
@@ -461,7 +536,10 @@
      "caption": "Faded Bloom",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Inspire",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s3",
@@ -478,7 +556,10 @@
      "caption": "Distant Water",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Enrich",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s25",
@@ -495,7 +576,10 @@
      "caption": "Soft Field",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Vivid",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s14",
@@ -512,7 +596,10 @@
      "caption": "Faded Hillside",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Bloom",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Gouache on paper"
   },
   {
    "id": "s20",
@@ -529,7 +616,10 @@
      "caption": "Amber Harbor",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Inspire",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s7",
@@ -546,7 +636,10 @@
      "caption": "Golden Horizon",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Muse",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s24",
@@ -563,7 +656,10 @@
      "caption": "Pale Current",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Enrich",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Gouache on paper"
   },
   {
    "id": "n1784179217092_12",
@@ -580,7 +676,10 @@
      "caption": "Deep Water",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Enrich",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s11",
@@ -597,7 +696,10 @@
      "caption": "Still Hillside",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Vivid",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "n1784179106095_1",
@@ -614,7 +716,10 @@
      "caption": "Pale Harbor",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Reflect",
+   "size": "40.9 × 31.8 cm (6호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "n1784179171311_4",
@@ -631,7 +736,10 @@
      "caption": "Deep Echo",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Enrich",
+   "size": "40.9 × 31.8 cm (6호)",
+   "ptype": "Watercolor on paper"
   },
   {
    "id": "s2",
@@ -648,7 +756,10 @@
      "caption": "Golden Current",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Drift",
+   "size": "162.2 × 130.3 cm (100호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "n1784179117045_2",
@@ -665,7 +776,10 @@
      "caption": "Amber Current",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Ember",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Watercolor on paper"
   },
   {
    "id": "n1784179177828_5",
@@ -682,7 +796,10 @@
      "caption": "Deep Horizon",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Serene",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "n1784179209243_10",
@@ -699,7 +816,10 @@
      "caption": "Soft Petal",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Vivid",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "n1784179194194_7",
@@ -716,7 +836,10 @@
      "caption": "Golden Hillside",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Muse",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s32",
@@ -733,7 +856,10 @@
      "caption": "Morning Harbor",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Vivid",
+   "size": "53.0 × 45.5 cm (10호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s23",
@@ -750,7 +876,10 @@
      "caption": "Still Petal",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Vivid",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s21",
@@ -767,7 +896,10 @@
      "caption": "Bright Veil",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Vivid",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Gouache on paper"
   },
   {
    "id": "s18",
@@ -784,7 +916,10 @@
      "caption": "Faded Meadow",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Vivid",
+   "size": "90.9 × 72.7 cm (30호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "s35",
@@ -801,7 +936,10 @@
      "caption": "Deep Veil",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Vivid",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Gouache on paper"
   },
   {
    "id": "s37",
@@ -818,7 +956,10 @@
      "caption": "Faded Shadow",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Inspire",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Watercolor on paper"
   },
   {
    "id": "s17",
@@ -835,7 +976,10 @@
      "caption": "Silent Harbor",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Reflect",
+   "size": "162.2 × 130.3 cm (100호)",
+   "ptype": "Acrylic on canvas"
   },
   {
    "id": "n1784179199643_8",
@@ -852,7 +996,10 @@
      "caption": "Soft Meadow",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Serene",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Mixed media on canvas"
   },
   {
    "id": "s15",
@@ -869,7 +1016,10 @@
      "caption": "Faded Harbor",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Reflect",
+   "size": "72.7 × 60.6 cm (20호)",
+   "ptype": "Oil on canvas"
   },
   {
    "id": "s34",
@@ -886,7 +1036,10 @@
      "caption": "Deep Field",
      "pos": 0
     }
-   ]
+   ],
+   "category": "Enrich",
+   "size": "116.8 × 91.0 cm (50호)",
+   "ptype": "Mixed media on canvas"
   }
  ],
  "wordmark": {
