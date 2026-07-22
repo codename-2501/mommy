@@ -666,12 +666,12 @@ function handOverIndex(fromPath, toArticles, oldCar, oldEl, oldInst) {
   } else if (fromPath === '/articles' && oldEl) {
     const mid = innerHeight / 2;
     let best = null, bestD = Infinity;
-    for (const row of oldEl.querySelectorAll('.lse-row')) {
-      const d = Math.abs(row.getBoundingClientRect().top - mid);
-      if (d < bestD) { bestD = d; best = row; }
+    for (const cell of oldEl.querySelectorAll('.agrid__cell[data-index]')) {
+      const r = cell.getBoundingClientRect();
+      const d = Math.abs((r.top + r.bottom) / 2 - mid);
+      if (d < bestD) { bestD = d; best = cell; }
     }
-    const cell = best && best.querySelector('[data-index]');
-    idx = cell ? parseInt(cell.dataset.index, 10) || 0 : 0;
+    idx = best ? parseInt(best.dataset.index, 10) || 0 : 0;
   }
   document.body.dataset.index = String(idx);
 }
