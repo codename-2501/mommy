@@ -127,6 +127,12 @@
   .pick:hover{border-color:#4a4d57}
   .pick__meta{position:absolute;left:0;right:0;bottom:0;padding:3px 5px;font-size:10px;line-height:1.3;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.72));text-shadow:0 1px 2px #000;pointer-events:none;font-variant-numeric:tabular-nums}
 
+  /* 인라인으로 흩어져 있던 라벨/카드 텍스트를 클래스로 모은다(값은 기존과 동일 — 일반 모드는 그대로).
+     클래스라야 큰 글씨 모드에서 함께 키울 수 있다: 인라인 font-size 는 스코프 규칙이 이길 수 없다. */
+  .flab{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em}
+  .card-t{font-size:13px;font-weight:600;line-height:1.3;min-height:18px}
+  .card-s{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+
   /* ===== 큰 글씨 모드 (70대 사용자용) =====
      header의 "큰 글씨" 버튼 하나로 body.big 을 켜고 끈다. 선택은 기억된다(localStorage).
      기존 규칙은 그대로 두고 이 스코프로만 덮으므로, 일반 모드의 화면은 전혀 바뀌지 않는다.
@@ -156,6 +162,17 @@
   body.big .sheet .sbody{padding:20px}
   body.big .picker{grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr));gap:14px}
   body.big .pick__meta{font-size:13px;padding:5px 8px}
+  /* 설명(라벨)·카드 텍스트도 함께 키운다 — 이제 클래스라 큰 글씨 모드가 닿는다 */
+  body.big .flab{font-size:15px}
+  body.big .card-t{font-size:16px}
+  body.big .card-s{font-size:13px}
+  body.big .hint,body.big .hint b{font-size:15px;line-height:1.6}
+  /* 고정폭은 큰 글씨에서 글자를 자르므로 넓혀 준다 — 옵션 라벨·선택칸·날짜칸 */
+  body.big .blk-opt > span{width:auto;min-width:56px}
+  body.big .blk-opt > .blk-sel{width:auto;min-width:150px}
+  body.big .cv-date{flex-basis:150px}
+  /* 카드·이미지 격자는 최소폭을 살짝 키워, 커진 버튼이 카드 안에서 억지로 접히지 않게 한다 */
+  body.big .grid{grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr))}
 </style>
 </head>
 <body>
@@ -171,7 +188,6 @@
   <button class="btn ghost" id="bigToggle" title="글씨와 버튼을 크게 봅니다 (다시 누르면 원래대로)" aria-pressed="false">큰 글씨</button>
   <button class="btn ghost" id="openSite">사이트 열기 ↗</button>
   <button class="btn primary" id="save">저장</button>
-  <button class="btn ghost" id="publish" title="저장된 내용을 공개 사이트(GitHub Pages)에 반영합니다">게시 ↑</button>
   <div class="status" id="status">불러오는 중…</div>
 </header>
 
@@ -336,26 +352,26 @@
           <button class="btn sm" id="editPickImg" style="width:100%;margin-top:8px">대표 이미지 변경</button>
         </div>
         <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:14px">
-          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">위 문구 (번호) · 자동</label>
+          <div><label class="flab">위 문구 (번호) · 자동</label>
             <input id="ed-top" readonly title="이미지 순서에 따라 자동 부여됩니다 (순서 변경 시 자동 갱신)" style="width:100%;margin-top:4px;background:#0a0b0e;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:9px 11px;cursor:not-allowed">
             <div style="font-size:11px;color:var(--mut);margin-top:4px">이미지 순서에 따라 자동 부여 — 순서를 바꾸면 번호도 자동으로 바뀝니다.</div></div>
-          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">카테고리 (뱃지)</label>
+          <div><label class="flab">카테고리 (뱃지)</label>
             <input id="ed-category" placeholder="예: Inspire / Showcase / Educate" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
             <div style="font-size:11px;color:var(--mut);margin-top:4px">상세·홈의 보라색 뱃지로 표시됩니다. 비우면 아래 문구의 괄호 앞부분을 사용.</div></div>
-          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">아래 문구 (홈 라벨)</label>
+          <div><label class="flab">아래 문구 (홈 라벨)</label>
             <input id="ed-bottom" placeholder="예: Inspire (March)" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
-          <div><label class="req" style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">날짜 (타임라인 연·월)</label>
+          <div><label class="req flab">날짜 (타임라인 연·월)</label>
             <input type="month" id="ed-date" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;color-scheme:dark">
             <div style="font-size:11px;color:var(--mut);margin-top:4px">하단 타임라인·좌우 순서가 이 날짜(연·월) 기준으로 정렬됩니다. 날짜순 모드에선 필수 — 비우면 작품이 맨 끝에 그룹 없이 묻힙니다.</div></div>
-          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">상세 제목 (클릭 시)</label>
+          <div><label class="flab">상세 제목 (클릭 시)</label>
             <input id="ed-title" placeholder="작품 제목" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
           <div style="display:flex;gap:10px">
-            <div style="flex:1"><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">제품 규격</label>
+            <div style="flex:1"><label class="flab">제품 규격</label>
               <input id="ed-size" placeholder="예: 72.7 × 60.6 cm (20호)" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
-            <div style="flex:1"><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">제품 타입</label>
+            <div style="flex:1"><label class="flab">제품 타입</label>
               <input id="ed-ptype" placeholder="예: Oil on canvas" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
           </div>
-          <div><label style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">상세 설명 (클릭 시)</label>
+          <div><label class="flab">상세 설명 (클릭 시)</label>
             <textarea id="ed-desc" placeholder="작품 설명…" style="width:100%;margin-top:4px;min-height:100px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:inherit;resize:vertical"></textarea></div>
         </div>
       </div>
@@ -388,7 +404,11 @@
 (function(){
   const KEY='lse_admin_key';
   const getKey=()=>localStorage.getItem(KEY)||'';
-  window.__promptKey=function(){ const k=prompt('관리자 키'); if(k){ localStorage.setItem(KEY,k.trim()); location.reload(); } };
+  window.__getKey=getKey;   // 삭제 확인 등에서 저장된 키와 대조할 때 쓴다
+  window.__promptKey=function(){ const k=prompt('관리자 비밀번호'); if(k){ localStorage.setItem(KEY,k.trim()); location.reload(); } };
+  /* 진입할 때 비밀번호를 먼저 받는다: 키가 없으면 화면을 열기 전에 한 번 묻고 시작한다.
+     (읽기는 키 없이도 되지만, 관리자 화면은 비밀번호를 넣고 들어오는 흐름이 자연스럽다) */
+  if(!getKey()){ const v=prompt('관리자 비밀번호를 입력하세요'); if(v) localStorage.setItem(KEY, v.trim()); }
   const orig=window.fetch.bind(window);
   window.fetch=function(url,opts){
     opts=Object.assign({},opts);
@@ -397,17 +417,27 @@
     if(isApi){ const h=new Headers(opts.headers||{}); const k=getKey(); if(k) h.set('X-Admin-Key',k); opts.headers=h; }
     return orig(url,opts).then(function(r){
       if(isApi && r.status===403){ localStorage.removeItem(KEY);
-        setTimeout(function(){ if(confirm('관리자 키가 필요하거나 틀렸습니다. 다시 입력할까요?')) window.__promptKey(); },30); }
+        setTimeout(function(){ if(confirm('관리자 비밀번호가 필요하거나 틀렸습니다. 다시 입력할까요?')) window.__promptKey(); },30); }
       return r;
     });
   };
   addEventListener('DOMContentLoaded',function(){
     const b=document.createElement('button');
-    b.textContent='🔑'; b.title='관리자 키 입력';
+    b.textContent='🔑'; b.title='관리자 비밀번호 입력';
     b.style.cssText='position:fixed;right:12px;bottom:12px;z-index:99999;width:40px;height:40px;border-radius:20px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:18px';
     b.onclick=window.__promptKey; document.body.appendChild(b);
   });
 })();
+/* 삭제 공통 게이트: 실수·오조작을 막기 위해 한 번 확인하고, 관리자 비밀번호까지 확인한 뒤에만 삭제한다.
+   저장된 키와 입력값을 대조하므로(서버도 헤더 키로 다시 인증한다) 비밀번호를 모르면 삭제되지 않는다. */
+function confirmDelete(msg){
+  if(!confirm(msg)) return false;
+  const key=(window.__getKey&&window.__getKey())||'';
+  const v=prompt('삭제하려면 관리자 비밀번호를 입력하세요');
+  if(v===null) return false;   // 취소
+  if(!key || v.trim()!==key){ alert('비밀번호가 일치하지 않아 삭제를 취소했습니다.'); return false; }
+  return true;
+}
 /* downscale a picked image in the browser before upload: keeps the request under the serverless body
    limit AND the repo lean, while 2400px is ample for the web (the build makes the small thumbs anyway). */
 async function downscaleToDataURL(file, max, quality){
@@ -424,22 +454,10 @@ async function downscaleToDataURL(file, max, quality){
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 let cfg=null, images=[], imageInfo={}, imageSizes={}, imageDates={}, imageDims={}, imgSort='date-desc', pickTarget=null, curPage='/about', nid=0, baseVersion=null;
 function setStatus(m,c=''){const e=$('#status');e.textContent=m;e.className='status '+c;}
-/* 게시: 저장된 content.json + 이미지를 커밋·푸시하면 배포 워크플로우가 공개 사이트를 다시 빌드한다.
-   편집은 저장 시점에 로컬에만 반영되고, 게시가 그것을 인터넷으로 올린다. */
-$('#publish').addEventListener('click',async()=>{
-  if(dirtyState){ setStatus('먼저 저장하세요','err'); return; }
-  const b=$('#publish'); b.disabled=true; const label=b.textContent; b.textContent='게시 중…';
-  setStatus('공개 사이트에 게시 중… (빌드까지 1~2분)','');
-  try{
-    const r=await fetch('/api/publish',{method:'POST'}).then(r=>r.json());
-    if(r.error){ setStatus('게시 실패: '+r.error,'err'); }
-    else if(r.nothing){ setStatus('게시할 변경이 없습니다 (이미 최신)','ok'); }
-    else { setStatus('게시됨 · 1~2분 뒤 공개 사이트에 반영됩니다','ok'); }
-  }catch(e){ setStatus('게시 실패: '+e.message,'err'); }
-  b.disabled=false; b.textContent=label;
-});
+/* 별도의 "게시" 단계는 없다: 저장(/api/content)이 곧바로 repo 에 커밋되고, 그 커밋이 공개 사이트의
+   재빌드·배포를 트리거한다(Vercel). 저장하는 순간 이미 게시된 것이므로 게시 버튼은 두지 않는다. */
 let dirtyState=false;
-function dirty(){dirtyState=true;setStatus('저장되지 않은 변경 있음 (게시하려면 먼저 저장)','err');}
+function dirty(){dirtyState=true;setStatus('저장되지 않은 변경 있음 — [저장] 을 누르면 공개 사이트에 반영됩니다','err');}
 
 async function load(){
   const [c,im,pg]=await Promise.all([
@@ -606,8 +624,8 @@ function renderSlides(){
         <span class="change">이미지 변경</span>
       </div>
       <div class="fields">
-        <div style="font-size:13px;font-weight:600;line-height:1.3;min-height:18px">${esc(s.title)||'<span style="color:var(--mut);font-weight:400">제목 없음</span>'}</div>
-        <div style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em">${esc(s.bottom)||'—'} · 🎞 ${(s.media&&s.media.length)||1}</div>
+        <div class="card-t">${esc(s.title)||'<span style="color:var(--mut);font-weight:400">제목 없음</span>'}</div>
+        <div class="card-s">${esc(s.bottom)||'—'} · 🎞 ${(s.media&&s.media.length)||1}</div>
         <div class="rowbtns" style="margin-top:6px">
           <button class="btn sm primary" data-act="edit" data-i="${i}" style="flex:1">편집</button>
         </div>
@@ -638,7 +656,7 @@ $('#slideGrid').addEventListener('click',e=>{
   if(b.dataset.act==='up'&&i>0){[S[i-1],S[i]]=[S[i],S[i-1]];}
   if(b.dataset.act==='down'&&i<S.length-1){[S[i+1],S[i]]=[S[i],S[i+1]];}
   if(b.dataset.act==='dup'){const n={...S[i],id:'n'+Date.now()+'_'+(nid++)};S.splice(i+1,0,n);}
-  if(b.dataset.act==='del'){if(!confirm('#'+(i+1)+' 슬라이드를 삭제할까요?'))return;S.splice(i,1);}
+  if(b.dataset.act==='del'){if(!confirmDelete('#'+(i+1)+' 슬라이드를 삭제할까요?'))return;S.splice(i,1);}
   renderSlides(); dirty();
 });
 $('#addSlide').onclick=()=>{
@@ -786,7 +804,7 @@ function renderMediaList(){
         ${isVid?'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px">▶</span>':''}
       </div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em">${isVid?'영상':'이미지'} #${k+1}</div>
+        <div class="flab">${isVid?'영상':'이미지'} #${k+1}</div>
         <input data-mk="${k}" data-mf="caption" value="${escAttr(m.caption)}" placeholder="캡션(선택)" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:12px">
         <div style="display:flex;gap:6px;margin-top:5px">${posCtrl}${sizeCtrl}${alignCtrl}</div>
       </div>
@@ -921,8 +939,8 @@ $('#imgGrid').addEventListener('click',async e=>{
   const name=b.dataset.del, uses=imageUses(name);
   if(uses.length){
     const where=uses.map(([k,w])=>w?`${k}(${w})`:k).join(', ');
-    if(!confirm(`${name} 은(는) ${uses.length}곳에서 사용 중입니다:\n\n${where}\n\n삭제하면 그 자리의 이미지도 함께 제거됩니다. 계속할까요?`)) return;
-  } else if(!confirm(name+' 을(를) 삭제할까요?')) return;
+    if(!confirmDelete(`${name} 은(는) ${uses.length}곳에서 사용 중입니다:\n\n${where}\n\n삭제하면 그 자리의 이미지도 함께 제거됩니다. 계속할까요?`)) return;
+  } else if(!confirmDelete(name+' 을(를) 삭제할까요?')) return;
   const r=await fetch('/api/images?name='+encodeURIComponent(name)+(uses.length?'&force=1':''),{method:'DELETE'}).then(r=>r.json());
   if(r.error){setStatus('삭제 실패: '+r.error,'err');return;}
   images=images.filter(n=>n!==name);
@@ -1298,7 +1316,7 @@ $('#save').onclick=async()=>{
     if(r.error)throw new Error(r.error);
     baseVersion=r.version||null;
     dirtyState=false;
-    setStatus('저장 완료 · 게시하면 공개 사이트에 반영','ok');
+    setStatus('저장 완료 · 공개 사이트에 반영됩니다 (1~2분 뒤 보임)','ok');
   }catch(err){setStatus('저장 실패: '+err.message,'err');}
 };
 $('#openSite').onclick=()=>window.open('/','_blank');
