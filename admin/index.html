@@ -118,7 +118,11 @@
   .sheet .sbody{padding:16px;overflow:auto}
   .picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(110px,100%),1fr));gap:10px}
   .pick{position:relative;border:2px solid transparent;border-radius:8px;overflow:hidden;cursor:pointer;background:#000;aspect-ratio:1}
-  .pick img{width:100%;height:100%;object-fit:cover;display:block}
+  /* absolute-fill the aspect-ratio box: a plain height:100% child depends on a grid row height that
+     is itself waiting on the item's aspect-ratio — a circular size that mobile Safari resolves to the
+     image's full intrinsic height, so the thumbs overflowed their cells and overlapped. Taking the
+     image out of flow lets the item size from aspect-ratio alone. */
+  .pick img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
   .pick:hover{border-color:#4a4d57}
   .pick__meta{position:absolute;left:0;right:0;bottom:0;padding:3px 5px;font-size:10px;line-height:1.3;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.72));text-shadow:0 1px 2px #000;pointer-events:none;font-variant-numeric:tabular-nums}
 </style>
@@ -337,7 +341,7 @@
             <div class="sp" style="flex:1"></div>
             <label class="btn ghost sm" style="position:relative;overflow:hidden">업로드<input type="file" id="editPickUpload" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
             <button class="btn ghost sm" id="editPickerCancel">취소</button></div>
-          <div id="editPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;max-height:260px;overflow:auto"></div>
+          <div id="editPickerGrid" class="picker" style="max-height:260px;overflow:auto"></div>
         </div>
         <div class="hint" style="margin-top:10px">상세 클릭 시 이 순서대로 이미지·영상이 <b>세로로</b> 표시됩니다(원본 양식). 순서(위치)는 각 항목의 ↑ ↓ 로 조정합니다. 비우면 대표 이미지 1장만 나옵니다.</div>
       </div>
@@ -772,12 +776,11 @@ function showEditPicker(mode){
   const g=$('#editPickerGrid'); g.innerHTML='';
   sortedImages().forEach(name=>{   // recent-upload first, same as the main picker
     const d=document.createElement('div');
-    d.style.cssText='position:relative;aspect-ratio:1;background:#000;border-radius:6px;overflow:hidden;cursor:pointer;border:2px solid transparent';
+    d.className='pick';                            // reuse the main picker's tile — proven on mobile
     const sz=fmtSize(imageSizes[name]);
-    d.innerHTML=`<img loading="lazy" src="/images/${name}" style="width:100%;height:100%;object-fit:cover"><span class="pick__meta">${sz}</span>`;
+    d.innerHTML=`<img loading="lazy" src="/images/${name}"><span class="pick__meta">${sz}</span>`;
     const im2=d.querySelector('img'), lb2=d.querySelector('.pick__meta');
     im2.addEventListener('load',()=>{ if(im2.naturalWidth){ imageDims[name]=[im2.naturalWidth,im2.naturalHeight]; lb2.textContent=im2.naturalWidth+'×'+im2.naturalHeight+(sz?' · '+sz:''); } },{once:true});
-    d.onmouseenter=()=>d.style.borderColor='#4a4d57'; d.onmouseleave=()=>d.style.borderColor='transparent';
     d.onclick=()=>{
       const src='/images/'+name;
       if(editPickMode==='thumb'){ cfg.slides[editTarget].image=src; $('#editThumbImg').src=src; }
