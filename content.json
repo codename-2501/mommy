@@ -126,10 +126,17 @@
    "media": [
     {
      "type": "image",
+     "src": "/images/1000050509.jpg",
+     "caption": "수박",
+     "align": "left",
+     "pos": 0
+    },
+    {
+     "type": "image",
      "src": "/images/6e53b3796caa6.jpg",
      "caption": "Red Shadow",
-     "pos": 0,
-     "size": "full"
+     "size": "full",
+     "pos": 0
     }
    ],
    "category": "Ember",
