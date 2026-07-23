@@ -155,11 +155,14 @@
   /* 작은 설명·부제의 인라인 폰트는 CSS 변수로 바꿔 뒀다(--fs-sm/--fs-xs). 인라인은 스코프 규칙이
      못 이기지만 변수는 상속되므로, 여기서 값만 올리면 인라인 텍스트까지 큰 글씨에서 함께 커진다. */
   body.big{font-size:24px;--fs-sm:20px;--fs-xs:20px}
-  body.big header h1{font-size:21px}
-  body.big .tab{font-size:24px;padding:12px 20px;border-radius:10px}
+  /* 헤더는 조작·네비 영역이라 본문(24px)만큼 키우면 폰에서 여러 줄로 접혀 화면 절반을 먹는다.
+     헤더 요소만 19px 로 두고 여백을 줄여 줄 수를 관리한다(본문·입력·편집 버튼은 24px 그대로). */
+  body.big header h1{font-size:18px}
+  body.big .tab{font-size:19px;padding:9px 13px;border-radius:10px}
+  body.big header .btn{font-size:19px;padding:9px 14px}
   body.big .btn{font-size:24px;padding:13px 20px;border-radius:11px}
   body.big .btn.sm{font-size:21px;padding:9px 15px}
-  body.big .status{font-size:21px}
+  body.big .status{font-size:18px}
   body.big .count,body.big .hint,body.big .use,body.big .imgcard .spec,body.big .titem .orig{font-size:20px}
   /* 폼 전반: 큰 글씨에서 모든 입력요소를 하나의 기준으로 통일한다 — 글씨 18px, 안쪽 여백 9/11, 모서리 8px.
      이래야 나란히 놓인 입력·옵션의 높이와 좌우 라인이 어긋나지 않는다(인라인 여백도 대부분 9/11이라 맞물린다). */
@@ -173,7 +176,7 @@
   body.big .cv-date,body.big .cv-text{padding:9px 11px}
   /* 이미지 추가·편집 팝업은 화면을 크게 차지해 집중되게 하고, 고를 이미지 썸네일도 큼직하게 */
   body.big .modal{padding:clamp(8px,2vw,20px)}
-  body.big .sheet{width:min(1100px,98vw);max-height:94vh}
+  body.big .sheet{width:min(1100px,100%);max-height:94vh}   /* 100% = 모달 안쪽 폭(좌우 패딩 제외). 98vw + 패딩이 뷰포트를 넘어 횡스크롤 나던 것 해결 */
   body.big .sheet .shead{padding:18px 20px;font-size:24px}
   body.big .sheet .sbody{padding:20px}
   body.big .picker{grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr));gap:14px}
