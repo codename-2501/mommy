@@ -916,7 +916,12 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   const dropAnchor = () => { anchor = null; };
   outer.addEventListener('wheel', dropAnchor, { passive: true });
   outer.addEventListener('touchmove', dropAnchor, { passive: true });
-  return { ready, destroy, measure: sc.measure, scrollTo: sc.scrollTo, reset: () => sc.glideTo(0),
+  /* re-tap the active tab: back to the top AND to the first work. Dropping the anchor to 0 (not just
+     scrolling) means the next view's hand-over opens on the first painting — otherwise the grid kept
+     handing over the arrival work it was still anchored to, so a re-tapped index handed flow/timeline the
+     old centre instead of the first work unless you physically scrolled. */
+  return { ready, destroy, measure: sc.measure, scrollTo: sc.scrollTo,
+    reset: () => { anchor = 0; sc.glideTo(0); },
     order: () => orderedIds.slice(),
     activeIndex: () => (anchor != null ? anchor : centerWork()),
     lockScroll: () => { outer.style.overflowY = 'hidden'; },
