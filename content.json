@@ -54,7 +54,10 @@
    ],
    "category": "Enrich",
    "size": "162.2 × 130.3 cm (100호)",
-   "ptype": "Oil on canvas"
+   "ptype": "Oil on canvas",
+   "w": "162.2",
+   "h": "130.3",
+   "ho": "100"
   },
   {
    "id": "s1",
@@ -75,7 +78,10 @@
    ],
    "category": "Enrich",
    "size": "53.0 × 45.5 cm (10호)",
-   "ptype": "Acrylic on canvas"
+   "ptype": "Acrylic on canvas",
+   "w": "53.0",
+   "h": "45.5",
+   "ho": "10"
   },
   {
    "id": "s33",
@@ -96,7 +102,10 @@
    ],
    "category": "Drift",
    "size": "116.8 × 91.0 cm (50호)",
-   "ptype": "Acrylic on canvas"
+   "ptype": "Acrylic on canvas",
+   "w": "116.8",
+   "h": "91.0",
+   "ho": "50"
   },
   {
    "id": "s13",
@@ -117,7 +126,10 @@
    ],
    "category": "Ember",
    "size": "53.0 × 45.5 cm (10호)",
-   "ptype": "Watercolor on paper"
+   "ptype": "Watercolor on paper",
+   "w": "53.0",
+   "h": "45.5",
+   "ho": "10"
   },
   {
    "id": "n1784179185343_6",
@@ -138,7 +150,10 @@
    ],
    "category": "Showcase",
    "size": "72.7 × 60.6 cm (20호)",
-   "ptype": "Acrylic on canvas"
+   "ptype": "Acrylic on canvas",
+   "w": "72.7",
+   "h": "60.6",
+   "ho": "20"
   },
   {
    "id": "s6",
@@ -159,7 +174,10 @@
    ],
    "category": "Bloom",
    "size": "162.2 × 130.3 cm (100호)",
-   "ptype": "Mixed media on canvas"
+   "ptype": "Mixed media on canvas",
+   "w": "162.2",
+   "h": "130.3",
+   "ho": "100"
   },
   {
    "id": "s22",
@@ -180,7 +198,10 @@
    ],
    "category": "Ember",
    "size": "162.2 × 130.3 cm (100호)",
-   "ptype": "Mixed media on canvas"
+   "ptype": "Mixed media on canvas",
+   "w": "162.2",
+   "h": "130.3",
+   "ho": "100"
   },
   {
    "id": "s0",
@@ -201,7 +222,10 @@
    ],
    "category": "Bloom",
    "size": "116.8 × 91.0 cm (50호)",
-   "ptype": "Gouache on paper"
+   "ptype": "Gouache on paper",
+   "w": "116.8",
+   "h": "91.0",
+   "ho": "50"
   },
   {
    "id": "n1784179220375_13",
@@ -222,7 +246,10 @@
    ],
    "category": "Bloom",
    "size": "40.9 × 31.8 cm (6호)",
-   "ptype": "Oil on canvas"
+   "ptype": "Oil on canvas",
+   "w": "40.9",
+   "h": "31.8",
+   "ho": "6"
   },
   {
    "id": "s4",
@@ -243,7 +270,10 @@
    ],
    "category": "Showcase",
    "size": "116.8 × 91.0 cm (50호)",
-   "ptype": "Mixed media on canvas"
+   "ptype": "Mixed media on canvas",
+   "w": "116.8",
+   "h": "91.0",
+   "ho": "50"
   },
   {
    "id": "s16",
@@ -264,7 +294,10 @@
    ],
    "category": "Enrich",
    "size": "162.2 × 130.3 cm (100호)",
-   "ptype": "Watercolor on paper"
+   "ptype": "Watercolor on paper",
+   "w": "162.2",
+   "h": "130.3",
+   "ho": "100"
   },
   {
    "id": "s28",
@@ -285,7 +318,10 @@
    ],
    "category": "Bloom",
    "size": "90.9 × 72.7 cm (30호)",
-   "ptype": "Acrylic on canvas"
+   "ptype": "Acrylic on canvas",
+   "w": "90.9",
+   "h": "72.7",
+   "ho": "30"
   },
   {
    "id": "s12",
@@ -306,7 +342,10 @@
    ],
    "category": "Showcase",
    "size": "53.0 × 45.5 cm (10호)",
-   "ptype": "Gouache on paper"
+   "ptype": "Gouache on paper",
+   "w": "53.0",
+   "h": "45.5",
+   "ho": "10"
   },
   {
    "id": "n1784179213675_11",
@@ -327,7 +366,10 @@
    ],
    "category": "Inspire",
    "size": "90.9 × 72.7 cm (30호)",
-   "ptype": "Watercolor on paper"
+   "ptype": "Watercolor on paper",
+   "w": "90.9",
+   "h": "72.7",
+   "ho": "30"
   },
   {
    "id": "s8",
@@ -348,7 +390,10 @@
    ],
    "category": "Ember",
    "size": "162.2 × 130.3 cm (100호)",
-   "ptype": "Watercolor on paper"
+   "ptype": "Watercolor on paper",
+   "w": "162.2",
+   "h": "130.3",
+   "ho": "100"
   },
   {
    "id": "s27",
@@ -369,7 +414,10 @@
    ],
    "category": "Enrich",
    "size": "116.8 × 91.0 cm (50호)",
-   "ptype": "Acrylic on canvas"
+   "ptype": "Acrylic on canvas",
+   "w": "116.8",
+   "h": "91.0",
+   "ho": "50"
   },
   {
    "id": "s26",
@@ -390,7 +438,10 @@
    ],
    "category": "Reflect",
    "size": "162.2 × 130.3 cm (100호)",
-   "ptype": "Watercolor on paper"
+   "ptype": "Watercolor on paper",
+   "w": "162.2",
+   "h": "130.3",
+   "ho": "100"
   },
   {
    "id": "s5",
@@ -411,7 +462,10 @@
    ],
    "category": "Inspire",
    "size": "90.9 × 72.7 cm (30호)",
-   "ptype": "Acrylic on canvas"
+   "ptype": "Acrylic on canvas",
+   "w": "90.9",
+   "h": "72.7",
+   "ho": "30"
   },
   {
    "id": "s9",
@@ -432,7 +486,10 @@
    ],
    "category": "Muse",
    "size": "116.8 × 91.0 cm (50호)",
-   "ptype": "Mixed media on canvas"
+   "ptype": "Mixed media on canvas",
+   "w": "116.8",
+   "h": "91.0",
+   "ho": "50"
   },
   {
    "id": "s29",
@@ -453,7 +510,10 @@
    ],
    "category": "Bloom",
    "size": "40.9 × 31.8 cm (6호)",
-   "ptype": "Oil on canvas"
+   "ptype": "Oil on canvas",
+   "w": "40.9",
+   "h": "31.8",
+   "ho": "6"
   },
   {
    "id": "s36",
@@ -474,7 +534,10 @@
    ],
    "category": "Enrich",
    "size": "72.7 × 60.6 cm (20호)",
-   "ptype": "Gouache on paper"
+   "ptype": "Gouache on paper",
+   "w": "72.7",
+   "h": "60.6",
+   "ho": "20"
   },
   {
    "id": "n1784179204159_9",
@@ -495,7 +558,10 @@
    ],
    "category": "Drift",
    "size": "116.8 × 91.0 cm (50호)",
-   "ptype": "Mixed media on canvas"
+   "ptype": "Mixed media on canvas",
+   "w": "116.8",
+   "h": "91.0",
+   "ho": "50"
   },
   {
    "id": "s10",
@@ -516,7 +582,10 @@
    ],
    "category": "Inspire",
    "size": "162.2 × 130.3 cm (100호)",
-   "ptype": "Watercolor on paper"
+   "ptype": "Watercolor on paper",
+   "w": "162.2",
+   "h": "130.3",
+   "ho": "100"
   },
   {
    "id": "n1784178921050_0",
@@ -537,7 +606,10 @@
    ],
    "category": "Drift",
    "size": "162.2 × 130.3 cm (100호)",
-   "ptype": "Watercolor on paper"
+   "ptype": "Watercolor on paper",
+   "w": "162.2",
+   "h": "130.3",
+   "ho": "100"
   },
   {
    "id": "s30",
@@ -558,7 +630,10 @@
    ],
    "category": "Reflect",
    "size": "40.9 × 31.8 cm (6호)",
-   "ptype": "Gouache on paper"
+   "ptype": "Gouache on paper",
+   "w": "40.9",
+   "h": "31.8",
+   "ho": "6"
   },
   {
    "id": "n1784179130794_3",
@@ -579,7 +654,10 @@
    ],
    "category": "Inspire",
    "size": "116.8 × 91.0 cm (50호)",
-   "ptype": "Acrylic on canvas"
+   "ptype": "Acrylic on canvas",
+   "w": "116.8",
+   "h": "91.0",
+   "ho": "50"
   },
   {
    "id": "s3",
@@ -600,7 +678,10 @@
    ],
    "category": "Enrich",
    "size": "72.7 × 60.6 cm (20호)",
-   "ptype": "Mixed media on canvas"
+   "ptype": "Mixed media on canvas",
+   "w": "72.7",
+   "h": "60.6",
+   "ho": "20"
   },
   {
    "id": "s25",
@@ -621,7 +702,10 @@
    ],
    "category": "Vivid",
    "size": "90.9 × 72.7 cm (30호)",
-   "ptype": "Oil on canvas"
+   "ptype": "Oil on canvas",
+   "w": "90.9",
+   "h": "72.7",
+   "ho": "30"
   },
   {
    "id": "s14",
@@ -642,7 +726,10 @@
    ],
    "category": "Bloom",
    "size": "72.7 × 60.6 cm (20호)",
-   "ptype": "Gouache on paper"
+   "ptype": "Gouache on paper",
+   "w": "72.7",
+   "h": "60.6",
+   "ho": "20"
   },
   {
    "id": "s20",
@@ -663,7 +750,10 @@
    ],
    "category": "Inspire",
    "size": "53.0 × 45.5 cm (10호)",
-   "ptype": "Acrylic on canvas"
+   "ptype": "Acrylic on canvas",
+   "w": "53.0",
+   "h": "45.5",
+   "ho": "10"
   },
   {
    "id": "s7",
@@ -684,7 +774,10 @@
    ],
    "category": "Muse",
    "size": "53.0 × 45.5 cm (10호)",
-   "ptype": "Mixed media on canvas"
+   "ptype": "Mixed media on canvas",
+   "w": "53.0",
+   "h": "45.5",
+   "ho": "10"
   },
   {
    "id": "s24",
@@ -705,7 +798,10 @@
    ],
    "category": "Enrich",
    "size": "72.7 × 60.6 cm (20호)",
-   "ptype": "Gouache on paper"
+   "ptype": "Gouache on paper",
+   "w": "72.7",
+   "h": "60.6",
+   "ho": "20"
   },
   {
    "id": "n1784179217092_12",
@@ -726,7 +822,10 @@
    ],
    "category": "Enrich",
    "size": "116.8 × 91.0 cm (50호)",
-   "ptype": "Oil on canvas"
+   "ptype": "Oil on canvas",
+   "w": "116.8",
+   "h": "91.0",
+   "ho": "50"
   },
   {
    "id": "s11",
@@ -747,7 +846,10 @@
    ],
    "category": "Vivid",
    "size": "72.7 × 60.6 cm (20호)",
-   "ptype": "Oil on canvas"
+   "ptype": "Oil on canvas",
+   "w": "72.7",
+   "h": "60.6",
+   "ho": "20"
   },
   {
    "id": "n1784179106095_1",
@@ -768,7 +870,10 @@
    ],
    "category": "Reflect",
    "size": "40.9 × 31.8 cm (6호)",
-   "ptype": "Mixed media on canvas"
+   "ptype": "Mixed media on canvas",
+   "w": "40.9",
+   "h": "31.8",
+   "ho": "6"
   },
   {
    "id": "n1784179171311_4",
@@ -789,7 +894,10 @@
    ],
    "category": "Enrich",
    "size": "40.9 × 31.8 cm (6호)",
-   "ptype": "Watercolor on paper"
+   "ptype": "Watercolor on paper",
+   "w": "40.9",
+   "h": "31.8",
+   "ho": "6"
   },
   {
    "id": "s2",
@@ -810,7 +918,10 @@
    ],
    "category": "Drift",
    "size": "162.2 × 130.3 cm (100호)",
-   "ptype": "Oil on canvas"
+   "ptype": "Oil on canvas",
+   "w": "162.2",
+   "h": "130.3",
+   "ho": "100"
   },
   {
    "id": "n1784179117045_2",
@@ -831,7 +942,10 @@
    ],
    "category": "Ember",
    "size": "90.9 × 72.7 cm (30호)",
-   "ptype": "Watercolor on paper"
+   "ptype": "Watercolor on paper",
+   "w": "90.9",
+   "h": "72.7",
+   "ho": "30"
   },
   {
    "id": "n1784179177828_5",
@@ -852,7 +966,10 @@
    ],
    "category": "Serene",
    "size": "90.9 × 72.7 cm (30호)",
-   "ptype": "Oil on canvas"
+   "ptype": "Oil on canvas",
+   "w": "90.9",
+   "h": "72.7",
+   "ho": "30"
   },
   {
    "id": "n1784179209243_10",
@@ -873,7 +990,10 @@
    ],
    "category": "Vivid",
    "size": "90.9 × 72.7 cm (30호)",
-   "ptype": "Oil on canvas"
+   "ptype": "Oil on canvas",
+   "w": "90.9",
+   "h": "72.7",
+   "ho": "30"
   },
   {
    "id": "n1784179194194_7",
@@ -894,7 +1014,10 @@
    ],
    "category": "Muse",
    "size": "53.0 × 45.5 cm (10호)",
-   "ptype": "Mixed media on canvas"
+   "ptype": "Mixed media on canvas",
+   "w": "53.0",
+   "h": "45.5",
+   "ho": "10"
   },
   {
    "id": "s32",
@@ -915,7 +1038,10 @@
    ],
    "category": "Vivid",
    "size": "53.0 × 45.5 cm (10호)",
-   "ptype": "Mixed media on canvas"
+   "ptype": "Mixed media on canvas",
+   "w": "53.0",
+   "h": "45.5",
+   "ho": "10"
   },
   {
    "id": "s23",
@@ -936,7 +1062,10 @@
    ],
    "category": "Vivid",
    "size": "116.8 × 91.0 cm (50호)",
-   "ptype": "Mixed media on canvas"
+   "ptype": "Mixed media on canvas",
+   "w": "116.8",
+   "h": "91.0",
+   "ho": "50"
   },
   {
    "id": "s21",
@@ -957,7 +1086,10 @@
    ],
    "category": "Vivid",
    "size": "72.7 × 60.6 cm (20호)",
-   "ptype": "Gouache on paper"
+   "ptype": "Gouache on paper",
+   "w": "72.7",
+   "h": "60.6",
+   "ho": "20"
   },
   {
    "id": "s18",
@@ -978,7 +1110,10 @@
    ],
    "category": "Vivid",
    "size": "90.9 × 72.7 cm (30호)",
-   "ptype": "Acrylic on canvas"
+   "ptype": "Acrylic on canvas",
+   "w": "90.9",
+   "h": "72.7",
+   "ho": "30"
   },
   {
    "id": "s35",
@@ -999,7 +1134,10 @@
    ],
    "category": "Vivid",
    "size": "72.7 × 60.6 cm (20호)",
-   "ptype": "Gouache on paper"
+   "ptype": "Gouache on paper",
+   "w": "72.7",
+   "h": "60.6",
+   "ho": "20"
   },
   {
    "id": "s37",
@@ -1020,7 +1158,10 @@
    ],
    "category": "Inspire",
    "size": "72.7 × 60.6 cm (20호)",
-   "ptype": "Watercolor on paper"
+   "ptype": "Watercolor on paper",
+   "w": "72.7",
+   "h": "60.6",
+   "ho": "20"
   },
   {
    "id": "s17",
@@ -1041,7 +1182,10 @@
    ],
    "category": "Reflect",
    "size": "162.2 × 130.3 cm (100호)",
-   "ptype": "Acrylic on canvas"
+   "ptype": "Acrylic on canvas",
+   "w": "162.2",
+   "h": "130.3",
+   "ho": "100"
   },
   {
    "id": "n1784179199643_8",
@@ -1062,7 +1206,10 @@
    ],
    "category": "Serene",
    "size": "72.7 × 60.6 cm (20호)",
-   "ptype": "Mixed media on canvas"
+   "ptype": "Mixed media on canvas",
+   "w": "72.7",
+   "h": "60.6",
+   "ho": "20"
   },
   {
    "id": "s15",
@@ -1083,7 +1230,10 @@
    ],
    "category": "Reflect",
    "size": "72.7 × 60.6 cm (20호)",
-   "ptype": "Oil on canvas"
+   "ptype": "Oil on canvas",
+   "w": "72.7",
+   "h": "60.6",
+   "ho": "20"
   },
   {
    "id": "s34",
@@ -1104,7 +1254,10 @@
    ],
    "category": "Enrich",
    "size": "116.8 × 91.0 cm (50호)",
-   "ptype": "Mixed media on canvas"
+   "ptype": "Mixed media on canvas",
+   "w": "116.8",
+   "h": "91.0",
+   "ho": "50"
   }
  ],
  "wordmark": {
