@@ -9,8 +9,9 @@
     /* 입력필드 전용: 배경은 패널보다 어둡게(파인 느낌), 테두리는 뚜렷하게 — 입력칸과 그 외 영역이 확실히 구분되게 */
     --field-bg:#0a0b0e;--field-line:#484d59}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font:14px/1.5 "Helvetica Neue",Arial,sans-serif;overflow-wrap:break-word}
-  /* 상속되는 overflow-wrap 로 긴 URL·파일명·붙여쓴 긴 단어가 상자를 넘지 않고 줄바꿈되게 한다(전역).
+  body{background:var(--bg);color:var(--ink);font:14px/1.5 "Helvetica Neue",Arial,sans-serif;overflow-wrap:break-word;word-break:keep-all}
+  /* 한국어는 word-break:keep-all 로 어절(띄어쓰기 단위)을 지켜 줄바꿈한다 — 기본값은 한글을 음절 아무 곳에서나
+     끊어 단어가 깨졌다. 공백 없는 긴 URL·영문·붙여쓴 긴 단어는 위 overflow-wrap:break-word 가 끊어 넘침을 막는다.
      white-space:nowrap 로 잘라 쓰는 곳(파일명 등)은 그 규칙이 우선이라 영향받지 않는다. */
   /* fluid: every row wraps and every min-width yields to the viewport, so the panel bends
      from phone to desktop on one layout — no second set of rules to keep in sync */
