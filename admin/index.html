@@ -264,6 +264,8 @@
   .imgpick{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .imgpick__body{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1 1 auto}
   .imgpick__btns{display:flex;gap:6px;flex-wrap:wrap}
+  .bgthumb{width:192px;height:120px}
+  @media (max-width:560px){ .bgthumb{width:100%;height:auto;aspect-ratio:16/9;max-height:240px} }   /* 좁은 화면: 배경 미리보기를 여백만 빼고 폭을 다 쓴다 */
   @media (max-width:560px){ .imgpick{flex-direction:column;align-items:stretch} }
   /* 스크롤로 헤더가 접히면 큰 글씨 토글·저장 버튼도 숨긴다 — 최상단으로 올려 헤더가 펼쳐졌을 때만 보인다. */
   body.big.scrolled #bigToggle,body.big.scrolled #save{display:none}
@@ -1123,7 +1125,7 @@ function renderBg(){
     const motion=BG_MOTION.some(([v])=>v===b.motion)?b.motion:'none';
     const op=b.opacity!=null?b.opacity:1;
     return `<div class="imgpick" style="background:var(--field-bg);border:1px solid var(--field-line);border-radius:10px;padding:10px">
-      <img src="${escAttr(b.src||'')}" style="width:192px;height:120px;object-fit:cover;border-radius:6px;background:var(--panel);border:1px solid var(--line);flex:none;max-width:100%;${b.src?'':'visibility:hidden'}">
+      <img class="bgthumb" src="${escAttr(b.src||'')}" style="object-fit:cover;border-radius:6px;background:var(--panel);border:1px solid var(--line);flex:none;${b.src?'':'visibility:hidden'}">
       <div class="imgpick__body">
         <div style="font-weight:600">${label}</div>
         <div class="imgpick__btns">
