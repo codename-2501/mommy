@@ -89,6 +89,7 @@
   .blk-add{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
   .blk__body{flex:1 1 min(260px,100%);min-width:0}
   .blk__nav{display:flex;gap:4px;flex:none;flex-direction:row}   /* ↑ ↓ 삭제를 한 줄(가로)로 */
+  .blk__nav .danger{order:-1;margin-right:auto}   /* 삭제는 왼쪽에, ↑ ↓ 는 오른쪽으로 — 실수 방지 */
   .blk-ta{width:100%;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;
     padding:12px 14px;resize:vertical;font-family:inherit;font-size:15px;line-height:1.7;min-height:96px}
   .blk-ta:focus{outline:none;border-color:#4a4d57}
@@ -349,7 +350,7 @@
       <div style="font-weight:600;margin-bottom:4px">로고 / 워드마크 <span style="color:var(--mut);font-weight:400;font-size:var(--fs-sm,12px)">(인트로·홈 상단)</span></div>
       <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:12px">워드마크 3줄을 편집합니다. 비워두면 기본값(LSE GALLERY)이 표시됩니다.</div>
       <div class="imgpick" style="margin-bottom:12px">
-        <img id="wm-img" style="height:72px;max-width:200px;object-fit:contain;border-radius:6px;background:var(--field-bg);border:1px solid var(--field-line);padding:4px">
+        <img id="wm-img" style="height:120px;max-width:280px;object-fit:contain;border-radius:6px;background:var(--field-bg);border:1px solid var(--field-line);padding:4px">
         <div class="imgpick__body">
           <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">이미지 로고 (선택) — 넣으면 아래 3줄 대신 이 이미지가 쓰입니다</div>
           <div class="imgpick__btns">
@@ -381,7 +382,7 @@
         <div class="site-row"><span class="site-lab">주소</span><input id="mt-url" placeholder="예: https://lse.pages.dev" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px">
           <div class="imgpick">
-            <img id="mt-fav-img" style="width:72px;height:72px;object-fit:cover;border-radius:8px;background:var(--field-bg);border:1px solid var(--field-line)">
+            <img id="mt-fav-img" style="width:140px;height:140px;object-fit:cover;border-radius:8px;background:var(--field-bg);border:1px solid var(--field-line)">
             <div class="imgpick__body">
               <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">파비콘</div>
               <div class="imgpick__btns">
@@ -391,7 +392,7 @@
             </div>
           </div>
           <div class="imgpick">
-            <img id="mt-og-img" style="width:128px;height:72px;object-fit:cover;border-radius:8px;background:var(--field-bg);border:1px solid var(--field-line)">
+            <img id="mt-og-img" style="width:213px;height:120px;object-fit:cover;border-radius:8px;background:var(--field-bg);border:1px solid var(--field-line);max-width:100%">
             <div class="imgpick__body">
               <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">공유 썸네일 (OG 이미지)</div>
               <div class="imgpick__btns">
@@ -1117,7 +1118,7 @@ function renderBg(){
     const motion=BG_MOTION.some(([v])=>v===b.motion)?b.motion:'none';
     const op=b.opacity!=null?b.opacity:1;
     return `<div class="imgpick" style="background:var(--field-bg);border:1px solid var(--field-line);border-radius:10px;padding:10px">
-      <img src="${escAttr(b.src||'')}" style="width:115px;height:72px;object-fit:cover;border-radius:6px;background:var(--panel);border:1px solid var(--line);flex:none;${b.src?'':'visibility:hidden'}">
+      <img src="${escAttr(b.src||'')}" style="width:192px;height:120px;object-fit:cover;border-radius:6px;background:var(--panel);border:1px solid var(--line);flex:none;max-width:100%;${b.src?'':'visibility:hidden'}">
       <div class="imgpick__body">
         <div style="font-weight:600">${label}</div>
         <div class="imgpick__btns">
@@ -1193,7 +1194,7 @@ function renderBlocks(){
     const nav=`<div class="blk__nav">
         <button class="btn ghost" data-up="${i}" ${i===0?'disabled':''}>↑</button>
         <button class="btn ghost" data-down="${i}" ${i===list.length-1?'disabled':''}>↓</button>
-        <button class="btn ghost" data-del="${i}">삭제</button>
+        <button class="btn ghost danger" data-del="${i}">삭제</button>
       </div>`;
     const tag=`<div style="flex:none;width:56px;font-size:var(--fs-sm,12px);color:var(--mut);padding-top:8px">${BLOCK_LABEL[b.type]||b.type}</div>`;
     /* 아래 여백은 블록 종류를 가리지 않는다 — 글·이미지·이력 모두 같은 컨트롤을 쓴다 */
@@ -1497,7 +1498,7 @@ window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.
        저장이 끝나 dirtyState 가 풀리면 다시 화면별 추가 버튼으로 돌아온다. */
     /* 저장 FAB 는 저장이 실제로 가능할 때만 — 필수 항목(모든 슬라이드의 이미지, 날짜순 모드면 날짜)이 다
        채워진 dirty 상태일 때 뜬다. 새 슬라이드를 막 만든 직후처럼 필수가 비면 뜨지 않는다(저장해도 거부되므로). */
-    if(dirtyState && canSave()){ fab.textContent='저장'; fab.onclick=()=>$('#save').click(); fab.classList.add('show','fab-save'); return; }
+    if(dirtyState && canSave()){ fab.textContent='일괄저장'; fab.onclick=()=>$('#save').click(); fab.classList.add('show','fab-save'); return; }
     fab.classList.remove('fab-save');
     const active=$('.tab.active'); const view=active?active.dataset.view:'slides';
     let label='', act=null;
