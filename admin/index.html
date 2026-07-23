@@ -740,11 +740,11 @@ $('#slideGrid').addEventListener('click',e=>{
   renderSlides(); dirty();
 });
 $('#addSlide').onclick=()=>{
-  const first=cfg.slides[0]||{};
-  /* 최상단에 만든다. 수동 정렬이면 배열 맨 앞(unshift)이 곧 맨 위. 날짜순(기본)이면 날짜가 순서를 정하므로,
-     맨 위(최신)로 오도록 이번 달 날짜를 넣어 둔다 — 실제 날짜는 편집에서 바꾸면 된다. */
+  /* 빈 새 슬라이드를 최상단에 만든다. 이미지는 비워 둔다 — 기존 이미지를 복사하면 '복제'처럼 보였다.
+     수동 정렬이면 배열 맨 앞(unshift)이 곧 맨 위. 날짜순(기본)이면 날짜가 순서를 정하므로, 맨 위로 오도록
+     이번 달 날짜를 넣어 둔다(실제 날짜·이미지는 편집에서 채우면 된다). */
   const n=new Date(); const ym=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';
-  cfg.slides.unshift({id:'n'+Date.now()+'_'+(nid++),image:first.image||(images[0]?'/images/'+images[0]:''),top:'1',bottom:'Inspire',date:ym});
+  cfg.slides.unshift({id:'n'+Date.now()+'_'+(nid++),image:'',top:'1',bottom:'Inspire',date:ym});
   renderSlides(); dirty(); window.scrollTo(0,0);   // 아래로 밀려 내려가지 않게 최상단으로
 };
 $('#qSlide').addEventListener('input',renderSlides);
