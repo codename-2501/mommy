@@ -247,6 +247,14 @@
   /* 입력요소가 자기 내용(특히 type=month/date 위젯)의 최소폭 때문에 부모를 넘어 가로 스크롤을 만들지 않게.
      min-width:0 로 그 최소폭을 풀고 max-width:100% 로 부모를 넘지 못하게 한다(모바일 횡스크롤 방지). */
   input,select,textarea{min-width:0;max-width:100%}
+  /* 이미지 선택 항목(로고·파비콘·OG·배경·블록 이미지): 데스크톱은 가로, 좁은 화면에선 썸네일이 위로 가고
+     아래에 설명·버튼·옵션이 세로로 쌓인다. 지움(삭제) 버튼은 묶음의 가장 왼쪽에 둔다(실수 방지). */
+  .imgpick{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .imgpick__body{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1 1 auto}
+  .imgpick__btns{display:flex;gap:6px;flex-wrap:wrap}
+  @media (max-width:560px){ .imgpick{flex-direction:column;align-items:stretch} }
+  /* 스크롤로 헤더가 접히면 큰 글씨 토글·저장 버튼도 숨긴다 — 최상단으로 올려 헤더가 펼쳐졌을 때만 보인다. */
+  body.big.scrolled #bigToggle,body.big.scrolled #save{display:none}
 </style>
 </head>
 <body>
@@ -334,12 +342,14 @@
     <div style="background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
       <div style="font-weight:600;margin-bottom:4px">로고 / 워드마크 <span style="color:var(--mut);font-weight:400;font-size:var(--fs-sm,12px)">(인트로·홈 상단)</span></div>
       <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:12px">워드마크 3줄을 편집합니다. 비워두면 기본값(LSE GALLERY)이 표시됩니다.</div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+      <div class="imgpick" style="margin-bottom:12px">
         <img id="wm-img" style="height:44px;max-width:180px;object-fit:contain;border-radius:6px;background:var(--field-bg);border:1px solid var(--field-line);padding:4px">
-        <div>
-          <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:4px">이미지 로고 (선택) — 넣으면 아래 3줄 대신 이 이미지가 쓰입니다</div>
-          <button class="btn ghost btn sm" id="pickLogo">이미지</button>
-          <button class="btn ghost btn sm" id="clearLogo">지움</button>
+        <div class="imgpick__body">
+          <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">이미지 로고 (선택) — 넣으면 아래 3줄 대신 이 이미지가 쓰입니다</div>
+          <div class="imgpick__btns">
+            <button class="btn ghost btn sm danger" id="clearLogo">지움</button>
+            <button class="btn ghost btn sm" id="pickLogo">이미지</button>
+          </div>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;max-width:min(520px,100%)">
@@ -364,20 +374,24 @@
         <div class="site-row"><span class="site-lab">설명</span><input id="mt-desc" placeholder="공유 시 제목 아래 문구" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
         <div class="site-row"><span class="site-lab">주소</span><input id="mt-url" placeholder="예: https://lse.pages.dev" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px">
-          <div style="display:flex;gap:10px;align-items:center">
+          <div class="imgpick">
             <img id="mt-fav-img" style="width:44px;height:44px;object-fit:cover;border-radius:8px;background:var(--field-bg);border:1px solid var(--field-line)">
-            <div>
-              <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:4px">파비콘</div>
-              <button class="btn ghost btn sm" id="pickFavicon">선택</button>
-              <button class="btn ghost btn sm" id="clearFavicon">지움</button>
+            <div class="imgpick__body">
+              <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">파비콘</div>
+              <div class="imgpick__btns">
+                <button class="btn ghost btn sm danger" id="clearFavicon">지움</button>
+                <button class="btn ghost btn sm" id="pickFavicon">선택</button>
+              </div>
             </div>
           </div>
-          <div style="display:flex;gap:10px;align-items:center">
+          <div class="imgpick">
             <img id="mt-og-img" style="width:78px;height:44px;object-fit:cover;border-radius:8px;background:var(--field-bg);border:1px solid var(--field-line)">
-            <div>
-              <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:4px">공유 썸네일 (OG 이미지)</div>
-              <button class="btn ghost btn sm" id="pickOg">선택</button>
-              <button class="btn ghost btn sm" id="clearOg">지움</button>
+            <div class="imgpick__body">
+              <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">공유 썸네일 (OG 이미지)</div>
+              <div class="imgpick__btns">
+                <button class="btn ghost btn sm danger" id="clearOg">지움</button>
+                <button class="btn ghost btn sm" id="pickOg">선택</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1088,17 +1102,23 @@ function renderBg(){
     const b=bgs[path]||{};
     const motion=BG_MOTION.some(([v])=>v===b.motion)?b.motion:'none';
     const op=b.opacity!=null?b.opacity:1;
-    return `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--field-bg);border:1px solid var(--field-line);border-radius:10px;padding:10px">
-      <div style="flex:none;width:120px;font-size:var(--fs-sm,13px)">${label}</div>
-      <img src="${escAttr(b.src||'')}" style="width:64px;height:40px;object-fit:cover;border-radius:6px;background:var(--panel);border:1px solid var(--line);${b.src?'':'visibility:hidden'}">
-      <button class="btn ghost btn sm" data-bgpick="${path}">이미지</button>
-      <button class="btn ghost btn sm" data-bgclear="${path}">지움</button>
-      <select class="blk-sel" data-bgmotion="${path}">
-        ${BG_MOTION.map(([v,l])=>`<option value="${v}"${v===motion?' selected':''}>${l}</option>`).join('')}
-      </select>
-      <label style="font-size:var(--fs-sm,12px);color:var(--mut)">투명도</label>
-      <input type="range" min="0.1" max="1" step="0.05" value="${op}" data-bgop="${path}" style="width:110px">
-      <span style="font-size:var(--fs-sm,12px);color:var(--mut);width:34px">${Number(op).toFixed(2)}</span>
+    return `<div class="imgpick" style="background:var(--field-bg);border:1px solid var(--field-line);border-radius:10px;padding:10px">
+      <img src="${escAttr(b.src||'')}" style="width:64px;height:40px;object-fit:cover;border-radius:6px;background:var(--panel);border:1px solid var(--line);flex:none;${b.src?'':'visibility:hidden'}">
+      <div class="imgpick__body">
+        <div style="font-weight:600">${label}</div>
+        <div class="imgpick__btns">
+          <button class="btn ghost btn sm danger" data-bgclear="${path}">지움</button>
+          <button class="btn ghost btn sm" data-bgpick="${path}">이미지</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select class="blk-sel" data-bgmotion="${path}">
+            ${BG_MOTION.map(([v,l])=>`<option value="${v}"${v===motion?' selected':''}>${l}</option>`).join('')}
+          </select>
+          <label style="font-size:var(--fs-sm,12px);color:var(--mut)">투명도</label>
+          <input type="range" min="0.1" max="1" step="0.05" value="${op}" data-bgop="${path}" style="width:110px;max-width:100%">
+          <span style="font-size:var(--fs-sm,12px);color:var(--mut);width:34px">${Number(op).toFixed(2)}</span>
+        </div>
+      </div>
     </div>`;
   }).join('');
 }
@@ -1175,9 +1195,9 @@ function renderBlocks(){
       const align=['left','right'].includes(b.align)?b.align:'center';
       const opt=(v,cur,label)=>`<option value="${v}"${v===cur?' selected':''}>${label}</option>`;
       body=`<div class="blk__body">
-           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+           <div class="imgpick">
              <img src="${escAttr(b.src||'')}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;flex:none">
-             <input class="cv-text" data-cap="${i}" value="${escAttr(b.caption||'')}" placeholder="설명 (선택)">
+             <input class="cv-text imgpick__body" data-cap="${i}" value="${escAttr(b.caption||'')}" placeholder="설명 (선택)">
            </div>
            <div class="blk-opts">
              <label class="blk-opt"><span>크기</span>
