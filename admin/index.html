@@ -235,6 +235,12 @@
   @media (max-width:699px){ .fab.show{display:inline-flex} #addSlide{display:none} }   /* 모바일: 상단 +슬라이드 추가는 하단 플로팅 버튼이 대신하므로 숨긴다 */
   body:has(.modal.open) .fab{display:none}
   body.big .fab{font-size:19px;padding:16px 24px}
+  .fab.fab-save{background:var(--ok)}   /* 저장할 게 있으면 FAB 가 저장 버튼으로 바뀐다 — 초록으로 구분 */
+  /* 저장 완료 등을 알리는 토스트: 화면 하단 가운데에서 잠깐 떴다 사라진다 */
+  .toast{position:fixed;left:50%;bottom:84px;transform:translate(-50%,10px);z-index:80;background:var(--ok);color:#08130c;
+    padding:12px 20px;border-radius:999px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.45);
+    opacity:0;transition:opacity .25s ease,transform .25s ease;pointer-events:none;white-space:nowrap;max-width:90vw}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
   /* 슬라이드 편집 상단 대표이미지 컬럼: 데스크톱은 240px 고정, 좁은 화면에선 폭을 다 써 이미지·버튼이 꽉 차게 */
   .ed-thumbcol{flex:0 0 240px}
   @media (max-width:560px){ .ed-thumbcol{flex:1 1 100%} }
@@ -536,7 +542,7 @@ function setStatus(m,c=''){const e=$('#status');e.textContent=m;e.className='sta
 /* 별도의 "게시" 단계는 없다: 저장(/api/content)이 곧바로 repo 에 커밋되고, 그 커밋이 공개 사이트의
    재빌드·배포를 트리거한다(Vercel). 저장하는 순간 이미 게시된 것이므로 게시 버튼은 두지 않는다. */
 let dirtyState=false;
-function dirty(){dirtyState=true;setStatus('저장되지 않은 변경 있음 — [저장] 을 누르면 공개 사이트에 반영됩니다','err');}
+function dirty(){dirtyState=true;setStatus('저장되지 않은 변경 있음 — [저장] 을 누르면 공개 사이트에 반영됩니다','err');if(window.updateFab)updateFab();}
 
 async function load(){
   const [c,im,pg]=await Promise.all([
@@ -1416,6 +1422,8 @@ $('#save').onclick=async()=>{
     baseVersion=r.version||null;
     dirtyState=false;
     setStatus('저장 완료 · 공개 사이트에 반영됩니다 (1~2분 뒤 보임)','ok');
+    if(window.updateFab)updateFab();   // 저장됐으니 저장 FAB 를 감추고 다시 추가 버튼으로
+    toast('저장되었습니다');
   }catch(err){setStatus('저장 실패: '+err.message,'err');}
 };
 $('#openSite').onclick=()=>window.open('/','_blank');
@@ -1446,6 +1454,10 @@ window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.
 (function(){
   const fab=$('#fab'); if(!fab) return;
   window.updateFab=function(){
+    /* 저장할 게 있으면(수정 발생) FAB 를 '저장'으로 바꾼다 — 추가보다 저장이 급하므로 우선한다.
+       저장이 끝나 dirtyState 가 풀리면 다시 화면별 추가 버튼으로 돌아온다. */
+    if(dirtyState){ fab.textContent='저장'; fab.onclick=()=>$('#save').click(); fab.classList.add('show','fab-save'); return; }
+    fab.classList.remove('fab-save');
     const active=$('.tab.active'); const view=active?active.dataset.view:'slides';
     let label='', act=null;
     if(view==='slides'){ label='+ 슬라이드'; act=()=>$('#addSlide').click(); }
@@ -1456,6 +1468,14 @@ window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.
   };
   updateFab();
 })();
+
+/* 화면 하단에 잠깐 뜨는 알림(토스트). 저장 완료 등을 알린다. */
+function toast(msg){
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, 2200);
+}
 
 load().catch(e=>setStatus('불러오기 실패: '+e.message,'err'));
 </script>
