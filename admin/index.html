@@ -228,6 +228,9 @@
   @media (max-width:699px){ .fab.show{display:inline-flex} }
   body:has(.modal.open) .fab{display:none}
   body.big .fab{font-size:19px;padding:16px 24px}
+  /* 슬라이드 편집 상단 대표이미지 컬럼: 데스크톱은 240px 고정, 좁은 화면에선 폭을 다 써 이미지·버튼이 꽉 차게 */
+  .ed-thumbcol{flex:0 0 240px}
+  @media (max-width:560px){ .ed-thumbcol{flex:1 1 100%} }
 </style>
 </head>
 <body>
@@ -400,13 +403,13 @@
       <button class="btn ghost sm" id="editClose">닫기</button></div>
     <div class="sbody" style="max-height:78vh;overflow:auto">
       <div style="display:flex;gap:20px;flex-wrap:wrap">
-        <div style="flex:0 0 240px">
+        <div class="ed-thumbcol">
           <div id="editThumb" style="aspect-ratio:4/3;background:#000;border-radius:8px;overflow:hidden;cursor:pointer;position:relative">
             <img id="editThumbImg" style="width:100%;height:100%;object-fit:cover">
           </div>
           <button class="btn sm" id="editPickImg" style="width:100%;margin-top:8px">대표 이미지 변경</button>
         </div>
-        <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:14px">
+        <div class="ed-fieldcol" style="flex:1;min-width:min(280px,100%);display:flex;flex-direction:column;gap:14px">
           <div><label class="flab">위 문구 (번호) · 자동</label>
             <input id="ed-top" readonly title="이미지 순서에 따라 자동 부여됩니다 (순서 변경 시 자동 갱신)" style="width:100%;margin-top:4px;background:#0a0b0e;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:9px 11px;cursor:not-allowed">
             <div style="font-size:var(--fs-xs,11px);color:var(--mut);margin-top:4px">이미지 순서에 따라 자동 부여 — 순서를 바꾸면 번호도 자동으로 바뀝니다.</div></div>
@@ -727,9 +730,12 @@ $('#slideGrid').addEventListener('click',e=>{
   renderSlides(); dirty();
 });
 $('#addSlide').onclick=()=>{
-  const last=cfg.slides[cfg.slides.length-1]||{};
-  cfg.slides.push({id:'n'+Date.now()+'_'+(nid++),image:last.image||(images[0]?'/images/'+images[0]:''),top:String(cfg.slides.length+1),bottom:'Inspire'});
-  renderSlides(); dirty(); window.scrollTo(0,document.body.scrollHeight);
+  const first=cfg.slides[0]||{};
+  /* 최상단에 만든다. 수동 정렬이면 배열 맨 앞(unshift)이 곧 맨 위. 날짜순(기본)이면 날짜가 순서를 정하므로,
+     맨 위(최신)로 오도록 이번 달 날짜를 넣어 둔다 — 실제 날짜는 편집에서 바꾸면 된다. */
+  const n=new Date(); const ym=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';
+  cfg.slides.unshift({id:'n'+Date.now()+'_'+(nid++),image:first.image||(images[0]?'/images/'+images[0]:''),top:'1',bottom:'Inspire',date:ym});
+  renderSlides(); dirty(); window.scrollTo(0,0);   // 아래로 밀려 내려가지 않게 최상단으로
 };
 $('#qSlide').addEventListener('input',renderSlides);
 $('#bulkBottom').onclick=()=>{
