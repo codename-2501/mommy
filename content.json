@@ -26,6 +26,12 @@
      "size": "full"
     },
     {
+     "type": "video",
+     "videoId": "GpIVSUmCO54",
+     "caption": "",
+     "align": "center"
+    },
+    {
      "type": "image",
      "src": "/images/ca673fec5b6b7.webp",
      "caption": "z",
@@ -43,12 +49,6 @@
      "type": "image",
      "src": "/images/valentin-beauvais-4YrVF0gVdjk-unsplash__1_.jpg",
      "caption": "ㅋㅋㅋ",
-     "align": "center"
-    },
-    {
-     "type": "video",
-     "videoId": "GpIVSUmCO54",
-     "caption": "",
      "align": "center"
     }
    ],
