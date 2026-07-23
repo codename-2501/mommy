@@ -122,7 +122,9 @@
   .modal.open{display:flex}
   .sheet{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(900px,96vw);max-height:86vh;display:flex;flex-direction:column}
   .sheet .shead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
-  .sheet .sbody{padding:16px;overflow:auto}
+  .sheet .sbody{padding:16px;overflow:auto;overscroll-behavior:contain}   /* 모달 안 스크롤이 끝에 닿아도 뒤 화면으로 넘어가지 않게(scroll chaining 차단) */
+  /* 모달이 열리면 뒤 화면 스크롤을 잠근다 — 모바일에서 편집 모달을 열었을 때 배경이 딸려 스크롤되던 것 방지 */
+  body:has(.modal.open){overflow:hidden}
   .picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(110px,100%),1fr));gap:10px}
   .pick{position:relative;border:2px solid transparent;border-radius:8px;overflow:hidden;cursor:pointer;background:#000}
   /* the square comes from the IMAGE, not the cell: aspect-ratio on the cell was ignored by mobile Safari
