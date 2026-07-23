@@ -219,6 +219,11 @@
   body.big.scrolled .tab{padding:6px 11px;font-size:16px}
   body.big.scrolled header .btn{padding:7px 12px;font-size:16px}   /* 헤더 버튼만 — 툴바(+슬라이드~일괄변경)는 스크롤해도 그대로 */
   body.big.scrolled .status{display:none}
+  /* 접힌 헤더: 로고를 '관리자'로 줄이고(앞부분 감춤) 사이트 열기를 그 오른쪽에 붙인다. 탭은 아래 한 줄로 내려
+     3줄이던 헤더가 2줄이 된다. (id 셀렉터의 order 가 먹지 않아 클래스로 건다) */
+  body.big.scrolled .hdr-full{display:none}
+  body.big.scrolled .hdr-open{order:1;margin-left:auto}
+  body.big.scrolled .tabs{order:2;flex-basis:100%}
   /* 모바일: 툴바의 밀대(spacer)를 접어 항목이 좌측부터 순서대로 붙게 한다 — 좁은 폭에서 개수와 정렬 컨트롤이
      양끝으로 벌어져 줄이 들쭉날쭉해 보이던 것 정리. 넓은 화면에선 그대로 정렬 컨트롤이 우측에 선다. */
   @media (max-width:560px){ .toolbar .sp{display:none} }
@@ -266,7 +271,7 @@
 </head>
 <body>
 <header>
-  <h1>LSE GALLERY · 관리자</h1>
+  <h1><span class="hdr-full">LSE GALLERY · </span>관리자</h1>
   <div class="tabs">
     <div class="tab active" data-view="slides">작품</div>
     <div class="tab" data-view="images">이미지</div>
@@ -275,7 +280,7 @@
   </div>
   <div class="sp"></div>
   <button class="btn ghost" id="bigToggle" title="글씨와 버튼을 크게 봅니다 (다시 누르면 원래대로)" aria-pressed="false">큰 글씨</button>
-  <button class="btn ghost" id="openSite">사이트 열기 ↗</button>
+  <button class="btn ghost hdr-open" id="openSite">사이트 열기 ↗</button>
   <button class="btn primary" id="save">저장</button>
   <div class="status" id="status">불러오는 중…</div>
 </header>
