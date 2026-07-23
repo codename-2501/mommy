@@ -266,6 +266,18 @@
   .imgpick__btns{display:flex;gap:6px;flex-wrap:wrap}
   .bgthumb{width:192px;height:120px}
   @media (max-width:560px){ .bgthumb{width:100%;height:auto;aspect-ratio:16/9;max-height:240px} }   /* 좁은 화면: 배경 미리보기를 여백만 빼고 폭을 다 쓴다 */
+  /* 로고/파비콘/OG 미리보기: 빈 영역도 테두리로 보이게 하고, 좁은 화면에선 폭을 다 쓴다 */
+  .imgpreview{position:relative;display:flex;align-items:center;justify-content:center;background:var(--field-bg);border:1px dashed var(--field-line);border-radius:8px;overflow:hidden;flex:none}
+  .imgpreview img{width:100%;height:100%;object-fit:cover;display:block}
+  .imgpreview--logo{width:280px;height:120px;max-width:100%}
+  .imgpreview--logo img{object-fit:contain;padding:4px}
+  .imgpreview--fav{width:140px;height:140px}
+  .imgpreview--og{width:213px;height:120px;max-width:100%}
+  .imgpreview__empty{position:absolute;color:var(--mut);font-size:var(--fs-sm,12px);pointer-events:none}
+  .imgpreview.has-img{border-style:solid}
+  .imgpreview.has-img .imgpreview__empty{display:none}
+  .imgpreview:not(.has-img) img{display:none}
+  @media (max-width:560px){ .imgpreview,.imgpreview--logo,.imgpreview--og{width:100%;height:auto;aspect-ratio:16/9} .imgpreview--fav{width:100%;aspect-ratio:1;max-width:200px} }
   @media (max-width:560px){ .imgpick{flex-direction:column;align-items:stretch} }
   /* 스크롤로 헤더가 접히면 큰 글씨 토글·저장 버튼도 숨긴다 — 최상단으로 올려 헤더가 펼쳐졌을 때만 보인다. */
   body.big.scrolled #bigToggle,body.big.scrolled #save{display:none}
@@ -357,12 +369,12 @@
       <div style="font-weight:600;margin-bottom:4px">로고 / 워드마크 <span style="color:var(--mut);font-weight:400;font-size:var(--fs-sm,12px)">(인트로·홈 상단)</span></div>
       <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:12px">워드마크 3줄을 편집합니다. 비워두면 기본값(LSE GALLERY)이 표시됩니다.</div>
       <div class="imgpick" style="margin-bottom:12px">
-        <img id="wm-img" style="height:120px;max-width:280px;object-fit:contain;border-radius:6px;background:var(--field-bg);border:1px solid var(--field-line);padding:4px">
+        <div class="imgpreview imgpreview--logo"><img id="wm-img"><span class="imgpreview__empty">빈 이미지 영역</span></div>
         <div class="imgpick__body">
           <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">이미지 로고 (선택) — 넣으면 아래 3줄 대신 이 이미지가 쓰입니다</div>
           <div class="imgpick__btns">
-            <button class="btn ghost btn sm danger" id="clearLogo">지움</button>
-            <button class="btn ghost btn sm" id="pickLogo">이미지</button>
+            <button class="btn sm danger" id="clearLogo">지움</button>
+            <button class="btn sm" id="pickLogo">이미지 적용</button>
           </div>
         </div>
       </div>
@@ -389,22 +401,22 @@
         <div class="site-row"><span class="site-lab">주소</span><input id="mt-url" placeholder="예: https://lse.pages.dev" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px">
           <div class="imgpick">
-            <img id="mt-fav-img" style="width:140px;height:140px;object-fit:cover;border-radius:8px;background:var(--field-bg);border:1px solid var(--field-line)">
+            <div class="imgpreview imgpreview--fav"><img id="mt-fav-img"><span class="imgpreview__empty">빈 이미지 영역</span></div>
             <div class="imgpick__body">
               <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">파비콘</div>
               <div class="imgpick__btns">
-                <button class="btn ghost btn sm danger" id="clearFavicon">지움</button>
-                <button class="btn ghost btn sm" id="pickFavicon">선택</button>
+                <button class="btn sm danger" id="clearFavicon">지움</button>
+                <button class="btn sm" id="pickFavicon">이미지 적용</button>
               </div>
             </div>
           </div>
           <div class="imgpick">
-            <img id="mt-og-img" style="width:213px;height:120px;object-fit:cover;border-radius:8px;background:var(--field-bg);border:1px solid var(--field-line);max-width:100%">
+            <div class="imgpreview imgpreview--og"><img id="mt-og-img"><span class="imgpreview__empty">빈 이미지 영역</span></div>
             <div class="imgpick__body">
               <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">공유 썸네일 (OG 이미지)</div>
               <div class="imgpick__btns">
-                <button class="btn ghost btn sm danger" id="clearOg">지움</button>
-                <button class="btn ghost btn sm" id="pickOg">선택</button>
+                <button class="btn sm danger" id="clearOg">지움</button>
+                <button class="btn sm" id="pickOg">이미지 적용</button>
               </div>
             </div>
           </div>
@@ -659,7 +671,7 @@ function loadWordmark(){
   const w=(cfg&&cfg.wordmark)||{};
   ['l1','l2','l3'].forEach(k=>{ const el=$('#wm-'+k); if(el) el.value=w[k]||''; });
   const img=$('#wm-img');
-  if(img){ img.src=w.image||''; img.style.visibility=w.image?'visible':'hidden'; }
+  if(img){ img.src=w.image||''; img.closest('.imgpreview')?.classList.toggle('has-img',!!w.image); }
   const cl=$('#clearLogo'); if(cl) cl.style.display=w.image?'':'none';   // 지움은 이미지가 있을 때만
 }
 function wmObj(){ if(!cfg.wordmark||typeof cfg.wordmark!=='object') cfg.wordmark={}; return cfg.wordmark; }
@@ -682,8 +694,8 @@ $('#mt-transition').addEventListener('change',()=>{ const v=$('#mt-transition').
 function renderMetaImages(){
   const m=siteMeta();
   const fav=$('#mt-fav-img'), og=$('#mt-og-img');
-  fav.src=m.favicon||''; fav.style.visibility=m.favicon?'visible':'hidden';
-  og.src=m.ogImage||'';  og.style.visibility=m.ogImage?'visible':'hidden';
+  fav.src=m.favicon||''; fav.closest('.imgpreview')?.classList.toggle('has-img',!!m.favicon);
+  og.src=m.ogImage||'';  og.closest('.imgpreview')?.classList.toggle('has-img',!!m.ogImage);
   const cf=$('#clearFavicon'), co=$('#clearOg');   // 지움은 이미지가 있을 때만
   if(cf) cf.style.display=m.favicon?'':'none';
   if(co) co.style.display=m.ogImage?'':'none';
