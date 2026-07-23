@@ -88,7 +88,7 @@
   .blk .grip2:active{cursor:grabbing}
   .blk-add{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
   .blk__body{flex:1 1 min(260px,100%);min-width:0}
-  .blk__nav{display:flex;gap:4px;flex:none;flex-direction:column}
+  .blk__nav{display:flex;gap:4px;flex:none;flex-direction:row}   /* ↑ ↓ 삭제를 한 줄(가로)로 */
   .blk-ta{width:100%;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;
     padding:12px 14px;resize:vertical;font-family:inherit;font-size:15px;line-height:1.7;min-height:96px}
   .blk-ta:focus{outline:none;border-color:#4a4d57}
@@ -232,10 +232,16 @@
   .fab{position:fixed;right:16px;bottom:16px;z-index:50;display:none;align-items:center;gap:6px;
     background:var(--acc);color:#fff;border:0;border-radius:999px;padding:14px 22px;font-size:17px;font-weight:600;
     box-shadow:0 6px 18px rgba(0,0,0,.45);cursor:pointer;white-space:nowrap}
-  @media (max-width:699px){ .fab.show{display:inline-flex} #addSlide{display:none} }   /* 모바일: 상단 +슬라이드 추가는 하단 플로팅 버튼이 대신하므로 숨긴다 */
+  @media (max-width:699px){ .fab.show{display:inline-flex} #addSlide,#uploadBtn{display:none} }   /* 모바일: 상단 +슬라이드 추가·이미지 업로드는 하단 플로팅 버튼이 대신하므로 숨긴다 */
   body:has(.modal.open) .fab{display:none}
   body.big .fab{font-size:19px;padding:16px 24px}
   .fab.fab-save{background:var(--ok)}   /* 저장할 게 있으면 FAB 가 저장 버튼으로 바뀐다 — 초록으로 구분 */
+  /* 페이지 화면 + FAB 가 여는 블록 종류 메뉴: FAB 위에 세로로 펼쳐진다 */
+  .blkmenu{position:fixed;right:16px;bottom:84px;z-index:55;display:none;flex-direction:column;gap:8px;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,.5);min-width:132px}
+  .blkmenu.open{display:flex}
+  .blkmenu .btn{text-align:center}
+  body:has(.modal.open) .blkmenu{display:none}
   /* 저장 완료 등을 알리는 토스트: 화면 하단 가운데에서 잠깐 떴다 사라진다 */
   .toast{position:fixed;left:50%;bottom:84px;transform:translate(-50%,10px);z-index:80;background:var(--ok);color:#08130c;
     padding:12px 20px;border-radius:999px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.45);
@@ -294,7 +300,7 @@
 <!-- ===== IMAGES ===== -->
 <section class="view" id="view-images">
   <div class="toolbar">
-    <label class="btn" style="position:relative;overflow:hidden">
+    <label class="btn" id="uploadBtn" style="position:relative;overflow:hidden">
       + 이미지 업로드
       <input type="file" id="uploader" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer">
     </label>
@@ -495,6 +501,14 @@
 <!-- 모바일 전용 플로팅 추가 버튼: 현재 화면의 주요 추가 동작(작품 추가·이미지 업로드·글 추가)을 스크롤
      중에도 누를 수 있게 하단에 띄운다. 표시 여부·라벨·동작은 뷰 전환/모달에 맞춰 JS(updateFab)가 정한다. -->
 <button class="fab" id="fab" type="button" aria-label="추가"></button>
+<!-- 페이지 화면의 + FAB 를 누르면 뜨는 블록 종류 선택 메뉴 (제목/글/맺음말/이미지/이력) -->
+<div class="blkmenu" id="blkmenu">
+  <button class="btn" data-blkadd="title">제목</button>
+  <button class="btn" data-blkadd="text">글</button>
+  <button class="btn" data-blkadd="thanks">맺음말</button>
+  <button class="btn" data-blkadd="image">이미지</button>
+  <button class="btn" data-blkadd="list">이력</button>
+</div>
 
 <script>
 /* Remote admin: this editor lives at a public URL, so every WRITE carries a key the serverless functions
@@ -1489,7 +1503,8 @@ window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.
     let label='', act=null;
     if(view==='slides'){ label='+ 슬라이드'; act=()=>$('#addSlide').click(); }
     else if(view==='images'){ label='+ 이미지'; act=()=>$('#uploader').click(); }
-    else if(view==='text'){ label='+ 글'; act=()=>{ const b=$('[data-add="text"]'); if(b) b.click(); }; }
+    else if(view==='text'){ label='+'; act=()=>$('#blkmenu').classList.toggle('open'); }
+    if(view!=='text'){ const bm=$('#blkmenu'); if(bm) bm.classList.remove('open'); }   // 다른 화면으로 가면 블록 메뉴는 닫는다
     if(act){ fab.textContent=label; fab.onclick=act; fab.classList.add('show'); }
     else { fab.classList.remove('show'); }
   };
@@ -1507,6 +1522,13 @@ function canSave(){
 }
 
 /* 화면 하단에 잠깐 뜨는 알림(토스트). 저장 완료 등을 알린다. */
+/* 블록 종류 메뉴: 고르면 그 종류의 블록을 추가하고(상단의 같은 버튼을 눌러) 메뉴를 닫는다. */
+(function(){ const m=document.querySelector('#blkmenu'); if(!m) return;
+  m.addEventListener('click',e=>{ const b=e.target.closest('[data-blkadd]'); if(!b) return;
+    const t=document.querySelector('[data-add="'+b.dataset.blkadd+'"]'); if(t) t.click();
+    m.classList.remove('open'); });
+})();
+
 function toast(msg){
   const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
   document.body.appendChild(t);
