@@ -192,7 +192,12 @@ function mount(view, slides, aspects, opts, onOpen) {
        cur + viewportWidth/2 — the same journey measured against two different rulers. The
        two drifted about five works apart, so the month over the line named a month whose
        paintings were already off the screen. The ruler is told the work the line is over. */
-    ruler.update((cur + innerWidth * 0.5 - 2 * rem) / step, ratio);
+    /* Feed the ruler the work whose CARD CENTRE is under the line — the same reference the placement and
+       the initial cur use (- 2*rem - slideW/2), and the same one flow's ruler feed uses. The old feed
+       stopped at - 2*rem (the card's left inset), half a card short, so the timeline ruler started half a
+       card off from flow's for the same year-month. */
+    const slideW = step - (tween(1.2, 2) * rem);
+    ruler.update((cur + innerWidth * 0.5 - 2 * rem - slideW / 2) / step, ratio);
     raf = requestAnimationFrame(frame);
   }
   raf = requestAnimationFrame(frame);
