@@ -17,10 +17,11 @@
      from phone to desktop on one layout — no second set of rules to keep in sync */
   header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
     padding:12px clamp(12px,3vw,20px);
-    background:rgba(15,15,17,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-  header h1{font-size:13px;letter-spacing:.18em;text-transform:uppercase;font-weight:700}
+    background:rgba(15,15,17,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+    transition:padding .2s ease,gap .2s ease}
+  header h1{font-size:13px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;transition:font-size .2s ease}
   .tabs{display:flex;gap:4px;flex-wrap:wrap}
-  .tab{padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--mut);border:1px solid transparent}
+  .tab{padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--mut);border:1px solid transparent;transition:padding .2s ease,font-size .2s ease}
   .tab.active{background:var(--panel2);color:var(--ink);border-color:var(--line)}
   .sp{flex:1 1 0;min-width:0}
   .btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 13px;border-radius:8px;
@@ -196,6 +197,17 @@
     body.big .mrow{flex-wrap:wrap}
     body.big .mrow .rowbtns{flex-direction:row;width:100%;justify-content:flex-end}
   }
+  /* 스크롤하면 상단 헤더를 컴팩트하게 접는다 — 큰 글씨에서 헤더가 화면을 크게 차지하므로(약 27%) 스크롤
+     시 자리를 내준다. 탭·버튼은 그대로 두고 크기·여백만 줄이므로 스크롤 중에도 모든 조작이 유지된다.
+     transition 은 각 요소에 걸려 있어 부드럽게 접히고 펴진다. 큰 글씨에서만 적용(일반 모드 헤더는 이미 작다). */
+  body.big.scrolled header{padding-top:6px;padding-bottom:6px;gap:7px}
+  body.big.scrolled header h1{font-size:13px}
+  body.big.scrolled .tab{padding:7px 13px;font-size:15px}
+  body.big.scrolled .btn{padding:8px 13px;font-size:15px}
+  body.big.scrolled .status{display:none}
+  /* 모바일: 툴바의 밀대(spacer)를 접어 항목이 좌측부터 순서대로 붙게 한다 — 좁은 폭에서 개수와 정렬 컨트롤이
+     양끝으로 벌어져 줄이 들쭉날쭉해 보이던 것 정리. 넓은 화면에선 그대로 정렬 컨트롤이 우측에 선다. */
+  @media (max-width:560px){ .toolbar .sp{display:none} }
 </style>
 </head>
 <body>
@@ -1356,6 +1368,13 @@ window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.
   };
   apply(localStorage.getItem(BK)!=='0');   // 저장값이 명시적 '0'(끔)이 아니면 켠다 → 첫 접속 기본 ON
   btn.onclick=()=>{ const on=!document.body.classList.contains('big'); apply(on); localStorage.setItem(BK,on?'1':'0'); };
+})();
+
+/* 스크롤하면 body.scrolled 를 켜 헤더를 컴팩트하게 접는다(CSS 가 크기·여백만 줄인다). 살짝만 내려도 접히고,
+   맨 위로 돌아오면 다시 펴진다. passive 리스너라 스크롤 성능에 영향 없다. */
+(function(){
+  const upd=()=>document.body.classList.toggle('scrolled', (window.scrollY||document.documentElement.scrollTop||0) > 16);
+  window.addEventListener('scroll', upd, {passive:true}); upd();
 })();
 
 load().catch(e=>setStatus('불러오기 실패: '+e.message,'err'));
