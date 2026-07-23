@@ -387,9 +387,25 @@
    "ho": "30"
   },
   {
+   "id": "n1784812957435_0",
+   "image": "/images/1000050641.jpg",
+   "top": "15",
+   "bottom": "Inspire",
+   "date": "2026-01-01",
+   "media": [],
+   "title": "솜사탕",
+   "w": "45.5",
+   "h": "53.5",
+   "ho": "10",
+   "size": "45.5 × 53.5 cm (10호)",
+   "ptype": "Oil on canvas",
+   "desc": "나는 잔나비",
+   "category": "Ember"
+  },
+  {
    "id": "s8",
    "image": "/images/3a1a7d3b70473.png",
-   "top": "15",
+   "top": "16",
    "bottom": "Showcase",
    "date": "2025-12-13",
    "title": "Deep Meadow",
@@ -413,7 +429,7 @@
   {
    "id": "s27",
    "image": "/images/b78e801844263.jpg",
-   "top": "16",
+   "top": "17",
    "bottom": "Muse",
    "date": "2025-12-09",
    "title": "Pale Bloom",
@@ -437,7 +453,7 @@
   {
    "id": "s26",
    "image": "/images/a92fb706592cb.png",
-   "top": "17",
+   "top": "18",
    "bottom": "Reflect",
    "date": "2025-10-22",
    "title": "Faded Field",
@@ -461,7 +477,7 @@
   {
    "id": "s5",
    "image": "/images/1f7ffa08880a9.jpg",
-   "top": "18",
+   "top": "19",
    "bottom": "Vivid",
    "date": "2025-10-07",
    "title": "Winter Petal",
@@ -485,7 +501,7 @@
   {
    "id": "s9",
    "image": "/images/486624d093849.png",
-   "top": "19",
+   "top": "20",
    "bottom": "Serene",
    "date": "2025-09-16",
    "title": "Morning Water",
@@ -509,7 +525,7 @@
   {
    "id": "s29",
    "image": "/images/c3149ecb4e4fd.jpg",
-   "top": "20",
+   "top": "21",
    "bottom": "Reflect",
    "date": "2025-09-06",
    "title": "Deep Echo",
@@ -533,7 +549,7 @@
   {
    "id": "s36",
    "image": "/images/02ece5a890247.png",
-   "top": "21",
+   "top": "22",
    "bottom": "Vivid",
    "date": "2025-08-22",
    "title": "Winter Echo",
@@ -557,7 +573,7 @@
   {
    "id": "n1784179204159_9",
    "image": "/images/photo_2026-07-16_14.16.58.jpeg",
-   "top": "22",
+   "top": "23",
    "bottom": "Bloom",
    "date": "2025-07-23",
    "title": "Red Echo",
@@ -581,7 +597,7 @@
   {
    "id": "s10",
    "image": "/images/5fe11bac36895.jpg",
-   "top": "23",
+   "top": "24",
    "bottom": "Drift",
    "date": "2025-07-18",
    "title": "Red Shadow",
@@ -605,7 +621,7 @@
   {
    "id": "n1784178921050_0",
    "image": "/images/photo_2026-07-16_14.17.18.jpeg",
-   "top": "24",
+   "top": "25",
    "bottom": "Ember",
    "date": "2025-05-19",
    "title": "Red Meadow",
@@ -629,7 +645,7 @@
   {
    "id": "s30",
    "image": "/images/ca2b4eb75a03f.png",
-   "top": "25",
+   "top": "26",
    "bottom": "Muse",
    "date": "2025-05-16",
    "title": "Pale Echo",
@@ -653,7 +669,7 @@
   {
    "id": "n1784179130794_3",
    "image": "/images/photo_2026-07-16_14.16.32.jpeg",
-   "top": "26",
+   "top": "27",
    "bottom": "Ember",
    "date": "2025-05-06",
    "title": "Golden Meadow",
@@ -677,7 +693,7 @@
   {
    "id": "s3",
    "image": "/images/1aff2f008ad96.jpg",
-   "top": "27",
+   "top": "28",
    "bottom": "Bloom",
    "date": "2025-04-14",
    "title": "Morning Echo",
@@ -701,7 +717,7 @@
   {
    "id": "s25",
    "image": "/images/a8ef59966e56a.png",
-   "top": "28",
+   "top": "29",
    "bottom": "Vivid",
    "date": "2025-04-14",
    "title": "Distant Harbor",
@@ -725,7 +741,7 @@
   {
    "id": "s14",
    "image": "/images/8708eb5c27359.jpg",
-   "top": "29",
+   "top": "30",
    "bottom": "Vivid",
    "date": "2025-04-04",
    "title": "Morning Hillside",
@@ -749,7 +765,7 @@
   {
    "id": "s20",
    "image": "/images/97703af9e4c8f.webp",
-   "top": "30",
+   "top": "31",
    "bottom": "Muse",
    "date": "2025-03-23",
    "title": "Red Veil",
@@ -773,7 +789,7 @@
   {
    "id": "s7",
    "image": "/images/2fdbe4301b34e.png",
-   "top": "31",
+   "top": "32",
    "bottom": "Enrich",
    "date": "2025-03-20",
    "title": "Red Horizon",
@@ -797,7 +813,7 @@
   {
    "id": "s24",
    "image": "/images/a709fc3de67fa.webp",
-   "top": "32",
+   "top": "33",
    "bottom": "Inspire",
    "date": "2025-02-28",
    "title": "Winter Current",
@@ -821,7 +837,7 @@
   {
    "id": "n1784179217092_12",
    "image": "/images/photo_2026-07-16_14.17.11.jpeg",
-   "top": "33",
+   "top": "34",
    "bottom": "Ember",
    "date": "2025-02-16",
    "title": "Deep Shadow",
@@ -845,7 +861,7 @@
   {
    "id": "s11",
    "image": "/images/62ae5300bda35.png",
-   "top": "34",
+   "top": "35",
    "bottom": "Serene",
    "date": "2025-02-06",
    "title": "Still Harbor",
@@ -869,7 +885,7 @@
   {
    "id": "n1784179106095_1",
    "image": "/images/photo_2026-07-16_14.16.20.jpeg",
-   "top": "35",
+   "top": "36",
    "bottom": "Showcase",
    "date": "2024-12-07",
    "title": "Distant Current",
@@ -893,7 +909,7 @@
   {
    "id": "n1784179171311_4",
    "image": "/images/photo_2026-07-16_14.16.41.jpeg",
-   "top": "36",
+   "top": "37",
    "bottom": "Vivid",
    "date": "2024-11-25",
    "title": "Winter Meadow",
@@ -917,7 +933,7 @@
   {
    "id": "s2",
    "image": "/images/102b79c0173a5.webp",
-   "top": "37",
+   "top": "38",
    "bottom": "Muse",
    "date": "2024-11-16",
    "title": "Soft Meadow",
@@ -941,7 +957,7 @@
   {
    "id": "n1784179117045_2",
    "image": "/images/photo_2026-07-16_14.16.24.jpeg",
-   "top": "38",
+   "top": "39",
    "bottom": "Enrich",
    "date": "2024-10-03",
    "title": "Soft Horizon",
@@ -965,7 +981,7 @@
   {
    "id": "n1784179177828_5",
    "image": "/images/photo_2026-07-16_14.16.44.jpeg",
-   "top": "39",
+   "top": "40",
    "bottom": "Vivid",
    "date": "2024-09-28",
    "title": "Bright Water",
@@ -989,7 +1005,7 @@
   {
    "id": "n1784179209243_10",
    "image": "/images/photo_2026-07-16_14.17.04.jpeg",
-   "top": "40",
+   "top": "41",
    "bottom": "Vivid",
    "date": "2024-09-28",
    "title": "Distant Tide",
@@ -1013,7 +1029,7 @@
   {
    "id": "n1784179194194_7",
    "image": "/images/photo_2026-07-16_14.16.53.jpeg",
-   "top": "41",
+   "top": "42",
    "bottom": "Inspire",
    "date": "2024-09-11",
    "title": "Faded Hillside",
@@ -1037,7 +1053,7 @@
   {
    "id": "s32",
    "image": "/images/cf616f78edd58.png",
-   "top": "42",
+   "top": "43",
    "bottom": "Bloom",
    "date": "2024-08-14",
    "title": "Soft Tide",
@@ -1061,7 +1077,7 @@
   {
    "id": "s23",
    "image": "/images/a6ab44b7575c8.png",
-   "top": "43",
+   "top": "44",
    "bottom": "Reflect",
    "date": "2024-06-26",
    "title": "Quiet Garden",
@@ -1085,7 +1101,7 @@
   {
    "id": "s21",
    "image": "/images/9b7b474e4a5e2.jpg",
-   "top": "44",
+   "top": "45",
    "bottom": "Inspire",
    "date": "2024-05-13",
    "title": "Quiet Veil",
@@ -1109,7 +1125,7 @@
   {
    "id": "s18",
    "image": "/images/9532d3c7d5d9c.jpg",
-   "top": "45",
+   "top": "46",
    "bottom": "Enrich",
    "date": "2024-05-06",
    "title": "Morning Tide",
@@ -1133,7 +1149,7 @@
   {
    "id": "s35",
    "image": "/images/e23e1375aacf9.png",
-   "top": "46",
+   "top": "47",
    "bottom": "Muse",
    "date": "2024-04-23",
    "title": "Bright Veil",
@@ -1157,7 +1173,7 @@
   {
    "id": "s37",
    "image": "/images/069af310e5866.png",
-   "top": "47",
+   "top": "48",
    "bottom": "Inspire",
    "date": "2024-04-05",
    "title": "Winter Petal",
@@ -1181,7 +1197,7 @@
   {
    "id": "s17",
    "image": "/images/92b84f6dc2382.webp",
-   "top": "48",
+   "top": "49",
    "bottom": "Bloom",
    "date": "2024-04-05",
    "title": "Quiet Echo",
@@ -1205,7 +1221,7 @@
   {
    "id": "n1784179199643_8",
    "image": "/images/photo_2026-07-16_14.16.55.jpeg",
-   "top": "49",
+   "top": "50",
    "bottom": "Inspire",
    "date": "2024-03-28",
    "title": "Amber Harbor",
@@ -1229,7 +1245,7 @@
   {
    "id": "s15",
    "image": "/images/88d6731cc43a6.jpg",
-   "top": "50",
+   "top": "51",
    "bottom": "Drift",
    "date": "2024-02-05",
    "title": "Soft Hillside",
@@ -1253,7 +1269,7 @@
   {
    "id": "s34",
    "image": "/images/e1bc8b97eaea9.png",
-   "top": "51",
+   "top": "52",
    "bottom": "Inspire",
    "date": "2024-01-25",
    "title": "Pale Horizon",
