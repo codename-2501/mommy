@@ -747,9 +747,14 @@ $('#slideGrid').addEventListener('click',e=>{
 });
 $('#addSlide').onclick=()=>{
   /* 빈 새 슬라이드를 최상단에 만든다. 이미지는 비워 둔다 — 기존 이미지를 복사하면 '복제'처럼 보였다.
-     수동 정렬이면 배열 맨 앞(unshift)이 곧 맨 위. 날짜순(기본)이면 날짜가 순서를 정하므로, 맨 위로 오도록
-     이번 달 날짜를 넣어 둔다(실제 날짜·이미지는 편집에서 채우면 된다). */
-  const n=new Date(); const ym=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';
+     수동 정렬이면 배열 맨 앞(unshift)이 곧 맨 위. 날짜순(최신 먼저)이면 날짜가 순서를 정하므로, 맨 위로
+     확실히 오도록 기존 슬라이드 중 가장 최신 날짜보다 한 달 뒤로 잡는다(하나도 없으면 이번 달).
+     실제 날짜·이미지는 편집에서 채우면 된다. */
+  let maxY=0,maxM=0;
+  for(const s of cfg.slides){ const m=/(\d{4})-(\d{2})/.exec(String(s.date||'')); if(m){const y=+m[1],mo=+m[2]; if(y>maxY||(y===maxY&&mo>maxM)){maxY=y;maxM=mo;} } }
+  let ym;
+  if(maxY){ let ny=maxY,nm=maxM+1; if(nm>12){nm=1;ny++;} ym=ny+'-'+String(nm).padStart(2,'0')+'-01'; }
+  else { const n=new Date(); ym=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01'; }
   cfg.slides.unshift({id:'n'+Date.now()+'_'+(nid++),image:'',top:'1',bottom:'Inspire',date:ym});
   renderSlides(); dirty(); window.scrollTo(0,0);   // 아래로 밀려 내려가지 않게 최상단으로
 };
@@ -1456,7 +1461,9 @@ window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.
   window.updateFab=function(){
     /* 저장할 게 있으면(수정 발생) FAB 를 '저장'으로 바꾼다 — 추가보다 저장이 급하므로 우선한다.
        저장이 끝나 dirtyState 가 풀리면 다시 화면별 추가 버튼으로 돌아온다. */
-    if(dirtyState){ fab.textContent='저장'; fab.onclick=()=>$('#save').click(); fab.classList.add('show','fab-save'); return; }
+    /* 저장 FAB 는 저장이 실제로 가능할 때만 — 필수 항목(모든 슬라이드의 이미지, 날짜순 모드면 날짜)이 다
+       채워진 dirty 상태일 때 뜬다. 새 슬라이드를 막 만든 직후처럼 필수가 비면 뜨지 않는다(저장해도 거부되므로). */
+    if(dirtyState && canSave()){ fab.textContent='저장'; fab.onclick=()=>$('#save').click(); fab.classList.add('show','fab-save'); return; }
     fab.classList.remove('fab-save');
     const active=$('.tab.active'); const view=active?active.dataset.view:'slides';
     let label='', act=null;
@@ -1468,6 +1475,16 @@ window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.
   };
   updateFab();
 })();
+
+/* 저장이 가능한 상태인가 — 저장 버튼의 검증과 같은 기준(모든 슬라이드에 이미지, 날짜순 모드면 날짜).
+   저장 FAB 를 이 조건에서만 띄운다. */
+function canSave(){
+  if(!cfg||!cfg.slides) return false;
+  const dateMode=orderMode()==='date';
+  const noImg=cfg.slides.some(s=>!((s.image||'').trim()));
+  const noDate=dateMode && cfg.slides.some(s=>!((s.date||'').trim()));
+  return !(noImg||noDate);
+}
 
 /* 화면 하단에 잠깐 뜨는 알림(토스트). 저장 완료 등을 알린다. */
 function toast(msg){
