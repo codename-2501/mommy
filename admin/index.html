@@ -349,7 +349,7 @@
       <div style="font-weight:600;margin-bottom:4px">로고 / 워드마크 <span style="color:var(--mut);font-weight:400;font-size:var(--fs-sm,12px)">(인트로·홈 상단)</span></div>
       <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:12px">워드마크 3줄을 편집합니다. 비워두면 기본값(LSE GALLERY)이 표시됩니다.</div>
       <div class="imgpick" style="margin-bottom:12px">
-        <img id="wm-img" style="height:44px;max-width:180px;object-fit:contain;border-radius:6px;background:var(--field-bg);border:1px solid var(--field-line);padding:4px">
+        <img id="wm-img" style="height:72px;max-width:200px;object-fit:contain;border-radius:6px;background:var(--field-bg);border:1px solid var(--field-line);padding:4px">
         <div class="imgpick__body">
           <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">이미지 로고 (선택) — 넣으면 아래 3줄 대신 이 이미지가 쓰입니다</div>
           <div class="imgpick__btns">
@@ -381,7 +381,7 @@
         <div class="site-row"><span class="site-lab">주소</span><input id="mt-url" placeholder="예: https://lse.pages.dev" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px">
           <div class="imgpick">
-            <img id="mt-fav-img" style="width:44px;height:44px;object-fit:cover;border-radius:8px;background:var(--field-bg);border:1px solid var(--field-line)">
+            <img id="mt-fav-img" style="width:72px;height:72px;object-fit:cover;border-radius:8px;background:var(--field-bg);border:1px solid var(--field-line)">
             <div class="imgpick__body">
               <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">파비콘</div>
               <div class="imgpick__btns">
@@ -391,7 +391,7 @@
             </div>
           </div>
           <div class="imgpick">
-            <img id="mt-og-img" style="width:78px;height:44px;object-fit:cover;border-radius:8px;background:var(--field-bg);border:1px solid var(--field-line)">
+            <img id="mt-og-img" style="width:128px;height:72px;object-fit:cover;border-radius:8px;background:var(--field-bg);border:1px solid var(--field-line)">
             <div class="imgpick__body">
               <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">공유 썸네일 (OG 이미지)</div>
               <div class="imgpick__btns">
@@ -1117,7 +1117,7 @@ function renderBg(){
     const motion=BG_MOTION.some(([v])=>v===b.motion)?b.motion:'none';
     const op=b.opacity!=null?b.opacity:1;
     return `<div class="imgpick" style="background:var(--field-bg);border:1px solid var(--field-line);border-radius:10px;padding:10px">
-      <img src="${escAttr(b.src||'')}" style="width:64px;height:40px;object-fit:cover;border-radius:6px;background:var(--panel);border:1px solid var(--line);flex:none;${b.src?'':'visibility:hidden'}">
+      <img src="${escAttr(b.src||'')}" style="width:115px;height:72px;object-fit:cover;border-radius:6px;background:var(--panel);border:1px solid var(--line);flex:none;${b.src?'':'visibility:hidden'}">
       <div class="imgpick__body">
         <div style="font-weight:600">${label}</div>
         <div class="imgpick__btns">
