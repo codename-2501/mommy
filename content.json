@@ -15,8 +15,8 @@
    "top": "1",
    "bottom": "Inspire",
    "date": "2026-12-07",
-   "title": "Soft Current",
-   "desc": "색이 색을 부르는 순간을 붙잡으려 했다.ㅋ",
+   "title": "팔당의아침",
+   "desc": "색이 색을 부르는 순간을 붙잡으려 했냐?",
    "media": [
     {
      "type": "image",
@@ -50,16 +50,22 @@
      "src": "/images/valentin-beauvais-4YrVF0gVdjk-unsplash__1_.jpg",
      "caption": "ㅋㅋㅋ",
      "align": "center"
+    },
+    {
+     "type": "video",
+     "videoId": "11JqtqTRepw",
+     "caption": "동전자르기",
+     "align": "center"
     }
    ],
    "category": "Enrich",
-   "size": "162.2 × 130.3 cm (100호)",
+   "size": "162.2 × 130.3 cm (20호)",
    "ptype": "Oil on canvas",
    "w": "162.2",
    "h": "130.3",
-   "ho": "100",
-   "price": "₩3,300,000",
-   "priceShow": true
+   "ho": "20",
+   "price": "",
+   "priceShow": false
   },
   {
    "id": "s1",
