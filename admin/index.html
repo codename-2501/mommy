@@ -220,6 +220,14 @@
   .site-lab{flex:none;width:56px;text-align:right;color:var(--mut);font-size:var(--fs-sm,12px);white-space:nowrap}
   .site-row input{flex:1;min-width:0}
   body.big .site-lab{width:78px}
+  /* 플로팅 추가 버튼(FAB): 데스크톱에선 숨기고(상단 버튼으로 충분) 모바일에서만 뜬다. .show 는 JS 가 현재
+     화면에 맞춰 붙인다. 모달이 열리면 숨긴다(모달 자체 버튼이 있으므로). */
+  .fab{position:fixed;right:16px;bottom:16px;z-index:50;display:none;align-items:center;gap:6px;
+    background:var(--acc);color:#fff;border:0;border-radius:999px;padding:14px 22px;font-size:17px;font-weight:600;
+    box-shadow:0 6px 18px rgba(0,0,0,.45);cursor:pointer;white-space:nowrap}
+  @media (max-width:699px){ .fab.show{display:inline-flex} }
+  body:has(.modal.open) .fab{display:none}
+  body.big .fab{font-size:19px;padding:16px 24px}
 </style>
 </head>
 <body>
@@ -451,6 +459,10 @@
   </div>
 </div>
 
+<!-- 모바일 전용 플로팅 추가 버튼: 현재 화면의 주요 추가 동작(작품 추가·이미지 업로드·글 추가)을 스크롤
+     중에도 누를 수 있게 하단에 띄운다. 표시 여부·라벨·동작은 뷰 전환/모달에 맞춰 JS(updateFab)가 정한다. -->
+<button class="fab" id="fab" type="button" aria-label="추가"></button>
+
 <script>
 /* Remote admin: this editor lives at a public URL, so every WRITE carries a key the serverless functions
    check (reads stay open). The key is entered once and kept in localStorage; a wrapper adds it to /api/
@@ -478,7 +490,7 @@
   addEventListener('DOMContentLoaded',function(){
     const b=document.createElement('button');
     b.textContent='🔑'; b.title='관리자 비밀번호 입력';
-    b.style.cssText='position:fixed;right:12px;bottom:12px;z-index:99999;width:40px;height:40px;border-radius:20px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:18px';
+    b.style.cssText='position:fixed;left:12px;bottom:12px;z-index:99999;width:40px;height:40px;border-radius:20px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:18px';
     b.onclick=window.__promptKey; document.body.appendChild(b);
   });
 })();
@@ -535,6 +547,7 @@ $$('.tab').forEach(t=>t.onclick=()=>{
   /* 각 탭은 들어올 때 자기 화면을 다시 그린다 — 다른 탭에서 바꾼 값이 반영돼야 한다 */
   if(t.dataset.view==='text') loadText();
   if(t.dataset.view==='site'){ loadWordmark(); loadMeta(); renderBg(); }
+  if(window.updateFab) updateFab();
 });
 
 /* ---------- slides CRUD ---------- */
@@ -1410,6 +1423,22 @@ window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.
 (function(){
   const upd=()=>document.body.classList.toggle('scrolled', (window.scrollY||document.documentElement.scrollTop||0) > 16);
   window.addEventListener('scroll', upd, {passive:true}); upd();
+})();
+
+/* 플로팅 추가 버튼: 지금 보고 있는 화면의 주요 추가 동작을 하단에 띄운다. 작품→+슬라이드, 이미지→+이미지
+   업로드, 페이지→+글. 사이트 화면엔 추가 동작이 없어 숨는다. (모바일에서만 보이고, 모달이 열리면 숨는다) */
+(function(){
+  const fab=$('#fab'); if(!fab) return;
+  window.updateFab=function(){
+    const active=$('.tab.active'); const view=active?active.dataset.view:'slides';
+    let label='', act=null;
+    if(view==='slides'){ label='+ 슬라이드'; act=()=>$('#addSlide').click(); }
+    else if(view==='images'){ label='+ 이미지'; act=()=>$('#uploader').click(); }
+    else if(view==='text'){ label='+ 글'; act=()=>{ const b=$('[data-add="text"]'); if(b) b.click(); }; }
+    if(act){ fab.textContent=label; fab.onclick=act; fab.classList.add('show'); }
+    else { fab.classList.remove('show'); }
+  };
+  updateFab();
 })();
 
 load().catch(e=>setStatus('불러오기 실패: '+e.message,'err'));
