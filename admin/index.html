@@ -150,15 +150,16 @@
   body.big .btn.sm{font-size:16px;padding:9px 15px}
   body.big .status{font-size:16px}
   body.big .count,body.big .hint,body.big .use,body.big .imgcard .spec,body.big .titem .orig{font-size:15px}
-  /* 폼 전반: 인라인에 font-size 가 없는 입력까지 한 번에 키운다. 소스 순서상 뒤라 기존 px 값을 이긴다. */
-  body.big input,body.big select,body.big textarea{font-size:18px}
-  body.big .toolbar input[type=search],body.big .toolbar select{padding:12px 15px}
-  body.big .fields input{padding:10px 12px}
+  /* 폼 전반: 큰 글씨에서 모든 입력요소를 하나의 기준으로 통일한다 — 글씨 18px, 안쪽 여백 9/11, 모서리 8px.
+     이래야 나란히 놓인 입력·옵션의 높이와 좌우 라인이 어긋나지 않는다(인라인 여백도 대부분 9/11이라 맞물린다). */
+  body.big input,body.big select,body.big textarea{font-size:18px;padding:9px 11px;border-radius:8px}
+  body.big .toolbar input[type=search],body.big .toolbar select{padding:9px 11px}
+  body.big .fields input{padding:9px 11px}
   body.big .fields label,body.big .blk-opt > span{font-size:14px}
   body.big .imgcard .nm{font-size:14px}
   body.big .badge,body.big .grip,body.big .change,body.big .badge--bad{font-size:15px;padding:4px 10px}
-  body.big .blk-ta{font-size:18px;line-height:1.75;padding:14px 16px}
-  body.big .cv-date,body.big .cv-text{padding:11px 13px}
+  body.big .blk-ta{font-size:18px;line-height:1.75;padding:9px 11px}
+  body.big .cv-date,body.big .cv-text{padding:9px 11px}
   /* 이미지 추가·편집 팝업은 화면을 크게 차지해 집중되게 하고, 고를 이미지 썸네일도 큼직하게 */
   body.big .modal{padding:clamp(8px,2vw,20px)}
   body.big .sheet{width:min(1100px,98vw);max-height:94vh}
@@ -179,7 +180,7 @@
   body.big .grid{grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr))}
   /* 편집모달 미디어(상세 본문) 옵션 영역: 큰 글씨에서 select·캡션을 키우고, 좁으면 옵션이 줄바꿈되게 —
      이 줄바꿈이 없으면 모바일에서 select 세 개가 한 줄에 끼여 글자가 안 보였다 */
-  body.big .msel,body.big .mcap{font-size:16px;padding:8px 10px}
+  body.big .msel,body.big .mcap{padding:9px 11px;border-radius:8px}   /* font-size 는 위 통합 규칙(18px)이 담당 */
   body.big .mnote{font-size:14px}
   body.big .mopts{gap:8px;flex-wrap:wrap}
   body.big .mopts .msel{flex:1 1 auto;min-width:130px}
