@@ -58,8 +58,8 @@
    "w": "162.2",
    "h": "130.3",
    "ho": "100",
-   "price": "3,300,000",
-   "priceShow": true
+   "price": "₩3,300,000",
+   "priceShow": false
   },
   {
    "id": "s1",
