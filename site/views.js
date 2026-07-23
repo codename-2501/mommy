@@ -27,6 +27,14 @@ function thumb(src, w) {
    flashing the box. Opacity-only, so nothing toggles visibility mid-transition. */
 function gateLoad(img) {
   const ok = () => img.classList.add('ok');
+  /* Already decoded (a cached image on a view re-entry): show it at once — no decode() microtask, so the
+     frame never flashes its #f2f2f2 back for a beat and then fades. The .ok is set before the element is
+     laid out, so it starts opaque with no transition. This is what made index<->flow re-entries blink the
+     paintings white every time even though the bitmaps were cached. */
+  if (img.complete && img.naturalWidth) { ok(); return; }
+  /* Not ready yet: fade in only once fully DECODED, not merely loaded. On iOS Safari a frame shown between
+     `load` and decode paints as the broken "?" placeholder for a beat; decode() resolves when the bitmap is
+     paintable, and a genuinely broken image rejects and stays hidden rather than flashing the box. */
   const settle = () => { if (img.decode) img.decode().then(ok, () => { if (img.naturalWidth) ok(); }); else ok(); };
   if (img.complete) settle();
   else img.addEventListener('load', settle, { once: true });
