@@ -388,11 +388,20 @@
   },
   {
    "id": "n1784812957435_0",
-   "image": "/images/1000050641.jpg",
+   "image": "/images/ca2b4eb75a03f.png",
    "top": "15",
    "bottom": "Inspire",
    "date": "2026-01-01",
-   "media": [],
+   "media": [
+    {
+     "type": "image",
+     "src": "/images/1000049740.jpg",
+     "caption": "존하루",
+     "align": "center",
+     "pos": 0,
+     "size": "full"
+    }
+   ],
    "title": "솜사탕",
    "w": "45.5",
    "h": "53.5",
