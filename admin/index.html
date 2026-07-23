@@ -107,7 +107,7 @@
      of their own words and no two blocks lined up. */
   .blk-opts{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:8px}
   .blk-opt{display:flex;align-items:center;gap:6px}
-  .blk-opt > span{font-size:12px;color:var(--mut);white-space:nowrap;flex:none;width:52px;text-align:right}
+  .blk-opt > span{font-size:12px;color:var(--ink);font-weight:600;white-space:nowrap;flex:none;width:52px;text-align:right}
   .blk-opt > .blk-sel{flex:none;width:118px}
 
   /* text editor */
@@ -141,7 +141,7 @@
 
   /* 인라인으로 흩어져 있던 라벨/카드 텍스트를 클래스로 모은다(값은 기존과 동일 — 일반 모드는 그대로).
      클래스라야 큰 글씨 모드에서 함께 키울 수 있다: 인라인 font-size 는 스코프 규칙이 이길 수 없다. */
-  .flab{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em}
+  .flab{font-size:11px;color:var(--ink);font-weight:600;text-transform:uppercase;letter-spacing:.1em}
   .card-t{font-size:13px;font-weight:600;line-height:1.3;min-height:18px}
   .card-s{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
   /* 편집모달 미디어(상세 본문) 항목의 옵션 select·캡션: 인라인이던 폰트를 클래스로(값 동일) — 큰 글씨가 닿게 */
@@ -224,7 +224,7 @@
   /* 사이트 뷰: 라벨을 입력 왼쪽에 두고 같은 줄에 정렬한다. 라벨은 고정폭·우측정렬이라 라벨 길이가 달라도
      입력 시작이 한 줄로 맞는다(블록 옵션과 같은 방식). placeholder 는 예시만 남긴다. */
   .site-row{display:flex;gap:10px;align-items:center}
-  .site-lab{flex:none;width:56px;text-align:right;color:var(--mut);font-size:var(--fs-sm,12px);white-space:nowrap}
+  .site-lab{flex:none;width:56px;text-align:right;color:var(--ink);font-weight:600;font-size:var(--fs-sm,12px);white-space:nowrap}
   .site-row input{flex:1;min-width:0}
   body.big .site-lab{width:78px}
   /* 플로팅 추가 버튼(FAB): 데스크톱에선 숨기고(상단 버튼으로 충분) 모바일에서만 뜬다. .show 는 JS 가 현재
@@ -429,7 +429,7 @@
           <div><label class="flab">아래 문구 (홈 라벨)</label>
             <input id="ed-bottom" placeholder="예: Inspire (March)" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
           <div><label class="req flab">날짜 (타임라인 연·월)</label>
-            <input type="month" id="ed-date" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px;color-scheme:dark">
+            <input type="month" id="ed-date" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px;color-scheme:dark;-webkit-appearance:none;appearance:none;box-sizing:border-box;display:block;min-width:0;max-width:100%">
             <div style="font-size:var(--fs-xs,11px);color:var(--mut);margin-top:4px">하단 타임라인·좌우 순서가 이 날짜(연·월) 기준으로 정렬됩니다. 날짜순 모드에선 필수 — 비우면 작품이 맨 끝에 그룹 없이 묻힙니다.</div></div>
           <div><label class="flab">상세 제목 (클릭 시)</label>
             <input id="ed-title" placeholder="작품 제목" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
