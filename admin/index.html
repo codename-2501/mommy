@@ -145,6 +145,7 @@
   .msel,.mcap{background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:12px}
   .mnote{font-size:11px;color:var(--mut)}
   .mopts{display:flex;gap:6px}
+  .mthumb{width:90px;height:64px;flex:0 0 auto;background:#000;border-radius:6px;overflow:hidden;position:relative}
 
   /* ===== 큰 글씨 모드 (70대 사용자용) =====
      header의 "큰 글씨" 버튼 하나로 body.big 을 켜고 끈다. 선택은 기억된다(localStorage).
@@ -200,8 +201,11 @@
   body.big .mopts .msel{flex:1 1 auto;min-width:130px}
   /* 좁은 폭에서는 미디어 항목을 세로로 쌓아, 썸네일·설명·옵션·이동버튼이 서로 밀지 않게 한다 */
   @media (max-width:560px){
-    body.big .mrow{flex-wrap:wrap}
-    body.big .mrow .rowbtns{flex-direction:row;width:100%;justify-content:flex-end}
+    /* 좁은 폭: 미디어 항목을 대표이미지처럼 세로로 — 썸네일(전체폭)이 위, 캡션·옵션이 아래, 이동/삭제 버튼이 맨 아래.
+       가로로 늘어선 요소가 사라져 좁은 화면에서도 넘치지 않고 각 칸이 넉넉하다. */
+    body.big .mrow{flex-direction:column;align-items:stretch}
+    body.big .mthumb{width:100%;height:auto;aspect-ratio:4/3}
+    body.big .mrow .rowbtns{flex-direction:row;justify-content:flex-end}
   }
   /* 스크롤하면 상단 헤더를 컴팩트하게 접는다 — 큰 글씨에서 헤더가 화면을 크게 차지하므로(약 27%) 스크롤
      시 자리를 내준다. 탭·버튼은 그대로 두고 크기·여백만 줄이므로 스크롤 중에도 모든 조작이 유지된다.
@@ -231,6 +235,9 @@
   /* 슬라이드 편집 상단 대표이미지 컬럼: 데스크톱은 240px 고정, 좁은 화면에선 폭을 다 써 이미지·버튼이 꽉 차게 */
   .ed-thumbcol{flex:0 0 240px}
   @media (max-width:560px){ .ed-thumbcol{flex:1 1 100%} }
+  /* 입력요소가 자기 내용(특히 type=month/date 위젯)의 최소폭 때문에 부모를 넘어 가로 스크롤을 만들지 않게.
+     min-width:0 로 그 최소폭을 풀고 max-width:100% 로 부모를 넘지 못하게 한다(모바일 횡스크롤 방지). */
+  input,select,textarea{min-width:0;max-width:100%}
 </style>
 </head>
 <body>
@@ -872,7 +879,7 @@ function renderMediaList(){
     row.className='mrow';
     row.style.cssText='display:flex;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px';
     row.innerHTML=`
-      <div style="width:90px;height:64px;flex:0 0 auto;background:#000;border-radius:6px;overflow:hidden;position:relative">
+      <div class="mthumb">
         <img src="${thumb}" style="width:100%;height:100%;object-fit:cover">
         ${isVid?'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px">▶</span>':''}
       </div>
