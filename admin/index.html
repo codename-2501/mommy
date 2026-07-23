@@ -154,35 +154,35 @@
      (padding 은 인라인이 이겨 유지되지만, 글씨가 커지면 클릭 영역도 함께 넉넉해진다). */
   /* 작은 설명·부제의 인라인 폰트는 CSS 변수로 바꿔 뒀다(--fs-sm/--fs-xs). 인라인은 스코프 규칙이
      못 이기지만 변수는 상속되므로, 여기서 값만 올리면 인라인 텍스트까지 큰 글씨에서 함께 커진다. */
-  body.big{font-size:18px;--fs-sm:15px;--fs-xs:15px}
-  body.big header h1{font-size:16px}
-  body.big .tab{font-size:18px;padding:12px 20px;border-radius:10px}
-  body.big .btn{font-size:18px;padding:13px 20px;border-radius:11px}
-  body.big .btn.sm{font-size:16px;padding:9px 15px}
-  body.big .status{font-size:16px}
-  body.big .count,body.big .hint,body.big .use,body.big .imgcard .spec,body.big .titem .orig{font-size:15px}
+  body.big{font-size:24px;--fs-sm:20px;--fs-xs:20px}
+  body.big header h1{font-size:21px}
+  body.big .tab{font-size:24px;padding:12px 20px;border-radius:10px}
+  body.big .btn{font-size:24px;padding:13px 20px;border-radius:11px}
+  body.big .btn.sm{font-size:21px;padding:9px 15px}
+  body.big .status{font-size:21px}
+  body.big .count,body.big .hint,body.big .use,body.big .imgcard .spec,body.big .titem .orig{font-size:20px}
   /* 폼 전반: 큰 글씨에서 모든 입력요소를 하나의 기준으로 통일한다 — 글씨 18px, 안쪽 여백 9/11, 모서리 8px.
      이래야 나란히 놓인 입력·옵션의 높이와 좌우 라인이 어긋나지 않는다(인라인 여백도 대부분 9/11이라 맞물린다). */
-  body.big input,body.big select,body.big textarea{font-size:18px;padding:9px 11px;border-radius:8px}
+  body.big input,body.big select,body.big textarea{font-size:24px;padding:9px 11px;border-radius:8px}
   body.big .toolbar input[type=search],body.big .toolbar select{padding:9px 11px}
   body.big .fields input{padding:9px 11px}
-  body.big .fields label,body.big .blk-opt > span{font-size:15px}
-  body.big .imgcard .nm{font-size:15px}
-  body.big .badge,body.big .grip,body.big .change,body.big .badge--bad{font-size:15px;padding:4px 10px}
-  body.big .blk-ta{font-size:18px;line-height:1.75;padding:9px 11px}
+  body.big .fields label,body.big .blk-opt > span{font-size:20px}
+  body.big .imgcard .nm{font-size:20px}
+  body.big .badge,body.big .grip,body.big .change,body.big .badge--bad{font-size:20px;padding:4px 10px}
+  body.big .blk-ta{font-size:24px;line-height:1.75;padding:9px 11px}
   body.big .cv-date,body.big .cv-text{padding:9px 11px}
   /* 이미지 추가·편집 팝업은 화면을 크게 차지해 집중되게 하고, 고를 이미지 썸네일도 큼직하게 */
   body.big .modal{padding:clamp(8px,2vw,20px)}
   body.big .sheet{width:min(1100px,98vw);max-height:94vh}
-  body.big .sheet .shead{padding:18px 20px;font-size:18px}
+  body.big .sheet .shead{padding:18px 20px;font-size:24px}
   body.big .sheet .sbody{padding:20px}
   body.big .picker{grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr));gap:14px}
-  body.big .pick__meta{font-size:13px;padding:5px 8px}
+  body.big .pick__meta{font-size:17px;padding:5px 8px}
   /* 설명(라벨)·카드 텍스트도 함께 키운다 — 이제 클래스라 큰 글씨 모드가 닿는다 */
-  body.big .flab{font-size:15px}
-  body.big .card-t{font-size:16px}
-  body.big .card-s{font-size:15px}
-  body.big .hint,body.big .hint b{font-size:15px;line-height:1.6}
+  body.big .flab{font-size:20px}
+  body.big .card-t{font-size:21px}
+  body.big .card-s{font-size:20px}
+  body.big .hint,body.big .hint b{font-size:20px;line-height:1.6}
   /* 고정폭은 큰 글씨에서 글자를 자르므로 넓혀 준다 — 옵션 라벨·선택칸·날짜칸 */
   body.big .blk-opt > span{width:78px}   /* 고정폭+우측정렬(상속)이라 라벨 길이가 달라도 옆의 select 시작이 한 줄로 맞는다 */
   body.big .blk-opt > .blk-sel{width:auto;min-width:150px}
@@ -191,8 +191,8 @@
   body.big .grid{grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr))}
   /* 편집모달 미디어(상세 본문) 옵션 영역: 큰 글씨에서 select·캡션을 키우고, 좁으면 옵션이 줄바꿈되게 —
      이 줄바꿈이 없으면 모바일에서 select 세 개가 한 줄에 끼여 글자가 안 보였다 */
-  body.big .msel,body.big .mcap{padding:9px 11px;border-radius:8px}   /* font-size 는 위 통합 규칙(18px)이 담당 */
-  body.big .mnote{font-size:14px}
+  body.big .msel,body.big .mcap{padding:9px 11px;border-radius:8px}   /* font-size 는 위 통합 규칙(24px)이 담당 */
+  body.big .mnote{font-size:19px}
   body.big .mopts{gap:8px;flex-wrap:wrap}
   body.big .mopts .msel{flex:1 1 auto;min-width:130px}
   /* 좁은 폭에서는 미디어 항목을 세로로 쌓아, 썸네일·설명·옵션·이동버튼이 서로 밀지 않게 한다 */
@@ -204,9 +204,9 @@
      시 자리를 내준다. 탭·버튼은 그대로 두고 크기·여백만 줄이므로 스크롤 중에도 모든 조작이 유지된다.
      transition 은 각 요소에 걸려 있어 부드럽게 접히고 펴진다. 큰 글씨에서만 적용(일반 모드 헤더는 이미 작다). */
   body.big.scrolled header{padding-top:6px;padding-bottom:6px;gap:7px}
-  body.big.scrolled header h1{font-size:13px}
-  body.big.scrolled .tab{padding:7px 13px;font-size:15px}
-  body.big.scrolled .btn{padding:8px 13px;font-size:15px}
+  body.big.scrolled header h1{font-size:17px}
+  body.big.scrolled .tab{padding:7px 13px;font-size:20px}
+  body.big.scrolled .btn{padding:8px 13px;font-size:20px}
   body.big.scrolled .status{display:none}
   /* 모바일: 툴바의 밀대(spacer)를 접어 항목이 좌측부터 순서대로 붙게 한다 — 좁은 폭에서 개수와 정렬 컨트롤이
      양끝으로 벌어져 줄이 들쭉날쭉해 보이던 것 정리. 넓은 화면에선 그대로 정렬 컨트롤이 우측에 선다. */
@@ -423,7 +423,7 @@
         </div>
       </div>
       <div style="border-top:1px solid var(--line);margin-top:18px;padding-top:16px">
-        <div style="display:flex;align-items:center;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <strong style="font-size:var(--fs-sm,14px)">🎞 미디어 (상세 본문)</strong>
           <span id="editMediaSub" style="color:var(--mut);font-size:var(--fs-sm,12px)"></span>
           <div class="sp" style="flex:1"></div>
