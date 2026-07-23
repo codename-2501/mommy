@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LSE GALLERY — 관리자</title>
 <style>
-  :root{--bg:#0f0f11;--panel:#17181c;--panel2:#1d1f24;--line:#2a2c33;--ink:#eceae4;--mut:#8a8c94;--acc:#e85c4a;--ok:#3fb56b;--blue:#4a90d9}
+  :root{--bg:#0f0f11;--panel:#17181c;--panel2:#1d1f24;--line:#2a2c33;--ink:#eceae4;--mut:#8a8c94;--acc:#e85c4a;--ok:#3fb56b;--blue:#4a90d9;
+    /* 입력필드 전용: 배경은 패널보다 어둡게(파인 느낌), 테두리는 뚜렷하게 — 입력칸과 그 외 영역이 확실히 구분되게 */
+    --field-bg:#0a0b0e;--field-line:#484d59}
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--ink);font:14px/1.5 "Helvetica Neue",Arial,sans-serif}
   /* fluid: every row wraps and every min-width yields to the viewport, so the panel bends
@@ -54,7 +56,7 @@
   .thumb:hover .change{opacity:1}
   .fields{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px}
   .fields label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
-  .fields input{width:100%;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 8px;font-size:13px}
+  .fields input{width:100%;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:6px;padding:6px 8px;font-size:13px}
   .fields input:focus{outline:none;border-color:#4a4d57}
   .rowbtns{display:flex;gap:6px;margin-top:2px;flex-wrap:wrap}
 
@@ -80,17 +82,17 @@
   .blk-add{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
   .blk__body{flex:1 1 min(260px,100%);min-width:0}
   .blk__nav{display:flex;gap:4px;flex:none;flex-direction:column}
-  .blk-ta{width:100%;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;
+  .blk-ta{width:100%;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;
     padding:12px 14px;resize:vertical;font-family:inherit;font-size:15px;line-height:1.7;min-height:96px}
   .blk-ta:focus{outline:none;border-color:#4a4d57}
   /* a CV item: date and text sit side by side while there is room, and stack when there is not */
   .cv-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .cv-date,.cv-text{background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;
+  .cv-date,.cv-text{background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;
     padding:9px 11px;font-size:14px;font-family:inherit;min-width:0}
   .cv-date{flex:0 1 110px}
   .cv-text{flex:1 1 min(200px,100%)}
   .cv-date:focus,.cv-text:focus{outline:none;border-color:#4a4d57}
-  .blk-sel{background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;
+  .blk-sel{background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;
     padding:7px 9px;font-size:13px;font-family:inherit;max-width:100%}
   .blk-sel:focus{outline:none;border-color:#4a4d57}
   /* every block's options read as one row of the same shape: a label of fixed width, then a
@@ -106,7 +108,7 @@
   .titem{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;
     grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:10px;align-items:center}
   .titem .orig{font-size:12px;color:var(--mut);white-space:pre-wrap;word-break:break-word}
-  .titem textarea{width:100%;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;
+  .titem textarea{width:100%;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:6px;
     padding:7px 9px;font-size:13px;resize:vertical;min-height:38px;font-family:inherit}
   .titem.changed{border-color:#4a5a3a}
   .hint{font-size:12px;color:var(--mut);margin-bottom:12px}
@@ -133,7 +135,7 @@
   .card-t{font-size:13px;font-weight:600;line-height:1.3;min-height:18px}
   .card-s{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
   /* 편집모달 미디어(상세 본문) 항목의 옵션 select·캡션: 인라인이던 폰트를 클래스로(값 동일) — 큰 글씨가 닿게 */
-  .msel,.mcap{background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:12px}
+  .msel,.mcap{background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:12px}
   .mnote{font-size:11px;color:var(--mut)}
   .mopts{display:flex;gap:6px}
 
@@ -279,7 +281,7 @@
       <div style="font-weight:600;margin-bottom:4px">로고 / 워드마크 <span style="color:var(--mut);font-weight:400;font-size:var(--fs-sm,12px)">(인트로·홈 상단)</span></div>
       <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:12px">워드마크 3줄을 편집합니다. 비워두면 기본값(LSE GALLERY)이 표시됩니다.</div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
-        <img id="wm-img" style="height:44px;max-width:180px;object-fit:contain;border-radius:6px;background:#101116;border:1px solid var(--line);padding:4px">
+        <img id="wm-img" style="height:44px;max-width:180px;object-fit:contain;border-radius:6px;background:var(--field-bg);border:1px solid var(--field-line);padding:4px">
         <div>
           <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:4px">이미지 로고 (선택) — 넣으면 아래 3줄 대신 이 이미지가 쓰입니다</div>
           <button class="btn ghost btn sm" id="pickLogo">이미지</button>
@@ -287,15 +289,15 @@
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;max-width:min(520px,100%)">
-        <input id="wm-l1" placeholder="갤러리명 (예: LSE GALLERY)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
-        <input id="wm-l2" placeholder="부제 (선택)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
-        <input id="wm-l3" placeholder="연도 표기 (선택)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="wm-l1" placeholder="갤러리명 (예: LSE GALLERY)" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="wm-l2" placeholder="부제 (선택)" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="wm-l3" placeholder="연도 표기 (선택)" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px">
       </div>
     </div>
     <div style="background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
       <div style="font-weight:600;margin-bottom:4px">화면 전환 <span style="color:var(--mut);font-weight:400;font-size:var(--fs-sm,12px)">(메뉴로 화면 이동할 때)</span></div>
       <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:12px">기본은 그림이 날아가는 전환입니다. 페이드로 바꾸면 화면이 부드럽게 겹쳐 바뀝니다.</div>
-      <select id="mt-transition" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;max-width:320px">
+      <select id="mt-transition" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px;max-width:320px">
         <option value="flip">기본 (그림이 날아감)</option>
         <option value="fade">페이드 인 / 아웃</option>
       </select>
@@ -304,12 +306,12 @@
       <div style="font-weight:600;margin-bottom:4px">사이트 <span style="color:var(--mut);font-weight:400;font-size:var(--fs-sm,12px)">(파비콘 · 링크 공유 미리보기)</span></div>
       <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:12px">카카오톡 등에 링크를 붙이면 아래 제목·설명·이미지가 썸네일로 보입니다.</div>
       <div style="display:flex;flex-direction:column;gap:8px;max-width:min(640px,100%)">
-        <input id="mt-title" placeholder="사이트 제목 (탭·공유 제목)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
-        <input id="mt-desc" placeholder="설명 (공유 시 제목 아래 문구)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
-        <input id="mt-url" placeholder="사이트 주소 (정적 배포용 · 예: https://lse.pages.dev)" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="mt-title" placeholder="사이트 제목 (탭·공유 제목)" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="mt-desc" placeholder="설명 (공유 시 제목 아래 문구)" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <input id="mt-url" placeholder="사이트 주소 (정적 배포용 · 예: https://lse.pages.dev)" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px">
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px">
           <div style="display:flex;gap:10px;align-items:center">
-            <img id="mt-fav-img" style="width:44px;height:44px;object-fit:cover;border-radius:8px;background:#101116;border:1px solid var(--line)">
+            <img id="mt-fav-img" style="width:44px;height:44px;object-fit:cover;border-radius:8px;background:var(--field-bg);border:1px solid var(--field-line)">
             <div>
               <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:4px">파비콘</div>
               <button class="btn ghost btn sm" id="pickFavicon">선택</button>
@@ -317,7 +319,7 @@
             </div>
           </div>
           <div style="display:flex;gap:10px;align-items:center">
-            <img id="mt-og-img" style="width:78px;height:44px;object-fit:cover;border-radius:8px;background:#101116;border:1px solid var(--line)">
+            <img id="mt-og-img" style="width:78px;height:44px;object-fit:cover;border-radius:8px;background:var(--field-bg);border:1px solid var(--field-line)">
             <div>
               <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:4px">공유 썸네일 (OG 이미지)</div>
               <button class="btn ghost btn sm" id="pickOg">선택</button>
@@ -339,7 +341,7 @@
 <div class="modal" id="picker">
   <div class="sheet">
     <div class="shead"><strong>이미지 선택</strong><div class="sp"></div>
-      <select id="pickSort" title="정렬" style="background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:var(--fs-sm,12px)">
+      <select id="pickSort" title="정렬" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:var(--fs-sm,12px)">
         <option value="date-desc">업로드 최신순</option>
         <option value="date-asc">업로드 오래된순</option>
         <option value="size-desc">용량 큰순</option>
@@ -374,23 +376,23 @@
             <input id="ed-top" readonly title="이미지 순서에 따라 자동 부여됩니다 (순서 변경 시 자동 갱신)" style="width:100%;margin-top:4px;background:#0a0b0e;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:9px 11px;cursor:not-allowed">
             <div style="font-size:var(--fs-xs,11px);color:var(--mut);margin-top:4px">이미지 순서에 따라 자동 부여 — 순서를 바꾸면 번호도 자동으로 바뀝니다.</div></div>
           <div><label class="flab">카테고리 (뱃지)</label>
-            <input id="ed-category" placeholder="예: Inspire / Showcase / Educate" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px">
+            <input id="ed-category" placeholder="예: Inspire / Showcase / Educate" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px">
             <div style="font-size:var(--fs-xs,11px);color:var(--mut);margin-top:4px">상세·홈의 보라색 뱃지로 표시됩니다. 비우면 아래 문구의 괄호 앞부분을 사용.</div></div>
           <div><label class="flab">아래 문구 (홈 라벨)</label>
-            <input id="ed-bottom" placeholder="예: Inspire (March)" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
+            <input id="ed-bottom" placeholder="예: Inspire (March)" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
           <div><label class="req flab">날짜 (타임라인 연·월)</label>
-            <input type="month" id="ed-date" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;color-scheme:dark">
+            <input type="month" id="ed-date" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px;color-scheme:dark">
             <div style="font-size:var(--fs-xs,11px);color:var(--mut);margin-top:4px">하단 타임라인·좌우 순서가 이 날짜(연·월) 기준으로 정렬됩니다. 날짜순 모드에선 필수 — 비우면 작품이 맨 끝에 그룹 없이 묻힙니다.</div></div>
           <div><label class="flab">상세 제목 (클릭 시)</label>
-            <input id="ed-title" placeholder="작품 제목" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
+            <input id="ed-title" placeholder="작품 제목" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
           <div style="display:flex;gap:10px">
             <div style="flex:1"><label class="flab">제품 규격</label>
-              <input id="ed-size" placeholder="예: 72.7 × 60.6 cm (20호)" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
+              <input id="ed-size" placeholder="예: 72.7 × 60.6 cm (20호)" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
             <div style="flex:1"><label class="flab">제품 타입</label>
-              <input id="ed-ptype" placeholder="예: Oil on canvas" style="width:100%;margin-top:4px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
+              <input id="ed-ptype" placeholder="예: Oil on canvas" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
           </div>
           <div><label class="flab">상세 설명 (클릭 시)</label>
-            <textarea id="ed-desc" placeholder="작품 설명…" style="width:100%;margin-top:4px;min-height:100px;background:#101116;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:inherit;resize:vertical"></textarea></div>
+            <textarea id="ed-desc" placeholder="작품 설명…" style="width:100%;margin-top:4px;min-height:100px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:inherit;resize:vertical"></textarea></div>
         </div>
       </div>
       <div style="border-top:1px solid var(--line);margin-top:18px;padding-top:16px">
@@ -996,7 +998,7 @@ function renderBg(){
     const b=bgs[path]||{};
     const motion=BG_MOTION.some(([v])=>v===b.motion)?b.motion:'none';
     const op=b.opacity!=null?b.opacity:1;
-    return `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#101116;border:1px solid var(--line);border-radius:10px;padding:10px">
+    return `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--field-bg);border:1px solid var(--field-line);border-radius:10px;padding:10px">
       <div style="flex:none;width:120px;font-size:var(--fs-sm,13px)">${label}</div>
       <img src="${escAttr(b.src||'')}" style="width:64px;height:40px;object-fit:cover;border-radius:6px;background:var(--panel);border:1px solid var(--line);${b.src?'':'visibility:hidden'}">
       <button class="btn ghost btn sm" data-bgpick="${path}">이미지</button>
