@@ -63,6 +63,9 @@
   .fields input{width:100%;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:6px;padding:6px 8px;font-size:13px}
   .fields input:focus{outline:none;border-color:#4a4d57}
   .rowbtns{display:flex;gap:6px;margin-top:2px;flex-wrap:wrap}
+  /* 삭제 버튼은 묶음의 가장 왼쪽에 홀로 두고(order:-1) 나머지(편집·복제·이동)는 오른쪽으로 민다(margin-right:auto).
+     자주 쓰는 버튼과 떨어져 있어 실수로 삭제를 누를 일이 준다. */
+  .rowbtns .danger{order:-1;margin-right:auto}
 
   /* image library */
   .imgcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -122,7 +125,7 @@
   .modal.open{display:flex}
   .sheet{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(900px,96vw);max-height:86vh;display:flex;flex-direction:column}
   .sheet .shead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
-  .sheet .sbody{padding:16px;overflow:auto;overscroll-behavior:contain}   /* 모달 안 스크롤이 끝에 닿아도 뒤 화면으로 넘어가지 않게(scroll chaining 차단) */
+  .sheet .sbody{padding:16px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}   /* 모달 안 스크롤이 끝에 닿아도 뒤 화면으로 넘어가지 않게(scroll chaining 차단) */
   /* 모달이 열리면 뒤 화면 스크롤을 잠근다 — 모바일에서 편집 모달을 열었을 때 배경이 딸려 스크롤되던 것 방지 */
   body:has(.modal.open){overflow:hidden}
   .picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(110px,100%),1fr));gap:10px}
@@ -229,7 +232,7 @@
   .fab{position:fixed;right:16px;bottom:16px;z-index:50;display:none;align-items:center;gap:6px;
     background:var(--acc);color:#fff;border:0;border-radius:999px;padding:14px 22px;font-size:17px;font-weight:600;
     box-shadow:0 6px 18px rgba(0,0,0,.45);cursor:pointer;white-space:nowrap}
-  @media (max-width:699px){ .fab.show{display:inline-flex} }
+  @media (max-width:699px){ .fab.show{display:inline-flex} #addSlide{display:none} }   /* 모바일: 상단 +슬라이드 추가는 하단 플로팅 버튼이 대신하므로 숨긴다 */
   body:has(.modal.open) .fab{display:none}
   body.big .fab{font-size:19px;padding:16px 24px}
   /* 슬라이드 편집 상단 대표이미지 컬럼: 데스크톱은 240px 고정, 좁은 화면에선 폭을 다 써 이미지·버튼이 꽉 차게 */
@@ -408,7 +411,7 @@
   <div class="sheet">
     <div class="shead"><strong>슬라이드 편집</strong><span id="editSub" style="color:var(--mut);font-size:var(--fs-sm,12px);margin-left:8px"></span><div class="sp"></div>
       <button class="btn ghost sm" id="editClose">닫기</button></div>
-    <div class="sbody" style="max-height:78vh;overflow:auto">
+    <div class="sbody" style="max-height:78vh;overflow-y:auto;overflow-x:hidden">
       <div style="display:flex;gap:20px;flex-wrap:wrap">
         <div class="ed-thumbcol">
           <div id="editThumb" style="aspect-ratio:4/3;background:#000;border-radius:8px;overflow:hidden;cursor:pointer;position:relative">
