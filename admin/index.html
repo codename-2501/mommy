@@ -409,12 +409,15 @@
             <div style="font-size:var(--fs-xs,11px);color:var(--mut);margin-top:4px">하단 타임라인·좌우 순서가 이 날짜(연·월) 기준으로 정렬됩니다. 날짜순 모드에선 필수 — 비우면 작품이 맨 끝에 그룹 없이 묻힙니다.</div></div>
           <div><label class="flab">상세 제목 (클릭 시)</label>
             <input id="ed-title" placeholder="작품 제목" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
-          <div style="display:flex;gap:10px">
-            <div style="flex:1"><label class="flab">제품 규격</label>
-              <input id="ed-size" placeholder="예: 72.7 × 60.6 cm (20호)" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
-            <div style="flex:1"><label class="flab">제품 타입</label>
-              <input id="ed-ptype" placeholder="예: Oil on canvas" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
-          </div>
+          <div><label class="flab">제품 규격 (가로 × 세로 · 호)</label>
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <input id="ed-w" type="number" step="0.1" inputmode="decimal" placeholder="가로" style="flex:1;min-width:0;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px">
+              <input id="ed-h" type="number" step="0.1" inputmode="decimal" placeholder="세로" style="flex:1;min-width:0;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px">
+              <input id="ed-ho" type="number" inputmode="numeric" placeholder="호" style="flex:1;min-width:0;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px">
+            </div>
+            <div style="font-size:var(--fs-xs,11px);color:var(--mut);margin-top:4px">cm 표기는 자동 조합됩니다 — 예: 72.7 × 60.6 cm (20호). 사이즈별 정렬은 호 기준입니다.</div></div>
+          <div><label class="flab">제품 타입</label>
+            <input id="ed-ptype" placeholder="예: Oil on canvas" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
           <div><label class="flab">상세 설명 (클릭 시)</label>
             <textarea id="ed-desc" placeholder="작품 설명…" style="width:100%;margin-top:4px;min-height:100px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:inherit;resize:vertical"></textarea></div>
         </div>
@@ -924,7 +927,11 @@ function openEditModal(i){
   $('#ed-top').value=s.top||''; $('#ed-bottom').value=s.bottom||'';
   $('#ed-category').value=s.category||'';
   $('#ed-title').value=s.title||''; $('#ed-desc').value=s.desc||'';
-  $('#ed-size').value=s.size||''; $('#ed-ptype').value=s.ptype||'';
+  $('#ed-ptype').value=s.ptype||'';
+  /* 규격: 저장된 가로/세로/호(w/h/ho)를 우선 쓰고, 없으면 기존 size 문자열에서 뽑아 채운다(하위호환) */
+  let _W=s.w, _H=s.h, _HO=s.ho;
+  if(_W==null && _H==null && _HO==null){ const sz=String(s.size||''); const dm=sz.match(/([\d.]+)\s*[×xX]\s*([\d.]+)/); const hm=sz.match(/(\d+)\s*호/); if(dm){_W=dm[1];_H=dm[2];} if(hm)_HO=hm[1]; }
+  $('#ed-w').value=_W!=null?_W:''; $('#ed-h').value=_H!=null?_H:''; $('#ed-ho').value=_HO!=null?_HO:'';
   $('#ed-date').value=(s.date||'').slice(0,7);
   $('#editThumbImg').src=s.image||'';
   renderMediaList(); hideEditPicker();
@@ -937,9 +944,22 @@ $('#ed-date').addEventListener('input',e=>{
 function closeEditModal(){ $('#editModal').classList.remove('open'); renderSlides(); }
 $('#editClose').onclick=closeEditModal;
 $('#editModal').addEventListener('click',e=>{ if(e.target.id==='editModal')closeEditModal(); });
-[['ed-bottom','bottom'],['ed-category','category'],['ed-title','title'],['ed-desc','desc'],['ed-size','size'],['ed-ptype','ptype']].forEach(([id,key])=>{
+[['ed-bottom','bottom'],['ed-category','category'],['ed-title','title'],['ed-desc','desc'],['ed-ptype','ptype']].forEach(([id,key])=>{
   $('#'+id).addEventListener('input',e=>{ if(editTarget!=null){ cfg.slides[editTarget][key]=e.target.value; dirty(); } });
 });
+/* 규격 3칸(가로/세로/호): 각 값을 w/h/ho 로 저장하고, 표시·상세용 size 문자열(cm 표기)을 자동 조합한다.
+   사이즈별 정렬은 ho 를 쓴다(사이트 쪽). size 는 상세의 Size 줄에 그대로 보이는 표시값. */
+function syncSize(){
+  if(editTarget==null) return;
+  const sl=cfg.slides[editTarget];
+  const w=$('#ed-w').value.trim(), h=$('#ed-h').value.trim(), ho=$('#ed-ho').value.trim();
+  sl.w=w; sl.h=h; sl.ho=ho;
+  const dim = (w&&h) ? (w+' × '+h+' cm') : ((w||h) ? ((w||h)+' cm') : '');
+  const hos = ho ? (ho+'호') : '';
+  sl.size = (dim && hos) ? (dim+' ('+hos+')') : (dim || hos);
+  dirty();
+}
+['ed-w','ed-h','ed-ho'].forEach(id=>{ $('#'+id).addEventListener('input',syncSize); });
 // paragraph count changes live -> refresh position options so the shown slot always matches
 // the current text (prevents Ctrl+S saving a media at a slot different from the visible one)
 $('#ed-desc').addEventListener('input',()=>{ if(editTarget!=null) renderMediaList(); });

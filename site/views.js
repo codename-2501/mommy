@@ -494,6 +494,9 @@ function hslOf(hex) {
 }
 
 function hoOf(s) {
+  /* the 호 is its own field now (admin: 규격 가로/세로/호). Prefer it; fall back to parsing it out of the
+     size string for any slide saved before the split. -1 means "no 호" and sorts to the end. */
+  if (s.ho != null && String(s.ho).trim() !== '') { const n = parseInt(s.ho, 10); if (!isNaN(n)) return n; }
   const m = /(\d+)\s*호/.exec(String(s.size || ''));
   return m ? parseInt(m[1], 10) : -1;
 }
