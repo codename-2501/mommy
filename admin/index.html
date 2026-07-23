@@ -476,6 +476,9 @@
             <div style="font-size:var(--fs-xs,11px);color:var(--mut);margin-top:4px">cm 표기는 자동 조합됩니다 — 예: 72.7 × 60.6 cm (20호). 사이즈별 정렬은 호 기준입니다.</div></div>
           <div><label class="flab">제품 타입</label>
             <input id="ed-ptype" placeholder="예: Oil on canvas" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
+          <div><label class="flab">가격</label>
+            <input id="ed-price" placeholder="예: 3,000,000원 · 문의 등" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px">
+            <label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:var(--fs-sm,12px);color:var(--mut);cursor:pointer"><input type="checkbox" id="ed-price-show" style="width:auto;flex:none"> 상세 페이지에 가격 표시 (입력값을 그대로 노출)</label></div>
           <div><label class="flab">상세 설명 (클릭 시)</label>
             <textarea id="ed-desc" placeholder="작품 설명…" style="width:100%;margin-top:4px;min-height:100px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:inherit;resize:vertical"></textarea></div>
         </div>
@@ -657,6 +660,7 @@ function loadWordmark(){
   ['l1','l2','l3'].forEach(k=>{ const el=$('#wm-'+k); if(el) el.value=w[k]||''; });
   const img=$('#wm-img');
   if(img){ img.src=w.image||''; img.style.visibility=w.image?'visible':'hidden'; }
+  const cl=$('#clearLogo'); if(cl) cl.style.display=w.image?'':'none';   // 지움은 이미지가 있을 때만
 }
 function wmObj(){ if(!cfg.wordmark||typeof cfg.wordmark!=='object') cfg.wordmark={}; return cfg.wordmark; }
 $('#pickLogo').onclick=()=>{ pickMode='logo'; openPicker(); };
@@ -680,6 +684,9 @@ function renderMetaImages(){
   const fav=$('#mt-fav-img'), og=$('#mt-og-img');
   fav.src=m.favicon||''; fav.style.visibility=m.favicon?'visible':'hidden';
   og.src=m.ogImage||'';  og.style.visibility=m.ogImage?'visible':'hidden';
+  const cf=$('#clearFavicon'), co=$('#clearOg');   // 지움은 이미지가 있을 때만
+  if(cf) cf.style.display=m.favicon?'':'none';
+  if(co) co.style.display=m.ogImage?'':'none';
 }
 [['#mt-title','title'],['#mt-desc','description'],['#mt-url','siteUrl']].forEach(([sel,key])=>{
   $(sel).addEventListener('input',()=>{
@@ -1007,6 +1014,7 @@ function openEditModal(i){
   $('#ed-category').value=s.category||'';
   $('#ed-title').value=s.title||''; $('#ed-desc').value=s.desc||'';
   $('#ed-ptype').value=s.ptype||'';
+  $('#ed-price').value=s.price||''; $('#ed-price-show').checked=!!s.priceShow;
   /* 규격: 저장된 가로/세로/호(w/h/ho)를 우선 쓰고, 없으면 기존 size 문자열에서 뽑아 채운다(하위호환) */
   let _W=s.w, _H=s.h, _HO=s.ho;
   if(_W==null && _H==null && _HO==null){ const sz=String(s.size||''); const dm=sz.match(/([\d.]+)\s*[×xX]\s*([\d.]+)/); const hm=sz.match(/(\d+)\s*호/); if(dm){_W=dm[1];_H=dm[2];} if(hm)_HO=hm[1]; }
@@ -1023,9 +1031,10 @@ $('#ed-date').addEventListener('input',e=>{
 function closeEditModal(){ $('#editModal').classList.remove('open'); renderSlides(); }
 $('#editClose').onclick=closeEditModal;
 $('#editModal').addEventListener('click',e=>{ if(e.target.id==='editModal')closeEditModal(); });
-[['ed-bottom','bottom'],['ed-category','category'],['ed-title','title'],['ed-desc','desc'],['ed-ptype','ptype']].forEach(([id,key])=>{
+[['ed-bottom','bottom'],['ed-category','category'],['ed-title','title'],['ed-desc','desc'],['ed-ptype','ptype'],['ed-price','price']].forEach(([id,key])=>{
   $('#'+id).addEventListener('input',e=>{ if(editTarget!=null){ cfg.slides[editTarget][key]=e.target.value; dirty(); } });
 });
+$('#ed-price-show').addEventListener('change',e=>{ if(editTarget!=null){ cfg.slides[editTarget].priceShow=e.target.checked; dirty(); } });
 /* 규격 3칸(가로/세로/호): 각 값을 w/h/ho 로 저장하고, 표시·상세용 size 문자열(cm 표기)을 자동 조합한다.
    사이즈별 정렬은 ho 를 쓴다(사이트 쪽). size 는 상세의 Size 줄에 그대로 보이는 표시값. */
 function syncSize(){
@@ -1129,7 +1138,7 @@ function renderBg(){
       <div class="imgpick__body">
         <div style="font-weight:600">${label}</div>
         <div class="imgpick__btns">
-          <button class="btn ghost btn sm danger" data-bgclear="${path}">지움</button>
+          ${b.src?`<button class="btn ghost btn sm danger" data-bgclear="${path}">지움</button>`:''}
           <button class="btn ghost btn sm" data-bgpick="${path}">이미지</button>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
