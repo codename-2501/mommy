@@ -118,6 +118,7 @@
   .hint{font-size:12px;color:var(--mut);margin-bottom:12px}
 
   .modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:clamp(10px,3vw,24px)}
+  #editPickerWrap{z-index:70}   /* 편집 모달(60) 위에 뜨는 이미지 선택 팝업 */
   .modal.open{display:flex}
   .sheet{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(900px,96vw);max-height:86vh;display:flex;flex-direction:column}
   .sheet .shead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
@@ -181,7 +182,7 @@
   body.big .card-s{font-size:15px}
   body.big .hint,body.big .hint b{font-size:15px;line-height:1.6}
   /* 고정폭은 큰 글씨에서 글자를 자르므로 넓혀 준다 — 옵션 라벨·선택칸·날짜칸 */
-  body.big .blk-opt > span{width:auto;min-width:56px}
+  body.big .blk-opt > span{width:78px}   /* 고정폭+우측정렬(상속)이라 라벨 길이가 달라도 옆의 select 시작이 한 줄로 맞는다 */
   body.big .blk-opt > .blk-sel{width:auto;min-width:150px}
   body.big .cv-date{flex-basis:150px}
   /* 카드·이미지 격자는 최소폭을 살짝 키워, 커진 버튼이 카드 안에서 억지로 접히지 않게 한다 */
@@ -419,16 +420,20 @@
           <button class="btn ghost sm" id="editAddVid">+ 영상(유튜브)</button>
         </div>
         <div id="editMediaList" style="display:flex;flex-direction:column;gap:10px;margin-top:12px"></div>
-        <div id="editPickerWrap" style="display:none;margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--panel2)">
-          <div style="display:flex;align-items:center;margin-bottom:8px"><strong id="editPickerTitle" style="font-size:var(--fs-sm,12px)">이미지 선택</strong>
-            <div class="sp" style="flex:1"></div>
-            <label class="btn ghost sm" style="position:relative;overflow:hidden">업로드<input type="file" id="editPickUpload" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
-            <button class="btn ghost sm" id="editPickerCancel">취소</button></div>
-          <div id="editPickerGrid" class="picker" style="max-height:260px;overflow:auto"></div>
-        </div>
         <div class="hint" style="margin-top:10px">상세 클릭 시 이 순서대로 이미지·영상이 <b>세로로</b> 표시됩니다(원본 양식). 순서(위치)는 각 항목의 ↑ ↓ 로 조정합니다. 비우면 대표 이미지 1장만 나옵니다.</div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- 편집 중 이미지 추가·대표이미지 변경: 편집 모달 위에 뜨는 독립 팝업 (예전엔 편집 모달 안에 인라인으로 열려
+     내용이 하단으로 넘쳤다). 편집 모달보다 위(z-index 70)에 뜨고, 시트 안에서 스크롤된다. -->
+<div class="modal" id="editPickerWrap">
+  <div class="sheet">
+    <div class="shead"><strong id="editPickerTitle">이미지 선택</strong><div class="sp"></div>
+      <label class="btn ghost sm" style="position:relative;overflow:hidden">업로드<input type="file" id="editPickUpload" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
+      <button class="btn ghost sm" id="editPickerCancel">닫기</button></div>
+    <div class="sbody"><div id="editPickerGrid" class="picker"></div></div>
   </div>
 </div>
 
@@ -874,10 +879,9 @@ function showEditPicker(mode){
     };
     g.appendChild(d);
   });
-  $('#editPickerWrap').style.display='block';
-  $('#editPickerWrap').scrollIntoView({block:'nearest'});
+  $('#editPickerWrap').classList.add('open');   // 독립 모달로 띄운다 (편집 모달 위에 겹쳐)
 }
-function hideEditPicker(){ $('#editPickerWrap').style.display='none'; }
+function hideEditPicker(){ $('#editPickerWrap').classList.remove('open'); }
 $('#editPickerCancel').onclick=hideEditPicker;
 $('#editPickUpload').onchange=e=>doUpload(e,()=>showEditPicker(editPickMode));
 $('#editAddImg').onclick=()=>showEditPicker('media');
