@@ -336,7 +336,7 @@
 <section class="view active" id="view-slides">
   <div class="toolbar">
     <button class="btn" id="addSlide">+ 슬라이드 추가</button>
-    <input type="search" id="qSlide" placeholder="번호·문구로 검색">
+    <input type="search" id="qSlide" placeholder="번호·문구·제목·내용 검색">
     <span class="count" id="countSlide"></span>
     <span class="sp"></span>
     <label style="font-size:var(--fs-sm,12px);color:var(--mut)">정렬</label>
@@ -830,7 +830,8 @@ function renderSlides(){
   const q=($('#qSlide').value||'').toLowerCase().trim();
   const g=$('#slideGrid'); g.innerHTML=''; let shown=0;
   cfg.slides.forEach((s,i)=>{
-    const hay=(i+1)+' '+(s.top||'')+' '+(s.bottom||'');
+    /* 검색 범위: 번호·위/아래 문구뿐 아니라 제목·상세설명·카테고리·타입·규격까지 훑는다 */
+    const hay=[(i+1),s.top,s.bottom,s.title,s.desc,s.category,s.ptype,s.size].map(x=>x==null?'':x).join(' ');
     if(q && !hay.toLowerCase().includes(q)) return; shown++;
     /* a work with no image shows nothing; in date order a work with no date is buried at the end
        with no month band — both read as "it never registered". Flag them so they cannot hide. */
