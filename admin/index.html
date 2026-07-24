@@ -36,6 +36,7 @@
   .descblock{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px}   /* 상세 설명도 미디어와 같은 '덩어리'로 — 실제 노출 순서 안에 놓인다 */
   /* 순서 뱃지: 순서가 있는 목록의 각 객체 앞에 노출 순번을 붙인다(미디어·상세설명·소개 블록·이력 항목 공통) */
   .ordbadge{display:inline-flex;align-items:center;justify-content:center;padding:3px 9px;border-radius:6px;background:var(--acc);color:#fff;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;flex:none;line-height:1.1;text-align:center}   /* 카테고리 뱃지처럼 사각 라운드 · 숫자 중앙 정렬 */
+  body.big .ordbadge{font-size:17px;padding:4px 11px;border-radius:7px}   /* 큰글씨모드: 순번 뱃지도 키워 잘 보이게 */
   .btn.ico{display:inline-flex;align-items:center;justify-content:center;padding:8px 10px}
   .btn.ico.active{background:var(--ink);color:#0f0f11;border-color:var(--ink)}   /* 설정 화면일 때 아이콘 활성 표시 */
   @media (max-width:699px){ #save{display:none} }   /* 모바일: 상단 저장 버튼은 숨긴다(플로팅 일괄저장이 대신) */
