@@ -76,10 +76,12 @@ function buildBody(s) {
   const emit = (i) => {
     for (const m of media) {
       if (slot(m) !== i) continue;
-      /* 크기 %: 'full'/'half'(구형) 또는 % 숫자 → 본문 폭 대비 그 비율(종횡비 유지). 기본 50%(구형과 동일) */
+      /* 크기 %: 'full'/'half'(구형) 또는 % 숫자 → 본문 폭 대비 그 비율(종횡비 유지).
+         기본값은 타입별 구형 동작 그대로 — 영상 100%, 이미지 50% */
+      const defPct = (m.type === 'video') ? 100 : 50;
       const sz = m.size;
-      let pct = (sz === 'full') ? 100 : (sz == null || sz === '' ? 50 : (sz === 'half' ? 50 : parseInt(sz, 10)));
-      if (!(pct > 0 && pct <= 100)) pct = 50;
+      let pct = (sz === 'full') ? 100 : (sz === 'half') ? 50 : (sz == null || sz === '') ? defPct : parseInt(sz, 10);
+      if (!(pct > 0 && pct <= 100)) pct = defPct;
       const fig = el('figure', 'dt-fig dt-fig--' + (m.align || 'center'));
       if (m.type === 'video' && (m.videoId || m.url)) {
         const vid = m.videoId || (String(m.url).match(/(?:v=|\/embed\/|youtu\.be\/|\/shorts\/)([\w-]{6,})/) || [])[1];
