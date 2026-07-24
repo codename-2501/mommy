@@ -23,6 +23,9 @@ let pendingFlip = null;       // clicked painting rect/src for the detail FLIP
 let flipSources = [];         // home media hidden while their ghosts are in the detail
 let activeView = null;        // flow/index/about instance (destroy on route change)
 let lastViewPath = '/';       // where the detail Close returns to
+/* detail close: also move flow/index to the painting you last paged to (timeline already did).
+   Set false to revert to the old behaviour (flow/index return to where they opened from). */
+const SYNC_CLOSE_TO_LAST_VIEWED = true;
 let viewEl = null;            // the view that is CURRENT — never the one on its way out
 let leaving = null;           // {el, inst, car, timers} still animating out
 let navGen = 0;               // a newer navigation retires the transition in flight
@@ -1326,7 +1329,10 @@ function render() {
       content, aspects,
       order: flip && flip.order,     // page prev/next in the order the opening view showed (index sort etc.)
       closePath: lastViewPath,
-      onSync: (i) => { if (carousel) carousel.goTo(i); },
+      onSync: (i) => {
+        if (carousel) carousel.goTo(i);
+        else if (SYNC_CLOSE_TO_LAST_VIEWED && activeView && activeView.goTo) activeView.goTo(i);
+      },
       onLeave: flyDetailHome,     // the paintings fly back into the view +
       /* …and whatever did not make it is healed whole — but ONLY if this view is still the live one. If a
          navigation ran while the detail was closing, viewEl is already the NEXT view (built, its slots laid
