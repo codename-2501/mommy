@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-store">
-<meta name="admin2-build" content="savefab-onclose-v4">
+<meta name="admin2-build" content="block-contrast-v5">
 <title>LSE GALLERY — admin2 (프로토타입)</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -37,19 +37,19 @@
   .field input,.field select,.field textarea,.af input,.af select,.af textarea,.aitem input{scroll-margin-bottom:200px;scroll-margin-top:80px}
   /* about block editor */
   .addb{background:#e85c4a;border-color:#e85c4a;color:#fff;font-weight:600}
-  .ablk{background:#0a0b0e;border:1px solid #2a2c33;border-radius:10px;overflow:hidden}
-  .ablk__h{display:flex;align-items:center;gap:6px;padding:10px 12px;background:#191b20;border-bottom:1px solid #2a2c33}
+  .ablk{background:#3a414e;border:1px solid #5c6575;border-radius:12px;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,.45)}   /* 배경보다 밝은 회색 카드 — 블록 경계 뚜렷 */
+  .ablk__h{display:flex;align-items:center;gap:6px;padding:10px 12px;background:#4a5262;border-bottom:1px solid #5c6575}
   .ablk__h .btag{font-size:20px;font-weight:700;color:#e85c4a}
   .ablk__h .sp{flex:1}
   .ablk__h button{width:48px;height:42px;padding:0;font-size:19px;flex:none}
   .ablk__h button.del{width:auto;padding:0 14px;color:#f0a99f;border-color:#7a2f2a}
   .ablk__h button:disabled{opacity:.3}
   .ablk__b{padding:12px;display:flex;flex-direction:column;gap:12px}
-  .af label{display:block;font-size:18px;color:#a6a8ae;margin-bottom:5px}
-  .af input,.af select,.af textarea,.aitem input{width:100%;background:#0a0b0e;border:1px solid #484d59;color:#eceae4;border-radius:8px;padding:12px 13px;font:inherit}
+  .af label{display:block;font-size:18px;color:#cdd0d8;margin-bottom:5px}
+  .af input,.af select,.af textarea,.aitem input{width:100%;background:#0d0f13;border:1px solid #6b7285;color:#eceae4;border-radius:8px;padding:12px 13px;font:inherit}
   .af textarea{min-height:60px;resize:none;overflow:hidden}
   .af-row{display:flex;gap:8px}.af-row>.af{flex:1}
-  .aitem{display:flex;gap:8px;align-items:flex-start;background:#141519;border:1px solid #2a2c33;border-radius:8px;padding:10px;margin-top:8px}
+  .aitem{display:flex;gap:8px;align-items:flex-start;background:#2a303b;border:1px solid #4a5262;border-radius:8px;padding:10px;margin-top:8px}
   .aitem .fields{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
   .aitem .rm{width:44px;height:44px;padding:0;flex:none}
   .acover{position:relative;width:100%;aspect-ratio:16/9;background:#000;border:1px dashed #484d59;border-radius:8px;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#eceae4;font-weight:600}
