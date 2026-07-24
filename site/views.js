@@ -739,15 +739,15 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     blobAnim.onfinish = () => { if (blobAnim) { blobAnim.cancel(); blobAnim = null; } };
   }
 
-  /* 방향 화살표(Date·Size)는 '한 번만' 만든 영속 span — 매 paintBar 마다 새로 만들면 이미 is-on 인 순간 생성돼
-     transition 없이 opacity 1 로 즉시 떠버린다(=클릭 즉시 등장). 재사용하면 opacity 0→1 전환이 제대로 걸린다. */
-  const mkDir = (b) => { if (!b) return null; const s = el('span', 'agrid-sort__dir'); b.appendChild(s); return s; };
-  const sizeDir = mkDir(btns.find((b) => b.dataset.mode === 'size'));
-  const dateDir = mkDir(btns.find((b) => b.dataset.mode === 'date'));
+  /* Size 방향 화살표(↑/↓): '한 번만' 만든 영속 span — 매 paintBar 마다 새로 만들면 이미 is-on 인 순간 생성돼
+     transition 없이 opacity 1 로 즉시 떠버린다. 재사용하면 opacity 0→1 전환이 제대로 걸린다. */
+  const sizeBtn0 = btns.find((b) => b.dataset.mode === 'size');
+  const sizeDir = sizeBtn0 ? (() => { const s = el('span', 'agrid-sort__dir'); sizeBtn0.appendChild(s); return s; })() : null;
+  const dateBtn0 = btns.find((b) => b.dataset.mode === 'date');
   function paintBar() {
     btns.forEach((b) => b.classList.toggle('is-on', b.dataset.mode === indexSort));
-    /* Date·Size show their direction while in use — an arrow that flips on the repeat click */
-    if (dateDir) dateDir.textContent = indexSort === 'date' ? (indexDateDir === 'asc' ? '←' : '→') : '';
+    /* Date 는 화살표 대신 라벨 자체가 Latest/Oldest 로 바뀐다(누를 때마다 스위칭). Size 는 ↑/↓ 화살표. */
+    if (dateBtn0) dateBtn0.textContent = indexDateDir === 'asc' ? 'Oldest' : 'Latest';
     if (sizeDir) sizeDir.textContent = indexSort === 'size' ? (indexSizeDir === 'asc' ? '↑' : '↓') : '';
     pal.classList.toggle('is-open', indexSort === 'color');   // the palette shows only in Color
     swBtns.forEach((b) => b.classList.toggle('is-on', b.dataset.bucket === indexColor));
