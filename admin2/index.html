@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LSE GALLERY — admin2 (프로토타입)</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:#0f0f11;color:#eceae4}
+  #bar{position:fixed;top:0;left:0;right:0;height:54px;z-index:10;display:flex;align-items:center;gap:8px;padding:0 12px;
+       background:rgba(15,15,17,.96);backdrop-filter:blur(8px);border-bottom:1px solid #2a2c33}
+  #bar b{font-size:12px;letter-spacing:.08em;white-space:nowrap}
+  #bar b span{color:#8a8c94;font-weight:400}
+  .btn{border:1px solid #2a2c33;background:#17181c;color:#eceae4;padding:8px 12px;border-radius:8px;font-size:13px;cursor:pointer;
+       display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;line-height:1.2}
+  .btn:hover{border-color:#4a4d57}
+  .btn.primary{background:#e85c4a;border-color:#e85c4a;color:#fff;font-weight:600}
+  .btn.on{background:#3fb56b;border-color:#3fb56b;color:#08130c;font-weight:700}
+  #status{font-size:12px;color:#8a8c94;margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #status.ok{color:#3fb56b} #status.err{color:#e85c4a}
+  #frame{position:fixed;top:54px;left:0;right:0;bottom:0;width:100%;height:calc(100% - 54px);border:0;background:#fff}
+  #panel{position:fixed;top:54px;right:0;bottom:0;width:min(420px,92vw);z-index:9;background:#141519;border-left:1px solid #2a2c33;
+         transform:translateX(102%);transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;gap:12px;padding:16px;overflow:auto;overscroll-behavior:contain}
+  #panel.open{transform:none}
+  #panel h2{font-size:15px;font-weight:700}
+  #panel h2 span{color:#8a8c94;font-weight:400;font-size:12px}
+  .field label{display:block;font-size:12px;color:#8a8c94;margin-bottom:4px}
+  .field input,.field textarea{width:100%;background:#0a0b0e;border:1px solid #484d59;color:#eceae4;border-radius:8px;padding:10px 12px;font:inherit;resize:vertical}
+  .field textarea{min-height:120px}
+  .hint{font-size:12px;color:#8a8c94;line-height:1.5}
+  #gate{position:fixed;inset:0;z-index:100;background:#0f0f11;display:flex;align-items:center;justify-content:center;padding:24px}
+  #gate .card{width:min(400px,100%);background:#17181c;border:1px solid #2a2c33;border-radius:14px;padding:24px;text-align:center}
+  #gate input{width:100%;box-sizing:border-box;background:#0a0b0e;border:1px solid #484d59;color:#eceae4;border-radius:10px;padding:12px 14px;font-size:16px}
+  #gate .go{width:100%;margin-top:10px;background:#e85c4a;border:0;color:#fff;font-weight:700;border-radius:10px;padding:12px;font-size:16px;cursor:pointer}
+  #gate .err{color:#e85c4a;font-size:13px;min-height:18px;margin:8px 0 4px}
+  #toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,12px);z-index:20;background:#3fb56b;color:#08130c;font-weight:700;
+         padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+  @media (max-width:560px){
+    #panel{width:100%;top:auto;height:64%;border-left:0;border-top:1px solid #2a2c33;border-radius:16px 16px 0 0;transform:translateY(102%)}
+    #panel.open{transform:none}
+    #bar b span{display:none}
+  }
+</style>
+</head>
+<body>
+<div id="bar">
+  <b>ADMIN2 <span>· 인컨텍스트 편집 (프로토타입)</span></b>
+  <button class="btn" id="editToggle" type="button">편집 꺼짐</button>
+  <button class="btn primary" id="saveBtn" type="button" style="display:none">저장</button>
+  <span id="status">불러오는 중…</span>
+</div>
+<iframe id="frame" src="/" title="site"></iframe>
+<div id="panel" aria-hidden="true">
+  <h2>작품 편집 <span id="p-sub"></span></h2>
+  <div class="field"><label>상세 제목 (클릭 시 제목)</label><input id="f-title" placeholder="작품 제목"></div>
+  <div class="field"><label>가격 (입력하면 상세에 노출, 비우면 숨김)</label><input id="f-price" placeholder="예: 3,000,000원 · 문의"></div>
+  <div class="field"><label>상세 설명</label><textarea id="f-desc" placeholder="작품 설명…"></textarea></div>
+  <div class="hint">프론트에서 작품을 열면 이 패널로 바로 고칠 수 있습니다. 저장하면 공개 사이트에 반영됩니다(배포 ~30초 뒤).<br>
+    이미지·순서·소개 블록·이미지 라이브러리 등 나머지 작업은 기존 <b>/admin</b>에서 하세요.</div>
+</div>
+<div id="toast">저장되었습니다</div>
+<script>
+(function(){
+  const $=s=>document.querySelector(s);
+  const KEY='lse_admin_key';
+  const getKey=()=>localStorage.getItem(KEY)||'';
+  const orig=window.fetch.bind(window);
+  const api=(url,opts)=>{ opts=Object.assign({},opts); if(String(url).indexOf('/api/')!==-1){ const h=new Headers(opts.headers||{}); const k=getKey(); if(k)h.set('X-Admin-Key',k); opts.headers=h;} return orig(url,opts); };
+  async function verify(k){ try{ const r=await orig('/api/auth',{headers:{'X-Admin-Key':k}}); return r.status===200?'ok':(r.status===403?'bad':'unknown'); }catch(e){ return 'unknown'; } }
+
+  let content=null, baseVersion=null, editMode=false, curId=null, dirty=false;
+  const setStatus=(m,c='')=>{ const e=$('#status'); e.textContent=m; e.className=c; };
+
+  /* ---- login gate (틀리거나 비우면 통과 불가; 서버 /api/auth 검증) ---- */
+  function showGate(msg){
+    let g=document.getElementById('gate');
+    if(!g){
+      g=document.createElement('div'); g.id='gate';
+      g.innerHTML='<div class="card"><div style="font-size:20px;font-weight:700;margin-bottom:6px">admin2 로그인</div>'
+        +'<div style="font-size:14px;color:#8a8c94;margin-bottom:16px">관리자 비밀번호를 입력하세요.</div>'
+        +'<input id="g-pw" type="password" autocomplete="current-password" placeholder="관리자 비밀번호">'
+        +'<div class="err" id="g-err"></div><button class="go" id="g-go">확인</button></div>';
+      document.body.appendChild(g);
+      const pw=g.querySelector('#g-pw'), go=g.querySelector('#g-go'), err=g.querySelector('#g-err');
+      const submit=async()=>{ const v=(pw.value||'').trim(); if(!v){ err.textContent='비밀번호를 입력하세요.'; return; }
+        go.disabled=true; err.textContent='확인 중…'; const res=await verify(v);
+        if(res==='bad'){ err.textContent='비밀번호가 일치하지 않습니다.'; go.disabled=false; pw.value=''; pw.focus(); return; }
+        localStorage.setItem(KEY,v); g.remove(); boot(); };
+      go.onclick=submit; pw.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); submit(); } });
+      setTimeout(()=>pw.focus(),60);
+    }
+    if(msg) g.querySelector('#g-err').textContent=msg;
+  }
+
+  async function loadContent(){
+    content=await orig('/api/content?t='+Date.now()).then(r=>r.json());
+    baseVersion=content._version||null; delete content._version;
+    setStatus((content.slides||[]).length+'개 작품 · 프론트에서 작품을 여세요','');
+  }
+
+  /* ---- 현재 프론트가 보고 있는 작품 id (iframe /p/<id>) ---- */
+  function currentWorkId(){
+    try{ const p=$('#frame').contentWindow.location.pathname||''; return p.indexOf('/p/')===0 ? decodeURIComponent(p.slice(3)) : null; }
+    catch(e){ return null; }
+  }
+  function findSlide(id){ return (content&&content.slides||[]).find(s=>String(s.id)===String(id)); }
+
+  function openPanel(s){
+    $('#p-sub').textContent = s.id ? ('#'+s.id) : '';
+    $('#f-title').value = s.title||'';
+    $('#f-price').value = s.price||'';
+    $('#f-desc').value = s.desc||'';
+    $('#panel').classList.add('open'); $('#panel').setAttribute('aria-hidden','false');
+  }
+  function closePanel(){ $('#panel').classList.remove('open'); $('#panel').setAttribute('aria-hidden','true'); }
+
+  function refreshTarget(){
+    if(!editMode){ closePanel(); return; }
+    const id=currentWorkId();
+    if(id!==curId){ curId=id; const s=id&&findSlide(id); if(s) openPanel(s); else closePanel(); }
+    if(editMode && curId){ const s=findSlide(curId); setStatus(s?('편집 중: '+(s.title||('#'+curId))):'이 작품을 찾지 못했습니다','' ); }
+    else if(editMode){ setStatus('작품을 열면 편집 패널이 뜹니다',''); }
+  }
+
+  /* 필드 → 로컬 content 반영 */
+  function bindField(sel,key){ $(sel).addEventListener('input',e=>{ const s=curId&&findSlide(curId); if(!s)return; s[key]=e.target.value; dirty=true; $('#saveBtn').style.display=''; setStatus('저장되지 않은 변경 있음','err'); }); }
+
+  async function save(){
+    if(!dirty){ return; }
+    setStatus('저장 중…','');
+    const payload=Object.assign({},content,{_version:baseVersion});
+    try{
+      const r=await api('/api/content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json());
+      if(r.error){ setStatus('저장 실패: '+r.error,'err'); return; }
+      baseVersion=r.version||null; dirty=false; $('#saveBtn').style.display='none';
+      setStatus('저장됨 · 공개 반영은 배포 뒤(~30초)','ok');
+      const t=$('#toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1600);
+    }catch(e){ setStatus('저장 실패: '+e.message,'err'); }
+  }
+
+  function setEdit(on){
+    editMode=on;
+    $('#editToggle').textContent = on?'편집 켜짐':'편집 꺼짐';
+    $('#editToggle').classList.toggle('on', on);
+    refreshTarget();
+  }
+
+  function boot(){
+    loadContent().then(()=>{
+      bindField('#f-title','title'); bindField('#f-price','price'); bindField('#f-desc','desc');
+      $('#editToggle').onclick=()=>setEdit(!editMode);
+      $('#saveBtn').onclick=save;
+      /* iframe 이 SPA 라 URL 이 바뀌어도 load 이벤트가 안 뜬다 — 주소를 짧게 폴링해 현재 작품을 따라간다 */
+      setInterval(refreshTarget,500);
+      setStatus((content.slides||[]).length+'개 작품 · 편집을 켜고 작품을 여세요','');
+    }).catch(e=>setStatus('불러오기 실패: '+e.message,'err'));
+  }
+
+  /* 진입: 저장된 키가 있으면 검증, 없으면 게이트 */
+  (async()=>{
+    const k=getKey();
+    if(!k){ showGate(); return; }
+    const res=await verify(k);
+    if(res==='bad'){ localStorage.removeItem(KEY); showGate('저장된 비밀번호가 더 이상 유효하지 않습니다. 다시 입력하세요.'); return; }
+    boot();
+  })();
+})();
+</script>
+</body>
+</html>
