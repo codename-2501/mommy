@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-store">
-<meta name="admin2-build" content="site-settings-v1">
+<meta name="admin2-build" content="fabdock-v2">
 <title>LSE GALLERY — admin2 (프로토타입)</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -107,16 +107,13 @@
   .lrow .mv button{width:48px;height:32px;padding:0;font-size:16px}
   .lrow .mv button:disabled{opacity:.3;cursor:default}
   /* 저장 FAB — 편집 중 항상 보이는 저장(바가 잘려도 접근 가능). 패널 위(z9)·오버레이 아래 */
-  /* FAB 들은 프론트 상세의 하단 중앙 컨트롤(bottom:2rem) 위로 띄운다 — 겹침 방지 */
-  #saveFab{position:fixed;right:18px;bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:20;display:none;align-items:center;gap:8px;
-           background:#3fb56b;color:#08130c;font-weight:800;border:0;border-radius:999px;padding:16px 26px;font-size:20px;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.45)}
-  #saveFab.show{display:inline-flex}
-  /* 컨텍스트 FAB 도크 — 상세=편집 / 소개=소개 편집 / 갤러리=작품 목록(+슬라이드). 하단 중앙(상세 컨트롤 위) */
-  #fabDock{position:fixed;left:0;right:0;bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;justify-content:center;gap:12px;padding:0 12px;pointer-events:none;flex-wrap:wrap}
+  /* 모든 FAB 를 하나의 중앙 도크에 담아 flex 간격으로 절대 안 겹치게 한다. 상세 하단 컨트롤 위(bottom:112px) */
+  #fabDock{position:fixed;left:0;right:0;bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;justify-content:center;align-items:center;gap:12px;padding:0 12px;pointer-events:none;flex-wrap:wrap-reverse}
   #fabDock>button{pointer-events:auto;display:none;align-items:center;gap:8px;border:0;border-radius:999px;padding:16px 26px;font-size:20px;font-weight:800;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.45)}
   #fabDock>button.show{display:inline-flex}
   #editFab{background:#e85c4a;color:#fff}
   #addFab{background:#17181c;color:#eceae4;border:1px solid #4a4d57}
+  #saveFab{background:#3fb56b;color:#08130c}
   @media (max-width:560px){
     #panel,#apanel{width:100%;top:auto;bottom:var(--kb,0px);height:86dvh;max-height:calc(100dvh - var(--kb,0px));border-left:0;border-top:1px solid #2a2c33;border-radius:16px 16px 0 0;transform:translateY(102%)}
     #panel.open,#apanel.open{transform:none}
@@ -196,8 +193,7 @@
 </div></div>
 
 
-<div id="fabDock"><button id="editFab" type="button">편집</button><button id="addFab" type="button">+ 슬라이드</button></div>
-<button id="saveFab" type="button">저장하기</button>
+<div id="fabDock"><button id="editFab" type="button">편집</button><button id="addFab" type="button">+ 슬라이드</button><button id="saveFab" type="button">저장하기</button></div>
 <div id="toast">저장되었습니다</div>
 <script>
 (function(){
