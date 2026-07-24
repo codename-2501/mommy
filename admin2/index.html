@@ -97,7 +97,7 @@
   .setlabel{font-size:20px;font-weight:700}
   .lmode{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
   .lrow{display:flex;align-items:center;gap:12px;background:#0a0b0e;border:1px solid #2a2c33;border-radius:10px;padding:10px 12px}
-  .lrow .ord{min-width:36px;height:36px;padding:0 9px;display:inline-flex;align-items:center;justify-content:center;background:#e85c4a;color:#fff;font-weight:700;border-radius:8px;font-size:19px;flex:none}
+  .lrow .ord{width:48px;height:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#e85c4a;color:#fff;font-weight:700;border-radius:8px;font-size:19px;flex:none;font-variant-numeric:tabular-nums}
   .lrow .th{width:140px;height:100px;object-fit:cover;border-radius:8px;background:#000;flex:none}
   .lrow .linfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;cursor:pointer;padding:6px 0}
   .lrow .tt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:20px}
@@ -110,10 +110,12 @@
   #saveFab{position:fixed;right:18px;bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:20;display:none;align-items:center;gap:8px;
            background:#3fb56b;color:#08130c;font-weight:800;border:0;border-radius:999px;padding:16px 26px;font-size:20px;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.45)}
   #saveFab.show{display:inline-flex}
-  /* 컨텍스트 FAB — 상세=편집 / 소개=소개 편집 / 갤러리=작품 목록. 상세 하단 컨트롤 위쪽 중앙 */
-  #editFab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:20;display:none;align-items:center;gap:8px;
-           background:#e85c4a;color:#fff;font-weight:800;border:0;border-radius:999px;padding:16px 28px;font-size:20px;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.45)}
-  #editFab.show{display:inline-flex}
+  /* 컨텍스트 FAB 도크 — 상세=편집 / 소개=소개 편집 / 갤러리=작품 목록(+슬라이드). 하단 중앙(상세 컨트롤 위) */
+  #fabDock{position:fixed;left:0;right:0;bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;justify-content:center;gap:12px;padding:0 12px;pointer-events:none;flex-wrap:wrap}
+  #fabDock>button{pointer-events:auto;display:none;align-items:center;gap:8px;border:0;border-radius:999px;padding:16px 26px;font-size:20px;font-weight:800;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.45)}
+  #fabDock>button.show{display:inline-flex}
+  #editFab{background:#e85c4a;color:#fff}
+  #addFab{background:#17181c;color:#eceae4;border:1px solid #4a4d57}
   @media (max-width:560px){
     #panel,#apanel{width:100%;top:auto;bottom:var(--kb,0px);height:86dvh;max-height:calc(100dvh - var(--kb,0px));border-left:0;border-top:1px solid #2a2c33;border-radius:16px 16px 0 0;transform:translateY(102%)}
     #panel.open,#apanel.open{transform:none}
@@ -183,27 +185,17 @@
 
 <div id="listwrap"><div class="sheet">
   <div class="shd"><b>작품 목록</b>
-    <button class="btn sm primary" id="listAdd" type="button">+ 슬라이드</button>
     <button class="btn sm" id="listClose" type="button">닫기</button></div>
   <div class="list" id="listBody"></div>
 </div></div>
 
 <div id="settings"><div class="sheet">
   <div class="shd"><b>사이트 설정</b><button class="btn sm" id="settingsClose" type="button">닫기</button></div>
-  <div class="list">
-    <div class="setrow">
-      <div class="setlabel">작품 정렬 방식</div>
-      <div class="lmode">
-        <button class="btn sm" id="modeDate" type="button">날짜순</button>
-        <button class="btn sm" id="modeManual" type="button">수동 순서</button>
-      </div>
-      <div class="hint" id="lmodeHint"></div>
-    </div>
-  </div>
+  <div class="list" id="setBody"></div>
 </div></div>
 
 
-<button id="editFab" type="button">편집</button>
+<div id="fabDock"><button id="editFab" type="button">편집</button><button id="addFab" type="button">+ 슬라이드</button></div>
 <button id="saveFab" type="button">저장하기</button>
 <div id="toast">저장되었습니다</div>
 <script>
@@ -284,10 +276,14 @@
     else { const id=pIdOf(p); if(id&&findSlide(id)){ routeKind='slide'; routeId=id; } else { routeKind='list'; routeId=null; } }
   }
   function anyOverlayOpen(){ return $('#panel').classList.contains('open')||$('#apanel').classList.contains('open')||$('#listwrap').classList.contains('open')||$('#settings').classList.contains('open')||$('#picker').classList.contains('open'); }
+  // 인트로(.intro)가 떠 있는 동안엔 FAB 를 숨긴다 — enter 버튼을 가리지 않도록
+  function introActive(){ try{ const doc=$('#frame').contentDocument; if(!doc) return true; return !!doc.querySelector('.intro'); }catch(e){ return false; } }
   function updateEditFab(){
-    const fab=$('#editFab'); if(!fab) return;
-    fab.textContent = routeKind==='about' ? '소개 편집' : (routeKind==='slide' ? '편집' : '작품 목록');
-    fab.classList.toggle('show', !!(editMode && routeKind && !anyOverlayOpen()));
+    const ef=$('#editFab'), af=$('#addFab'); if(!ef) return;
+    const hidden = !editMode || !routeKind || anyOverlayOpen() || introActive();
+    ef.textContent = routeKind==='about' ? '소개 편집' : (routeKind==='slide' ? '편집' : '작품 목록');
+    ef.classList.toggle('show', !hidden);
+    if(af) af.classList.toggle('show', !hidden && routeKind==='list');   // + 슬라이드는 갤러리에서 작품 목록과 함께
   }
   function openEditFromFab(){
     computeRoute();
@@ -351,13 +347,55 @@
     else { delete content.meta.order; }
     markDirty(); renderSettings(); if($('#listwrap').classList.contains('open')) renderList();
   }
+  /* ---- 사이트 설정 (기존 admin 사이트 탭 전체: 정렬·워드마크·전환·파비콘/OG·배경) ---- */
+  const BG_MOTION=[['none','배경 없음'],['fixed','고정'],['follow','마우스 따라 (같은 방향)'],['invert','마우스 반대 방향'],['parallax','스크롤 패럴랙스']];
+  const BG_PAGES=[['/','홈'],['/flow','플로우'],['/articles','인덱스'],['/about','소개']];
+  function elDiv(cls){ const d=document.createElement('div'); if(cls) d.className=cls; return d; }
+  function setSection(title){ const s=elDiv('setrow'); if(title){ const l=elDiv('setlabel'); l.textContent=title; s.appendChild(l); } return s; }
+  function setHint(t){ const h=elDiv('hint'); h.textContent=t; return h; }
+  function setField(label){ const w=elDiv('field'); const l=document.createElement('label'); l.textContent=label; w.appendChild(l); return w; }
+  function setInput(label,obj,key,ph){ const w=setField(label); const e=document.createElement('input'); e.placeholder=ph||''; e.value=obj[key]!=null?obj[key]:''; e.oninput=()=>{ const v=e.value; if(v==='') delete obj[key]; else obj[key]=v; markDirty(); }; w.appendChild(e); return w; }
+  function setSelectF(label,obj,key,opts,def){ const w=setField(label); const e=document.createElement('select'); const cur=(obj[key]!=null&&obj[key]!=='')?String(obj[key]):String(def==null?opts[0][0]:def); opts.forEach(o=>{ const op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; if(String(o[0])===cur) op.selected=true; e.appendChild(op); }); e.onchange=()=>{ obj[key]=e.value; markDirty(); }; w.appendChild(e); return w; }
+  function setImageF(label,obj,key){ const w=setField(label); const c=elDiv('acover'); c.style.maxWidth='340px'; c.style.fontSize='16px'; if(obj[key]){ const im=document.createElement('img'); im.src=obj[key]; c.appendChild(im); } else c.textContent='＋ 이미지 적용'; c.onclick=()=>openPicker(name=>{ obj[key]='/images/'+name; markDirty(); renderSettings(); }); w.appendChild(c); if(obj[key]){ const rm=document.createElement('button'); rm.type='button'; rm.className='btn danger sm'; rm.style.marginTop='8px'; rm.textContent='지움'; rm.onclick=()=>{ delete obj[key]; markDirty(); renderSettings(); }; w.appendChild(rm); } return w; }
+  function setRangeF(label,obj,key,def){ const w=setField(label); const row=elDiv(''); row.style.cssText='display:flex;align-items:center;gap:12px'; const r=document.createElement('input'); r.type='range'; r.min='0.1'; r.max='1'; r.step='0.05'; r.value=obj[key]!=null?obj[key]:(def!=null?def:1); r.style.flex='1'; const val=document.createElement('span'); val.style.cssText='width:52px;color:#a6a8ae'; val.textContent=Number(r.value).toFixed(2); r.oninput=()=>{ obj[key]=parseFloat(r.value); val.textContent=Number(r.value).toFixed(2); markDirty(); }; row.appendChild(r); row.appendChild(val); w.appendChild(row); return w; }
+  function setModeBtns(){ const manual=metaOrder()==='manual'; const row=elDiv('lmode'); const mk=(label,mode,on)=>{ const b=document.createElement('button'); b.type='button'; b.className='btn sm'+(on?' on':''); b.textContent=label; b.onclick=()=>setOrderMode(mode); return b; }; row.appendChild(mk('날짜순','date',!manual)); row.appendChild(mk('수동 순서','manual',manual)); return row; }
+
   function renderSettings(){
-    const manual=metaOrder()==='manual';
-    if($('#modeDate')) $('#modeDate').classList.toggle('on',!manual);
-    if($('#modeManual')) $('#modeManual').classList.toggle('on',manual);
-    if($('#lmodeHint')) $('#lmodeHint').textContent = manual
-      ? '수동 순서: 작품 목록에서 ▲▼로 정한 순서 그대로 사이트에 노출됩니다(날짜는 라벨).'
-      : '날짜순: 최신 날짜가 먼저 나옵니다. 순서를 바꾸려면 각 작품의 날짜를 바꾸세요.';
+    const host=$('#setBody'); if(!host) return; host.innerHTML='';
+    if(!content){ host.innerHTML='<div class="hint" style="padding:14px">불러오는 중…</div>'; return; }
+    const meta=content.meta=content.meta||{}, wmk=content.wordmark=content.wordmark||{}, bg=content.backgrounds=content.backgrounds||{};
+    let sec=setSection('작품 정렬 방식');
+    sec.appendChild(setModeBtns());
+    sec.appendChild(setHint(metaOrder()==='manual' ? '수동 순서: 작품 목록에서 ▲▼로 정한 순서 그대로 사이트에 노출됩니다(날짜는 라벨).' : '날짜순: 최신 날짜가 먼저 나옵니다. 순서를 바꾸려면 각 작품의 날짜를 바꾸세요.'));
+    host.appendChild(sec);
+    sec=setSection('로고 / 워드마크 (인트로·홈 상단)');
+    sec.appendChild(setImageF('이미지 로고 (선택 — 넣으면 아래 3줄 대신 사용)', wmk, 'image'));
+    sec.appendChild(setInput('갤러리명', wmk, 'l1', '예: LSE GALLERY'));
+    sec.appendChild(setInput('부제', wmk, 'l2', '선택'));
+    sec.appendChild(setInput('연도', wmk, 'l3', '선택'));
+    host.appendChild(sec);
+    sec=setSection('화면 전환 (메뉴로 화면 이동 시)');
+    sec.appendChild(setSelectF('전환 방식', meta, 'motion', [['flip','기본 (그림이 날아감)'],['fade','페이드 인 / 아웃']], 'flip'));
+    host.appendChild(sec);
+    sec=setSection('사이트 (파비콘 · 링크 공유 미리보기)');
+    sec.appendChild(setHint('카카오톡 등에 링크를 붙이면 아래 제목·설명·이미지가 썸네일로 보입니다.'));
+    sec.appendChild(setInput('제목', meta, 'title', '탭·공유 제목'));
+    sec.appendChild(setInput('설명', meta, 'description', '공유 시 제목 아래 문구'));
+    sec.appendChild(setInput('주소', meta, 'siteUrl', '예: https://lsegallery.art'));
+    sec.appendChild(setImageF('파비콘', meta, 'favicon'));
+    sec.appendChild(setImageF('공유 썸네일 (OG 이미지)', meta, 'ogImage'));
+    host.appendChild(sec);
+    sec=setSection('페이지 배경');
+    sec.appendChild(setHint('페이지마다 배경 이미지·움직임을 정합니다. 비워두면 배경 없음이 기본입니다.'));
+    BG_PAGES.forEach(pl=>{ const path=pl[0], label=pl[1]; const b=bg[path]=bg[path]||{};
+      const card=elDiv('ablk'); const h=elDiv('ablk__h'); const tag=document.createElement('span'); tag.className='btag'; tag.textContent=label; h.appendChild(tag); card.appendChild(h);
+      const body=elDiv('ablk__b');
+      body.appendChild(setImageF('배경 이미지', b, 'src'));
+      body.appendChild(setSelectF('움직임', b, 'motion', BG_MOTION, 'none'));
+      body.appendChild(setRangeF('투명도', b, 'opacity', 1));
+      card.appendChild(body); sec.appendChild(card);
+    });
+    host.appendChild(sec);
   }
   function openSettings(){ renderSettings(); $('#settings').classList.add('open'); updateEditFab(); }
   function closeSettings(){ $('#settings').classList.remove('open'); updateEditFab(); }
@@ -562,10 +600,8 @@
     $('#openSettings').onclick=openSettings;
     $('#settingsClose').onclick=closeSettings;
     $('#settings').addEventListener('click',e=>{ if(e.target.id==='settings') closeSettings(); });
-    $('#listAdd').onclick=()=>{ addSlide(); $('#listwrap').classList.remove('open'); };
+    $('#addFab').onclick=()=>{ addSlide(); updateEditFab(); };
     $('#listClose').onclick=()=>{ $('#listwrap').classList.remove('open'); updateEditFab(); };
-    $('#modeDate').onclick=()=>setOrderMode('date');
-    $('#modeManual').onclick=()=>setOrderMode('manual');
     $('#listwrap').addEventListener('click',e=>{ if(e.target.id==='listwrap'){ $('#listwrap').classList.remove('open'); updateEditFab(); } });
     $('#panelClose').onclick=userClose;
     $('#delSlide').onclick=delSlide;
