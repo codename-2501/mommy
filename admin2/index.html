@@ -7,59 +7,63 @@
 <title>LSE GALLERY — admin2 (프로토타입)</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;font:16px/1.55 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:#0f0f11;color:#eceae4}
-  #bar{position:fixed;top:0;left:0;right:0;height:62px;z-index:10;display:flex;align-items:center;gap:8px;padding:0 12px;
-       background:rgba(15,15,17,.96);backdrop-filter:blur(8px);border-bottom:1px solid #2a2c33}
-  #bar b{font-size:13px;letter-spacing:.06em;white-space:nowrap}
+  html,body{height:100%;font:24px/1.5 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:#0f0f11;color:#eceae4}
+  /* top toolbar — 가로 스크롤 허용(폭 초과해도 안 깨짐), 저장은 별도 FAB */
+  #bar{position:fixed;top:0;left:0;right:0;height:60px;z-index:10;display:flex;align-items:center;gap:8px;padding:0 12px;
+       background:rgba(15,15,17,.96);backdrop-filter:blur(8px);border-bottom:1px solid #2a2c33;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  #bar::-webkit-scrollbar{display:none}
+  #bar b{font-size:15px;letter-spacing:.04em;white-space:nowrap;flex:none}
   #bar b span{color:#8a8c94;font-weight:400}
-  .btn{border:1px solid #2a2c33;background:#17181c;color:#eceae4;padding:11px 15px;border-radius:9px;font-size:15px;cursor:pointer;
+  #bar .btn{flex:none;font-size:18px;padding:9px 13px;border-radius:9px}
+  .btn{border:1px solid #2a2c33;background:#17181c;color:#eceae4;padding:12px 18px;border-radius:10px;font-size:22px;cursor:pointer;
        display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;line-height:1.2}
   .btn:hover{border-color:#4a4d57}
   .btn.primary{background:#e85c4a;border-color:#e85c4a;color:#fff;font-weight:600}
   .btn.on{background:#3fb56b;border-color:#3fb56b;color:#08130c;font-weight:700}
   .btn.danger{border-color:#7a2f2a;color:#f0a99f}
-  .btn.sm{padding:9px 13px;font-size:14px}
-  #status{font-size:14px;color:#8a8c94;margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:36vw}
+  .btn.sm{padding:10px 15px;font-size:19px}
+  #status{font-size:16px;color:#8a8c94;margin-left:auto;white-space:nowrap;flex:none;padding-left:6px}
   #status.ok{color:#3fb56b} #status.err{color:#e85c4a}
-  #frame{position:fixed;top:62px;left:0;right:0;bottom:0;width:100%;height:calc(100% - 62px);border:0;background:#fff}
-  #panel,#apanel{position:fixed;top:62px;right:0;bottom:0;width:min(500px,96vw);z-index:9;background:#141519;border-left:1px solid #2a2c33;
-         transform:translateX(102%);transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;gap:14px;padding:0 18px 18px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}
-  #panel>*,#apanel>*{min-width:0;max-width:100%}
+  #frame{position:fixed;top:60px;left:0;right:0;bottom:0;width:100%;height:calc(100% - 60px);border:0;background:#fff}
+  #panel,#apanel{position:fixed;top:60px;right:0;bottom:0;width:min(520px,96vw);z-index:9;background:#141519;border-left:1px solid #2a2c33;
+         transform:translateX(102%);transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}
   #panel.open,#apanel.open{transform:none}
-  /* 닫기/제목 헤더 상시 고정 */
-  .phead{position:sticky;top:0;z-index:6;background:#141519;margin:0 -18px 0;padding:14px 18px;border-bottom:1px solid #2a2c33}
+  /* 제목+닫기 헤더 상시 고정 (음수마진 없이 full-width → 우측 잘림 없음) */
+  .phead{position:sticky;top:0;z-index:6;background:#141519;display:flex;align-items:center;gap:8px;padding:16px 18px;border-bottom:1px solid #2a2c33}
+  .pbody{padding:16px 18px 22px;display:flex;flex-direction:column;gap:16px;min-width:0}
+  .pbody>*{min-width:0;max-width:100%}
   /* about block editor */
   .addb{background:#e85c4a;border-color:#e85c4a;color:#fff;font-weight:600}
   .ablk{background:#0a0b0e;border:1px solid #2a2c33;border-radius:10px;overflow:hidden}
-  .ablk__h{display:flex;align-items:center;gap:6px;padding:9px 11px;background:#191b20;border-bottom:1px solid #2a2c33}
-  .ablk__h .btag{font-size:15px;font-weight:700;color:#e85c4a}
+  .ablk__h{display:flex;align-items:center;gap:6px;padding:10px 12px;background:#191b20;border-bottom:1px solid #2a2c33}
+  .ablk__h .btag{font-size:20px;font-weight:700;color:#e85c4a}
   .ablk__h .sp{flex:1}
-  .ablk__h button{width:40px;height:32px;padding:0;font-size:15px}
-  .ablk__h button.del{width:auto;padding:0 12px;color:#f0a99f;border-color:#7a2f2a}
+  .ablk__h button{width:48px;height:42px;padding:0;font-size:19px;flex:none}
+  .ablk__h button.del{width:auto;padding:0 14px;color:#f0a99f;border-color:#7a2f2a}
   .ablk__h button:disabled{opacity:.3}
-  .ablk__b{padding:12px;display:flex;flex-direction:column;gap:10px}
-  .af label{display:block;font-size:14px;color:#a6a8ae;margin-bottom:4px}
-  .af input,.af select,.af textarea{width:100%;background:#0a0b0e;border:1px solid #484d59;color:#eceae4;border-radius:8px;padding:11px 12px;font:inherit}
-  .af textarea{min-height:84px;resize:vertical}
+  .ablk__b{padding:12px;display:flex;flex-direction:column;gap:12px}
+  .af label{display:block;font-size:18px;color:#a6a8ae;margin-bottom:5px}
+  .af input,.af select,.af textarea{width:100%;background:#0a0b0e;border:1px solid #484d59;color:#eceae4;border-radius:8px;padding:12px 13px;font:inherit}
+  .af textarea{min-height:96px;resize:vertical}
   .af-row{display:flex;gap:8px}.af-row>.af{flex:1}
-  .aitem{display:flex;gap:6px;align-items:flex-start;background:#141519;border:1px solid #2a2c33;border-radius:8px;padding:8px;margin-top:6px}
-  .aitem .fields{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0}
-  .aitem .rm{width:30px;height:30px;padding:0;flex:none}
+  .aitem{display:flex;gap:8px;align-items:flex-start;background:#141519;border:1px solid #2a2c33;border-radius:8px;padding:10px;margin-top:8px}
+  .aitem .fields{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+  .aitem .rm{width:44px;height:44px;padding:0;flex:none}
   .acover{position:relative;width:100%;aspect-ratio:16/9;background:#000;border:1px dashed #484d59;border-radius:8px;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#eceae4;font-weight:600}
   .acover img{width:100%;height:100%;object-fit:contain;background:#000}
-  .phead{display:flex;align-items:center;gap:8px}
-  .phead h2{font-size:19px;font-weight:700;flex:1;min-width:0}
-  .phead h2 span{color:#8a8c94;font-weight:400;font-size:14px}
-  .field label{display:block;font-size:15px;color:#a6a8ae;margin-bottom:5px}
-  .field input,.field textarea{width:100%;background:#0a0b0e;border:1px solid #484d59;color:#eceae4;border-radius:9px;padding:13px 14px;font:inherit;resize:vertical}
-  .field textarea{min-height:140px}
+  .phead h2{font-size:23px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .phead h2 span{color:#8a8c94;font-weight:400;font-size:17px}
+  .field label{display:block;font-size:20px;color:#a6a8ae;margin-bottom:6px}
+  .field input,.field select,.field textarea{width:100%;background:#0a0b0e;border:1px solid #484d59;color:#eceae4;border-radius:9px;padding:13px 14px;font:inherit;resize:vertical}
+  .field textarea{min-height:150px}
+  .field .datesel{display:flex;gap:8px}.field .datesel select{flex:1}
   .cover{position:relative;width:100%;aspect-ratio:4/3;background:#0a0b0e;border:1px dashed #484d59;border-radius:8px;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center}
   .cover img{width:100%;height:100%;object-fit:cover;display:none}
   .cover.has img{display:block}
-  .cover .empty{color:#eceae4;font-weight:600;font-size:16px;background:rgba(255,255,255,.06);border:1px solid #484d59;padding:10px 16px;border-radius:8px}
+  .cover .empty{color:#eceae4;font-weight:600;font-size:20px;background:rgba(255,255,255,.06);border:1px solid #484d59;padding:12px 18px;border-radius:8px}
   .cover.has .empty{display:none}
   .cover:hover{border-color:#8a8f9c}
-  .hint{font-size:14px;color:#a6a8ae;line-height:1.55}
+  .hint{font-size:19px;color:#a6a8ae;line-height:1.5}
   .row{display:flex;gap:8px;align-items:center}
   /* gate */
   #gate{position:fixed;inset:0;z-index:100;background:#0f0f11;display:flex;align-items:center;justify-content:center;padding:24px}
@@ -72,7 +76,7 @@
   #picker.open{display:flex}
   #picker .sheet{width:min(920px,100%);max-height:88vh;background:#17181c;border:1px solid #2a2c33;border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
   #picker .shd{display:flex;align-items:center;gap:10px;padding:15px 16px;border-bottom:1px solid #2a2c33}
-  #picker .shd b{flex:1;font-size:17px;font-weight:700}
+  #picker .shd b{flex:1;font-size:22px;font-weight:700}
   #picker .grid{padding:14px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
   #picker .tile{position:relative;height:0;padding-bottom:100%;background:#000;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent}
   #picker .tile:hover{border-color:#e85c4a}
@@ -85,14 +89,14 @@
   #listwrap.open{display:flex}
   #listwrap .sheet{width:min(620px,100%);max-height:90vh;background:#17181c;border:1px solid #2a2c33;border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
   #listwrap .shd{display:flex;align-items:center;gap:8px;padding:15px 16px;border-bottom:1px solid #2a2c33}
-  #listwrap .shd b{flex:1;font-size:17px;font-weight:700}
+  #listwrap .shd b{flex:1;font-size:22px;font-weight:700}
   #listwrap .list{padding:10px;overflow:auto;display:flex;flex-direction:column;gap:8px}
-  .lrow{display:flex;align-items:center;gap:11px;background:#0a0b0e;border:1px solid #2a2c33;border-radius:10px;padding:9px 11px}
-  .lrow .ord{min-width:30px;height:30px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;background:#e85c4a;color:#fff;font-weight:700;border-radius:8px;font-size:15px;flex:none}
-  .lrow .th{width:64px;height:46px;object-fit:cover;border-radius:6px;background:#000;flex:none}
-  .lrow .tt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;padding:8px 0;font-size:15px}
-  .lrow .mv{display:flex;flex-direction:column;gap:3px;flex:none}
-  .lrow .mv button{width:40px;height:26px;padding:0;font-size:13px}
+  .lrow{display:flex;align-items:center;gap:12px;background:#0a0b0e;border:1px solid #2a2c33;border-radius:10px;padding:10px 12px}
+  .lrow .ord{min-width:36px;height:36px;padding:0 9px;display:inline-flex;align-items:center;justify-content:center;background:#e85c4a;color:#fff;font-weight:700;border-radius:8px;font-size:19px;flex:none}
+  .lrow .th{width:76px;height:54px;object-fit:cover;border-radius:6px;background:#000;flex:none}
+  .lrow .tt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;padding:10px 0;font-size:20px}
+  .lrow .mv{display:flex;flex-direction:column;gap:4px;flex:none}
+  .lrow .mv button{width:48px;height:32px;padding:0;font-size:16px}
   .lrow .mv button:disabled{opacity:.3;cursor:default}
   /* full admin overlay (기존 admin 전체를 내장) */
   #adminwrap{position:fixed;inset:0;z-index:50;background:#0f0f11;display:none;flex-direction:column}
@@ -100,11 +104,14 @@
   #adminwrap .ovbar{height:48px;flex:none;display:flex;align-items:center;gap:10px;padding:0 12px;background:#141519;border-bottom:1px solid #2a2c33}
   #adminwrap .ovbar b{flex:1;font-size:13px}
   #adminframe{flex:1;border:0;width:100%;background:#0f0f11}
+  /* 저장 FAB — 편집 중 항상 보이는 저장(바가 잘려도 접근 가능). 패널 위(z9)·오버레이 아래 */
+  #saveFab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:20;display:none;align-items:center;gap:8px;
+           background:#3fb56b;color:#08130c;font-weight:800;border:0;border-radius:999px;padding:16px 26px;font-size:20px;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.45)}
+  #saveFab.show{display:inline-flex}
   @media (max-width:560px){
-    #panel,#apanel{width:100%;top:auto;height:82%;border-left:0;border-top:1px solid #2a2c33;border-radius:16px 16px 0 0;transform:translateY(102%)}
+    #panel,#apanel{width:100%;top:auto;height:86%;border-left:0;border-top:1px solid #2a2c33;border-radius:16px 16px 0 0;transform:translateY(102%)}
     #panel.open,#apanel.open{transform:none}
-    #bar b span{display:none}
-    #status{max-width:32vw}
+    #bar b{display:none}
     /* 픽커·목록은 모바일에서 전체 화면 → 뒤 패널과 절대 겹치지 않음 */
     #picker,#listwrap{padding:0}
     #picker .sheet,#listwrap .sheet{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border:0;border-radius:0}
@@ -118,7 +125,6 @@
   <button class="btn" id="openList" type="button" style="display:none">작품 목록</button>
   <button class="btn" id="openAdmin" type="button">전체 관리자</button>
   <button class="btn" id="hardReload" type="button" title="최신 버전으로 강제 새로고침">↻</button>
-  <button class="btn primary" id="saveBtn" type="button" style="display:none">저장</button>
   <span id="status">불러오는 중…</span>
 </div>
 <iframe id="frame" src="/" title="site"></iframe>
@@ -128,36 +134,41 @@
     <h2>작품 편집 <span id="p-sub"></span></h2>
     <button class="btn sm" id="panelClose" type="button" title="편집 닫기">✕ 닫기</button>
   </div>
-  <div class="field"><label>대표 이미지 (눌러서 선택/변경)</label>
-    <div class="cover" id="f-cover"><img id="f-cover-img"><span class="empty">＋ 이미지 적용</span></div></div>
-  <div class="field"><label>날짜 (타임라인 연·월)</label><input id="f-date" type="month" style="color-scheme:dark"></div>
-  <div class="field"><label>상세 제목 (클릭 시 제목)</label><input id="f-title" placeholder="작품 제목"></div>
-  <div class="field"><label>가격 (입력하면 상세에 노출, 비우면 숨김)</label><input id="f-price" placeholder="예: 3,000,000원 · 문의"></div>
-  <div class="field"><label>상세 설명</label><textarea id="f-desc" placeholder="작품 설명…"></textarea></div>
-  <div class="field"><label>상세 본문 (설명 위/아래에 들어가는 이미지·영상·설명)</label>
-    <div class="row" style="flex-wrap:wrap;gap:6px">
-      <button class="btn sm addb" data-madd="image" type="button">+이미지</button>
-      <button class="btn sm addb" data-madd="video" type="button">+영상</button>
-      <button class="btn sm addb" data-madd="text" type="button">+설명</button>
+  <div class="pbody">
+    <div class="field"><label>대표 이미지 (눌러서 선택/변경)</label>
+      <div class="cover" id="f-cover"><img id="f-cover-img"><span class="empty">＋ 이미지 적용</span></div></div>
+    <div class="field"><label>날짜 (타임라인 연·월)</label>
+      <div class="datesel"><select id="f-year"></select><select id="f-mon"></select></div></div>
+    <div class="field"><label>상세 제목 (클릭 시 제목)</label><input id="f-title" placeholder="작품 제목"></div>
+    <div class="field"><label>가격 (입력하면 상세에 노출, 비우면 숨김)</label><input id="f-price" placeholder="예: 3,000,000원 · 문의"></div>
+    <div class="field"><label>상세 설명</label><textarea id="f-desc" placeholder="작품 설명…"></textarea></div>
+    <div class="field"><label>상세 본문 (설명 위/아래에 들어가는 이미지·영상·설명)</label>
+      <div class="row" style="flex-wrap:wrap;gap:6px">
+        <button class="btn sm addb" data-madd="image" type="button">+이미지</button>
+        <button class="btn sm addb" data-madd="video" type="button">+영상</button>
+        <button class="btn sm addb" data-madd="text" type="button">+설명</button>
+      </div>
+      <div id="mediaList" style="display:flex;flex-direction:column;gap:10px;margin-top:8px"></div>
     </div>
-    <div id="mediaList" style="display:flex;flex-direction:column;gap:10px;margin-top:8px"></div>
-  </div>
-  <div class="row" style="margin-top:2px">
-    <button class="btn danger sm" id="delSlide" type="button">이 작품 삭제</button>
+    <div class="row" style="margin-top:2px">
+      <button class="btn danger sm" id="delSlide" type="button">이 작품 삭제</button>
+    </div>
   </div>
 </div>
 
 <div id="apanel" aria-hidden="true">
   <div class="phead"><h2>소개(About) 편집</h2><button class="btn sm" id="aClose" type="button" title="편집 닫기">✕ 닫기</button></div>
-  <div class="row" style="flex-wrap:wrap;gap:6px">
-    <button class="btn sm addb" data-add="title" type="button">+제목</button>
-    <button class="btn sm addb" data-add="text" type="button">+본문</button>
-    <button class="btn sm addb" data-add="image" type="button">+이미지</button>
-    <button class="btn sm addb" data-add="video" type="button">+영상</button>
-    <button class="btn sm addb" data-add="list" type="button">+리스트</button>
-    <button class="btn sm addb" data-add="thanks" type="button">+감사</button>
+  <div class="pbody">
+    <div class="row" style="flex-wrap:wrap;gap:6px">
+      <button class="btn sm addb" data-add="title" type="button">+제목</button>
+      <button class="btn sm addb" data-add="text" type="button">+본문</button>
+      <button class="btn sm addb" data-add="image" type="button">+이미지</button>
+      <button class="btn sm addb" data-add="video" type="button">+영상</button>
+      <button class="btn sm addb" data-add="list" type="button">+리스트</button>
+      <button class="btn sm addb" data-add="thanks" type="button">+감사</button>
+    </div>
+    <div id="ablocks" style="display:flex;flex-direction:column;gap:10px"></div>
   </div>
-  <div id="ablocks" style="display:flex;flex-direction:column;gap:10px"></div>
 </div>
 
 <div id="picker"><div class="sheet">
@@ -174,6 +185,7 @@
 
 <div id="adminwrap"><div class="ovbar"><b>전체 관리자 · 기존 admin의 모든 기능</b><button class="btn sm" id="adminClose" type="button">✕ 닫기</button></div><iframe id="adminframe" title="admin"></iframe></div>
 
+<button id="saveFab" type="button">저장하기</button>
 <div id="toast">저장되었습니다</div>
 <script>
 (function(){
@@ -188,7 +200,7 @@
   const setStatus=(m,c='')=>{ const e=$('#status'); e.textContent=m; e.className=c; };
   const slides=()=>((content&&content.slides)||[]);
   const findSlide=id=>slides().find(s=>String(s.id)===String(id));
-  const markDirty=()=>{ dirty=true; $('#saveBtn').style.display=''; setStatus('저장되지 않은 변경 있음','err'); };
+  const markDirty=()=>{ dirty=true; $('#saveFab').classList.add('show'); setStatus('저장되지 않은 변경 있음','err'); };
   const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
   /* ---- login gate ---- */
@@ -227,7 +239,7 @@
   function fillPanel(s){
     $('#p-sub').textContent = s.id ? ('#'+s.id) : '';
     const cover=$('#f-cover'); $('#f-cover-img').src=s.image||''; cover.classList.toggle('has',!!(s.image||'').trim());
-    $('#f-date').value=(s.date||'').slice(0,7);
+    const dm=/(\d{4})-(\d{2})/.exec(s.date||''); $('#f-year').value=dm?dm[1]:''; $('#f-mon').value=dm?dm[2]:'';
     $('#f-title').value=s.title||''; $('#f-price').value=s.price||''; $('#f-desc').value=s.desc||'';
     renderMedia();
   }
@@ -256,7 +268,14 @@
 
   /* ---- fields ---- */
   function bindField(sel,key){ $(sel).addEventListener('input',e=>{ const s=findSlide(curId); if(!s)return; s[key]=e.target.value; markDirty(); }); }
-  $('#f-date').addEventListener('input',e=>{ const s=findSlide(curId); if(!s)return; s.date=e.target.value?e.target.value+'-01':''; markDirty(); });
+  function populateDateSelects(){
+    const ys=$('#f-year'), ms=$('#f-mon'); if(!ys||!ms) return;
+    const now=new Date().getFullYear();
+    let yo='<option value="">연도</option>'; for(let y=now+3;y>=1980;y--) yo+='<option value="'+y+'">'+y+'년</option>'; ys.innerHTML=yo;
+    let mo='<option value="">월</option>'; for(let m=1;m<=12;m++){ const mm=String(m).padStart(2,'0'); mo+='<option value="'+mm+'">'+m+'월</option>'; } ms.innerHTML=mo;
+  }
+  function onDateChange(){ const s=findSlide(curId); if(!s) return; const y=$('#f-year').value, m=$('#f-mon').value; s.date = y ? (y+'-'+(m||'01')+'-01') : ''; markDirty(); }
+  $('#f-year').addEventListener('change',onDateChange); $('#f-mon').addEventListener('change',onDateChange);
 
   /* ---- 이미지 픽커 (onPick 콜백으로 대상 지정) ---- */
   let pickCb=null;
@@ -439,7 +458,7 @@
       const payload=Object.assign({},content,{_version:baseVersion});
       const r=await api('/api/content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json());
       if(r.error){ setStatus('저장 실패: '+r.error,'err'); return; }
-      baseVersion=r.version||null; dirty=false; $('#saveBtn').style.display='none';
+      baseVersion=r.version||null; dirty=false; $('#saveFab').classList.remove('show');
       setStatus('저장됨 · 공개 반영은 배포 뒤(~30초)','ok');
       const t=$('#toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1600);
     }catch(e){ setStatus('저장 실패: '+e.message,'err'); }
@@ -454,7 +473,7 @@
   function closeAdmin(){
     $('#adminwrap').classList.remove('open'); $('#adminframe').src='about:blank';
     // 전체 관리자에서 바꾼 내용이 인라인 패널과 어긋나지 않게 최신 콘텐츠로 다시 불러온다
-    loadAll().then(()=>{ dirty=false; $('#saveBtn').style.display='none'; setStatus(slides().length+'개 작품 · 최신 상태','ok'); refreshTarget(); })
+    loadAll().then(()=>{ dirty=false; $('#saveFab').classList.remove('show'); setStatus(slides().length+'개 작품 · 최신 상태','ok'); refreshTarget(); })
              .catch(e=>setStatus('갱신 실패: '+e.message,'err'));
   }
 
@@ -469,12 +488,13 @@
   function boot(){
     // 핸들러는 콘텐츠 로드 성공 여부와 무관하게 먼저 배선한다 (로드 실패가 UI 전체를 죽이지 않도록)
     bindField('#f-title','title'); bindField('#f-price','price'); bindField('#f-desc','desc');
+    populateDateSelects();
+    $('#saveFab').onclick=save;
     $('#editToggle').onclick=()=>setEdit(!editMode);
     $('#openList').onclick=openList;
     $('#listAdd').onclick=()=>{ addSlide(); $('#listwrap').classList.remove('open'); };
     $('#listClose').onclick=()=>$('#listwrap').classList.remove('open');
     $('#listwrap').addEventListener('click',e=>{ if(e.target.id==='listwrap') $('#listwrap').classList.remove('open'); });
-    $('#saveBtn').onclick=save;
     $('#panelClose').onclick=userClose;
     $('#delSlide').onclick=delSlide;
     $('#aClose').onclick=aboutUserClose;
