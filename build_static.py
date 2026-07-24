@@ -137,6 +137,9 @@ def main():
     # a static editor that talks to the authed /api/* functions, so serving the HTML itself is harmless.
     if os.path.isdir(os.path.join(ROOT, "admin")):
         shutil.copytree(os.path.join(ROOT, "admin"), os.path.join(DIST, "admin"))
+    # admin2: prototype in-context editor (overlays the front in an iframe). Same authed /api/*.
+    if os.path.isdir(os.path.join(ROOT, "admin2")):
+        shutil.copytree(os.path.join(ROOT, "admin2"), os.path.join(DIST, "admin2"))
 
     # the custom domain. An Actions-based Pages deploy serves whatever the artifact holds, so the CNAME
     # must live IN the artifact or a push can drop the domain. It also fixes what the domain serves: the
