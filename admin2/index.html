@@ -45,7 +45,7 @@
   #gate .go{width:100%;margin-top:10px;background:#e85c4a;border:0;color:#fff;font-weight:700;border-radius:10px;padding:12px;font-size:16px;cursor:pointer}
   #gate .err{color:#e85c4a;font-size:13px;min-height:18px;margin:8px 0 4px}
   /* image picker */
-  #picker{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:16px}
+  #picker{position:fixed;inset:0;z-index:34;background:rgba(10,11,14,.96);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px}
   #picker.open{display:flex}
   #picker .sheet{width:min(880px,100%);max-height:86vh;background:#17181c;border:1px solid #2a2c33;border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
   #picker .shd{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #2a2c33}
@@ -57,6 +57,20 @@
   #toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,12px);z-index:40;background:#3fb56b;color:#08130c;font-weight:700;
          padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
   #toast.show{opacity:1;transform:translate(-50%,0)}
+  /* slide list (생성 + 순서 변경 + 편집 이동) */
+  #listwrap{position:fixed;inset:0;z-index:32;background:rgba(10,11,14,.96);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px}
+  #listwrap.open{display:flex}
+  #listwrap .sheet{width:min(560px,100%);max-height:88vh;background:#17181c;border:1px solid #2a2c33;border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
+  #listwrap .shd{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid #2a2c33}
+  #listwrap .shd b{flex:1}
+  #listwrap .list{padding:10px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+  .lrow{display:flex;align-items:center;gap:10px;background:#0a0b0e;border:1px solid #2a2c33;border-radius:10px;padding:8px 10px}
+  .lrow .ord{min-width:26px;height:26px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;background:#e85c4a;color:#fff;font-weight:700;border-radius:7px;font-size:13px;flex:none}
+  .lrow .th{width:54px;height:40px;object-fit:cover;border-radius:6px;background:#000;flex:none}
+  .lrow .tt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;padding:6px 0}
+  .lrow .mv{display:flex;flex-direction:column;gap:3px;flex:none}
+  .lrow .mv button{width:34px;height:22px;padding:0;font-size:11px}
+  .lrow .mv button:disabled{opacity:.3;cursor:default}
   /* full admin overlay (기존 admin 전체를 내장) */
   #adminwrap{position:fixed;inset:0;z-index:50;background:#0f0f11;display:none;flex-direction:column}
   #adminwrap.open{display:flex}
@@ -75,7 +89,7 @@
 <div id="bar">
   <b>ADMIN2 <span>· 인컨텍스트 편집</span></b>
   <button class="btn" id="editToggle" type="button">편집 꺼짐</button>
-  <button class="btn" id="addSlide" type="button" style="display:none">+ 슬라이드</button>
+  <button class="btn" id="openList" type="button" style="display:none">작품 목록</button>
   <button class="btn" id="openAdmin" type="button">전체 관리자</button>
   <button class="btn primary" id="saveBtn" type="button" style="display:none">저장</button>
   <span id="status">불러오는 중…</span>
@@ -104,6 +118,13 @@
   <div class="grid" id="pickGrid"></div>
 </div></div>
 
+<div id="listwrap"><div class="sheet">
+  <div class="shd"><b>작품 목록 · 순서 변경</b>
+    <button class="btn sm primary" id="listAdd" type="button">+ 슬라이드</button>
+    <button class="btn sm" id="listClose" type="button">닫기</button></div>
+  <div class="list" id="listBody"></div>
+</div></div>
+
 <div id="adminwrap"><div class="ovbar"><b>전체 관리자 · 기존 admin의 모든 기능</b><button class="btn sm" id="adminClose" type="button">✕ 닫기</button></div><iframe id="adminframe" title="admin"></iframe></div>
 
 <div id="toast">저장되었습니다</div>
@@ -121,6 +142,7 @@
   const slides=()=>((content&&content.slides)||[]);
   const findSlide=id=>slides().find(s=>String(s.id)===String(id));
   const markDirty=()=>{ dirty=true; $('#saveBtn').style.display=''; setStatus('저장되지 않은 변경 있음','err'); };
+  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
   /* ---- login gate ---- */
   function showGate(msg){
@@ -204,6 +226,27 @@
     setStatus('새 작품 — 이미지·제목을 넣고 저장하세요','');
   }
 
+  /* ---- 작품 목록 (생성 + 순서 변경 + 탭하면 편집) ---- */
+  function renderList(){
+    const b=$('#listBody'); b.innerHTML=''; const arr=slides();
+    if(!arr.length){ b.innerHTML='<div class="hint" style="padding:14px">아직 작품이 없습니다. + 슬라이드로 추가하세요.</div>'; return; }
+    arr.forEach((s,i)=>{
+      const row=document.createElement('div'); row.className='lrow';
+      row.innerHTML='<span class="ord">'+(i+1)+'</span>'
+        +(s.image?'<img class="th" src="'+esc(s.image)+'">':'<span class="th"></span>')
+        +'<span class="tt">'+(s.title?esc(s.title):'<i style="color:#8a8c94">제목 없음</i>')+'</span>'
+        +'<span class="mv"><button class="btn sm" data-up type="button" title="위로">▲</button>'
+        +'<button class="btn sm" data-dn type="button" title="아래로">▼</button></span>';
+      row.querySelector('.tt').onclick=()=>{ pinned=true; dismissedId=null; setTarget(s.id); $('#listwrap').classList.remove('open'); };
+      const up=row.querySelector('[data-up]'), dn=row.querySelector('[data-dn]');
+      if(i===0) up.disabled=true; if(i===arr.length-1) dn.disabled=true;
+      up.onclick=()=>{ arr.splice(i-1,0,arr.splice(i,1)[0]); markDirty(); renderList(); };
+      dn.onclick=()=>{ arr.splice(i+1,0,arr.splice(i,1)[0]); markDirty(); renderList(); };
+      b.appendChild(row);
+    });
+  }
+  function openList(){ renderList(); $('#listwrap').classList.add('open'); }
+
   /* ---- 삭제 (비밀번호 확인) ---- */
   function delSlide(){
     const s=findSlide(curId); if(!s) return;
@@ -243,8 +286,8 @@
   function setEdit(on){
     editMode=on;
     $('#editToggle').textContent=on?'편집 켜짐':'편집 꺼짐'; $('#editToggle').classList.toggle('on',on);
-    $('#addSlide').style.display=on?'':'none';
-    if(!on) closePanel(); else refreshTarget();
+    $('#openList').style.display=on?'':'none';
+    if(!on){ closePanel(); $('#listwrap').classList.remove('open'); } else refreshTarget();
     if(on) setStatus('편집 켜짐 — 작품을 열거나 + 슬라이드','');
   }
 
@@ -252,7 +295,10 @@
     // 핸들러는 콘텐츠 로드 성공 여부와 무관하게 먼저 배선한다 (로드 실패가 UI 전체를 죽이지 않도록)
     bindField('#f-title','title'); bindField('#f-price','price'); bindField('#f-desc','desc');
     $('#editToggle').onclick=()=>setEdit(!editMode);
-    $('#addSlide').onclick=addSlide;
+    $('#openList').onclick=openList;
+    $('#listAdd').onclick=()=>{ addSlide(); $('#listwrap').classList.remove('open'); };
+    $('#listClose').onclick=()=>$('#listwrap').classList.remove('open');
+    $('#listwrap').addEventListener('click',e=>{ if(e.target.id==='listwrap') $('#listwrap').classList.remove('open'); });
     $('#saveBtn').onclick=save;
     $('#panelClose').onclick=userClose;
     $('#delSlide').onclick=delSlide;
