@@ -7,7 +7,7 @@
 <title>LSE GALLERY — admin2 (프로토타입)</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;font:24px/1.5 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:#0f0f11;color:#eceae4}
+  html,body{height:100%;font:24px/1.5 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:#0f0f11;color:#eceae4;overscroll-behavior:none}
   /* top toolbar — 가로 스크롤 허용(폭 초과해도 안 깨짐), 저장은 별도 FAB */
   #bar{position:fixed;top:0;left:0;right:0;height:60px;z-index:10;display:flex;align-items:center;gap:8px;padding:0 12px;
        background:rgba(15,15,17,.96);backdrop-filter:blur(8px);border-bottom:1px solid #2a2c33;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch}
@@ -104,18 +104,13 @@
   .lrow .mv{display:flex;flex-direction:column;gap:4px;flex:none}
   .lrow .mv button{width:48px;height:32px;padding:0;font-size:16px}
   .lrow .mv button:disabled{opacity:.3;cursor:default}
-  /* full admin overlay (기존 admin 전체를 내장) */
-  #adminwrap{position:fixed;inset:0;z-index:50;background:#0f0f11;display:none;flex-direction:column}
-  #adminwrap.open{display:flex}
-  #adminwrap .ovbar{height:48px;flex:none;display:flex;align-items:center;gap:10px;padding:0 12px;background:#141519;border-bottom:1px solid #2a2c33}
-  #adminwrap .ovbar b{flex:1;font-size:13px}
-  #adminframe{flex:1;border:0;width:100%;background:#0f0f11}
   /* 저장 FAB — 편집 중 항상 보이는 저장(바가 잘려도 접근 가능). 패널 위(z9)·오버레이 아래 */
-  #saveFab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:20;display:none;align-items:center;gap:8px;
+  /* FAB 들은 프론트 상세의 하단 중앙 컨트롤(bottom:2rem) 위로 띄운다 — 겹침 방지 */
+  #saveFab{position:fixed;right:18px;bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:20;display:none;align-items:center;gap:8px;
            background:#3fb56b;color:#08130c;font-weight:800;border:0;border-radius:999px;padding:16px 26px;font-size:20px;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.45)}
   #saveFab.show{display:inline-flex}
   /* 편집 FAB — 상세/소개 위에서 편집 패널을 여는 버튼(닫으면 다시 나타남) */
-  #editFab{position:fixed;left:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:20;display:none;align-items:center;gap:8px;
+  #editFab{position:fixed;left:18px;bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:20;display:none;align-items:center;gap:8px;
            background:#e85c4a;color:#fff;font-weight:800;border:0;border-radius:999px;padding:16px 28px;font-size:20px;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.45)}
   #editFab.show{display:inline-flex}
   @media (max-width:560px){
@@ -133,7 +128,6 @@
   <b>ADMIN2 <span>· 인컨텍스트 편집</span></b>
   <button class="btn" id="editToggle" type="button">편집 꺼짐</button>
   <button class="btn" id="openList" type="button" style="display:none">작품 목록</button>
-  <button class="btn" id="openAdmin" type="button">전체 관리자</button>
   <button class="btn" id="hardReload" type="button" title="최신 버전으로 강제 새로고침">↻</button>
   <span id="status">불러오는 중…</span>
 </div>
@@ -199,7 +193,6 @@
   <div class="list" id="listBody"></div>
 </div></div>
 
-<div id="adminwrap"><div class="ovbar"><b>전체 관리자 · 기존 admin의 모든 기능</b><button class="btn sm" id="adminClose" type="button">✕ 닫기</button></div><iframe id="adminframe" title="admin"></iframe></div>
 
 <button id="editFab" type="button">편집</button>
 <button id="saveFab" type="button">저장하기</button>
@@ -217,8 +210,12 @@
   const setStatus=(m,c='')=>{ const e=$('#status'); e.textContent=m; e.className=c; };
   const slides=()=>((content&&content.slides)||[]);
   const findSlide=id=>slides().find(s=>String(s.id)===String(id));
-  const markDirty=()=>{ dirty=true; $('#saveFab').classList.add('show'); setStatus('저장되지 않은 변경 있음','err'); };
+  const markDirty=()=>{ dirty=true; updateSaveFab(); setStatus('저장되지 않은 변경 있음','err'); };
   const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  // 저장 버튼은 "생성"만으로는 안 뜬다 — 변경이 있고, 모든 작품이 필수값(대표 이미지)을 갖췄을 때만 노출
+  function slidesComplete(){ return slides().every(s=>String(s.image||'').trim()!==''); }
+  function canSave(){ return dirty && slidesComplete(); }
+  function updateSaveFab(){ const f=$('#saveFab'); if(f) f.classList.toggle('show', canSave()); }
 
   /* ---- login gate ---- */
   function showGate(msg){
@@ -261,7 +258,12 @@
     renderMedia();
   }
   function openPanel(){ $('#panel').classList.add('open'); $('#panel').setAttribute('aria-hidden','false'); updateEditFab(); }
-  function closePanel(){ $('#panel').classList.remove('open'); $('#panel').setAttribute('aria-hidden','true'); pinned=false; curId=null; updateEditFab(); }
+  function closePanel(){
+    // 이미지도 안 넣고 닫은 새 작품은 저장 대상이 아니므로 로컬에서 제거(생성-후-삭제가 아니라 애초에 안 남김)
+    const s=findSlide(curId);
+    if(s && String(s.id).indexOf('n')===0 && !String(s.image||'').trim()){ const i=slides().indexOf(s); if(i>=0) slides().splice(i,1); }
+    $('#panel').classList.remove('open'); $('#panel').setAttribute('aria-hidden','true'); pinned=false; curId=null; updateEditFab(); updateSaveFab();
+  }
   function userClose(){ closePanel(); }   // 닫으면 패널만 내려가고, 편집 버튼이 다시 떠서 재오픈 가능
 
   function setTarget(id){ curId=id; const s=findSlide(id); if(s){ fillPanel(s); openPanel(); setStatus('편집 중: '+(s.title||('#'+id)),''); } }
@@ -324,8 +326,8 @@
     else { const n=new Date(); ym=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01'; }
     const s={id:'n'+Date.now()+'_'+(nid++),image:'',bottom:'Inspire',date:ym};
     slides().unshift(s);
-    pinned=true; setTarget(s.id); markDirty();
-    setStatus('새 작품 — 이미지·제목을 넣고 저장하세요','');
+    pinned=true; setTarget(s.id);   // 생성만으로는 dirty 아님 — 대표 이미지를 넣어야 저장 버튼이 뜬다
+    setStatus('새 작품 — 대표 이미지를 넣어야 저장할 수 있어요','');
   }
 
   /* ---- 작품 목록 (생성 + 순서 변경 + 탭하면 편집) ---- */
@@ -370,15 +372,27 @@
   }
   function openList(){ renderList(); $('#listwrap').classList.add('open'); }
 
+  /* ---- 옵션 세트 (기존 admin과 동일한 값/라벨) ---- */
+  const G_GAP=[['none','없음'],['sm','좁게'],['md','보통'],['lg','넓게'],['xl','아주 넓게']];       // 아래 간격
+  const G_ALIGN3=[['left','좌측'],['center','중앙'],['right','우측']];                              // 블록 정렬
+  const G_ALIGNM=[['left','좌'],['center','중앙'],['right','우']];                                  // 미디어 정렬
+  const G_POS=[['0','맨 위(글 앞)'],['','맨 아래(글 뒤)']];                                          // 상세 본문 위치
+  const G_PCT=[25,33,40,50,60,70,75,80,90,100].map(v=>[String(v),v+'%']);                            // 이미지·영상 크기
+  const G_TSIZE=[60,70,80,90,100,110,120,130,140,160,180,200].map(v=>[String(v),v+'%']);             // 글 블록 크기
+  const G_LH=[['','기본']].concat([1,1.1,1.2,1.3,1.4,1.5,1.6,1.8,2].map(v=>[String(v),String(v)]));  // 행간
+  const G_LSIZE=[['sm','작게'],['md','보통'],['lg','크게']];                                         // 리스트 세부 크기
+  function normPct(v,def){ if(v==='full'||v==null||v==='') return String(def); if(v==='half') return '50'; const n=parseInt(v,10); return isFinite(n)?String(n):String(def); }
+  function normTSize(v,def){ if(v==null||v==='') return String(def); if(v==='sm') return '70'; if(v==='md') return '100'; if(v==='lg') return '140'; const n=parseInt(v,10); return isFinite(n)?String(n):String(def); }
+  function normPos(v){ return (v==='0'||v===0)?'0':''; }
+
   /* ---- 소개(About) 인컨텍스트 편집 ---- */
-  const G3=['sm','md','lg'];
   const ABOUT_FIELDS={
-    title:[{k:'text',t:'ta',label:'제목 텍스트'},{k:'align',t:'sel',opts:['left','center','right'],label:'정렬'},{k:'size',t:'sel',opts:G3,label:'크기'},{k:'gap',t:'sel',opts:G3,label:'위 간격'}],
-    text:[{k:'text',t:'ta',label:'본문'},{k:'size',t:'sel',opts:G3,label:'크기'},{k:'gap',t:'sel',opts:G3,label:'위 간격'}],
-    thanks:[{k:'text',t:'ta',label:'감사 문구'}],
-    image:[{k:'src',t:'img',label:'이미지'},{k:'caption',t:'in',label:'캡션'},{k:'size',t:'sel',opts:['full','half','100','90','80','75','70','60','50','40','33','25'],label:'크기(%/full/half)'},{k:'align',t:'sel',opts:['left','center','right'],label:'정렬'},{k:'gap',t:'sel',opts:G3,label:'위 간격'}],
-    video:[{k:'videoId',t:'in',label:'유튜브 ID 또는 URL'},{k:'size',t:'sel',opts:['full','half','100','90','80','75','70','60','50'],label:'크기'},{k:'gap',t:'sel',opts:G3,label:'위 간격'}],
-    list:[{k:'label',t:'in',label:'제목(한글)'},{k:'labelEn',t:'in',label:'제목(영문)'},{k:'sizeLabel',t:'sel',opts:G3,label:'제목 크기'},{k:'sizeText',t:'sel',opts:G3,label:'항목 크기'},{k:'gap',t:'sel',opts:G3,label:'위 간격'},{k:'items',t:'items',label:'항목'}],
+    title:[{k:'text',t:'ta',label:'제목 텍스트'},{k:'align',t:'sel',label:'정렬',opts:G_ALIGN3,def:'center'},{k:'size',t:'sel',label:'크기',opts:G_TSIZE,def:'100',norm:normTSize},{k:'lh',t:'sel',label:'행간',opts:G_LH,def:'',delEmpty:true},{k:'gap',t:'sel',label:'아래 간격',opts:G_GAP,def:'md'}],
+    text:[{k:'text',t:'ta',label:'본문'},{k:'align',t:'sel',label:'정렬',opts:G_ALIGN3,def:'left'},{k:'size',t:'sel',label:'크기',opts:G_TSIZE,def:'100',norm:normTSize},{k:'lh',t:'sel',label:'행간',opts:G_LH,def:'',delEmpty:true},{k:'gap',t:'sel',label:'아래 간격',opts:G_GAP,def:'md'}],
+    thanks:[{k:'text',t:'ta',label:'맺음말'},{k:'align',t:'sel',label:'정렬',opts:G_ALIGN3,def:'left'},{k:'size',t:'sel',label:'크기',opts:G_TSIZE,def:'100',norm:normTSize},{k:'lh',t:'sel',label:'행간',opts:G_LH,def:'',delEmpty:true},{k:'gap',t:'sel',label:'아래 간격',opts:G_GAP,def:'md'}],
+    image:[{k:'src',t:'img',label:'이미지'},{k:'caption',t:'in',label:'설명 (선택)'},{k:'size',t:'sel',label:'크기',opts:G_PCT,def:100,num:true,norm:normPct},{k:'align',t:'sel',label:'정렬',opts:G_ALIGN3,def:'center'},{k:'gap',t:'sel',label:'아래 간격',opts:G_GAP,def:'md'}],
+    video:[{k:'videoId',t:'in',label:'유튜브 URL 또는 영상 ID'},{k:'size',t:'sel',label:'크기',opts:G_PCT,def:100,num:true,norm:normPct},{k:'align',t:'sel',label:'정렬',opts:G_ALIGN3,def:'center'},{k:'gap',t:'sel',label:'아래 간격',opts:G_GAP,def:'md'}],
+    list:[{k:'label',t:'in',label:'그룹명 (예: 초대 개인전)'},{k:'labelEn',t:'in',label:'그룹명 영문 (선택)'},{k:'items',t:'items',label:'항목'},{k:'align',t:'sel',label:'정렬',opts:G_ALIGN3,def:'left'},{k:'sizeLabel',t:'sel',label:'그룹명 크기',opts:G_LSIZE,def:'md'},{k:'sizeText',t:'sel',label:'항목 크기',opts:G_LSIZE,def:'md'},{k:'sizeNote',t:'sel',label:'연월·장소 크기',opts:G_LSIZE,def:'md'},{k:'gap',t:'sel',label:'아래 간격',opts:G_GAP,def:'md'}],
   };
   const ABLABEL={title:'제목',text:'본문',thanks:'감사',image:'이미지',video:'영상',list:'리스트'};
   function aboutArr(){ if(!content) return []; content.blocks=content.blocks||{}; content.blocks['/about']=content.blocks['/about']||[]; return content.blocks['/about']; }
@@ -389,7 +403,7 @@
     blk.items.forEach((it,idx)=>{
       const r=document.createElement('div'); r.className='aitem';
       const fields=document.createElement('div'); fields.className='fields';
-      [['text','내용'],['textEn','영문 (선택)'],['date','날짜 (선택)']].forEach(pair=>{
+      [['text','내용 (예: 프랑스 루브르 아트페어)'],['textEn','영문 (선택)'],['date','연월 (예: 2024.10)'],['place','장소 (선택)']].forEach(pair=>{
         const k=pair[0]; const inp=document.createElement('input'); inp.placeholder=pair[1]; inp.value=it[k]!=null?it[k]:'';
         inp.oninput=()=>{ const v=inp.value; if(v==='') delete it[k]; else it[k]=v; markDirty(); };
         fields.appendChild(inp);
@@ -414,14 +428,11 @@
     }
     if(f.t==='items') return itemsEditor(blk);
     const l=document.createElement('label'); l.textContent=f.label; wrap.appendChild(l);
-    if(f.t==='pos'){
+    if(f.t==='sel'){
       const e=document.createElement('select');
-      [['0','위 (설명 앞)'],['','아래 (설명 뒤)']].forEach(o=>{ const op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; if(((blk.pos==='0'||blk.pos===0)?'0':'')===o[0]) op.selected=true; e.appendChild(op); });
-      e.onchange=()=>{ if(e.value==='0') blk.pos='0'; else delete blk.pos; markDirty(); }; wrap.appendChild(e);
-    } else if(f.t==='sel'){
-      const e=document.createElement('select');
-      f.opts.forEach(o=>{ const op=document.createElement('option'); op.value=o; op.textContent=o; if(String(blk[f.k]==null?f.opts[0]:blk[f.k])===o) op.selected=true; e.appendChild(op); });
-      e.onchange=()=>{ blk[f.k]=e.value; markDirty(); }; wrap.appendChild(e);
+      const cur = f.norm ? f.norm(blk[f.k], f.def) : ((blk[f.k]!=null&&blk[f.k]!=='')?String(blk[f.k]):String(f.def==null?'':f.def));
+      f.opts.forEach(o=>{ const op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; if(String(o[0])===cur) op.selected=true; e.appendChild(op); });
+      e.onchange=()=>{ const v=e.value; if(f.delEmpty && v==='') delete blk[f.k]; else blk[f.k]=(f.num?(v===''?'':Number(v)):v); markDirty(); }; wrap.appendChild(e);
     } else {
       const e=document.createElement(f.t==='ta'?'textarea':'input'); e.value=blk[f.k]!=null?blk[f.k]:'';
       e.oninput=()=>{ blk[f.k]=e.value; markDirty(); }; wrap.appendChild(e);
@@ -453,9 +464,9 @@
 
   /* ---- 상세 본문(media) 인컨텍스트 편집 ---- */
   const MEDIA_FIELDS={
-    image:[{k:'src',t:'img',label:'이미지'},{k:'caption',t:'in',label:'캡션'},{k:'size',t:'sel',opts:['full','half','100','90','80','75','70','60','50','40','33','25'],label:'크기'},{k:'align',t:'sel',opts:['left','center','right'],label:'정렬'},{k:'pos',t:'pos',label:'위치'}],
-    video:[{k:'videoId',t:'in',label:'유튜브 ID 또는 URL'},{k:'caption',t:'in',label:'캡션'},{k:'size',t:'sel',opts:['full','half','100','90','80','75','70','60','50'],label:'크기'},{k:'align',t:'sel',opts:['left','center','right'],label:'정렬'},{k:'pos',t:'pos',label:'위치'}],
-    text:[{k:'text',t:'ta',label:'설명 텍스트'},{k:'pos',t:'pos',label:'위치'}],
+    image:[{k:'src',t:'img',label:'이미지'},{k:'caption',t:'in',label:'설명 (선택)'},{k:'size',t:'sel',label:'크기',opts:G_PCT,def:50,num:true,norm:normPct},{k:'align',t:'sel',label:'정렬',opts:G_ALIGNM,def:'center'},{k:'pos',t:'sel',label:'위치',opts:G_POS,norm:normPos,delEmpty:true}],
+    video:[{k:'videoId',t:'in',label:'유튜브 URL 또는 영상 ID'},{k:'caption',t:'in',label:'설명 (선택)'},{k:'size',t:'sel',label:'크기',opts:G_PCT,def:100,num:true,norm:normPct},{k:'align',t:'sel',label:'정렬',opts:G_ALIGNM,def:'center'},{k:'pos',t:'sel',label:'위치',opts:G_POS,norm:normPos,delEmpty:true}],
+    text:[{k:'text',t:'ta',label:'설명 텍스트'},{k:'pos',t:'sel',label:'위치',opts:G_POS,norm:normPos,delEmpty:true}],
   };
   const MLABEL={image:'이미지',video:'영상',text:'설명'};
   function renderMedia(){
@@ -467,18 +478,18 @@
   }
   function addMedia(type){
     const s=findSlide(curId); if(!s) return; s.media=s.media||[];
-    const D={ image:{type:'image',src:'',caption:'',size:'full',align:'center'},
-      video:{type:'video',videoId:'',caption:'',size:'full',align:'center'},
+    const D={ image:{type:'image',src:'',caption:''},   // 크기·정렬·위치는 미지정=기본값(이미지50·중앙·아래)
+      video:{type:'video',videoId:'',caption:''},        // 미지정=기본값(영상100·중앙·아래)
       text:{type:'text',text:'',pos:'0'} };
     if(!D[type]) return; s.media.unshift(Object.assign({},D[type])); markDirty(); renderMedia();
   }
   function addAbout(type){
-    const D={ title:{type:'title',text:'제목',size:'md',align:'left',gap:'md'},
-      text:{type:'text',text:'',size:'sm',gap:'sm'},
+    const D={ title:{type:'title',text:'제목'},   // 정렬·크기·행간·간격은 미지정=기본값
+      text:{type:'text',text:''},
       thanks:{type:'thanks',text:''},
-      image:{type:'image',src:'',caption:'',size:'full',gap:'sm'},
-      video:{type:'video',videoId:'',size:'full',gap:'sm'},
-      list:{type:'list',label:'',labelEn:'',items:[],sizeLabel:'lg',sizeText:'sm',gap:'md'} };
+      image:{type:'image',src:'',caption:''},
+      video:{type:'video',videoId:''},
+      list:{type:'list',label:'',labelEn:'',items:[]} };
     if(!D[type]) return;
     aboutArr().push(Object.assign({},D[type])); markDirty(); renderAbout();
     const ap=$('#apanel'); ap.scrollTop=ap.scrollHeight;
@@ -508,19 +519,6 @@
       setStatus('저장됨 · 공개 반영은 배포 뒤(~30초)','ok');
       const t=$('#toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1600);
     }catch(e){ setStatus('저장 실패: '+e.message,'err'); }
-  }
-
-  /* ---- 전체 관리자 오버레이 (기존 admin 전체 기능; 같은 오리진 iframe, 저장 키 공유로 재로그인 없음) ---- */
-  function openAdmin(){
-    const go=()=>{ $('#adminframe').src='/admin/index.html?_='+Date.now(); $('#adminwrap').classList.add('open'); };
-    if(dirty){ if(confirm('저장되지 않은 변경이 있습니다. 저장하고 전체 관리자를 열까요?\n(취소=저장하지 않고 열기)')){ save().then(go); return; } }
-    go();
-  }
-  function closeAdmin(){
-    $('#adminwrap').classList.remove('open'); $('#adminframe').src='about:blank';
-    // 전체 관리자에서 바꾼 내용이 인라인 패널과 어긋나지 않게 최신 콘텐츠로 다시 불러온다
-    loadAll().then(()=>{ dirty=false; $('#saveFab').classList.remove('show'); setStatus(slides().length+'개 작품 · 최신 상태','ok'); refreshTarget(); })
-             .catch(e=>setStatus('갱신 실패: '+e.message,'err'));
   }
 
   function setEdit(on){
@@ -555,12 +553,10 @@
     $('#aClose').onclick=aboutUserClose;
     document.querySelectorAll('#apanel .addb').forEach(b=>{ b.onclick=()=>addAbout(b.getAttribute('data-add')); });
     document.querySelectorAll('#panel [data-madd]').forEach(b=>{ b.onclick=()=>addMedia(b.getAttribute('data-madd')); });
-    $('#openAdmin').onclick=openAdmin;
-    $('#adminClose').onclick=closeAdmin;
     $('#hardReload').onclick=()=>{ if(dirty && !confirm('저장되지 않은 변경이 있습니다. 새로고침하면 사라집니다. 계속할까요?')) return; location.replace(location.pathname+'?_='+Date.now()); };
     setInterval(refreshTarget,500);
     loadAll().then(()=>{ setStatus(slides().length+'개 작품 · 편집을 켜세요',''); })
-             .catch(e=>setStatus('콘텐츠 불러오기 실패: '+e.message+' · 전체 관리자는 사용 가능','err'));
+             .catch(e=>setStatus('콘텐츠 불러오기 실패: '+e.message,'err'));
   }
 
   (async()=>{
