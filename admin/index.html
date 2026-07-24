@@ -1212,7 +1212,7 @@ function moveVisual(vi,dir){
   serializeVisual(V); renderMediaList(); dirty();
   if(y0!=null && cont){ const nb=document.querySelector(`#editMediaList [data-vi="${j}"] [data-vact="${vact}"]`); if(nb) cont.scrollTop += nb.getBoundingClientRect().top - y0; }
 }
-function addMediaImage(src){ slideMedia(mediaTarget).push({type:'image',src:src,caption:'',align:'center',pos:0}); renderMediaList(); dirty(); }
+function addMediaImage(src){ slideMedia(mediaTarget).unshift({type:'image',src:src,caption:'',align:'center',pos:0}); renderMediaList(); dirty(); }
 
 /* inline image picker (inside the edit modal — no separate layer) */
 let editPickMode='media', editChangeIdx=null;
@@ -1242,12 +1242,12 @@ function showEditPicker(mode,idx){
 function hideEditPicker(){ $('#editPickerWrap').classList.remove('open'); }
 $('#editPickerCancel').onclick=hideEditPicker;
 $('#editPickUpload').onchange=e=>doUpload(e,()=>showEditPicker(editPickMode));
-$('#editAddText').onclick=()=>{ slideMedia(mediaTarget).push({type:'text',text:'',pos:0}); renderMediaList(); dirty(); };
+$('#editAddText').onclick=()=>{ slideMedia(mediaTarget).unshift({type:'text',text:'',pos:0}); renderMediaList(); dirty(); };
 $('#editAddImg').onclick=()=>showEditPicker('media');
 $('#editAddVid').onclick=()=>{
   const url=prompt('유튜브 URL 또는 영상 ID를 붙여넣으세요:'); if(!url)return;
   const id=ytId(url.trim()); if(!id){ alert('유튜브 ID를 인식하지 못했습니다.'); return; }
-  slideMedia(mediaTarget).push({type:'video',videoId:id,caption:'',align:'center',pos:0}); renderMediaList(); dirty();
+  slideMedia(mediaTarget).unshift({type:'video',videoId:id,caption:'',align:'center',pos:0}); renderMediaList(); dirty();
 };
 function editMediaField(t){
   if(t.dataset.mk==null)return;
