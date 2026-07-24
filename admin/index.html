@@ -241,12 +241,15 @@
   body.big.scrolled header h1{font-size:15px}
   body.big.scrolled .tab{padding:6px 11px;font-size:16px}
   body.big.scrolled header .btn{padding:7px 12px;font-size:16px}   /* 헤더 버튼만 — 툴바(+슬라이드~일괄변경)는 스크롤해도 그대로 */
-  body.big.scrolled .status{font-size:13px;margin-top:0}   /* 접혔을 때도 숨기지 않고 같은 자리(맨 아래 줄)에 작게 유지 */
+  /* 접혔을 때: status(개수·상태)를 탭과 같은 줄 오른쪽 빈 공간으로 올린다(탭이 줄을 다 안 채우므로 자리 충분) */
+  body.big.scrolled .status{font-size:13px;margin-top:0;order:3;flex:0 1 auto;width:auto;margin-left:auto;text-align:right;align-self:center}
   /* 접힌 헤더: 로고를 '관리자'로 줄이고(앞부분 감춤) 사이트 열기를 그 오른쪽에 붙인다. 탭은 아래 한 줄로 내려
      3줄이던 헤더가 2줄이 된다. (id 셀렉터의 order 가 먹지 않아 클래스로 건다) */
   body.big.scrolled .hdr-full{display:none}
   body.big.scrolled .hdr-open{order:1;margin-left:auto}
-  body.big.scrolled .tabs{order:2;flex-basis:100%}
+  .hdr-break{display:none}
+  body.big.scrolled .hdr-break{display:block;flex-basis:100%;height:0;order:1}   /* 접힘: 여기서 줄을 끊어 아래를 '탭 + status' 한 줄로 */
+  body.big.scrolled .tabs{order:2;flex-basis:auto}   /* 접힘: 탭을 내용폭으로 — 오른쪽 빈 공간에 status 가 같은 줄로 들어온다 */
   /* 모바일: 툴바의 밀대(spacer)를 접어 항목이 좌측부터 순서대로 붙게 한다 — 좁은 폭에서 개수와 정렬 컨트롤이
      양끝으로 벌어져 줄이 들쭉날쭉해 보이던 것 정리. 넓은 화면에선 그대로 정렬 컨트롤이 우측에 선다. */
   @media (max-width:560px){ .toolbar .sp{display:none} }
@@ -259,7 +262,7 @@
   /* 플로팅 추가 버튼(FAB): 데스크톱에선 숨기고(상단 버튼으로 충분) 모바일에서만 뜬다. .show 는 JS 가 현재
      화면에 맞춰 붙인다. 모달이 열리면 숨긴다(모달 자체 버튼이 있으므로). */
   .fab{position:fixed;right:16px;bottom:16px;z-index:50;display:none;align-items:center;gap:6px;
-    background:var(--acc);color:#fff;border:0;border-radius:999px;padding:14px 22px;font-size:17px;font-weight:600;
+    background:var(--blue);color:#fff;border:0;border-radius:999px;padding:14px 22px;font-size:17px;font-weight:600;
     box-shadow:0 6px 18px rgba(0,0,0,.45);cursor:pointer;white-space:nowrap}
   @media (max-width:699px){ .fab.show{display:inline-flex} #addSlide,#uploadBtn{display:none} }   /* 모바일: 상단 +슬라이드 추가·이미지 업로드는 하단 플로팅 버튼이 대신하므로 숨긴다 */
   body:has(.modal.open) .fab{display:none}
@@ -325,6 +328,7 @@
   <button class="btn ghost ico" id="openSettings" data-view="site" title="사이트 설정" aria-label="사이트 설정"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   <button class="btn ghost hdr-open" id="openSite">사이트 열기 ↗</button>
   <button class="btn primary" id="save">저장</button>
+  <div class="hdr-break" aria-hidden="true"></div>
   <div class="status" id="status">불러오는 중…</div>
 </header>
 
@@ -380,11 +384,11 @@
   <main>
     <div class="hint">블록을 쌓아 페이지를 구성합니다. 위에서 아래 순서 그대로 사이트에 렌더됩니다. ↑↓ 로 글과 이미지를 섞어 배치하세요. 빈 블록은 렌더되지 않습니다.</div>
     <div class="blk-add">
-      <button class="btn ghost" data-add="title">+ 제목</button>
-      <button class="btn ghost" data-add="text">+ 글</button>
-      <button class="btn ghost" data-add="thanks">+ 맺음말</button>
-      <button class="btn ghost" data-add="image">+ 이미지</button>
-      <button class="btn ghost" data-add="list">+ 이력</button>
+      <button class="btn addmedia" data-add="title">+ 제목</button>
+      <button class="btn addmedia" data-add="text">+ 글</button>
+      <button class="btn addmedia" data-add="thanks">+ 맺음말</button>
+      <button class="btn addmedia" data-add="image">+ 이미지</button>
+      <button class="btn addmedia" data-add="list">+ 이력</button>
       <span class="sp"></span>
       <span class="count" id="countBlocks"></span>
     </div>
@@ -482,7 +486,7 @@
 <!-- slide edit modal (roomy) -->
 <div class="modal" id="editModal">
   <div class="sheet">
-    <div class="shead"><strong>슬라이드 편집</strong><span id="editSub" style="color:var(--mut);font-size:var(--fs-sm,12px);margin-left:8px"></span><div class="sp"></div>
+    <div class="shead"><strong id="editModalTitle">슬라이드 편집</strong><span id="editSub" style="color:var(--mut);font-size:var(--fs-sm,12px);margin-left:8px"></span><div class="sp"></div>
       <button class="btn ghost sm" id="editClose">닫기</button></div>
     <div class="sbody" style="max-height:78vh;overflow-y:auto;overflow-x:hidden">
       <div style="display:flex;gap:20px;flex-wrap:wrap">
@@ -563,11 +567,11 @@
 <button class="fab" id="fab" type="button" aria-label="추가"></button>
 <!-- 페이지 화면의 + FAB 를 누르면 뜨는 블록 종류 선택 메뉴 (제목/글/맺음말/이미지/이력) -->
 <div class="blkmenu" id="blkmenu">
-  <button class="btn" data-blkadd="title">제목</button>
-  <button class="btn" data-blkadd="text">글</button>
-  <button class="btn" data-blkadd="thanks">맺음말</button>
-  <button class="btn" data-blkadd="image">이미지</button>
-  <button class="btn" data-blkadd="list">이력</button>
+  <button class="btn addmedia" data-blkadd="title">+ 제목</button>
+  <button class="btn addmedia" data-blkadd="text">+ 글</button>
+  <button class="btn addmedia" data-blkadd="thanks">+ 맺음말</button>
+  <button class="btn addmedia" data-blkadd="image">+ 이미지</button>
+  <button class="btn addmedia" data-blkadd="list">+ 이력</button>
 </div>
 
 <script>
@@ -889,7 +893,7 @@ $('#addSlide').onclick=()=>{
   else { const n=new Date(); ym=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01'; }
   cfg.slides.unshift({id:'n'+Date.now()+'_'+(nid++),image:'',top:'1',bottom:'Inspire',date:ym});
   renderSlides(); dirty(); window.scrollTo(0,0);
-  openEditModal(0);   // 빈 슬라이드가 생기자마자 곧바로 입력 화면을 띄운다(최상단이 새 슬라이드)
+  openEditModal(0, true);   // 빈 슬라이드가 생기자마자 '슬라이드 생성' 화면을 띄운다(입력 없이 닫으면 자동 삭제)
 };
 $('#qSlide').addEventListener('input',renderSlides);
 $('#bulkBottom').onclick=()=>{
@@ -1129,8 +1133,11 @@ $('#editMediaList').addEventListener('click',e=>{
 
 /* ---------- slide edit modal (roomy) ---------- */
 let editTarget=null;
-function openEditModal(i){
+let editIsNew=false, newSlideId=null;   // +슬라이드로 방금 만든 슬라이드인지 — 입력 없이 닫으면 자동 삭제
+function openEditModal(i,isNew){
   editTarget=i; mediaTarget=i; const s=cfg.slides[i];
+  editIsNew=!!isNew; newSlideId=isNew?(s.id||null):null;
+  $('#editModalTitle').textContent = isNew ? '슬라이드 생성' : '슬라이드 편집';
   $('#editSub').textContent='#'+(i+1);
   $('#ed-top').value=s.top||''; $('#ed-bottom').value=s.bottom||'';
   $('#ed-category').value=s.category||'';
@@ -1154,7 +1161,21 @@ $('#ed-date').addEventListener('input',e=>{
   if(editTarget==null)return;
   const v=e.target.value; cfg.slides[editTarget].date = v ? v+'-01' : ''; dirty();
 });
-function closeEditModal(){ $('#editModal').classList.remove('open'); renderSlides(); }
+/* 방금 만든 슬라이드를 아무것도 입력 안 하고 닫으면(취소) 빈 슬라이드가 남지 않게 자동 삭제한다. */
+function slideIsUntouched(s){
+  return s && !((s.image||'').trim()) && !((s.title||'').trim()) && !((s.desc||'').trim())
+    && !((s.category||'').trim()) && !((s.ptype||'').trim()) && !((s.price||'').trim())
+    && !((s.size||'').trim()) && !(Array.isArray(s.media)&&s.media.length);
+}
+function closeEditModal(){
+  $('#editModal').classList.remove('open');
+  if(editIsNew && newSlideId!=null){
+    const idx=cfg.slides.findIndex(s=>s.id===newSlideId);
+    if(idx>=0 && slideIsUntouched(cfg.slides[idx])) cfg.slides.splice(idx,1);   // 입력 없이 닫음 → 생성 취소
+  }
+  editIsNew=false; newSlideId=null;
+  renderSlides();
+}
 $('#editClose').onclick=closeEditModal;
 $('#editModal').addEventListener('click',e=>{ if(e.target.id==='editModal')closeEditModal(); });
 [['ed-bottom','bottom'],['ed-category','category'],['ed-title','title'],['ed-desc','desc'],['ed-ptype','ptype'],['ed-price','price']].forEach(([id,key])=>{
