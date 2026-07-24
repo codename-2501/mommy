@@ -1127,9 +1127,10 @@ function alignOptions(cur){
     return `<option value="${v}"${v===c?' selected':''}>${lbl}</option>`;
   }).join('');
 }
-function sizeOptions(cur){
-  /* 크기 %(본문 폭 대비, 종횡비 유지). 기존 원본=100·절반=50 으로 읽어 하위호환 */
-  const pct=(cur==='full'||cur==null||cur==='')?100:(cur==='half'?50:(parseInt(cur,10)||100));
+function sizeOptions(cur,defPct){
+  /* 크기 %(본문 폭 대비, 종횡비 유지). 원본=100·절반=50 하위호환. 미지정이면 타입별 기본값(영상 100·이미지 50) */
+  const d=defPct||50;
+  const pct=(cur==='full')?100:(cur==='half')?50:(cur==null||cur==='')?d:(parseInt(cur,10)||d);
   return [25,33,40,50,60,70,75,80,90,100].map(v=>`<option value="${v}"${v===pct?' selected':''}>${v}%</option>`).join('');
 }
 /* 상세 본문은 '보이는 순서 = 상세페이지 노출 순서'. 상세 설명은 하나의 덩어리(desc block)로 취급하고,
@@ -1141,7 +1142,7 @@ function mediaRow(m,k,vi){
   const isVid=m.type==='video';
   const thumb=isVid ? `https://i.ytimg.com/vi/${ytId(m.videoId||m.url)}/hqdefault.jpg` : (m.src||m.image||'');
   const alignCtrl=`<select data-mk="${k}" data-mf="align" title="가로 정렬(종횡비 유지)" class="msel" style="flex:0 1 auto">${alignOptions(m.align)}</select>`;
-  const sizeCtrl=`<select data-mk="${k}" data-mf="size" title="크기(%): 본문 폭 대비 (종횡비 유지)" class="msel" style="flex:0 1 auto">${sizeOptions(m.size)}</select>`;
+  const sizeCtrl=`<select data-mk="${k}" data-mf="size" title="크기(%): 본문 폭 대비 (종횡비 유지)" class="msel" style="flex:0 1 auto">${sizeOptions(m.size, isVid?100:50)}</select>`;
   const row=document.createElement('div');
   row.className='mrow'; row.dataset.vi=vi;
   /* 상세설명 블록처럼: 상단에 '순번+유형명' 타이틀 + 이동/삭제, 그 아래 썸네일과 캡션·옵션 */
