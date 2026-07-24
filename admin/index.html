@@ -971,7 +971,9 @@ $('#addSlide').onclick=()=>{
   if(maxY){ let ny=maxY,nm=maxM+1; if(nm>12){nm=1;ny++;} ym=ny+'-'+String(nm).padStart(2,'0')+'-01'; }
   else { const n=new Date(); ym=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01'; }
   cfg.slides.unshift({id:'n'+Date.now()+'_'+(nid++),image:'',top:'1',bottom:'Inspire',date:ym});
-  renderSlides(); dirty(); window.scrollTo(0,0);
+  /* dirty() 를 부르지 않는다 — 빈 슬라이드는 아직 '변경'이 아니다. 입력이 실제로 생겨야(필드/이미지) 그때 dirty 가 뜬다.
+     그전에 닫으면 아래 closeEditModal 이 흔적 없이 지운다(= 저장 전에는 사실상 생성 안 된 것). */
+  renderSlides(); window.scrollTo(0,0);
   openEditModal(0, true);   // 빈 슬라이드가 생기자마자 '슬라이드 생성' 화면을 띄운다(입력 없이 닫으면 자동 삭제)
 };
 $('#qSlide').addEventListener('input',renderSlides);
