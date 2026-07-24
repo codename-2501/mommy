@@ -106,11 +106,9 @@
   /* block editor: only the grip drags, so a textarea keeps its own text selection.
      The row wraps — on a narrow screen the buttons drop under the field instead of
      pushing the whole panel sideways. */
-  .blk{position:relative;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;background:var(--card-face);color:var(--card-ink);
-    border:0;border-radius:10px;padding:12px;padding-right:52px;
-    box-shadow:0 3px 14px rgba(0,0,0,.55)}   /* 덩어리를 밝은 '면'으로 배경(거의 검정)과 흑백처럼 구분 — 테두리 라인 없음 */
-  .blk-ord{position:absolute;top:8px;right:10px;z-index:2}   /* 블록 순번 뱃지: 높이와 무관하게 항상 우측 상단 고정 */
-  .blk .blk__nav{margin-top:26px}   /* 버튼은 뱃지 아래로 — 우측 상단은 뱃지 자리 */
+  .blk{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;background:var(--card-face);color:var(--card-ink);
+    border:0;border-radius:10px;padding:12px;
+    box-shadow:0 3px 14px rgba(0,0,0,.55)}   /* 덩어리를 '면'으로 배경과 구분 — 테두리 라인 없음. 순번 뱃지는 타이틀 앞 인라인 */
   .blk.drag{opacity:.4}
   .blk.over{outline:2px dashed var(--blue)}
   .blk .grip2{flex:none;align-self:stretch;display:flex;align-items:center;padding:0 2px;color:#8a857a;
@@ -351,11 +349,6 @@
     <input type="search" id="qSlide" placeholder="번호·문구·제목·내용 검색">
     <span class="count" id="countSlide"></span>
     <span class="sp"></span>
-    <label style="font-size:var(--fs-sm,12px);color:var(--mut)">정렬</label>
-    <select id="orderMode" class="blk-sel">
-      <option value="date">날짜순 (최신 먼저)</option>
-      <option value="manual">수동 (드래그 순서)</option>
-    </select>
     <button class="btn ghost sm" id="moreToggle" aria-expanded="false" title="가끔 쓰는 도구">기타 도구</button>
     <button class="btn ghost moretool" id="openBulk" style="display:none">선택 일괄수정…</button>
   </div>
@@ -411,6 +404,15 @@
 <!-- ===== SITE (설정: 한 번 정하면 잘 바뀌지 않는 것들) ===== -->
 <section class="view" id="view-site">
   <main>
+    <div style="background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
+      <div style="font-weight:600;margin-bottom:4px">작품 정렬 방식</div>
+      <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:12px">홈·인덱스에 작품이 노출되는 순서를 정합니다(공개 사이트에 그대로 반영).</div>
+      <select id="orderMode" class="blk-sel">
+        <option value="date">날짜순 (최신 먼저)</option>
+        <option value="manual">수동 (드래그 순서)</option>
+      </select>
+      <div class="hint" style="margin-top:8px">날짜순: 각 작품의 연·월 기준 자동 정렬 / 수동: <b>작품</b> 화면에서 카드를 드래그해 순서를 직접 정합니다.</div>
+    </div>
     <div style="background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
       <div style="font-weight:600;margin-bottom:4px">로고 / 워드마크 <span style="color:var(--mut);font-weight:400;font-size:var(--fs-sm,12px)">(인트로·홈 상단)</span></div>
       <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:12px">워드마크 3줄을 편집합니다. 비워두면 기본값(LSE GALLERY)이 표시됩니다.</div>
@@ -850,8 +852,8 @@ $('#orderMode').addEventListener('change',()=>{
 function renderOrderHint(){
   const date=orderMode()==='date';
   $('#orderHint').textContent = date
-    ? '날짜 내림차순으로 자동 정렬됩니다 (사이트와 동일). 순서를 바꾸려면 작품의 날짜를 바꾸세요 — 드래그는 잠겨 있습니다.'
-    : '드래그로 정한 순서가 사이트에 그대로 나갑니다. 날짜는 표기용으로만 쓰입니다.';
+    ? '정렬: 날짜순 (설정에서 변경) — 날짜 내림차순 자동 정렬. 순서를 바꾸려면 작품의 날짜를 바꾸세요(드래그 잠김).'
+    : '정렬: 수동 (설정에서 변경) — 드래그로 정한 순서가 사이트에 그대로 나갑니다. 날짜는 표기용입니다.';
 }
 
 function renumber(){ cfg.slides.forEach((s,i)=>{ s.top=String(i+1); }); }  // 순번은 항상 배열 순서 = 번호
@@ -1422,13 +1424,12 @@ function renderBlocks(){
     const row=document.createElement('div');
     row.className='blk'; row.dataset.i=i;
     const grip=`<div class="grip2" draggable="true" title="끌어서 순서 변경">≡</div>`;
-    const ord=`<span class="ordbadge blk-ord" title="블록 순서">${i+1}</span>`;   // 우측 상단 고정(absolute)
     const nav=`<div class="blk__nav">
         <button class="btn ghost" data-up="${i}" ${i===0?'disabled':''}>↑</button>
         <button class="btn ghost" data-down="${i}" ${i===list.length-1?'disabled':''}>↓</button>
         <button class="btn ghost danger" data-del="${i}">삭제</button>
       </div>`;
-    const tag=`<div style="flex:none;min-width:48px;padding-top:8px;font-size:var(--fs-sm,12px);color:var(--card-ink);font-weight:700;white-space:nowrap;word-break:keep-all">${BLOCK_LABEL[b.type]||b.type}</div>`;
+    const tag=`<div style="flex:none;padding-top:6px;display:flex;align-items:center;gap:6px;white-space:nowrap"><span class="ordbadge" title="블록 순서">${i+1}</span><span style="font-size:var(--fs-sm,12px);color:var(--card-ink);font-weight:700">${BLOCK_LABEL[b.type]||b.type}</span></div>`;
     /* 아래 여백은 블록 종류를 가리지 않는다 — 글·이미지·이력 모두 같은 컨트롤을 쓴다 */
     const gp=['none','sm','md','lg','xl'].includes(b.gap)?b.gap:'md';
     const gopt=(v,label)=>`<option value="${v}"${v===gp?' selected':''}>${label}</option>`;
@@ -1543,7 +1544,7 @@ function renderBlocks(){
            </div>
          </div>`;
     }
-    row.innerHTML=grip+tag+body+nav+ord;
+    row.innerHTML=grip+tag+body+nav;
     L.appendChild(row);
   });
   $('#countBlocks').textContent=list.length+'개 블록';
