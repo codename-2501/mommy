@@ -77,7 +77,6 @@
   .fields input{width:100%;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:6px;padding:6px 8px;font-size:13px}
   .fields input:focus{outline:none;border-color:#4a4d57}
   .rowbtns{display:flex;gap:6px;margin-top:2px;flex-wrap:wrap}
-  .mrow__btns{align-self:flex-start}   /* 미디어 행: 이동/삭제 버튼을 상단 우측에(데스크톱). 모바일은 아래 미디어쿼리에서 상단 우측 유지 */
   /* 삭제 버튼은 묶음의 가장 왼쪽에 홀로 두고(order:-1) 나머지(편집·복제·이동)는 오른쪽으로 민다(margin-right:auto).
      자주 쓰는 버튼과 떨어져 있어 실수로 삭제를 누를 일이 준다. */
   .rowbtns .danger{order:-1;margin-right:auto}
@@ -205,7 +204,12 @@
   .msel,.mcap{background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:12px}
   .mnote{font-size:11px;color:var(--mut)}
   .mopts{display:flex;gap:6px}
-  .mthumb{width:90px;height:64px;flex:0 0 auto;background:#000;border-radius:6px;overflow:hidden;position:relative}
+  /* 미디어 행 = 상세설명 블록과 같은 구조: 상단 헤더(순번+유형명+버튼), 그 아래 썸네일+캡션·옵션 */
+  .mrow{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px}
+  .mrow__head{display:flex;align-items:center;gap:8px}
+  .mrow__content{display:flex;gap:10px;align-items:flex-start;margin-top:8px}
+  .mrow__fields{flex:1;min-width:0}
+  .mthumb{width:120px;height:84px;flex:0 0 auto;background:#000;border-radius:6px;overflow:hidden;position:relative;cursor:pointer}
 
   /* ===== 큰 글씨 모드 (70대 사용자용) =====
      header의 "큰 글씨" 버튼 하나로 body.big 을 켜고 끈다. 선택은 기억된다(localStorage).
@@ -266,13 +270,10 @@
   body.big .mnote{font-size:19px}
   body.big .mopts{gap:8px;flex-wrap:wrap}
   body.big .mopts .msel{flex:1 1 auto;min-width:130px}
-  /* 좁은 폭에서는 미디어 항목을 세로로 쌓아, 썸네일·설명·옵션·이동버튼이 서로 밀지 않게 한다 */
+  /* 좁은 폭: 썸네일을 전체폭으로, 캡션·옵션은 그 아래로 스택(헤더는 항상 맨 위 유지) */
   @media (max-width:560px){
-    /* 좁은 폭: 미디어 항목을 대표이미지처럼 세로로 — 이동/삭제 버튼은 맨 위 우측(상세설명 블록과 같은 자리),
-       그 아래 썸네일(전체폭), 캡션·옵션 순. 화살표 위치가 상세설명과 일관되게 유지된다. */
-    body.big .mrow{flex-direction:column;align-items:stretch}
+    body.big .mrow__content{flex-direction:column;align-items:stretch}
     body.big .mthumb{width:100%;height:auto;aspect-ratio:4/3}
-    body.big .mrow .rowbtns{order:-1;align-self:flex-end;flex-direction:row;justify-content:flex-end}
   }
   /* 스크롤하면 상단 헤더를 컴팩트하게 접는다 — 큰 글씨에서 헤더가 화면을 크게 차지하므로(약 27%) 스크롤
      시 자리를 내준다. 탭·버튼은 그대로 두고 크기·여백만 줄이므로 스크롤 중에도 모든 조작이 유지된다.
@@ -561,6 +562,7 @@
               <input id="ed-h" type="number" step="0.1" inputmode="decimal" placeholder="세로" style="flex:1;min-width:0;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px">
               <input id="ed-ho" type="number" inputmode="numeric" placeholder="호" style="flex:1;min-width:0;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px">
             </div>
+            <button type="button" id="ed-size-done" class="btn sm addmedia" style="display:none;margin-top:8px;width:100%">완료 (키패드 닫기)</button>
             <div style="font-size:var(--fs-xs,11px);color:var(--mut);margin-top:4px">cm 표기는 자동 조합됩니다 — 예: 72.7 × 60.6 cm (20호). 사이즈별 정렬은 호 기준입니다.</div></div>
           <div><label class="flab">제품 타입</label>
             <input id="ed-ptype" placeholder="예: Oil on canvas" style="width:100%;margin-top:4px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
@@ -1137,22 +1139,26 @@ function mediaRow(m,k,vi){
   const sizeCtrl=isVid?'':`<select data-mk="${k}" data-mf="size" title="이미지 크기(PC): 절반=본문 폭 50%, 원본=100%" class="msel" style="flex:0 1 auto">${sizeOptions(m.size)}</select>`;
   const row=document.createElement('div');
   row.className='mrow'; row.dataset.vi=vi;
-  row.style.cssText='display:flex;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px';
+  /* 상세설명 블록처럼: 상단에 '순번+유형명' 타이틀 + 이동/삭제, 그 아래 썸네일과 캡션·옵션 */
   row.innerHTML=`
-    <div class="mthumb imgchange" data-mchange="${k}" title="${isVid?'눌러서 영상 바꾸기':'눌러서 이미지 바꾸기'}">
-      <img src="${thumb}" style="width:100%;height:100%;object-fit:cover">
-      ${isVid?'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px">▶</span>':''}
-      <span class="imgchange__hint">변경</span>
-    </div>
-    <div style="flex:1;min-width:0">
+    <div class="mrow__head">
       <div class="flab" style="display:flex;align-items:center;gap:6px"><span class="ordbadge">${vi+1}</span> ${isVid?'영상':'이미지'}</div>
-      <input data-mk="${k}" data-mf="caption" value="${escAttr(m.caption)}" placeholder="캡션(선택)" class="mcap" style="width:100%;margin-top:4px">
-      <div class="mopts" style="margin-top:5px">${sizeCtrl}${alignCtrl}</div>
+      <div class="rowbtns" style="margin-left:auto">
+        <button type="button" class="btn sm" data-vact="up" data-mk="${k}">↑</button>
+        <button type="button" class="btn sm" data-vact="down" data-mk="${k}">↓</button>
+        <button type="button" class="btn sm danger" data-mact="del" data-mk="${k}">삭제</button>
+      </div>
     </div>
-    <div class="rowbtns mrow__btns">
-      <button type="button" class="btn sm" data-vact="up" data-mk="${k}">↑</button>
-      <button type="button" class="btn sm" data-vact="down" data-mk="${k}">↓</button>
-      <button type="button" class="btn sm danger" data-mact="del" data-mk="${k}">삭제</button>
+    <div class="mrow__content">
+      <div class="mthumb imgchange" data-mchange="${k}" title="${isVid?'눌러서 영상 바꾸기':'눌러서 이미지 바꾸기'}">
+        <img src="${thumb}" style="width:100%;height:100%;object-fit:cover">
+        ${isVid?'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px">▶</span>':''}
+        <span class="imgchange__hint">변경</span>
+      </div>
+      <div class="mrow__fields">
+        <input data-mk="${k}" data-mf="caption" value="${escAttr(m.caption)}" placeholder="캡션(선택)" class="mcap" style="width:100%">
+        <div class="mopts" style="margin-top:6px">${sizeCtrl}${alignCtrl}</div>
+      </div>
     </div>`;
   return row;
 }
@@ -1305,6 +1311,17 @@ function syncSize(){
   dirty();
 }
 ['ed-w','ed-h','ed-ho'].forEach(id=>{ $('#'+id).addEventListener('input',syncSize); });
+/* 규격은 숫자 키패드라(안드로이드) 완료 키가 없다 — 포커스되면 '완료' 버튼을 띄워 키패드를 내릴 수단을 준다 */
+(function(){
+  const done=$('#ed-size-done'); if(!done) return;
+  const ids=['ed-w','ed-h','ed-ho'];
+  ids.forEach(id=>{ const el=$('#'+id); if(!el) return;
+    el.addEventListener('focus',()=>{ done.style.display='inline-flex'; });
+    el.addEventListener('blur',()=>{ setTimeout(()=>{ const a=document.activeElement; if(!a||!ids.includes(a.id)) done.style.display='none'; },120); });
+  });
+  done.addEventListener('pointerdown',e=>{ e.preventDefault(); const a=document.activeElement; if(a&&a.blur)a.blur(); done.style.display='none'; });
+  done.addEventListener('click',e=>{ e.preventDefault(); });   // pointerdown 이 처리 — click 은 무시
+})();
 // 상세 설명은 이제 순서 목록 안의 지속 노드다 — 타이핑마다 목록을 다시 그리면 커서를 잃으므로 재렌더하지 않는다.
 /* 대표 이미지: 박스 자체가 '이미지 적용/변경' 버튼 (사이트 이미지 영역과 동일한 방식) */
 function setEditThumb(src){ const img=$('#editThumbImg'); if(!img)return; img.src=src||''; img.closest('.imgpreview')?.classList.toggle('has-img',!!src); }
