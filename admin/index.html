@@ -577,6 +577,7 @@
           <strong style="font-size:var(--fs-sm,14px)">상세 본문 (설명 · 이미지 · 영상)</strong>
           <span id="editMediaSub" style="color:var(--mut);font-size:var(--fs-sm,12px)"></span>
           <div class="sp" style="flex:1"></div>
+          <button class="btn sm addmedia" id="editAddText">+ 설명</button>
           <button class="btn sm addmedia" id="editAddImg">+ 이미지</button>
           <button class="btn sm addmedia" id="editAddVid">+ 영상(유튜브)</button>
         </div>
@@ -1139,22 +1140,27 @@ function sizeOptions(cur,defPct){
 let mediaVisual=[];   // 현재 화면의 시각 순서 토큰: {t:'m',k} | {t:'desc'}
 function mediaSide(m){ return (m.pos===0||m.pos==='0')?'above':'below'; }
 function mediaRow(m,k,vi){
-  const isVid=m.type==='video';
-  const thumb=isVid ? `https://i.ytimg.com/vi/${ytId(m.videoId||m.url)}/hqdefault.jpg` : (m.src||m.image||'');
-  const alignCtrl=`<select data-mk="${k}" data-mf="align" title="가로 정렬(종횡비 유지)" class="msel" style="flex:0 1 auto">${alignOptions(m.align)}</select>`;
-  const sizeCtrl=`<select data-mk="${k}" data-mf="size" title="크기(%): 본문 폭 대비 (종횡비 유지)" class="msel" style="flex:0 1 auto">${sizeOptions(m.size, isVid?100:50)}</select>`;
+  const isText=m.type==='text', isVid=m.type==='video';
   const row=document.createElement('div');
   row.className='mrow'; row.dataset.vi=vi;
-  /* 상세설명 블록처럼: 상단에 '순번+유형명' 타이틀 + 이동/삭제, 그 아래 썸네일과 캡션·옵션 */
-  row.innerHTML=`
+  /* 상단: 순번+유형명 + 이동/삭제 (상세설명 블록과 동일 구조) */
+  const head=`
     <div class="mrow__head">
-      <div class="flab" style="display:flex;align-items:center;gap:6px"><span class="ordbadge">${vi+1}</span> ${isVid?'영상':'이미지'}</div>
+      <div class="flab" style="display:flex;align-items:center;gap:6px"><span class="ordbadge">${vi+1}</span> ${isText?'설명':(isVid?'영상':'이미지')}</div>
       <div class="rowbtns" style="margin-left:auto">
         <button type="button" class="btn sm" data-vact="up" data-mk="${k}">↑</button>
         <button type="button" class="btn sm" data-vact="down" data-mk="${k}">↓</button>
         <button type="button" class="btn sm danger" data-mact="del" data-mk="${k}">삭제</button>
       </div>
-    </div>
+    </div>`;
+  if(isText){
+    row.innerHTML=head+`<textarea data-mk="${k}" data-mf="text" placeholder="설명 문단…" style="width:100%;margin-top:8px;min-height:84px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:inherit;resize:vertical">${escHtml(m.text||'')}</textarea>`;
+    return row;
+  }
+  const thumb=isVid ? `https://i.ytimg.com/vi/${ytId(m.videoId||m.url)}/hqdefault.jpg` : (m.src||m.image||'');
+  const alignCtrl=`<select data-mk="${k}" data-mf="align" title="가로 정렬(종횡비 유지)" class="msel" style="flex:0 1 auto">${alignOptions(m.align)}</select>`;
+  const sizeCtrl=`<select data-mk="${k}" data-mf="size" title="크기(%): 본문 폭 대비 (종횡비 유지)" class="msel" style="flex:0 1 auto">${sizeOptions(m.size, isVid?100:50)}</select>`;
+  row.innerHTML=head+`
     <div class="mrow__content">
       <div class="mthumb imgchange" data-mchange="${k}" title="${isVid?'눌러서 영상 바꾸기':'눌러서 이미지 바꾸기'}">
         <img src="${thumb}" style="width:100%;height:100%;object-fit:cover">
@@ -1236,6 +1242,7 @@ function showEditPicker(mode,idx){
 function hideEditPicker(){ $('#editPickerWrap').classList.remove('open'); }
 $('#editPickerCancel').onclick=hideEditPicker;
 $('#editPickUpload').onchange=e=>doUpload(e,()=>showEditPicker(editPickMode));
+$('#editAddText').onclick=()=>{ slideMedia(mediaTarget).push({type:'text',text:'',pos:0}); renderMediaList(); dirty(); };
 $('#editAddImg').onclick=()=>showEditPicker('media');
 $('#editAddVid').onclick=()=>{
   const url=prompt('유튜브 URL 또는 영상 ID를 붙여넣으세요:'); if(!url)return;

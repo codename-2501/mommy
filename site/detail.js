@@ -76,6 +76,12 @@ function buildBody(s) {
   const emit = (i) => {
     for (const m of media) {
       if (slot(m) !== i) continue;
+      /* 추가 설명(text) 블록: 본문 문단으로 렌더 (상세 설명 문단과 같은 모양) */
+      if (m.type === 'text') {
+        String(m.text || '').split(/\n+/).map((x) => x.trim()).filter(Boolean)
+          .forEach((par) => body.appendChild(el('p', null, par)));
+        continue;
+      }
       /* 크기 %: 'full'/'half'(구형) 또는 % 숫자 → 본문 폭 대비 그 비율(종횡비 유지).
          기본값은 타입별 구형 동작 그대로 — 영상 100%, 이미지 50% */
       const defPct = (m.type === 'video') ? 100 : 50;
