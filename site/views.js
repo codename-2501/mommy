@@ -442,12 +442,12 @@ function smoothTilt(outer, content) {
 
 /* the sort the viewer last chose, kept for the session so it survives leaving the index and
    coming back. date-desc (newest first) is the archive's own order — the default. */
-let indexSort = 'date-desc';
+let indexSort = 'date';
 let indexColor = null;   // a chosen colour in Color mode (a bucket key), or null for the whole spectrum
 let indexSizeDir = 'desc';   // Size: 'desc' large first, 'asc' small first — clicking Size again flips it
+let indexDateDir = 'desc';   // Date: 'desc' newest first (archive order, default), 'asc' oldest first — click Date again to flip
 const INDEX_SORTS = [
-  ['date-desc', 'Latest'],
-  ['date-asc', 'Oldest'],
+  ['date', 'Date'],
   ['color', 'Color'],
   ['size', 'Size'],
 ];
@@ -506,18 +506,19 @@ function hoOf(s) {
 
 /* return the slides as {s, oi} pairs (oi = the work's place in the archive's own order, which the
    deck and the hand-over both count in — so it must ride along, sorted or not) in the chosen order */
-function orderIndex(slides, colors, mode, sizeDir) {
+function orderIndex(slides, colors, mode, dir) {
   const pairs = slides.map((s, oi) => ({ s, oi }));
-  if (mode === 'date-asc') {
-    return pairs.sort((a, b) =>
+  if (mode === 'date') {
+    if (dir === 'asc') return pairs.sort((a, b) =>   // oldest first
       String(a.s.date || '').localeCompare(String(b.s.date || '')) || a.oi - b.oi);
+    return pairs;   // desc = the archive's own order (newest first)
   }
   if (mode === 'size') {
     return pairs.sort((a, b) => {
       const ha = hoOf(a.s), hb = hoOf(b.s);
       const am = ha < 0, bm = hb < 0;            // a work with no 호 sits at the end, either way
       if (am !== bm) return am ? 1 : -1;
-      const cmp = sizeDir === 'asc' ? ha - hb : hb - ha;   // small first, or large first
+      const cmp = dir === 'asc' ? ha - hb : hb - ha;   // small first, or large first
       return cmp || a.oi - b.oi;
     });
   }
@@ -587,10 +588,10 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   function buildGrid() {
     if (buildRAF) { cancelAnimationFrame(buildRAF); buildRAF = 0; }
     relayout();   // read the current width so a resize re-rows the grid to fit
-    let pairs = orderIndex(slides, colors, indexSort, indexSizeDir);
+    let pairs = orderIndex(slides, colors, indexSort, indexSort === 'size' ? indexSizeDir : indexDateDir);
     if (indexSort === 'color' && indexColor) pairs = pairs.filter((p) => bucketOfPair(p) === indexColor);
     orderedIds = pairs.map((p) => p.s.id);   // the order (and colour filter) the detail pages through
-    const dateMode = indexSort.slice(0, 4) === 'date';
+    const dateMode = indexSort === 'date';
     const withLabels = dateMode || indexSort === 'size';   // months in time, 호 by size, nothing by colour
     content.replaceChildren();
     let seenGroup = '';
@@ -738,14 +739,15 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     blobAnim.onfinish = () => { if (blobAnim) { blobAnim.cancel(); blobAnim = null; } };
   }
 
-  const sizeBtn = btns.find((b) => b.dataset.mode === 'size');
-  /* 방향 화살표는 '한 번만' 만든 영속 span — 매 paintBar 마다 새로 만들면 이미 is-on 인 순간 생성돼
+  /* 방향 화살표(Date·Size)는 '한 번만' 만든 영속 span — 매 paintBar 마다 새로 만들면 이미 is-on 인 순간 생성돼
      transition 없이 opacity 1 로 즉시 떠버린다(=클릭 즉시 등장). 재사용하면 opacity 0→1 전환이 제대로 걸린다. */
-  let sizeDir = null;
-  if (sizeBtn) { sizeDir = el('span', 'agrid-sort__dir'); sizeBtn.appendChild(sizeDir); }
+  const mkDir = (b) => { if (!b) return null; const s = el('span', 'agrid-sort__dir'); b.appendChild(s); return s; };
+  const sizeDir = mkDir(btns.find((b) => b.dataset.mode === 'size'));
+  const dateDir = mkDir(btns.find((b) => b.dataset.mode === 'date'));
   function paintBar() {
     btns.forEach((b) => b.classList.toggle('is-on', b.dataset.mode === indexSort));
-    /* Size shows its direction while it is the one in use — an arrow that flips on the repeat click */
+    /* Date·Size show their direction while in use — an arrow that flips on the repeat click */
+    if (dateDir) dateDir.textContent = indexSort === 'date' ? (indexDateDir === 'asc' ? '↑' : '↓') : '';
     if (sizeDir) sizeDir.textContent = indexSort === 'size' ? (indexSizeDir === 'asc' ? '↑' : '↓') : '';
     pal.classList.toggle('is-open', indexSort === 'color');   // the palette shows only in Color
     swBtns.forEach((b) => b.classList.toggle('is-on', b.dataset.bucket === indexColor));
@@ -839,6 +841,8 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   function setSort(mode) {
     if (mode === 'size' && indexSort === 'size') {
       indexSizeDir = indexSizeDir === 'desc' ? 'asc' : 'desc';   // click Size again: large <-> small
+    } else if (mode === 'date' && indexSort === 'date') {
+      indexDateDir = indexDateDir === 'desc' ? 'asc' : 'desc';   // click Date again: newest <-> oldest
     } else if (mode === indexSort) {
       return;
     } else {
