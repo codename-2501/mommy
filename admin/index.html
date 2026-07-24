@@ -7,7 +7,9 @@
 <style>
   :root{--bg:#0f0f11;--panel:#17181c;--panel2:#1d1f24;--line:#2a2c33;--ink:#eceae4;--mut:#8a8c94;--acc:#e85c4a;--ok:#3fb56b;--blue:#4a90d9;
     /* 입력필드 전용: 배경은 패널보다 어둡게(파인 느낌), 테두리는 뚜렷하게 — 입력칸과 그 외 영역이 확실히 구분되게 */
-    --field-bg:#0a0b0e;--field-line:#484d59}
+    --field-bg:#0a0b0e;--field-line:#484d59;
+    /* 카드/블록 공통 '면' 색 — 배경과 구분하되 대비는 과하지 않게(중간 밝기 웜톤). 위에 얹는 글씨는 어둡게 */
+    --card-face:#bdb7a9;--card-ink:#1f1e1b;--card-mut:#4a473e}
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--ink);font:14px/1.5 "Helvetica Neue",Arial,sans-serif;overflow-wrap:break-word;word-break:keep-all}
   /* 한국어는 word-break:keep-all 로 어절(띄어쓰기 단위)을 지켜 줄바꿈한다 — 기본값은 한글을 음절 아무 곳에서나
@@ -40,7 +42,7 @@
   .btn.sm{padding:4px 9px;font-size:12px}
   .btn.danger{color:#ff9a8f;border-color:#5a2c28}
   /* the status text pushed the header past the viewport: let it wrap to its own line */
-  .status{font-size:12px;color:var(--mut);text-align:right;flex:1 1 100%;min-width:0}
+  .status{font-size:12px;color:var(--mut);text-align:left;flex:1 1 100%;min-width:0;order:99;margin-top:2px}   /* 항상 헤더 맨 아래 줄, 좌측 정렬로 고정 위치 */
   .status.ok{color:var(--ok)} .status.err{color:var(--acc)}
   .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px clamp(12px,3vw,20px);
     border-bottom:1px solid var(--line)}
@@ -54,7 +56,8 @@
 
   /* slides / images grid */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(230px,100%),1fr));gap:16px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+  .card{background:var(--card-face);color:var(--card-ink);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+  .card .card-t{color:var(--card-ink)} .card .card-s{color:var(--card-mut)} .card .fields label{color:var(--card-mut)}
   .card.drag{opacity:.4} .card.over{outline:2px dashed var(--blue)}
   .thumb{position:relative;aspect-ratio:4/3;background:#000;cursor:pointer;overflow:hidden}
   .thumb img{width:100%;height:100%;object-fit:cover;display:block}
@@ -76,7 +79,8 @@
   .rowbtns .danger{order:-1;margin-right:auto}
 
   /* image library */
-  .imgcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .imgcard{background:var(--card-face);color:var(--card-ink);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .imgcard .nm,.imgcard .use,.imgcard .spec{color:var(--card-mut)}
   .imgcard .ph{aspect-ratio:1;background:#000}
   .imgcard img{width:100%;height:100%;object-fit:cover;display:block}
   .imgcard .meta{padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px}
@@ -87,7 +91,7 @@
   /* block editor: only the grip drags, so a textarea keeps its own text selection.
      The row wraps — on a narrow screen the buttons drop under the field instead of
      pushing the whole panel sideways. */
-  .blk{position:relative;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;background:#e9e6de;color:#1c1c1e;
+  .blk{position:relative;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;background:var(--card-face);color:var(--card-ink);
     border:0;border-radius:10px;padding:12px;padding-right:52px;
     box-shadow:0 3px 14px rgba(0,0,0,.55)}   /* 덩어리를 밝은 '면'으로 배경(거의 검정)과 흑백처럼 구분 — 테두리 라인 없음 */
   .blk-ord{position:absolute;top:8px;right:10px;z-index:2}   /* 블록 순번 뱃지: 높이와 무관하게 항상 우측 상단 고정 */
@@ -237,7 +241,7 @@
   body.big.scrolled header h1{font-size:15px}
   body.big.scrolled .tab{padding:6px 11px;font-size:16px}
   body.big.scrolled header .btn{padding:7px 12px;font-size:16px}   /* 헤더 버튼만 — 툴바(+슬라이드~일괄변경)는 스크롤해도 그대로 */
-  body.big.scrolled .status{display:none}
+  body.big.scrolled .status{font-size:13px;margin-top:0}   /* 접혔을 때도 숨기지 않고 같은 자리(맨 아래 줄)에 작게 유지 */
   /* 접힌 헤더: 로고를 '관리자'로 줄이고(앞부분 감춤) 사이트 열기를 그 오른쪽에 붙인다. 탭은 아래 한 줄로 내려
      3줄이던 헤더가 2줄이 된다. (id 셀렉터의 order 가 먹지 않아 클래스로 건다) */
   body.big.scrolled .hdr-full{display:none}
@@ -313,8 +317,8 @@
   <h1><span class="hdr-full">LSE GALLERY · </span>관리자</h1>
   <div class="tabs">
     <div class="tab active" data-view="slides">작품</div>
-    <div class="tab" data-view="images">이미지 관리</div>
     <div class="tab" data-view="text">소개</div>
+    <div class="tab" data-view="images">전체 이미지 관리</div>
   </div>
   <div class="sp"></div>
   <button class="btn ghost" id="bigToggle" title="글씨와 버튼을 크게 봅니다 (다시 누르면 원래대로)" aria-pressed="false">큰 글씨</button>
@@ -336,7 +340,8 @@
       <option value="date">날짜순 (최신 먼저)</option>
       <option value="manual">수동 (드래그 순서)</option>
     </select>
-    <button class="btn ghost" id="bulkBottom">표시분 아래문구 일괄변경…</button>
+    <button class="btn ghost sm" id="moreToggle" aria-expanded="false" title="가끔 쓰는 도구">기타 도구</button>
+    <button class="btn ghost" id="bulkBottom" style="display:none">표시분 아래문구 일괄변경…</button>
   </div>
   <div class="hint" id="orderHint" style="padding:0 clamp(12px,3vw,20px);margin:10px 0 0"></div>
   <main><div class="grid" id="slideGrid"></div></main>
@@ -893,6 +898,14 @@ $('#bulkBottom').onclick=()=>{
   cfg.slides.forEach((s,i)=>{const hay=((i+1)+' '+(s.top||'')+' '+(s.bottom||'')).toLowerCase();if(!q||hay.includes(q))s.bottom=v;});
   renderSlides(); dirty();
 };
+/* 가끔 쓰는 도구(아래문구 일괄변경)는 평소 접어두고, '기타 도구'를 눌렀을 때만 펼친다 */
+$('#moreToggle').onclick=()=>{
+  const b=$('#bulkBottom'), t=$('#moreToggle');
+  const show=b.style.display==='none';
+  b.style.display=show?'':'none';
+  t.setAttribute('aria-expanded', show?'true':'false');
+  t.textContent=show?'기타 도구 닫기':'기타 도구';
+};
 /* drag reorder */
 let dragI=null;
 $('#slideGrid').addEventListener('dragstart',e=>{
@@ -1324,7 +1337,7 @@ function renderBlocks(){
         <button class="btn ghost" data-down="${i}" ${i===list.length-1?'disabled':''}>↓</button>
         <button class="btn ghost danger" data-del="${i}">삭제</button>
       </div>`;
-    const tag=`<div style="flex:none;width:48px;padding-top:8px;font-size:var(--fs-sm,12px);color:#2b2b2e;font-weight:700">${BLOCK_LABEL[b.type]||b.type}</div>`;
+    const tag=`<div style="flex:none;min-width:48px;padding-top:8px;font-size:var(--fs-sm,12px);color:#2b2b2e;font-weight:700;white-space:nowrap;word-break:keep-all">${BLOCK_LABEL[b.type]||b.type}</div>`;
     /* 아래 여백은 블록 종류를 가리지 않는다 — 글·이미지·이력 모두 같은 컨트롤을 쓴다 */
     const gp=['none','sm','md','lg','xl'].includes(b.gap)?b.gap:'md';
     const gopt=(v,label)=>`<option value="${v}"${v===gp?' selected':''}>${label}</option>`;
@@ -1385,6 +1398,7 @@ function renderBlocks(){
           <button class="btn ghost btn sm" data-ldel="${i}" data-lj="${j}">×</button>
         </div>`; }).join('');
       body=`<div class="blk__body" style="display:flex;flex-direction:column;gap:8px">
+              <div><button class="btn sm primary" data-ladd="${i}">+ 항목 추가</button></div>
               <div style="display:flex;gap:8px;flex-wrap:wrap">
                 <input class="cv-text" data-label="${i}" value="${escAttr(b.label||'')}"
                        placeholder="그룹명 (예: 초대 개인전)" style="font-weight:600">
@@ -1392,8 +1406,7 @@ function renderBlocks(){
                        placeholder="그룹명 영문 (선택) — 예: Invited Solo Exhibitions"
                        style="flex:1 1 min(220px,100%);opacity:.85">
               </div>
-              <div><button class="btn sm primary" data-ladd="${i}">+ 항목 추가</button></div>
-              ${rows||'<div style="font-size:var(--fs-sm,12px);color:#5a564d">항목이 없습니다. 위 버튼으로 추가하세요.</div>'}
+              ${rows||'<div style="font-size:var(--fs-sm,12px);color:var(--card-mut)">항목이 없습니다. 위 버튼으로 추가하세요.</div>'}
               <div class="blk-opts">
                 <label class="blk-opt"><span>정렬</span>
                   <select class="blk-sel" data-align="${i}">
