@@ -1445,12 +1445,14 @@ $('#blockList').addEventListener('drop',e=>{
   list.splice(to,0,m);
   dragB=null; renderBlocks(); dirty();
 });
-function addAboutImage(src){ pageBlocks().push({type:'image',src:src,caption:''}); renderBlocks(); dirty(); }
+// 새 블록은 항상 최상단에 만든다(unshift) — 방금 만든 게 바로 보이도록 목록 맨 위로 스크롤도 한다.
+function addAboutImage(src){ pageBlocks().unshift({type:'image',src:src,caption:''}); renderBlocks(); dirty(); scrollBlocksTop(); }
+function scrollBlocksTop(){ const l=$('#blockList'); if(l) l.scrollIntoView({block:'start'}); window.scrollTo(0,0); }
 $$('[data-add]').forEach(btn=>btn.onclick=()=>{
   const t=btn.dataset.add;
   if(t==='image'){ pickMode='about'; openPicker(); return; }
-  if(t==='list'){ pageBlocks().push({type:'list',label:'',items:[{text:'',date:'',place:''}]}); renderBlocks(); dirty(); return; }
-  pageBlocks().push({type:t,text:''}); renderBlocks(); dirty();
+  if(t==='list'){ pageBlocks().unshift({type:'list',label:'',items:[{text:'',date:'',place:''}]}); renderBlocks(); dirty(); scrollBlocksTop(); return; }
+  pageBlocks().unshift({type:t,text:''}); renderBlocks(); dirty(); scrollBlocksTop();
 });
 $('#blockList').addEventListener('input',e=>{
   const t=e.target, list=pageBlocks();
