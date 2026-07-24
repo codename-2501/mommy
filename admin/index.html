@@ -100,6 +100,11 @@
   .bulk-num{font-size:11px;color:var(--card-mut)}
   .bulk-ti{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
+  /* 이미지 블록/미디어 썸네일: 눌러서 교체 — hover 시 '이미지 변경' 오버레이 */
+  .imgchange{position:relative;cursor:pointer}
+  .imgchange__hint{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);color:#fff;font-weight:600;font-size:var(--fs-sm,13px);border-radius:8px}
+  .imgchange:hover .imgchange__hint{display:flex}
+
   /* image library */
   .imgcard{background:var(--card-face);color:var(--card-ink);border:1px solid var(--line);border-radius:10px;overflow:hidden}
   .imgcard .nm,.imgcard .use,.imgcard .spec{color:var(--card-mut)}
@@ -285,6 +290,12 @@
   @media (max-width:699px){ .fab.show{display:inline-flex} #addSlide,#uploadBtn{display:none} }   /* 모바일: 상단 +슬라이드 추가·이미지 업로드는 하단 플로팅 버튼이 대신하므로 숨긴다 */
   body:has(.modal.open) .fab{display:none}
   body.big .fab{font-size:19px;padding:16px 24px}
+  /* 편집 모달용 저장 FAB — 모달(z-index 60) 위에 뜨도록 70. 저장 가능해지면 .show */
+  .editfab{position:fixed;right:16px;bottom:16px;z-index:70;display:none;align-items:center;gap:6px;
+    background:var(--ok);color:#08130c;border:0;border-radius:999px;padding:14px 22px;font-size:17px;font-weight:700;
+    box-shadow:0 6px 18px rgba(0,0,0,.5);cursor:pointer;white-space:nowrap}
+  .editfab.show{display:inline-flex}
+  body.big .editfab{font-size:19px;padding:16px 24px}
   .fab.fab-save{background:var(--ok)}   /* 저장할 게 있으면 FAB 가 저장 버튼으로 바뀐다 — 초록으로 구분 */
   /* 페이지 화면 + FAB 가 여는 블록 종류 메뉴: FAB 위에 세로로 펼쳐진다 */
   .blkmenu{position:fixed;right:16px;bottom:84px;z-index:55;display:none;flex-direction:column;gap:8px;
@@ -612,6 +623,8 @@
 <!-- 모바일 전용 플로팅 추가 버튼: 현재 화면의 주요 추가 동작(작품 추가·이미지 업로드·글 추가)을 스크롤
      중에도 누를 수 있게 하단에 띄운다. 표시 여부·라벨·동작은 뷰 전환/모달에 맞춰 JS(updateFab)가 정한다. -->
 <button class="fab" id="fab" type="button" aria-label="추가"></button>
+<!-- 편집 모달 안에서 저장 가능해지면(필수 입력 완료) 모달 위에 뜨는 저장 버튼 — 모달이 하단 FAB 를 가리기 때문 -->
+<button class="editfab" id="editSaveFab" type="button">저장</button>
 <!-- 페이지 화면의 + FAB 를 누르면 뜨는 블록 종류 선택 메뉴 (제목/글/맺음말/이미지/이력) -->
 <div class="blkmenu" id="blkmenu">
   <button class="btn addmedia" data-blkadd="title">+ 제목</button>
@@ -745,9 +758,9 @@ function activateView(view){
 }
 $$('.tab').forEach(t=>t.onclick=()=>activateView(t.dataset.view));
 $('#openSettings').onclick=()=>activateView('site');
-$('#btnReload').onclick=()=>{   // 서버에서 최신 내용을 다시 불러온다(다른 곳에서 수정됐을 때 등). 저장 안 한 변경은 경고.
+$('#btnReload').onclick=()=>{   // 강제 새로고침: 캐시를 우회해 HTML까지 새로 받는다(콘텐츠는 fetch 가 ?t= 로 이미 최신).
   if(dirtyState && !confirm('저장하지 않은 변경이 있습니다. 새로고침하면 사라집니다. 계속할까요?')) return;
-  location.reload();
+  location.replace(location.pathname+'?_='+Date.now());
 };
 
 /* ---------- slides CRUD ---------- */
@@ -1045,6 +1058,7 @@ function openPicker(){
     d.onclick=()=>{
       if(pickMode==='media'){ closePicker(); addMediaImage('/images/'+name); }
       else if(pickMode==='about'){ closePicker(); addAboutImage('/images/'+name); }
+      else if(pickMode==='aboutchange'){ closePicker(); const b=pageBlocks()[aboutChangeIdx]; if(b){ b.src='/images/'+name; renderBlocks(); dirty(); } }
       else if(pickMode==='bg'){ closePicker(); setBgImage('/images/'+name); }
       else if(pickMode==='logo'){ closePicker(); setLogo('/images/'+name); }
       else if(pickMode==='favicon'){ closePicker(); setMetaImage('favicon','/images/'+name); }
@@ -1067,7 +1081,7 @@ $('#picker').addEventListener('click',e=>{if(e.target.id==='picker')closePicker(
 $('#pickUpload').onchange=e=>doUpload(e,()=>openPicker());
 
 /* ---------- media manager (detail images + videos) ---------- */
-let mediaTarget=null, pickMode='thumb';
+let mediaTarget=null, pickMode='thumb', aboutChangeIdx=null;
 function slideMedia(i){
   const s=cfg.slides[i];
   if(!Array.isArray(s.media)) s.media = s.image ? [{type:'image',src:s.image,caption:''}] : [];
@@ -1122,9 +1136,10 @@ function mediaRow(m,k,vi){
   row.className='mrow'; row.dataset.vi=vi;
   row.style.cssText='display:flex;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px';
   row.innerHTML=`
-    <div class="mthumb">
+    <div class="mthumb imgchange" data-mchange="${k}" title="${isVid?'눌러서 영상 바꾸기':'눌러서 이미지 바꾸기'}">
       <img src="${thumb}" style="width:100%;height:100%;object-fit:cover">
       ${isVid?'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px">▶</span>':''}
+      <span class="imgchange__hint">변경</span>
     </div>
     <div style="flex:1;min-width:0">
       <div class="flab" style="display:flex;align-items:center;gap:6px"><span class="ordbadge">${vi+1}</span> ${isVid?'영상':'이미지'}</div>
@@ -1168,10 +1183,11 @@ function moveVisual(vi,dir){
 function addMediaImage(src){ slideMedia(mediaTarget).push({type:'image',src:src,caption:'',align:'center',pos:0}); renderMediaList(); dirty(); }
 
 /* inline image picker (inside the edit modal — no separate layer) */
-let editPickMode='media';
-function showEditPicker(mode){
+let editPickMode='media', editChangeIdx=null;
+function showEditPicker(mode,idx){
+  if(mode==='mediachange') editChangeIdx=idx;
   editPickMode=mode;
-  $('#editPickerTitle').textContent = mode==='thumb'?'대표 이미지 선택':'추가할 이미지 선택';
+  $('#editPickerTitle').textContent = mode==='thumb'?'대표 이미지 선택':(mode==='mediachange'?'바꿀 이미지 선택':'추가할 이미지 선택');
   const g=$('#editPickerGrid'); g.innerHTML='';
   sortedImages().forEach(name=>{   // recent-upload first, same as the main picker
     const d=document.createElement('div');
@@ -1183,6 +1199,7 @@ function showEditPicker(mode){
     d.onclick=()=>{
       const src='/images/'+name;
       if(editPickMode==='thumb'){ cfg.slides[editTarget].image=src; setEditThumb(src); }
+      else if(editPickMode==='mediachange'){ const m=slideMedia(mediaTarget)[editChangeIdx]; if(m){ m.type='image'; m.src=src; delete m.videoId; } renderMediaList(); }
       else { addMediaImage(src); }
       dirty(); hideEditPicker();
     };
@@ -1209,6 +1226,11 @@ function editMediaField(t){
 $('#editMediaList').addEventListener('input',e=>editMediaField(e.target));
 $('#editMediaList').addEventListener('change',e=>editMediaField(e.target)); // <select>
 $('#editMediaList').addEventListener('click',e=>{
+  const ch=e.target.closest('[data-mchange]');   // 썸네일 눌러서 이 미디어 교체
+  if(ch){ const k=+ch.dataset.mchange, m=slideMedia(mediaTarget)[k];
+    if(m && m.type==='video'){ const url=prompt('바꿀 유튜브 URL 또는 영상 ID:'); if(url){ const id=ytId(url.trim()); if(id){ m.videoId=id; renderMediaList(); dirty(); } else alert('유튜브 ID를 인식하지 못했습니다.'); } }
+    else { showEditPicker('mediachange', k); }
+    return; }
   const nav=e.target.closest('button[data-vact]');   // ↑ ↓ : 시각 순서(설명 덩어리 포함)를 한 칸 이동
   if(nav){ const node=nav.closest('[data-vi]'); if(node) moveVisual(+node.dataset.vi, nav.dataset.vact==='up'?-1:1); return; }
   const b=e.target.closest('button[data-mact]'); if(!b)return;
@@ -1237,6 +1259,7 @@ function openEditModal(i,isNew){
   renderMediaList(); hideEditPicker();
   $('#editModal').classList.add('open');
   autoGrowDesc();   // 모달을 연 뒤(보이는 상태) 현재 내용에 맞춰 상세 설명 높이를 맞춘다
+  updateEditSaveFab();
 }
 /* 상세 설명은 입력값이 늘면 스크롤 대신 칸 자체가 늘어난다(min-height 이하로는 안 줄어듦). */
 function autoGrowDesc(){ const t=$('#ed-desc'); if(!t) return; t.style.height='auto'; t.style.height=Math.max(t.scrollHeight, 120)+'px'; }
@@ -1258,6 +1281,7 @@ function closeEditModal(){
     if(idx>=0 && slideIsUntouched(cfg.slides[idx])) cfg.slides.splice(idx,1);   // 입력 없이 닫음 → 생성 취소
   }
   editIsNew=false; newSlideId=null;
+  updateEditSaveFab();
   renderSlides();
 }
 $('#editClose').onclick=closeEditModal;
@@ -1458,9 +1482,11 @@ function renderBlocks(){
       const align=['left','right'].includes(b.align)?b.align:'center';
       const opt=(v,cur,label)=>`<option value="${v}"${v===cur?' selected':''}>${label}</option>`;
       body=`<div class="blk__body">
-           <img src="${escAttr(b.src||'')}" style="width:100%;height:auto;object-fit:contain;border-radius:8px;display:block;background:#000;max-height:360px">
+           <div class="imgchange" data-imgchange="${i}" title="눌러서 이미지 변경">
+             <img src="${escAttr(b.src||'')}" style="width:100%;height:auto;object-fit:contain;border-radius:8px;display:block;background:#000;max-height:360px">
+             <span class="imgchange__hint">이미지 변경</span>
+           </div>
            <input class="cv-text" data-cap="${i}" value="${escAttr(b.caption||'')}" placeholder="설명 (선택)" style="width:100%;margin-top:8px">
-           <div class="blk-opts">
            <div class="blk-opts">
              <label class="blk-opt"><span>크기</span>
                <select class="blk-sel" data-size="${i}">
@@ -1640,6 +1666,8 @@ $('#blockList').addEventListener('change',e=>{
   else if(t.dataset.sznote!=null){ list[+t.dataset.sznote].sizeNote=t.value; dirty(); }
 });
 $('#blockList').addEventListener('click',e=>{
+  const ic=e.target.closest('[data-imgchange]');   // 이미지 블록 눌러서 이미지 교체
+  if(ic){ aboutChangeIdx=+ic.dataset.imgchange; pickMode='aboutchange'; openPicker(); return; }
   const b=e.target.closest('button'); if(!b) return;
   const list=pageBlocks();
   const swap=(arr,a,c)=>{ [arr[a],arr[c]]=[arr[c],arr[a]]; };
@@ -1742,6 +1770,7 @@ window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.
 (function(){
   const fab=$('#fab'); if(!fab) return;
   window.updateFab=function(){
+    updateEditSaveFab();   // 편집 모달용 저장 FAB 는 아래 조기 return 과 무관하게 항상 갱신
     /* 저장할 게 있으면(수정 발생) FAB 를 '저장'으로 바꾼다 — 추가보다 저장이 급하므로 우선한다.
        저장이 끝나 dirtyState 가 풀리면 다시 화면별 추가 버튼으로 돌아온다. */
     /* 저장 FAB 는 저장이 실제로 가능할 때만 — 필수 항목(모든 슬라이드의 이미지, 날짜순 모드면 날짜)이 다
@@ -1756,9 +1785,17 @@ window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.
     if(view!=='text'){ const bm=$('#blkmenu'); if(bm) bm.classList.remove('open'); }   // 다른 화면으로 가면 블록 메뉴는 닫는다
     if(act){ fab.textContent=label; fab.onclick=act; fab.classList.add('show'); }
     else { fab.classList.remove('show'); }
+    updateEditSaveFab();
   };
   updateFab();
 })();
+/* 편집 모달이 열려 있고 저장 가능한 dirty 상태면(필수 입력 완료) 모달 위에 저장 FAB 를 띄운다. */
+function updateEditSaveFab(){
+  const fab=document.getElementById('editSaveFab'); if(!fab) return;
+  const open=$('#editModal').classList.contains('open');
+  fab.classList.toggle('show', !!(open && dirtyState && canSave()));
+}
+$('#editSaveFab').onclick=()=>$('#save').click();
 
 /* 저장이 가능한 상태인가 — 저장 버튼의 검증과 같은 기준(모든 슬라이드에 이미지, 날짜순 모드면 날짜).
    저장 FAB 를 이 조건에서만 띄운다. */
