@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-store">
-<meta name="admin2-build" content="block-contrast-v5">
+<meta name="admin2-build" content="reorder-badge-v6">
 <title>LSE GALLERY — admin2 (프로토타입)</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -39,6 +39,7 @@
   .addb{background:#e85c4a;border-color:#e85c4a;color:#fff;font-weight:600}
   .ablk{background:#3a414e;border:1px solid #5c6575;border-radius:12px;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,.45)}   /* 배경보다 밝은 회색 카드 — 블록 경계 뚜렷 */
   .ablk__h{display:flex;align-items:center;gap:6px;padding:10px 12px;background:#4a5262;border-bottom:1px solid #5c6575}
+  .ablk__h .bnum{min-width:36px;height:32px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;background:#e85c4a;color:#fff;font-weight:700;border-radius:8px;font-size:18px;flex:none;font-variant-numeric:tabular-nums}
   .ablk__h .btag{font-size:20px;font-weight:700;color:#e85c4a}
   .ablk__h .sp{flex:1}
   .ablk__h button{width:48px;height:42px;padding:0;font-size:19px;flex:none}
@@ -437,9 +438,10 @@
         const j=src.indexOf(s);
         const up=row.querySelector('[data-up]'), dn=row.querySelector('[data-dn]');
         if(j===0) up.disabled=true; if(j===src.length-1) dn.disabled=true;
-        const keep=fn=>{ const sc=$('#listBody'), st=sc?sc.scrollTop:0; fn(); markDirty(); renderList(); if(sc) sc.scrollTop=st; };  // 순서변경 시 뷰 고정(스크롤 안 따라감)
-        up.onclick=()=>{ if(j>0) keep(()=>src.splice(j-1,0,src.splice(j,1)[0])); };
-        dn.onclick=()=>{ if(j<src.length-1) keep(()=>src.splice(j+1,0,src.splice(j,1)[0])); };
+        const move=(btn,newIdx,isUp,mutate)=>{ const sc=$('#listBody'), before=btn.getBoundingClientRect().top; mutate(); markDirty(); renderList();
+          if(sc){ const r=sc.querySelectorAll('.lrow')[newIdx], nb=r&&r.querySelectorAll('.mv button')[isUp?0:1]; if(nb) sc.scrollTop += (nb.getBoundingClientRect().top - before); } };  // 누른 버튼을 손가락 밑에 유지
+        up.onclick=()=>{ if(j>0) move(up,j-1,true,()=>src.splice(j-1,0,src.splice(j,1)[0])); };
+        dn.onclick=()=>{ if(j<src.length-1) move(dn,j+1,false,()=>src.splice(j+1,0,src.splice(j,1)[0])); };
       }
       b.appendChild(row);
     });
@@ -518,15 +520,22 @@
   function blockCard(arr,i,label,fields,rerender){
     const card=document.createElement('div'); card.className='ablk';
     const h=document.createElement('div'); h.className='ablk__h';
+    const num=document.createElement('span'); num.className='bnum'; num.textContent=(i+1);   // 순번 뱃지
     const tag=document.createElement('span'); tag.className='btag'; tag.textContent=label;
     const sp=document.createElement('span'); sp.className='sp';
     const up=abtn('▲'),dn=abtn('▼'),del=abtn('삭제'); del.className='btn sm del';
     if(i===0) up.disabled=true; if(i===arr.length-1) dn.disabled=true;
-    const keep=fn=>{ const sc=document.querySelector('#panel.open,#apanel.open'), st=sc?sc.scrollTop:0; fn(); markDirty(); rerender(); if(sc) sc.scrollTop=st; };  // 블록 이동 시 뷰 고정(스크롤 안 따라감)
-    up.onclick=()=>keep(()=>arr.splice(i-1,0,arr.splice(i,1)[0]));
-    dn.onclick=()=>keep(()=>arr.splice(i+1,0,arr.splice(i,1)[0]));
+    // 누른 버튼을 손가락 밑에 그대로 남긴다(콘텐츠를 스크롤로 맞춤) → 연타로 계속 옮길 수 있다 (기존 admin 방식)
+    const move=(btn,newIdx,isUp,mutate)=>{
+      const sc=document.querySelector('#panel.open,#apanel.open'), before=btn.getBoundingClientRect().top;
+      mutate(); markDirty(); rerender();
+      if(sc){ const c=sc.querySelectorAll('.ablk')[newIdx], nb=c&&c.querySelectorAll('.ablk__h button')[isUp?0:1];
+        if(nb) sc.scrollTop += (nb.getBoundingClientRect().top - before); }
+    };
+    up.onclick=()=>{ if(i>0) move(up,i-1,true,()=>arr.splice(i-1,0,arr.splice(i,1)[0])); };
+    dn.onclick=()=>{ if(i<arr.length-1) move(dn,i+1,false,()=>arr.splice(i+1,0,arr.splice(i,1)[0])); };
     del.onclick=()=>{ if(confirm('이 블록을 삭제할까요?')){ arr.splice(i,1); markDirty(); rerender(); } };
-    h.appendChild(tag); h.appendChild(sp); h.appendChild(up); h.appendChild(dn); h.appendChild(del);
+    h.appendChild(num); h.appendChild(tag); h.appendChild(sp); h.appendChild(up); h.appendChild(dn); h.appendChild(del);
     const body=document.createElement('div'); body.className='ablk__b';
     const blk=arr[i]; fields.forEach(f=>body.appendChild(fieldCtrl(blk,f,rerender)));
     card.appendChild(h); card.appendChild(body); return card;
