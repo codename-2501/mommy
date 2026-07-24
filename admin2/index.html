@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-store">
-<meta name="admin2-build" content="fabdock-v2">
+<meta name="admin2-build" content="rowclick-autogrow-v3">
 <title>LSE GALLERY — admin2 (프로토타입)</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -47,7 +47,7 @@
   .ablk__b{padding:12px;display:flex;flex-direction:column;gap:12px}
   .af label{display:block;font-size:18px;color:#a6a8ae;margin-bottom:5px}
   .af input,.af select,.af textarea,.aitem input{width:100%;background:#0a0b0e;border:1px solid #484d59;color:#eceae4;border-radius:8px;padding:12px 13px;font:inherit}
-  .af textarea{min-height:96px;resize:vertical}
+  .af textarea{min-height:60px;resize:none;overflow:hidden}
   .af-row{display:flex;gap:8px}.af-row>.af{flex:1}
   .aitem{display:flex;gap:8px;align-items:flex-start;background:#141519;border:1px solid #2a2c33;border-radius:8px;padding:10px;margin-top:8px}
   .aitem .fields{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
@@ -58,7 +58,7 @@
   .phead h2 span{color:#8a8c94;font-weight:400;font-size:17px}
   .field label{display:block;font-size:20px;color:#a6a8ae;margin-bottom:6px}
   .field input,.field select,.field textarea{width:100%;background:#0a0b0e;border:1px solid #484d59;color:#eceae4;border-radius:9px;padding:13px 14px;font:inherit;resize:vertical}
-  .field textarea{min-height:150px}
+  .field textarea{min-height:100px;resize:none;overflow:hidden}
   .field .datesel{display:flex;gap:8px}.field .datesel select{flex:1}
   .cover{position:relative;width:100%;aspect-ratio:4/3;background:#0a0b0e;border:1px dashed #484d59;border-radius:8px;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center}
   .cover img{width:100%;height:100%;object-fit:cover;display:none}
@@ -97,7 +97,7 @@
   .setrow{padding:12px 8px;display:flex;flex-direction:column;gap:10px}
   .setlabel{font-size:20px;font-weight:700}
   .lmode{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-  .lrow{display:flex;align-items:center;gap:12px;background:#0a0b0e;border:1px solid #2a2c33;border-radius:10px;padding:10px 12px}
+  .lrow{display:flex;align-items:center;gap:12px;background:#0a0b0e;border:1px solid #2a2c33;border-radius:10px;padding:10px 12px;cursor:pointer}
   .lrow .ord{width:48px;height:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#e85c4a;color:#fff;font-weight:700;border-radius:8px;font-size:19px;flex:none;font-variant-numeric:tabular-nums}
   .lrow .th{width:140px;height:100px;object-fit:cover;border-radius:8px;background:#000;flex:none}
   .lrow .linfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;cursor:pointer;padding:6px 0}
@@ -210,6 +210,9 @@
   const findSlide=id=>slides().find(s=>String(s.id)===String(id));
   const markDirty=()=>{ dirty=true; updateSaveFab(); setStatus('저장되지 않은 변경 있음','err'); };
   const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  // 텍스트영역 자동 확장 — 값이 늘어나면 입력필드도 같이 늘어난다(기존 admin과 동일)
+  function autoGrow(ta){ if(!ta) return; ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; }
+  function growAll(root){ if(root) root.querySelectorAll('textarea').forEach(autoGrow); }
   // 저장 버튼은 "생성"만으로는 안 뜬다 — 변경이 있고, 모든 작품이 필수값(대표 이미지)을 갖췄을 때만 노출
   function slidesComplete(){ return slides().every(s=>String(s.image||'').trim()!==''); }
   function canSave(){ return dirty && slidesComplete(); }
@@ -253,13 +256,28 @@
     const cover=$('#f-cover'); $('#f-cover-img').src=s.image||''; cover.classList.toggle('has',!!(s.image||'').trim());
     const dm=/(\d{4})-(\d{2})/.exec(s.date||''); $('#f-year').value=dm?dm[1]:''; $('#f-mon').value=dm?dm[2]:'';
     $('#f-title').value=s.title||''; $('#f-price').value=s.price||''; $('#f-desc').value=s.desc||'';
+    autoGrow($('#f-desc'));
     renderMedia();
+  }
+  // 필수값이 없는 "빈 블록" — 생성만 하고 값을 안 넣은 것. 닫을 때 제거(생성=변경 아님).
+  function blockEmpty(b){
+    if(!b) return true;
+    switch(b.type){
+      case 'image': return !String(b.src||'').trim();
+      case 'video': return !String(b.videoId||'').trim();
+      case 'text': case 'title': case 'thanks': return !String(b.text||'').trim();
+      case 'list': return (!Array.isArray(b.items)||!b.items.length) && !String(b.label||'').trim();
+      default: return false;
+    }
   }
   function openPanel(){ $('#panel').classList.add('open'); $('#panel').setAttribute('aria-hidden','false'); updateEditFab(); }
   function closePanel(){
-    // 이미지도 안 넣고 닫은 새 작품은 저장 대상이 아니므로 로컬에서 제거(생성-후-삭제가 아니라 애초에 안 남김)
     const s=findSlide(curId);
-    if(s && String(s.id).indexOf('n')===0 && !String(s.image||'').trim()){ const i=slides().indexOf(s); if(i>=0) slides().splice(i,1); }
+    if(s){
+      if(Array.isArray(s.media)) s.media=s.media.filter(m=>!blockEmpty(m));   // 값 없이 추가만 한 빈 본문 블록 제거
+      // 이미지도 안 넣고 닫은 새 작품은 통째로 제거(생성-후-삭제가 아니라 애초에 안 남김)
+      if(String(s.id).indexOf('n')===0 && !String(s.image||'').trim()){ const i=slides().indexOf(s); if(i>=0) slides().splice(i,1); }
+    }
     $('#panel').classList.remove('open'); $('#panel').setAttribute('aria-hidden','true'); pinned=false; curId=null; updateEditFab(); updateSaveFab();
   }
   function userClose(){ closePanel(); }   // 닫으면 패널만 내려가고, 편집 버튼이 다시 떠서 재오픈 가능
@@ -297,7 +315,7 @@
   }
 
   /* ---- fields ---- */
-  function bindField(sel,key){ $(sel).addEventListener('input',e=>{ const s=findSlide(curId); if(!s)return; s[key]=e.target.value; markDirty(); }); }
+  function bindField(sel,key){ $(sel).addEventListener('input',e=>{ const s=findSlide(curId); if(!s)return; s[key]=e.target.value; markDirty(); if(e.target.tagName==='TEXTAREA') autoGrow(e.target); }); }
   function populateDateSelects(){
     const ys=$('#f-year'), ms=$('#f-mon'); if(!ys||!ms) return;
     const now=new Date().getFullYear();
@@ -411,13 +429,14 @@
       if(manual) html+='<span class="mv"><button class="btn sm" data-up type="button" title="위로">▲</button>'
         +'<button class="btn sm" data-dn type="button" title="아래로">▼</button></span>';
       row.innerHTML=html;
-      row.querySelector('.linfo').onclick=()=>{ pinned=true; setTarget(s.id); $('#listwrap').classList.remove('open'); };
+      row.onclick=(e)=>{ if(e.target.closest('.mv')) return; pinned=true; setTarget(s.id); $('#listwrap').classList.remove('open'); updateEditFab(); };  // 행 전체가 클릭 영역(▲▼ 제외)
       if(manual){
         const j=src.indexOf(s);
         const up=row.querySelector('[data-up]'), dn=row.querySelector('[data-dn]');
         if(j===0) up.disabled=true; if(j===src.length-1) dn.disabled=true;
-        up.onclick=()=>{ if(j>0){ src.splice(j-1,0,src.splice(j,1)[0]); markDirty(); renderList(); } };
-        dn.onclick=()=>{ if(j<src.length-1){ src.splice(j+1,0,src.splice(j,1)[0]); markDirty(); renderList(); } };
+        const keep=fn=>{ const sc=$('#listBody'), st=sc?sc.scrollTop:0; fn(); markDirty(); renderList(); if(sc) sc.scrollTop=st; };  // 순서변경 시 뷰 고정(스크롤 안 따라감)
+        up.onclick=()=>{ if(j>0) keep(()=>src.splice(j-1,0,src.splice(j,1)[0])); };
+        dn.onclick=()=>{ if(j<src.length-1) keep(()=>src.splice(j+1,0,src.splice(j,1)[0])); };
       }
       b.appendChild(row);
     });
@@ -487,7 +506,7 @@
       e.onchange=()=>{ const v=e.value; if(f.delEmpty && v==='') delete blk[f.k]; else blk[f.k]=(f.num?(v===''?'':Number(v)):v); markDirty(); }; wrap.appendChild(e);
     } else {
       const e=document.createElement(f.t==='ta'?'textarea':'input'); e.value=blk[f.k]!=null?blk[f.k]:'';
-      e.oninput=()=>{ blk[f.k]=e.value; markDirty(); }; wrap.appendChild(e);
+      e.oninput=()=>{ blk[f.k]=e.value; markDirty(); if(f.t==='ta') autoGrow(e); }; wrap.appendChild(e);
     }
     return wrap;
   }
@@ -500,8 +519,9 @@
     const sp=document.createElement('span'); sp.className='sp';
     const up=abtn('▲'),dn=abtn('▼'),del=abtn('삭제'); del.className='btn sm del';
     if(i===0) up.disabled=true; if(i===arr.length-1) dn.disabled=true;
-    up.onclick=()=>{ arr.splice(i-1,0,arr.splice(i,1)[0]); markDirty(); rerender(); };
-    dn.onclick=()=>{ arr.splice(i+1,0,arr.splice(i,1)[0]); markDirty(); rerender(); };
+    const keep=fn=>{ const sc=document.querySelector('#panel.open,#apanel.open'), st=sc?sc.scrollTop:0; fn(); markDirty(); rerender(); if(sc) sc.scrollTop=st; };  // 블록 이동 시 뷰 고정(스크롤 안 따라감)
+    up.onclick=()=>keep(()=>arr.splice(i-1,0,arr.splice(i,1)[0]));
+    dn.onclick=()=>keep(()=>arr.splice(i+1,0,arr.splice(i,1)[0]));
     del.onclick=()=>{ if(confirm('이 블록을 삭제할까요?')){ arr.splice(i,1); markDirty(); rerender(); } };
     h.appendChild(tag); h.appendChild(sp); h.appendChild(up); h.appendChild(dn); h.appendChild(del);
     const body=document.createElement('div'); body.className='ablk__b';
@@ -512,6 +532,7 @@
     const host=$('#ablocks'); if(!host) return; host.innerHTML=''; const arr=aboutArr();
     if(!arr.length){ host.innerHTML='<div class="hint">블록이 없습니다. 위 버튼으로 추가하세요.</div>'; return; }
     arr.forEach((blk,i)=>host.appendChild(blockCard(arr,i,ABLABEL[blk.type]||blk.type,ABOUT_FIELDS[blk.type]||[],renderAbout)));
+    growAll(host);
   }
 
   /* ---- 상세 본문(media) 인컨텍스트 편집 ---- */
@@ -527,13 +548,14 @@
     const arr=s.media||[];
     if(!arr.length){ host.innerHTML='<div class="hint">상세 본문 요소가 없습니다. 위 버튼으로 추가하세요.</div>'; return; }
     arr.forEach((blk,i)=>host.appendChild(blockCard(arr,i,MLABEL[blk.type]||blk.type,MEDIA_FIELDS[blk.type]||[],renderMedia)));
+    growAll(host);
   }
   function addMedia(type){
     const s=findSlide(curId); if(!s) return; s.media=s.media||[];
     const D={ image:{type:'image',src:'',caption:''},   // 크기·정렬·위치는 미지정=기본값(이미지50·중앙·아래)
       video:{type:'video',videoId:'',caption:''},        // 미지정=기본값(영상100·중앙·아래)
       text:{type:'text',text:'',pos:'0'} };
-    if(!D[type]) return; s.media.unshift(Object.assign({},D[type])); markDirty(); renderMedia();
+    if(!D[type]) return; s.media.unshift(Object.assign({},D[type])); renderMedia();   // 생성만으로는 변경 아님 — 필수값 입력 시 dirty
   }
   function addAbout(type){
     const D={ title:{type:'title',text:'제목'},   // 정렬·크기·행간·간격은 미지정=기본값
@@ -543,11 +565,14 @@
       video:{type:'video',videoId:''},
       list:{type:'list',label:'',labelEn:'',items:[]} };
     if(!D[type]) return;
-    aboutArr().push(Object.assign({},D[type])); markDirty(); renderAbout();
+    aboutArr().push(Object.assign({},D[type])); renderAbout();   // 생성만으로는 변경 아님
     const ap=$('#apanel'); ap.scrollTop=ap.scrollHeight;
   }
   function openAbout(){ aboutOpen=true; renderAbout(); $('#apanel').classList.add('open'); $('#apanel').setAttribute('aria-hidden','false'); setStatus('소개(About) 편집 중',''); updateEditFab(); }
-  function closeAbout(){ aboutOpen=false; $('#apanel').classList.remove('open'); $('#apanel').setAttribute('aria-hidden','true'); updateEditFab(); }
+  function closeAbout(){
+    if(content&&content.blocks&&Array.isArray(content.blocks['/about'])) content.blocks['/about']=content.blocks['/about'].filter(b=>!blockEmpty(b));   // 값 없이 추가만 한 빈 블록 제거
+    aboutOpen=false; $('#apanel').classList.remove('open'); $('#apanel').setAttribute('aria-hidden','true'); updateEditFab();
+  }
   function aboutUserClose(){ closeAbout(); }
 
   /* ---- 삭제 (비밀번호 확인) ---- */
