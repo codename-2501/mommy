@@ -739,11 +739,14 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   }
 
   const sizeBtn = btns.find((b) => b.dataset.mode === 'size');
+  /* 방향 화살표는 '한 번만' 만든 영속 span — 매 paintBar 마다 새로 만들면 이미 is-on 인 순간 생성돼
+     transition 없이 opacity 1 로 즉시 떠버린다(=클릭 즉시 등장). 재사용하면 opacity 0→1 전환이 제대로 걸린다. */
+  let sizeDir = null;
+  if (sizeBtn) { sizeDir = el('span', 'agrid-sort__dir'); sizeBtn.appendChild(sizeDir); }
   function paintBar() {
     btns.forEach((b) => b.classList.toggle('is-on', b.dataset.mode === indexSort));
     /* Size shows its direction while it is the one in use — an arrow that flips on the repeat click */
-    /* 화살표는 span 으로 — 폭은 늘 차지하되(=blob 크기 정확), 검은 drop 이 도착(settled)했을 때만 보이게 CSS 로 페이드 */
-    if (sizeBtn) sizeBtn.innerHTML = indexSort === 'size' ? ('Size <span class="agrid-sort__dir">' + (indexSizeDir === 'asc' ? '↑' : '↓') + '</span>') : 'Size';
+    if (sizeDir) sizeDir.textContent = indexSort === 'size' ? (indexSizeDir === 'asc' ? '↑' : '↓') : '';
     pal.classList.toggle('is-open', indexSort === 'color');   // the palette shows only in Color
     swBtns.forEach((b) => b.classList.toggle('is-on', b.dataset.bucket === indexColor));
   }
