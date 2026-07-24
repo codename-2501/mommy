@@ -9,7 +9,7 @@
     /* 입력필드 전용: 배경은 패널보다 어둡게(파인 느낌), 테두리는 뚜렷하게 — 입력칸과 그 외 영역이 확실히 구분되게 */
     --field-bg:#0a0b0e;--field-line:#484d59;
     /* 카드/블록 공통 '면' 색 — 흰 미색(크림/아이보리). 위에 얹는 글씨는 어둡게 */
-    --card-face:#f3f0e7;--card-ink:#1f1e1b;--card-mut:#4a473e}
+    --card-face:#3f3f45;--card-ink:#eceae4;--card-mut:#a6a8ae}
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--ink);font:14px/1.5 "Helvetica Neue",Arial,sans-serif;overflow-wrap:break-word;word-break:keep-all}
   /* 한국어는 word-break:keep-all 로 어절(띄어쓰기 단위)을 지켜 줄바꿈한다 — 기본값은 한글을 음절 아무 곳에서나
@@ -101,9 +101,9 @@
   .blk .grip2{flex:none;align-self:stretch;display:flex;align-items:center;padding:0 2px;color:#8a857a;
     cursor:grab;user-select:none;font-size:16px}
   /* 밝은 면 위 요소들: 카드에 직접 얹히는 텍스트/버튼은 어둡게(입력 필드는 어두운 박스 그대로 두어 대비를 준다) */
-  .blk .blk-opt > span{color:#2b2b2e}
-  .blk .btn.ghost{color:#2b2b2e;border-color:#c7c2b6;background:transparent}
-  .blk .btn.ghost:hover{background:rgba(0,0,0,.06)}
+  .blk .blk-opt > span{color:var(--card-ink)}
+  .blk .btn.ghost{color:var(--card-ink);border-color:#5a5a62;background:transparent}
+  .blk .btn.ghost:hover{background:rgba(255,255,255,.08)}
   .blk .btn.ghost.danger{color:var(--acc);border-color:#e0b3ac}
   .blk .grip2:active{cursor:grabbing}
   .blk-add{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
@@ -1361,7 +1361,7 @@ function renderBlocks(){
         <button class="btn ghost" data-down="${i}" ${i===list.length-1?'disabled':''}>↓</button>
         <button class="btn ghost danger" data-del="${i}">삭제</button>
       </div>`;
-    const tag=`<div style="flex:none;min-width:48px;padding-top:8px;font-size:var(--fs-sm,12px);color:#2b2b2e;font-weight:700;white-space:nowrap;word-break:keep-all">${BLOCK_LABEL[b.type]||b.type}</div>`;
+    const tag=`<div style="flex:none;min-width:48px;padding-top:8px;font-size:var(--fs-sm,12px);color:var(--card-ink);font-weight:700;white-space:nowrap;word-break:keep-all">${BLOCK_LABEL[b.type]||b.type}</div>`;
     /* 아래 여백은 블록 종류를 가리지 않는다 — 글·이미지·이력 모두 같은 컨트롤을 쓴다 */
     const gp=['none','sm','md','lg','xl'].includes(b.gap)?b.gap:'md';
     const gopt=(v,label)=>`<option value="${v}"${v===gp?' selected':''}>${label}</option>`;
