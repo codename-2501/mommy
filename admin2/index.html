@@ -21,9 +21,28 @@
   #status{font-size:12px;color:#8a8c94;margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40vw}
   #status.ok{color:#3fb56b} #status.err{color:#e85c4a}
   #frame{position:fixed;top:54px;left:0;right:0;bottom:0;width:100%;height:calc(100% - 54px);border:0;background:#fff}
-  #panel{position:fixed;top:54px;right:0;bottom:0;width:min(430px,94vw);z-index:9;background:#141519;border-left:1px solid #2a2c33;
+  #panel,#apanel{position:fixed;top:54px;right:0;bottom:0;width:min(430px,94vw);z-index:9;background:#141519;border-left:1px solid #2a2c33;
          transform:translateX(102%);transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;gap:12px;padding:16px;overflow:auto;overscroll-behavior:contain}
-  #panel.open{transform:none}
+  #panel.open,#apanel.open{transform:none}
+  /* about block editor */
+  .addb{background:#e85c4a;border-color:#e85c4a;color:#fff;font-weight:600}
+  .ablk{background:#0a0b0e;border:1px solid #2a2c33;border-radius:10px;overflow:hidden}
+  .ablk__h{display:flex;align-items:center;gap:5px;padding:7px 9px;background:#191b20;border-bottom:1px solid #2a2c33}
+  .ablk__h .btag{font-size:12px;font-weight:700;color:#e85c4a}
+  .ablk__h .sp{flex:1}
+  .ablk__h button{width:30px;height:24px;padding:0;font-size:12px}
+  .ablk__h button.del{width:auto;padding:0 8px;color:#f0a99f;border-color:#7a2f2a}
+  .ablk__h button:disabled{opacity:.3}
+  .ablk__b{padding:10px;display:flex;flex-direction:column;gap:8px}
+  .af label{display:block;font-size:11px;color:#8a8c94;margin-bottom:3px}
+  .af input,.af select,.af textarea{width:100%;background:#0a0b0e;border:1px solid #484d59;color:#eceae4;border-radius:7px;padding:8px 10px;font:inherit}
+  .af textarea{min-height:70px;resize:vertical}
+  .af-row{display:flex;gap:8px}.af-row>.af{flex:1}
+  .aitem{display:flex;gap:6px;align-items:flex-start;background:#141519;border:1px solid #2a2c33;border-radius:8px;padding:8px;margin-top:6px}
+  .aitem .fields{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0}
+  .aitem .rm{width:30px;height:30px;padding:0;flex:none}
+  .acover{position:relative;width:100%;aspect-ratio:16/9;background:#000;border:1px dashed #484d59;border-radius:8px;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#eceae4;font-weight:600}
+  .acover img{width:100%;height:100%;object-fit:contain;background:#000}
   .phead{display:flex;align-items:center;gap:8px}
   .phead h2{font-size:15px;font-weight:700;flex:1;min-width:0}
   .phead h2 span{color:#8a8c94;font-weight:400;font-size:12px}
@@ -78,8 +97,8 @@
   #adminwrap .ovbar b{flex:1;font-size:13px}
   #adminframe{flex:1;border:0;width:100%;background:#0f0f11}
   @media (max-width:560px){
-    #panel{width:100%;top:auto;height:70%;border-left:0;border-top:1px solid #2a2c33;border-radius:16px 16px 0 0;transform:translateY(102%)}
-    #panel.open{transform:none}
+    #panel,#apanel{width:100%;top:auto;height:78%;border-left:0;border-top:1px solid #2a2c33;border-radius:16px 16px 0 0;transform:translateY(102%)}
+    #panel.open,#apanel.open{transform:none}
     #bar b span{display:none}
     #status{max-width:34vw}
   }
@@ -113,6 +132,19 @@
   </div>
 </div>
 
+<div id="apanel" aria-hidden="true">
+  <div class="phead"><h2>소개(About) 편집</h2><button class="btn sm" id="aClose" type="button" title="편집 닫기">✕ 닫기</button></div>
+  <div class="row" style="flex-wrap:wrap;gap:6px">
+    <button class="btn sm addb" data-add="title" type="button">+제목</button>
+    <button class="btn sm addb" data-add="text" type="button">+본문</button>
+    <button class="btn sm addb" data-add="image" type="button">+이미지</button>
+    <button class="btn sm addb" data-add="video" type="button">+영상</button>
+    <button class="btn sm addb" data-add="list" type="button">+리스트</button>
+    <button class="btn sm addb" data-add="thanks" type="button">+감사</button>
+  </div>
+  <div id="ablocks" style="display:flex;flex-direction:column;gap:10px"></div>
+</div>
+
 <div id="picker"><div class="sheet">
   <div class="shd"><b>대표 이미지 선택</b><button class="btn sm" id="pickClose" type="button">닫기</button></div>
   <div class="grid" id="pickGrid"></div>
@@ -137,7 +169,7 @@
   const api=(url,opts)=>{ opts=Object.assign({},opts); if(String(url).indexOf('/api/')!==-1){ const h=new Headers(opts.headers||{}); const k=getKey(); if(k)h.set('X-Admin-Key',k); opts.headers=h;} return orig(url,opts); };
   async function verify(k){ try{ const r=await orig('/api/auth',{headers:{'X-Admin-Key':k}}); return r.status===200?'ok':(r.status===403?'bad':'unknown'); }catch(e){ return 'unknown'; } }
 
-  let content=null, baseVersion=null, images=[], editMode=false, curId=null, pinned=false, dirty=false, nid=0, dismissedId=null;
+  let content=null, baseVersion=null, images=[], editMode=false, curId=null, pinned=false, dirty=false, nid=0, dismissedId=null, aboutOpen=false, aboutDismissed=false;
   const setStatus=(m,c='')=>{ const e=$('#status'); e.textContent=m; e.className=c; };
   const slides=()=>((content&&content.slides)||[]);
   const findSlide=id=>slides().find(s=>String(s.id)===String(id));
@@ -173,8 +205,9 @@
     content=c; baseVersion=content._version||null; delete content._version; images=im.images||[];
   }
 
-  /* ---- 현재 편집 대상 ---- */
-  function currentWorkId(){ try{ const p=$('#frame').contentWindow.location.pathname||''; return p.indexOf('/p/')===0 ? decodeURIComponent(p.slice(3)) : null; }catch(e){ return null; } }
+  /* ---- 현재 프론트 라우트 ---- */
+  function currentPath(){ try{ return $('#frame').contentWindow.location.pathname||''; }catch(e){ return ''; } }
+  function pIdOf(p){ const i=p.indexOf('/p/'); return i>=0 ? decodeURIComponent(p.slice(i+3)) : null; }
 
   function fillPanel(s){
     $('#p-sub').textContent = s.id ? ('#'+s.id) : '';
@@ -184,16 +217,23 @@
   }
   function openPanel(){ $('#panel').classList.add('open'); $('#panel').setAttribute('aria-hidden','false'); }
   function closePanel(){ $('#panel').classList.remove('open'); $('#panel').setAttribute('aria-hidden','true'); pinned=false; curId=null; }
-  function userClose(){ dismissedId=currentWorkId()||curId; closePanel(); }   // 사용자가 닫은 작품은 같은 작품에선 다시 안 열림
+  function userClose(){ dismissedId=pIdOf(currentPath())||curId; closePanel(); }   // 사용자가 닫은 작품은 같은 작품에선 다시 안 열림
 
   function setTarget(id){ curId=id; const s=findSlide(id); if(s){ fillPanel(s); openPanel(); setStatus('편집 중: '+(s.title||('#'+id)),''); } }
 
   function refreshTarget(){
-    if(!editMode){ if($('#panel').classList.contains('open')) closePanel(); dismissedId=null; return; }
-    if(pinned) return;                         // + 슬라이드로 만든 대상은 iframe 이동으로 바뀌지 않는다
-    const id=currentWorkId();
-    if(id!==dismissedId) dismissedId=null;     // 다른 작품/목록으로 이동하면 닫힘 상태 해제
-    if(id===curId) return;                     // 이미 그 작품을 보고 있음
+    if(!editMode){ closePanel(); closeAbout(); dismissedId=null; aboutDismissed=false; return; }
+    if(pinned) return;                          // 목록/생성으로 고정된 슬라이드 편집 중 — 라우트 무시
+    const p=currentPath(), isAbout=/\/about\/?$/.test(p);
+    if(isAbout){                                // 소개 페이지 위 → About 편집 패널
+      if(curId) closePanel(); dismissedId=null;
+      if(!aboutOpen && !aboutDismissed) openAbout();
+      return;
+    }
+    if(aboutOpen) closeAbout(); aboutDismissed=false;
+    const id=pIdOf(p);
+    if(id!==dismissedId) dismissedId=null;      // 다른 작품/목록으로 이동하면 닫힘 상태 해제
+    if(id===curId) return;                      // 이미 그 작품을 보고 있음
     if(id && id!==dismissedId && findSlide(id)) setTarget(id);
     else if(!id && $('#panel').classList.contains('open')) closePanel();
   }
@@ -202,15 +242,17 @@
   function bindField(sel,key){ $(sel).addEventListener('input',e=>{ const s=findSlide(curId); if(!s)return; s[key]=e.target.value; markDirty(); }); }
   $('#f-date').addEventListener('input',e=>{ const s=findSlide(curId); if(!s)return; s.date=e.target.value?e.target.value+'-01':''; markDirty(); });
 
-  /* ---- 대표 이미지 픽커 ---- */
-  function openPicker(){
+  /* ---- 이미지 픽커 (onPick 콜백으로 대상 지정) ---- */
+  let pickCb=null;
+  function openPicker(onPick){
+    pickCb=onPick||null;
     const g=$('#pickGrid'); g.innerHTML='';
-    images.forEach(name=>{ const t=document.createElement('div'); t.className='tile'; t.innerHTML='<img loading="lazy" src="/images/'+name+'">';
-      t.onclick=()=>{ const s=findSlide(curId); if(s){ s.image='/images/'+name; fillPanel(s); markDirty(); } $('#picker').classList.remove('open'); };
+    images.forEach(name=>{ const t=document.createElement('div'); t.className='tile'; t.innerHTML='<img loading="lazy" src="/images/'+esc(name)+'">';
+      t.onclick=()=>{ if(pickCb) pickCb(name); $('#picker').classList.remove('open'); };
       g.appendChild(t); });
     $('#picker').classList.add('open');
   }
-  $('#f-cover').onclick=()=>{ if(curId) openPicker(); };
+  $('#f-cover').onclick=()=>{ if(curId) openPicker(name=>{ const s=findSlide(curId); if(s){ s.image='/images/'+name; fillPanel(s); markDirty(); } }); };
   $('#pickClose').onclick=()=>$('#picker').classList.remove('open');
   $('#picker').addEventListener('click',e=>{ if(e.target.id==='picker') $('#picker').classList.remove('open'); });
 
@@ -246,6 +288,96 @@
     });
   }
   function openList(){ renderList(); $('#listwrap').classList.add('open'); }
+
+  /* ---- 소개(About) 인컨텍스트 편집 ---- */
+  const G3=['sm','md','lg'];
+  const ABOUT_FIELDS={
+    title:[{k:'text',t:'ta',label:'제목 텍스트'},{k:'align',t:'sel',opts:['left','center','right'],label:'정렬'},{k:'size',t:'sel',opts:G3,label:'크기'},{k:'gap',t:'sel',opts:G3,label:'위 간격'}],
+    text:[{k:'text',t:'ta',label:'본문'},{k:'size',t:'sel',opts:G3,label:'크기'},{k:'gap',t:'sel',opts:G3,label:'위 간격'}],
+    thanks:[{k:'text',t:'ta',label:'감사 문구'}],
+    image:[{k:'src',t:'img',label:'이미지'},{k:'caption',t:'in',label:'캡션'},{k:'size',t:'sel',opts:['full','half','100','90','80','75','70','60','50','40','33','25'],label:'크기(%/full/half)'},{k:'align',t:'sel',opts:['left','center','right'],label:'정렬'},{k:'gap',t:'sel',opts:G3,label:'위 간격'}],
+    video:[{k:'videoId',t:'in',label:'유튜브 ID 또는 URL'},{k:'size',t:'sel',opts:['full','half','100','90','80','75','70','60','50'],label:'크기'},{k:'gap',t:'sel',opts:G3,label:'위 간격'}],
+    list:[{k:'label',t:'in',label:'제목(한글)'},{k:'labelEn',t:'in',label:'제목(영문)'},{k:'sizeLabel',t:'sel',opts:G3,label:'제목 크기'},{k:'sizeText',t:'sel',opts:G3,label:'항목 크기'},{k:'gap',t:'sel',opts:G3,label:'위 간격'},{k:'items',t:'items',label:'항목'}],
+  };
+  const ABLABEL={title:'제목',text:'본문',thanks:'감사',image:'이미지',video:'영상',list:'리스트'};
+  function aboutArr(){ if(!content) return []; content.blocks=content.blocks||{}; content.blocks['/about']=content.blocks['/about']||[]; return content.blocks['/about']; }
+
+  function itemsEditor(blk){
+    const box=document.createElement('div'); const lab=document.createElement('label'); lab.textContent='항목'; box.appendChild(lab);
+    blk.items=blk.items||[];
+    blk.items.forEach((it,idx)=>{
+      const r=document.createElement('div'); r.className='aitem';
+      const fields=document.createElement('div'); fields.className='fields';
+      [['text','내용'],['textEn','영문 (선택)'],['date','날짜 (선택)']].forEach(pair=>{
+        const k=pair[0]; const inp=document.createElement('input'); inp.placeholder=pair[1]; inp.value=it[k]!=null?it[k]:'';
+        inp.oninput=()=>{ const v=inp.value; if(v==='') delete it[k]; else it[k]=v; markDirty(); };
+        fields.appendChild(inp);
+      });
+      const rm=document.createElement('button'); rm.type='button'; rm.className='btn sm rm'; rm.textContent='✕';
+      rm.onclick=()=>{ blk.items.splice(idx,1); markDirty(); renderAbout(); };
+      r.appendChild(fields); r.appendChild(rm); box.appendChild(r);
+    });
+    const add=document.createElement('button'); add.type='button'; add.className='btn sm'; add.style.marginTop='8px'; add.textContent='+ 항목 추가';
+    add.onclick=()=>{ blk.items.unshift({text:''}); markDirty(); renderAbout(); };
+    box.appendChild(add); return box;
+  }
+
+  function fieldCtrl(blk,f){
+    const wrap=document.createElement('div'); wrap.className='af';
+    if(f.t==='img'){
+      const l=document.createElement('label'); l.textContent=f.label; wrap.appendChild(l);
+      const c=document.createElement('div'); c.className='acover';
+      if(blk.src){ const im=document.createElement('img'); im.src=blk.src; c.appendChild(im); } else c.textContent='＋ 이미지 선택';
+      c.onclick=()=>openPicker(name=>{ blk.src='/images/'+name; markDirty(); renderAbout(); });
+      wrap.appendChild(c); return wrap;
+    }
+    if(f.t==='items') return itemsEditor(blk);
+    const l=document.createElement('label'); l.textContent=f.label; wrap.appendChild(l);
+    if(f.t==='sel'){
+      const e=document.createElement('select');
+      f.opts.forEach(o=>{ const op=document.createElement('option'); op.value=o; op.textContent=o; if(String(blk[f.k]==null?f.opts[0]:blk[f.k])===o) op.selected=true; e.appendChild(op); });
+      e.onchange=()=>{ blk[f.k]=e.value; markDirty(); }; wrap.appendChild(e);
+    } else {
+      const e=document.createElement(f.t==='ta'?'textarea':'input'); e.value=blk[f.k]!=null?blk[f.k]:'';
+      e.oninput=()=>{ blk[f.k]=e.value; markDirty(); }; wrap.appendChild(e);
+    }
+    return wrap;
+  }
+
+  function abtn(t){ const b=document.createElement('button'); b.type='button'; b.className='btn sm'; b.textContent=t; return b; }
+  function renderAbout(){
+    const host=$('#ablocks'); if(!host) return; host.innerHTML=''; const arr=aboutArr();
+    if(!arr.length){ host.innerHTML='<div class="hint">블록이 없습니다. 위 버튼으로 추가하세요.</div>'; return; }
+    arr.forEach((blk,i)=>{
+      const card=document.createElement('div'); card.className='ablk';
+      const h=document.createElement('div'); h.className='ablk__h';
+      const tag=document.createElement('span'); tag.className='btag'; tag.textContent=ABLABEL[blk.type]||blk.type;
+      const sp=document.createElement('span'); sp.className='sp';
+      const up=abtn('▲'),dn=abtn('▼'),del=abtn('삭제'); del.className='btn sm del';
+      if(i===0) up.disabled=true; if(i===arr.length-1) dn.disabled=true;
+      up.onclick=()=>{ arr.splice(i-1,0,arr.splice(i,1)[0]); markDirty(); renderAbout(); };
+      dn.onclick=()=>{ arr.splice(i+1,0,arr.splice(i,1)[0]); markDirty(); renderAbout(); };
+      del.onclick=()=>{ if(confirm('이 블록을 삭제할까요?')){ arr.splice(i,1); markDirty(); renderAbout(); } };
+      h.appendChild(tag); h.appendChild(sp); h.appendChild(up); h.appendChild(dn); h.appendChild(del);
+      const body=document.createElement('div'); body.className='ablk__b';
+      (ABOUT_FIELDS[blk.type]||[]).forEach(f=>body.appendChild(fieldCtrl(blk,f)));
+      card.appendChild(h); card.appendChild(body); host.appendChild(card);
+    });
+  }
+  function addAbout(type){
+    const D={ title:{type:'title',text:'제목',size:'md',align:'left',gap:'md'},
+      text:{type:'text',text:'',size:'sm',gap:'sm'},
+      thanks:{type:'thanks',text:''},
+      image:{type:'image',src:'',caption:'',size:'full',gap:'sm'},
+      video:{type:'video',videoId:'',size:'full',gap:'sm'},
+      list:{type:'list',label:'',labelEn:'',items:[],sizeLabel:'lg',sizeText:'sm',gap:'md'} };
+    if(!D[type]) return;
+    aboutArr().push(Object.assign({},D[type])); markDirty(); renderAbout();
+    const ap=$('#apanel'); ap.scrollTop=ap.scrollHeight;
+  }
+  function openAbout(){ aboutOpen=true; renderAbout(); $('#apanel').classList.add('open'); $('#apanel').setAttribute('aria-hidden','false'); setStatus('소개(About) 편집 중',''); }
+  function closeAbout(){ aboutOpen=false; $('#apanel').classList.remove('open'); $('#apanel').setAttribute('aria-hidden','true'); }
+  function aboutUserClose(){ aboutDismissed=true; closeAbout(); }
 
   /* ---- 삭제 (비밀번호 확인) ---- */
   function delSlide(){
@@ -287,7 +419,7 @@
     editMode=on;
     $('#editToggle').textContent=on?'편집 켜짐':'편집 꺼짐'; $('#editToggle').classList.toggle('on',on);
     $('#openList').style.display=on?'':'none';
-    if(!on){ closePanel(); $('#listwrap').classList.remove('open'); } else refreshTarget();
+    if(!on){ closePanel(); closeAbout(); $('#listwrap').classList.remove('open'); } else refreshTarget();
     if(on) setStatus('편집 켜짐 — 작품을 열거나 + 슬라이드','');
   }
 
@@ -302,6 +434,8 @@
     $('#saveBtn').onclick=save;
     $('#panelClose').onclick=userClose;
     $('#delSlide').onclick=delSlide;
+    $('#aClose').onclick=aboutUserClose;
+    document.querySelectorAll('#apanel .addb').forEach(b=>{ b.onclick=()=>addAbout(b.getAttribute('data-add')); });
     $('#openAdmin').onclick=openAdmin;
     $('#adminClose').onclick=closeAdmin;
     setInterval(refreshTarget,500);
