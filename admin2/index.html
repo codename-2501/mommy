@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-store">
 <title>LSE GALLERY — admin2 (프로토타입)</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -22,7 +23,8 @@
   #status.ok{color:#3fb56b} #status.err{color:#e85c4a}
   #frame{position:fixed;top:62px;left:0;right:0;bottom:0;width:100%;height:calc(100% - 62px);border:0;background:#fff}
   #panel,#apanel{position:fixed;top:62px;right:0;bottom:0;width:min(500px,96vw);z-index:9;background:#141519;border-left:1px solid #2a2c33;
-         transform:translateX(102%);transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;gap:14px;padding:0 18px 18px;overflow:auto;overscroll-behavior:contain}
+         transform:translateX(102%);transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;gap:14px;padding:0 18px 18px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}
+  #panel>*,#apanel>*{min-width:0;max-width:100%}
   #panel.open,#apanel.open{transform:none}
   /* 닫기/제목 헤더 상시 고정 */
   .phead{position:sticky;top:0;z-index:6;background:#141519;margin:0 -18px 0;padding:14px 18px;border-bottom:1px solid #2a2c33}
@@ -115,6 +117,7 @@
   <button class="btn" id="editToggle" type="button">편집 꺼짐</button>
   <button class="btn" id="openList" type="button" style="display:none">작품 목록</button>
   <button class="btn" id="openAdmin" type="button">전체 관리자</button>
+  <button class="btn" id="hardReload" type="button" title="최신 버전으로 강제 새로고침">↻</button>
   <button class="btn primary" id="saveBtn" type="button" style="display:none">저장</button>
   <span id="status">불러오는 중…</span>
 </div>
@@ -479,6 +482,7 @@
     document.querySelectorAll('#panel [data-madd]').forEach(b=>{ b.onclick=()=>addMedia(b.getAttribute('data-madd')); });
     $('#openAdmin').onclick=openAdmin;
     $('#adminClose').onclick=closeAdmin;
+    $('#hardReload').onclick=()=>{ if(dirty && !confirm('저장되지 않은 변경이 있습니다. 새로고침하면 사라집니다. 계속할까요?')) return; location.replace(location.pathname+'?_='+Date.now()); };
     setInterval(refreshTarget,500);
     loadAll().then(()=>{ setStatus(slides().length+'개 작품 · 편집을 켜세요',''); })
              .catch(e=>setStatus('콘텐츠 불러오기 실패: '+e.message+' · 전체 관리자는 사용 가능','err'));
