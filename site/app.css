@@ -846,6 +846,9 @@ body.index-scrolled .wordmark{translate:0 -14rem;opacity:0}
 }
 @media (hover:hover){.agrid-sort__btn:not(.is-on):hover{opacity:.9}}
 .agrid-sort__btn.is-on{opacity:1;color:#fff;transition:color .2s ease .18s}   /* white once the drop lands */
+/* Size 방향 화살표: 폭은 늘 차지하되(blob 크기 정확), 검은 drop 이 도착(settled)했을 때만 보인다 — 이동 중 밝은 배경 위 깜빡임 제거 */
+.agrid-sort__dir{opacity:0;transition:opacity .2s ease .12s}
+.agrid-sort__btn.settled .agrid-sort__dir{opacity:1}
 /* the colour palette: its own capsule under the sort bar (top set by views.js), not a stretch of
    the bar. It rises and fades in when Color opens it, and folds away the same when Color is left. */
 .agrid-pal{
