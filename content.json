@@ -1315,14 +1315,14 @@
     "size": "lg"
    },
    {
-    "type": "video",
-    "videoId": "https://youtu.be/oqCoKkihtqI?si=JaQBBRRzStpzVx31",
-    "size": 75
-   },
-   {
     "type": "image",
     "src": "/images/1000049740.jpg",
     "caption": ""
+   },
+   {
+    "type": "video",
+    "videoId": "https://youtu.be/oqCoKkihtqI?si=JaQBBRRzStpzVx31",
+    "size": 100
    },
    {
     "type": "image",
