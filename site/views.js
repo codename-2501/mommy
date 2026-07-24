@@ -750,7 +750,7 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   function paintBar() {
     btns.forEach((b) => b.classList.toggle('is-on', b.dataset.mode === indexSort));
     if (dateLbl) dateLbl.textContent = indexDateDir === 'asc' ? 'Oldest' : 'Latest';
-    if (dateDir) dateDir.textContent = indexSort === 'date' ? (indexDateDir === 'asc' ? '↑' : '↓') : '';
+    if (dateDir) dateDir.textContent = indexSort === 'date' ? (indexDateDir === 'asc' ? '←' : '→') : '';
     if (sizeDir) sizeDir.textContent = indexSort === 'size' ? (indexSizeDir === 'asc' ? '↑' : '↓') : '';
     pal.classList.toggle('is-open', indexSort === 'color');   // the palette shows only in Color
     swBtns.forEach((b) => b.classList.toggle('is-on', b.dataset.bucket === indexColor));
