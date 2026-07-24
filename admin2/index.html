@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-store">
-<meta name="admin2-build" content="rowclick-autogrow-v3">
+<meta name="admin2-build" content="savefab-onclose-v4">
 <title>LSE GALLERY — admin2 (프로토타입)</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -216,7 +216,7 @@
   // 저장 버튼은 "생성"만으로는 안 뜬다 — 변경이 있고, 모든 작품이 필수값(대표 이미지)을 갖췄을 때만 노출
   function slidesComplete(){ return slides().every(s=>String(s.image||'').trim()!==''); }
   function canSave(){ return dirty && slidesComplete(); }
-  function updateSaveFab(){ const f=$('#saveFab'); if(f) f.classList.toggle('show', canSave()); }
+  function updateSaveFab(){ updateEditFab(); }   // 저장 FAB 노출 규칙은 updateEditFab 로 일원화(오버레이 열림 중 숨김)
 
   /* ---- login gate ---- */
   function showGate(msg){
@@ -294,11 +294,14 @@
   // 인트로(.intro)가 떠 있는 동안엔 FAB 를 숨긴다 — enter 버튼을 가리지 않도록
   function introActive(){ try{ const doc=$('#frame').contentDocument; if(!doc) return true; return !!doc.querySelector('.intro'); }catch(e){ return false; } }
   function updateEditFab(){
-    const ef=$('#editFab'), af=$('#addFab'); if(!ef) return;
-    const hidden = !editMode || !routeKind || anyOverlayOpen() || introActive();
+    const ef=$('#editFab'), af=$('#addFab'), sf=$('#saveFab'); if(!ef) return;
+    const overlay=anyOverlayOpen();
+    const hidden = !editMode || !routeKind || overlay || introActive();
     ef.textContent = routeKind==='about' ? '소개 편집' : (routeKind==='slide' ? '편집' : '작품 목록');
     ef.classList.toggle('show', !hidden);
     if(af) af.classList.toggle('show', !hidden && routeKind==='list');   // + 슬라이드는 갤러리에서 작품 목록과 함께
+    // 저장 버튼: 편집 패널/오버레이가 열려 있는 동안엔 숨김(입력 방해 방지) → 닫은 뒤 변경이 있을 때만 노출
+    if(sf) sf.classList.toggle('show', !overlay && canSave());
   }
   function openEditFromFab(){
     computeRoute();
