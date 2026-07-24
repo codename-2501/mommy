@@ -726,23 +726,26 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     blob.style.width = to.w + 'px';
     blob.style.height = to.h + 'px';
     const rest = 'translate3d(' + to.x + 'px,' + to.y + 'px,0) scale(1,1)';
-    if (!animate || !from) { blob.style.transform = rest; return; }
+    if (!animate || !from) { blob.style.transform = rest; active.classList.add('settled'); return; }
     const dx = to.x - from.x, mid = from.x + dx * 0.5;
     const stretch = 1 + Math.min(Math.abs(dx) / 200, 0.5);
+    /* drop 이 다른 옵션으로 '이동'할 때만 도착 전까지 화살표를 숨긴다(같은 옵션에서 방향만 뒤집을 땐 유지) */
+    if (Math.abs(dx) > 1) active.classList.remove('settled');
     blob.style.transform = rest;
     blobAnim = blob.animate([
       { transform: 'translate3d(' + from.x + 'px,' + from.y + 'px,0) scale(1,1)' },
       { transform: 'translate3d(' + mid + 'px,' + to.y + 'px,0) scale(' + stretch + ',.82)', offset: 0.42 },
       { transform: rest },
     ], { duration: 460, easing: 'cubic-bezier(.32,.9,.24,1)', fill: 'both' });
-    blobAnim.onfinish = () => { if (blobAnim) { blobAnim.cancel(); blobAnim = null; } };
+    blobAnim.onfinish = () => { active.classList.add('settled'); if (blobAnim) { blobAnim.cancel(); blobAnim = null; } };
   }
 
   const sizeBtn = btns.find((b) => b.dataset.mode === 'size');
   function paintBar() {
     btns.forEach((b) => b.classList.toggle('is-on', b.dataset.mode === indexSort));
     /* Size shows its direction while it is the one in use — an arrow that flips on the repeat click */
-    if (sizeBtn) sizeBtn.textContent = indexSort === 'size' ? ('Size ' + (indexSizeDir === 'asc' ? '↑' : '↓')) : 'Size';
+    /* 화살표는 span 으로 — 폭은 늘 차지하되(=blob 크기 정확), 검은 drop 이 도착(settled)했을 때만 보이게 CSS 로 페이드 */
+    if (sizeBtn) sizeBtn.innerHTML = indexSort === 'size' ? ('Size <span class="agrid-sort__dir">' + (indexSizeDir === 'asc' ? '↑' : '↓') + '</span>') : 'Size';
     pal.classList.toggle('is-open', indexSort === 'color');   // the palette shows only in Color
     swBtns.forEach((b) => b.classList.toggle('is-on', b.dataset.bucket === indexColor));
   }
