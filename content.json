@@ -36,20 +36,21 @@
      "src": "/images/ca673fec5b6b7.webp",
      "caption": "z",
      "align": "left",
-     "size": "half"
+     "size": 70
     },
     {
      "type": "image",
      "src": "/images/ca673fec5b6b7.webp",
      "caption": "zz",
      "align": "right",
-     "size": "half"
+     "size": 70
     },
     {
      "type": "image",
      "src": "/images/valentin-beauvais-4YrVF0gVdjk-unsplash__1_.jpg",
      "caption": "ㅋㅋㅋ",
-     "align": "center"
+     "align": "center",
+     "size": 70
     },
     {
      "type": "video",
