@@ -42,7 +42,9 @@
   .btn.sm{padding:4px 9px;font-size:12px}
   .btn.danger{color:#ff9a8f;border-color:#5a2c28}
   /* the status text pushed the header past the viewport: let it wrap to its own line */
-  .status{font-size:12px;color:var(--mut);text-align:left;flex:1 1 100%;min-width:0;order:99;margin-top:2px}   /* 항상 헤더 맨 아래 줄, 좌측 정렬로 고정 위치 */
+  /* 개수·저장상태 표시줄: 헤더에서 빼서 컨텐츠 최상단의 얇은 바로 — 헤더 공간을 차지하지 않는다 */
+  .statusbar{padding:7px clamp(12px,3vw,20px);border-bottom:1px solid var(--line);background:var(--panel)}
+  .status{font-size:12px;color:var(--mut)}
   .status.ok{color:var(--ok)} .status.err{color:var(--acc)}
   .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px clamp(12px,3vw,20px);
     border-bottom:1px solid var(--line)}
@@ -77,6 +79,19 @@
   /* 삭제 버튼은 묶음의 가장 왼쪽에 홀로 두고(order:-1) 나머지(편집·복제·이동)는 오른쪽으로 민다(margin-right:auto).
      자주 쓰는 버튼과 떨어져 있어 실수로 삭제를 누를 일이 준다. */
   .rowbtns .danger{order:-1;margin-right:auto}
+
+  /* 선택 일괄수정 모달: 상단 컨트롤(고정) + 카드(이미지+제목) 그리드 */
+  .bulk-ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:0;background:var(--panel);padding:2px 0 10px;z-index:1;border-bottom:1px solid var(--line)}
+  .bulk-allbox{display:flex;align-items:center;gap:6px;font-size:var(--fs-sm,13px);cursor:pointer;white-space:nowrap;color:var(--ink)}
+  .bulk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr));gap:10px}
+  .bulk-card{display:flex;flex-direction:column;gap:6px;background:var(--card-face);color:var(--card-ink);border:2px solid transparent;border-radius:10px;padding:8px;cursor:pointer;position:relative}
+  .bulk-card:has(.bulk-chk:checked){border-color:var(--acc)}
+  .bulk-chk{position:absolute;top:12px;left:12px;width:22px;height:22px;cursor:pointer;z-index:1}
+  .bulk-thumb{aspect-ratio:4/3;background:#000;border-radius:6px;overflow:hidden}
+  .bulk-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .bulk-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .bulk-num{font-size:11px;color:var(--card-mut)}
+  .bulk-ti{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
   /* image library */
   .imgcard{background:var(--card-face);color:var(--card-ink);border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -242,14 +257,12 @@
   body.big.scrolled .tab{padding:6px 11px;font-size:16px}
   body.big.scrolled header .btn{padding:7px 12px;font-size:16px}   /* 헤더 버튼만 — 툴바(+슬라이드~일괄변경)는 스크롤해도 그대로 */
   /* 접혔을 때: status(개수·상태)를 탭과 같은 줄 오른쪽 빈 공간으로 올린다(탭이 줄을 다 안 채우므로 자리 충분) */
-  body.big.scrolled .status{font-size:13px;margin-top:0;order:3;flex:0 1 auto;width:auto;margin-left:auto;text-align:right;align-self:center}
+  body.big .statusbar .status{font-size:16px}
   /* 접힌 헤더: 로고를 '관리자'로 줄이고(앞부분 감춤) 사이트 열기를 그 오른쪽에 붙인다. 탭은 아래 한 줄로 내려
      3줄이던 헤더가 2줄이 된다. (id 셀렉터의 order 가 먹지 않아 클래스로 건다) */
   body.big.scrolled .hdr-full{display:none}
   body.big.scrolled .hdr-open{order:1;margin-left:auto}
-  .hdr-break{display:none}
-  body.big.scrolled .hdr-break{display:block;flex-basis:100%;height:0;order:1}   /* 접힘: 여기서 줄을 끊어 아래를 '탭 + status' 한 줄로 */
-  body.big.scrolled .tabs{order:2;flex-basis:auto}   /* 접힘: 탭을 내용폭으로 — 오른쪽 빈 공간에 status 가 같은 줄로 들어온다 */
+  body.big.scrolled .tabs{order:2;flex-basis:100%}   /* 접힘: 탭은 아래 한 줄 (status 는 헤더 밖으로 뺐다) */
   /* 모바일: 툴바의 밀대(spacer)를 접어 항목이 좌측부터 순서대로 붙게 한다 — 좁은 폭에서 개수와 정렬 컨트롤이
      양끝으로 벌어져 줄이 들쭉날쭉해 보이던 것 정리. 넓은 화면에선 그대로 정렬 컨트롤이 우측에 선다. */
   @media (max-width:560px){ .toolbar .sp{display:none} }
@@ -328,9 +341,8 @@
   <button class="btn ghost ico" id="openSettings" data-view="site" title="사이트 설정" aria-label="사이트 설정"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   <button class="btn ghost hdr-open" id="openSite">사이트 열기 ↗</button>
   <button class="btn primary" id="save">저장</button>
-  <div class="hdr-break" aria-hidden="true"></div>
-  <div class="status" id="status">불러오는 중…</div>
 </header>
+<div class="statusbar"><span class="status" id="status">불러오는 중…</span></div>
 
 <!-- ===== SLIDES ===== -->
 <section class="view active" id="view-slides">
@@ -345,7 +357,7 @@
       <option value="manual">수동 (드래그 순서)</option>
     </select>
     <button class="btn ghost sm" id="moreToggle" aria-expanded="false" title="가끔 쓰는 도구">기타 도구</button>
-    <button class="btn ghost" id="bulkBottom" style="display:none">표시분 아래문구 일괄변경…</button>
+    <button class="btn ghost moretool" id="openBulk" style="display:none">선택 일괄수정…</button>
   </div>
   <div class="hint" id="orderHint" style="padding:0 clamp(12px,3vw,20px);margin:10px 0 0"></div>
   <main><div class="grid" id="slideGrid"></div></main>
@@ -559,6 +571,28 @@
       <label class="btn sm addmedia" style="position:relative;overflow:hidden">+ 업로드<input type="file" id="editPickUpload" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
       <button class="btn sm" id="editPickerCancel">닫기</button></div>
     <div class="sbody"><div id="editPickerGrid" class="picker"></div></div>
+  </div>
+</div>
+
+<!-- 선택 일괄수정: 카드(이미지+제목)를 체크해서 고른 슬라이드들의 한 필드(카테고리/타입/아래문구)를 한 번에 바꾼다 -->
+<div class="modal" id="bulkModal">
+  <div class="sheet">
+    <div class="shead"><strong>선택 일괄수정</strong><span id="bulkCount" style="color:var(--mut);font-size:var(--fs-sm,12px);margin-left:8px"></span><div class="sp"></div>
+      <button class="btn ghost sm" id="bulkClose">닫기</button></div>
+    <div class="sbody" style="max-height:80vh;overflow-y:auto;overflow-x:hidden">
+      <div class="bulk-ctrl">
+        <label class="bulk-allbox"><input type="checkbox" id="bulkAll"> 전체 선택</label>
+        <select id="bulkField" class="blk-sel">
+          <option value="category">카테고리(뱃지)</option>
+          <option value="ptype">제품 타입</option>
+          <option value="bottom">아래 문구</option>
+        </select>
+        <input id="bulkValue" placeholder="적용할 값 (비우면 해당 값 지움)" style="flex:1 1 min(200px,100%);background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px">
+        <button class="btn primary" id="bulkApply">선택 항목에 적용</button>
+      </div>
+      <div class="hint" style="margin:8px 0 12px">카드를 눌러(체크) 대상을 고르고, 위에서 바꿀 항목과 값을 정한 뒤 적용하세요. 변경 후 [저장]을 눌러야 사이트에 반영됩니다.</div>
+      <div id="bulkList" class="bulk-grid"></div>
+    </div>
   </div>
 </div>
 
@@ -897,19 +931,51 @@ $('#addSlide').onclick=()=>{
   openEditModal(0, true);   // 빈 슬라이드가 생기자마자 '슬라이드 생성' 화면을 띄운다(입력 없이 닫으면 자동 삭제)
 };
 $('#qSlide').addEventListener('input',renderSlides);
-$('#bulkBottom').onclick=()=>{
-  const q=($('#qSlide').value||'').toLowerCase().trim();
-  const v=prompt('표시된 슬라이드들의 "아래 문구"를 일괄 변경:'); if(v==null)return;
-  cfg.slides.forEach((s,i)=>{const hay=((i+1)+' '+(s.top||'')+' '+(s.bottom||'')).toLowerCase();if(!q||hay.includes(q))s.bottom=v;});
-  renderSlides(); dirty();
-};
-/* 가끔 쓰는 도구(아래문구 일괄변경)는 평소 접어두고, '기타 도구'를 눌렀을 때만 펼친다 */
+/* 가끔 쓰는 도구는 평소 접어두고, '기타 도구'를 눌렀을 때만 펼친다 */
 $('#moreToggle').onclick=()=>{
-  const b=$('#bulkBottom'), t=$('#moreToggle');
-  const show=b.style.display==='none';
-  b.style.display=show?'':'none';
+  const t=$('#moreToggle'); const tools=$$('.moretool');
+  const show=tools.length && tools[0].style.display==='none';
+  tools.forEach(el=>el.style.display=show?'':'none');
   t.setAttribute('aria-expanded', show?'true':'false');
   t.textContent=show?'기타 도구 닫기':'기타 도구';
+};
+
+/* ---------- 선택 일괄수정 (카드 체크 → 한 필드 일괄 적용) ---------- */
+const BULK_FIELD_LABEL={category:'카테고리',ptype:'제품 타입',bottom:'아래 문구'};
+function renderBulkList(){
+  const L=$('#bulkList'); L.innerHTML='';
+  cfg.slides.forEach((s,i)=>{
+    const card=document.createElement('label'); card.className='bulk-card';
+    card.innerHTML=`<input type="checkbox" class="bulk-chk" data-i="${i}">
+      <div class="bulk-thumb"><img loading="lazy" src="${esc(s.image||'')}" alt=""></div>
+      <div class="bulk-info"><span class="bulk-num">#${i+1}${s.date?' · '+String(s.date).slice(0,7):''}</span>
+        <span class="bulk-ti">${esc(s.title)||'<span style=\"color:var(--card-mut);font-weight:400\">제목 없음</span>'}</span></div>`;
+    L.appendChild(card);
+  });
+  $('#bulkAll').checked=false;
+  updateBulkCount();
+}
+function updateBulkCount(){
+  const n=$('#bulkList').querySelectorAll('.bulk-chk:checked').length;
+  $('#bulkCount').textContent=n+' / '+cfg.slides.length+' 선택';
+}
+function openBulkModal(){ renderBulkList(); $('#bulkModal').classList.add('open'); }
+function closeBulkModal(){ $('#bulkModal').classList.remove('open'); }
+$('#openBulk').onclick=openBulkModal;
+$('#bulkClose').onclick=closeBulkModal;
+$('#bulkModal').addEventListener('click',e=>{ if(e.target.id==='bulkModal')closeBulkModal(); });
+$('#bulkAll').addEventListener('change',e=>{ $$('#bulkList .bulk-chk').forEach(c=>c.checked=e.target.checked); updateBulkCount(); });
+$('#bulkList').addEventListener('change',e=>{ if(e.target.classList.contains('bulk-chk')) updateBulkCount(); });
+$('#bulkApply').onclick=()=>{
+  const field=$('#bulkField').value, val=$('#bulkValue').value;
+  const checked=[...$('#bulkList').querySelectorAll('.bulk-chk:checked')].map(c=>+c.dataset.i);
+  if(!checked.length){ alert('선택된 슬라이드가 없습니다. 카드를 눌러 선택하세요.'); return; }
+  const lab=BULK_FIELD_LABEL[field]||field;
+  if(!confirm(checked.length+'개 슬라이드의 "'+lab+'"을(를) '+(val.trim()?('"'+val+'" 로'):'비우기로')+' 일괄 변경할까요?')) return;
+  checked.forEach(i=>{ if(val==='') delete cfg.slides[i][field]; else cfg.slides[i][field]=val; });
+  renderSlides(); dirty();
+  setStatus(checked.length+'개 슬라이드의 '+lab+' 일괄 변경됨 (저장 필요)','ok');
+  closeBulkModal();
 };
 /* drag reorder */
 let dragI=null;
