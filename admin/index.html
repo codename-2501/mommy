@@ -27,8 +27,8 @@
   .tab:hover{color:var(--ink);background:rgba(255,255,255,.06)}
   .tab.active{background:var(--ink);color:#0f0f11;border-color:var(--ink);font-weight:700}   /* 선택 탭은 밝은 면+어두운 글씨로 확실히 구분 */
   .sp{flex:1 1 0;min-width:0}
-  .btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 13px;border-radius:8px;
-    font-size:13px;cursor:pointer;transition:.15s;white-space:nowrap}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 13px;border-radius:8px;
+    font-size:13px;line-height:1.2;cursor:pointer;transition:.15s;white-space:nowrap;vertical-align:middle}   /* label·button 모두 같은 박스로 — 크기 균일 */
   .btn:hover{border-color:#4a4d57}
   .btn.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
   .btn.ghost{background:transparent}
