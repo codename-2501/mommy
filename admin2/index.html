@@ -57,6 +57,12 @@
   #toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,12px);z-index:40;background:#3fb56b;color:#08130c;font-weight:700;
          padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
   #toast.show{opacity:1;transform:translate(-50%,0)}
+  /* full admin overlay (기존 admin 전체를 내장) */
+  #adminwrap{position:fixed;inset:0;z-index:50;background:#0f0f11;display:none;flex-direction:column}
+  #adminwrap.open{display:flex}
+  #adminwrap .ovbar{height:48px;flex:none;display:flex;align-items:center;gap:10px;padding:0 12px;background:#141519;border-bottom:1px solid #2a2c33}
+  #adminwrap .ovbar b{flex:1;font-size:13px}
+  #adminframe{flex:1;border:0;width:100%;background:#0f0f11}
   @media (max-width:560px){
     #panel{width:100%;top:auto;height:70%;border-left:0;border-top:1px solid #2a2c33;border-radius:16px 16px 0 0;transform:translateY(102%)}
     #panel.open{transform:none}
@@ -70,6 +76,7 @@
   <b>ADMIN2 <span>· 인컨텍스트 편집</span></b>
   <button class="btn" id="editToggle" type="button">편집 꺼짐</button>
   <button class="btn" id="addSlide" type="button" style="display:none">+ 슬라이드</button>
+  <button class="btn" id="openAdmin" type="button">전체 관리자</button>
   <button class="btn primary" id="saveBtn" type="button" style="display:none">저장</button>
   <span id="status">불러오는 중…</span>
 </div>
@@ -97,6 +104,8 @@
   <div class="grid" id="pickGrid"></div>
 </div></div>
 
+<div id="adminwrap"><div class="ovbar"><b>전체 관리자 · 기존 admin의 모든 기능</b><button class="btn sm" id="adminClose" type="button">✕ 닫기</button></div><iframe id="adminframe" title="admin"></iframe></div>
+
 <div id="toast">저장되었습니다</div>
 <script>
 (function(){
@@ -107,7 +116,7 @@
   const api=(url,opts)=>{ opts=Object.assign({},opts); if(String(url).indexOf('/api/')!==-1){ const h=new Headers(opts.headers||{}); const k=getKey(); if(k)h.set('X-Admin-Key',k); opts.headers=h;} return orig(url,opts); };
   async function verify(k){ try{ const r=await orig('/api/auth',{headers:{'X-Admin-Key':k}}); return r.status===200?'ok':(r.status===403?'bad':'unknown'); }catch(e){ return 'unknown'; } }
 
-  let content=null, baseVersion=null, images=[], editMode=false, curId=null, pinned=false, dirty=false, nid=0;
+  let content=null, baseVersion=null, images=[], editMode=false, curId=null, pinned=false, dirty=false, nid=0, dismissedId=null;
   const setStatus=(m,c='')=>{ const e=$('#status'); e.textContent=m; e.className=c; };
   const slides=()=>((content&&content.slides)||[]);
   const findSlide=id=>slides().find(s=>String(s.id)===String(id));
@@ -153,14 +162,18 @@
   }
   function openPanel(){ $('#panel').classList.add('open'); $('#panel').setAttribute('aria-hidden','false'); }
   function closePanel(){ $('#panel').classList.remove('open'); $('#panel').setAttribute('aria-hidden','true'); pinned=false; curId=null; }
+  function userClose(){ dismissedId=currentWorkId()||curId; closePanel(); }   // 사용자가 닫은 작품은 같은 작품에선 다시 안 열림
 
   function setTarget(id){ curId=id; const s=findSlide(id); if(s){ fillPanel(s); openPanel(); setStatus('편집 중: '+(s.title||('#'+id)),''); } }
 
   function refreshTarget(){
-    if(!editMode){ if($('#panel').classList.contains('open')) closePanel(); return; }
-    if(pinned) return;                         // + 슬라이드나 목록에서 고른 대상은 iframe 이동으로 바뀌지 않는다
+    if(!editMode){ if($('#panel').classList.contains('open')) closePanel(); dismissedId=null; return; }
+    if(pinned) return;                         // + 슬라이드로 만든 대상은 iframe 이동으로 바뀌지 않는다
     const id=currentWorkId();
-    if(id!==curId){ if(id&&findSlide(id)) setTarget(id); else closePanel(); }
+    if(id!==dismissedId) dismissedId=null;     // 다른 작품/목록으로 이동하면 닫힘 상태 해제
+    if(id===curId) return;                     // 이미 그 작품을 보고 있음
+    if(id && id!==dismissedId && findSlide(id)) setTarget(id);
+    else if(!id && $('#panel').classList.contains('open')) closePanel();
   }
 
   /* ---- fields ---- */
@@ -214,6 +227,19 @@
     }catch(e){ setStatus('저장 실패: '+e.message,'err'); }
   }
 
+  /* ---- 전체 관리자 오버레이 (기존 admin 전체 기능; 같은 오리진 iframe, 저장 키 공유로 재로그인 없음) ---- */
+  function openAdmin(){
+    const go=()=>{ $('#adminframe').src='/admin/index.html?_='+Date.now(); $('#adminwrap').classList.add('open'); };
+    if(dirty){ if(confirm('저장되지 않은 변경이 있습니다. 저장하고 전체 관리자를 열까요?\n(취소=저장하지 않고 열기)')){ save().then(go); return; } }
+    go();
+  }
+  function closeAdmin(){
+    $('#adminwrap').classList.remove('open'); $('#adminframe').src='about:blank';
+    // 전체 관리자에서 바꾼 내용이 인라인 패널과 어긋나지 않게 최신 콘텐츠로 다시 불러온다
+    loadAll().then(()=>{ dirty=false; $('#saveBtn').style.display='none'; setStatus(slides().length+'개 작품 · 최신 상태','ok'); refreshTarget(); })
+             .catch(e=>setStatus('갱신 실패: '+e.message,'err'));
+  }
+
   function setEdit(on){
     editMode=on;
     $('#editToggle').textContent=on?'편집 켜짐':'편집 꺼짐'; $('#editToggle').classList.toggle('on',on);
@@ -223,16 +249,18 @@
   }
 
   function boot(){
-    loadAll().then(()=>{
-      bindField('#f-title','title'); bindField('#f-price','price'); bindField('#f-desc','desc');
-      $('#editToggle').onclick=()=>setEdit(!editMode);
-      $('#addSlide').onclick=addSlide;
-      $('#saveBtn').onclick=save;
-      $('#panelClose').onclick=closePanel;
-      $('#delSlide').onclick=delSlide;
-      setInterval(refreshTarget,500);
-      setStatus(slides().length+'개 작품 · 편집을 켜세요','');
-    }).catch(e=>setStatus('불러오기 실패: '+e.message,'err'));
+    // 핸들러는 콘텐츠 로드 성공 여부와 무관하게 먼저 배선한다 (로드 실패가 UI 전체를 죽이지 않도록)
+    bindField('#f-title','title'); bindField('#f-price','price'); bindField('#f-desc','desc');
+    $('#editToggle').onclick=()=>setEdit(!editMode);
+    $('#addSlide').onclick=addSlide;
+    $('#saveBtn').onclick=save;
+    $('#panelClose').onclick=userClose;
+    $('#delSlide').onclick=delSlide;
+    $('#openAdmin').onclick=openAdmin;
+    $('#adminClose').onclick=closeAdmin;
+    setInterval(refreshTarget,500);
+    loadAll().then(()=>{ setStatus(slides().length+'개 작품 · 편집을 켜세요',''); })
+             .catch(e=>setStatus('콘텐츠 불러오기 실패: '+e.message+' · 전체 관리자는 사용 가능','err'));
   }
 
   (async()=>{
