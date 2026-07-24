@@ -306,6 +306,9 @@ function mountFlow(view, slides, aspects, onOpen, opts) {
     /* re-tap the active tab: glide the deck (target only, cur lerps) back to the first work —
        the same landing spot the hand-over uses for idx 0 */
     reset() { if (bounds[0]) target = bounds[0].left + bounds[0].width * 0.5 - innerWidth * 0.5; },
+    /* jump the deck to work i instantly (target=cur, no lerp) — same math as the arrival hand-over.
+       used on detail close so the deck sits on the painting you last paged to, then the fly-home lands there. */
+    goTo(i) { if (i >= 0 && bounds[i]) { target = cur = i * cardGap - innerWidth * 0.5 + bounds[0].left + bounds[0].width * 0.5; } },
     /* Hand over the work actually centred on screen — the deck card whose box sits under the middle —
        NOT the ruler's index. The ruler reads a lap fraction (f % lapWorks), and the deck loops every
        lapWorks works, which is a hair more than the archive holds; across that seam (around work 0) a
@@ -926,6 +929,9 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
   return { ready, destroy, measure: sc.measure, scrollTo: sc.scrollTo,
     reset: () => { anchor = 0; sc.glideTo(0); },
     order: () => orderedIds.slice(),
+    /* jump the grid so work i sits under the middle and becomes the hand-over anchor — detail close lands
+       the fly-home on the work you last paged to (matches timeline/flow). */
+    goTo: (i) => { anchor = i; const cell = content.querySelector('.agrid__cell[data-index="' + i + '"]'); if (cell) { const r = cell.getBoundingClientRect(); sc.scrollTo(outer.scrollTop + (r.top + r.bottom) / 2 - innerHeight / 2); } },
     activeIndex: () => (anchor != null ? anchor : centerWork()),
     lockScroll: () => { outer.style.overflowY = 'hidden'; },
     unlockScroll: () => { outer.style.overflowY = ''; } };
