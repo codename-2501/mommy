@@ -846,9 +846,10 @@ body.index-scrolled .wordmark{translate:0 -14rem;opacity:0}
 }
 @media (hover:hover){.agrid-sort__btn:not(.is-on):hover{opacity:.9}}
 .agrid-sort__btn.is-on{opacity:1;color:#fff;transition:color .2s ease .18s}   /* white once the drop lands */
-/* Size 방향 화살표: 폭은 늘 차지하되(blob 크기 정확), 라벨이 흰색으로 바뀌는 순간(=검은 drop 도착)에 맞춰
-   함께 나타난다. 이동 중엔 dim 으로도 안 보여서 '누르는 즉시 등장'이 사라진다 */
+/* Size 방향 화살표(영속 span): 라벨이 흰색으로 바뀌는 순간(=검은 drop 도착)에 맞춰 opacity 0→1 로 나타난다.
+   이동 중엔 안 보여 '클릭 즉시 등장'이 사라진다. span 은 재사용하므로 전환이 제대로 걸린다. */
 .agrid-sort__dir{opacity:0;transition:opacity .2s ease .18s}
+.agrid-sort__dir:not(:empty){margin-left:.3em}
 .agrid-sort__btn.is-on .agrid-sort__dir{opacity:1}
 /* the colour palette: its own capsule under the sort bar (top set by views.js), not a stretch of
    the bar. It rises and fades in when Color opens it, and folds away the same when Color is left. */
