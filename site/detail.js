@@ -76,11 +76,16 @@ function buildBody(s) {
   const emit = (i) => {
     for (const m of media) {
       if (slot(m) !== i) continue;
-      const fig = el('figure', 'dt-fig dt-fig--' + (m.align || 'center') + (m.size === 'full' ? ' dt-fig--full' : ''));
+      /* 크기 %: 'full'/'half'(구형) 또는 % 숫자 → 본문 폭 대비 그 비율(종횡비 유지). 기본 50%(구형과 동일) */
+      const sz = m.size;
+      let pct = (sz === 'full') ? 100 : (sz == null || sz === '' ? 50 : (sz === 'half' ? 50 : parseInt(sz, 10)));
+      if (!(pct > 0 && pct <= 100)) pct = 50;
+      const fig = el('figure', 'dt-fig dt-fig--' + (m.align || 'center'));
       if (m.type === 'video' && (m.videoId || m.url)) {
         const vid = m.videoId || (String(m.url).match(/(?:v=|\/embed\/|youtu\.be\/|\/shorts\/)([\w-]{6,})/) || [])[1];
         if (!vid) continue;
         const fr = el('div', 'dt-video');
+        fr.style.maxWidth = pct + '%';
         const ifr = document.createElement('iframe');
         ifr.src = 'https://www.youtube.com/embed/' + vid;
         ifr.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
@@ -94,6 +99,7 @@ function buildBody(s) {
         img.src = window.LSEData.asset(src);           // body images: full quality
         img.loading = 'lazy';
         img.alt = m.caption || '';
+        img.style.maxWidth = pct + '%';
         img.classList.add('dt-zoomable');
         img.addEventListener('click', () => lightbox(src, m.caption));
         fig.appendChild(img);

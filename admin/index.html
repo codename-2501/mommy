@@ -1128,8 +1128,9 @@ function alignOptions(cur){
   }).join('');
 }
 function sizeOptions(cur){
-  const c=cur==='full'?'full':'half';   // default 절반 (지금 상세의 기본 렌더와 동일)
-  return [['half','절반'],['full','원본']].map(([v,l])=>`<option value="${v}"${v===c?' selected':''}>${l}</option>`).join('');
+  /* 크기 %(본문 폭 대비, 종횡비 유지). 기존 원본=100·절반=50 으로 읽어 하위호환 */
+  const pct=(cur==='full'||cur==null||cur==='')?100:(cur==='half'?50:(parseInt(cur,10)||100));
+  return [25,33,40,50,60,70,75,80,90,100].map(v=>`<option value="${v}"${v===pct?' selected':''}>${v}%</option>`).join('');
 }
 /* 상세 본문은 '보이는 순서 = 상세페이지 노출 순서'. 상세 설명은 하나의 덩어리(desc block)로 취급하고,
    미디어는 그 위(pos=0) 또는 아래(pos 없음)에만 놓인다. 프론트(detail.js)는 pos=0 그룹→본문→나머지 순으로
@@ -1140,7 +1141,7 @@ function mediaRow(m,k,vi){
   const isVid=m.type==='video';
   const thumb=isVid ? `https://i.ytimg.com/vi/${ytId(m.videoId||m.url)}/hqdefault.jpg` : (m.src||m.image||'');
   const alignCtrl=`<select data-mk="${k}" data-mf="align" title="가로 정렬(종횡비 유지)" class="msel" style="flex:0 1 auto">${alignOptions(m.align)}</select>`;
-  const sizeCtrl=isVid?'':`<select data-mk="${k}" data-mf="size" title="이미지 크기(PC): 절반=본문 폭 50%, 원본=100%" class="msel" style="flex:0 1 auto">${sizeOptions(m.size)}</select>`;
+  const sizeCtrl=`<select data-mk="${k}" data-mf="size" title="크기(%): 본문 폭 대비 (종횡비 유지)" class="msel" style="flex:0 1 auto">${sizeOptions(m.size)}</select>`;
   const row=document.createElement('div');
   row.className='mrow'; row.dataset.vi=vi;
   /* 상세설명 블록처럼: 상단에 '순번+유형명' 타이틀 + 이동/삭제, 그 아래 썸네일과 캡션·옵션 */
@@ -1244,6 +1245,7 @@ function editMediaField(t){
   if(t.dataset.mk==null)return;
   const m=slideMedia(mediaTarget)[+t.dataset.mk];
   if(t.dataset.mf==='pos'){ if(t.value==='') delete m.pos; else m.pos=+t.value; }  // '' = 하단(unset)
+  else if(t.dataset.mf==='size'){ m.size=Number(t.value); }   // 크기 %는 숫자로 저장
   else m[t.dataset.mf]=t.value;
   dirty();
 }
