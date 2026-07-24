@@ -1309,11 +1309,12 @@ function renderBlocks(){
     row.className='blk'; row.dataset.i=i;
     const grip=`<div class="grip2" draggable="true" title="끌어서 순서 변경">≡</div>`;
     const nav=`<div class="blk__nav">
+        <span class="ordbadge" title="블록 순서" style="align-self:center">${i+1}</span>
         <button class="btn ghost" data-up="${i}" ${i===0?'disabled':''}>↑</button>
         <button class="btn ghost" data-down="${i}" ${i===list.length-1?'disabled':''}>↓</button>
         <button class="btn ghost danger" data-del="${i}">삭제</button>
       </div>`;
-    const tag=`<div style="flex:none;width:56px;padding-top:6px;display:flex;flex-direction:column;gap:5px;align-items:flex-start"><span class="ordbadge">${i+1}</span><span style="font-size:var(--fs-sm,12px);color:#2b2b2e;font-weight:700">${BLOCK_LABEL[b.type]||b.type}</span></div>`;
+    const tag=`<div style="flex:none;width:48px;padding-top:8px;font-size:var(--fs-sm,12px);color:#2b2b2e;font-weight:700">${BLOCK_LABEL[b.type]||b.type}</div>`;
     /* 아래 여백은 블록 종류를 가리지 않는다 — 글·이미지·이력 모두 같은 컨트롤을 쓴다 */
     const gp=['none','sm','md','lg','xl'].includes(b.gap)?b.gap:'md';
     const gopt=(v,label)=>`<option value="${v}"${v===gp?' selected':''}>${label}</option>`;
