@@ -739,15 +739,18 @@ function mountIndex(view, slides, aspects, onOpen, opts) {
     blobAnim.onfinish = () => { if (blobAnim) { blobAnim.cancel(); blobAnim = null; } };
   }
 
-  /* Size 방향 화살표(↑/↓): '한 번만' 만든 영속 span — 매 paintBar 마다 새로 만들면 이미 is-on 인 순간 생성돼
+  /* 방향 화살표는 '한 번만' 만든 영속 span — 매 paintBar 마다 새로 만들면 이미 is-on 인 순간 생성돼
      transition 없이 opacity 1 로 즉시 떠버린다. 재사용하면 opacity 0→1 전환이 제대로 걸린다. */
-  const sizeBtn0 = btns.find((b) => b.dataset.mode === 'size');
-  const sizeDir = sizeBtn0 ? (() => { const s = el('span', 'agrid-sort__dir'); sizeBtn0.appendChild(s); return s; })() : null;
+  const mkArrow = (b) => { if (!b) return null; const s = el('span', 'agrid-sort__dir'); b.appendChild(s); return s; };
+  const sizeDir = mkArrow(btns.find((b) => b.dataset.mode === 'size'));
+  /* Date 버튼은 라벨(Latest/Oldest) span + 화살표 span 둘 다 — 라벨은 누를 때마다 스위칭, 화살표는 방향 표시 */
   const dateBtn0 = btns.find((b) => b.dataset.mode === 'date');
+  let dateLbl = null, dateDir = null;
+  if (dateBtn0) { dateBtn0.textContent = ''; dateLbl = el('span'); dateBtn0.appendChild(dateLbl); dateDir = mkArrow(dateBtn0); }
   function paintBar() {
     btns.forEach((b) => b.classList.toggle('is-on', b.dataset.mode === indexSort));
-    /* Date 는 화살표 대신 라벨 자체가 Latest/Oldest 로 바뀐다(누를 때마다 스위칭). Size 는 ↑/↓ 화살표. */
-    if (dateBtn0) dateBtn0.textContent = indexDateDir === 'asc' ? 'Oldest' : 'Latest';
+    if (dateLbl) dateLbl.textContent = indexDateDir === 'asc' ? 'Oldest' : 'Latest';
+    if (dateDir) dateDir.textContent = indexSort === 'date' ? (indexDateDir === 'asc' ? '↑' : '↓') : '';
     if (sizeDir) sizeDir.textContent = indexSort === 'size' ? (indexSizeDir === 'asc' ? '↑' : '↓') : '';
     pal.classList.toggle('is-open', indexSort === 'color');   // the palette shows only in Color
     swBtns.forEach((b) => b.classList.toggle('is-on', b.dataset.bucket === indexColor));
