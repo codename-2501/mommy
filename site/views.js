@@ -973,9 +973,14 @@ function aboutBlock(b) {
     if (!b.src) return null;
     /* size and placement are the admin's: half fills half the column (the picture keeps its
        own ratio either way), and the alignment decides which edge the spare room goes to */
-    const size = b.size === 'half' ? 'half' : 'full';
     const align = ['left', 'right'].includes(b.align) ? b.align : 'center';
-    const fig = el('figure', 'about__fig about__fade about__fig--' + size + ' about__fig--' + align);
+    /* size: 'full'/'half'(구형) 또는 % 숫자. %면 그림 폭을 그 비율로(종횡비는 img width:100%/height:auto 로 유지) */
+    let cls = 'about__fig about__fade about__fig--' + align;
+    let pct = null;
+    if (b.size === 'half') cls += ' about__fig--half';
+    else if (b.size != null && b.size !== '' && b.size !== 'full') { const n = parseInt(b.size, 10); if (n > 0 && n <= 100) pct = n; }
+    const fig = el('figure', cls);
+    if (pct) fig.style.maxWidth = pct + '%';
     const img = el('img');
     img.src = window.LSEData.asset(b.src);
     img.alt = b.caption || '';
