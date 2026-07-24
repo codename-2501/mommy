@@ -1308,6 +1308,11 @@
  "blocks": {
   "/about": [
    {
+    "type": "video",
+    "videoId": "https://youtu.be/oqCoKkihtqI?si=JaQBBRRzStpzVx31",
+    "size": 50
+   },
+   {
     "type": "title",
     "text": "LSE \nDIGITAL ARCHIVE\n#Moments #Experience #Records",
     "align": "right",
