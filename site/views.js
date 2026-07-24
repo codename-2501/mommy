@@ -991,6 +991,31 @@ function aboutBlock(b) {
     return fig;
   }
 
+  /* a youtube block — same %-width + alignment as an image; the embed keeps a 16:9 box */
+  if (b.type === 'video') {
+    const raw = String(b.videoId || '').trim();
+    const m = raw.match(/(?:v=|\/embed\/|youtu\.be\/|\/shorts\/)([\w-]{6,})/);
+    const id = m ? m[1] : (/^[\w-]{6,}$/.test(raw) ? raw : '');
+    if (!id) return null;
+    const align = ['left', 'right'].includes(b.align) ? b.align : 'center';
+    let cls = 'about__fig about__fade about__fig--' + align;
+    let pct = null;
+    if (b.size === 'half') cls += ' about__fig--half';
+    else if (b.size != null && b.size !== '' && b.size !== 'full') { const n = parseInt(b.size, 10); if (n > 0 && n <= 100) pct = n; }
+    const fig = el('figure', cls);
+    if (pct) fig.style.maxWidth = pct + '%';
+    const wrap = el('div', 'about__video');
+    const ifr = document.createElement('iframe');
+    ifr.src = 'https://www.youtube.com/embed/' + id;
+    ifr.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    ifr.allowFullscreen = true;
+    ifr.loading = 'lazy';
+    wrap.appendChild(ifr);
+    fig.appendChild(wrap);
+    if ((b.caption || '').trim()) fig.appendChild(el('figcaption', null, b.caption));
+    return fig;
+  }
+
   /* a CV block, the shape a painter's profile actually has: a group (초대 개인전, 수상, 現…)
      naming a column of entries, each entry a line of its own — the work, then the year and
      the place set quietly beside it. */

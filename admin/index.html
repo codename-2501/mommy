@@ -424,6 +424,7 @@
       <button class="btn addmedia" data-add="text">+ 글</button>
       <button class="btn addmedia" data-add="thanks">+ 맺음말</button>
       <button class="btn addmedia" data-add="image">+ 이미지</button>
+      <button class="btn addmedia" data-add="video">+ 영상</button>
       <button class="btn addmedia" data-add="list">+ 이력</button>
       <span class="sp"></span>
       <span class="count" id="countBlocks"></span>
@@ -645,6 +646,7 @@
   <button class="btn addmedia" data-blkadd="text">+ 글</button>
   <button class="btn addmedia" data-blkadd="thanks">+ 맺음말</button>
   <button class="btn addmedia" data-blkadd="image">+ 이미지</button>
+  <button class="btn addmedia" data-blkadd="video">+ 영상</button>
   <button class="btn addmedia" data-blkadd="list">+ 이력</button>
 </div>
 
@@ -1475,7 +1477,7 @@ function setBgImage(src){
 }
 
 /* ---------- block editor: the page IS this list (content.json → blocks[page]) ---------- */
-const BLOCK_LABEL={title:'제목',text:'글',thanks:'맺음말',image:'이미지',list:'이력'};
+const BLOCK_LABEL={title:'제목',text:'글',thanks:'맺음말',image:'이미지',video:'영상',list:'이력'};
 const BLOCK_HINT={
   title:'큰 제목. 줄바꿈으로 행을 나눕니다.',
   text:'본문. 빈 줄로 문단을 나눕니다.',
@@ -1530,6 +1532,22 @@ function renderBlocks(){
                <select class="blk-sel" data-align="${i}">
                  ${opt('left',align,'좌측')}${opt('center',align,'중앙')}${opt('right',align,'우측')}
                </select></label>
+             ${gapOpt}
+           </div>
+         </div>`;
+    } else if(b.type==='video'){
+      const align=['left','right'].includes(b.align)?b.align:'center';
+      const vpct=(b.size==='full'||b.size==null||b.size==='')?100:(b.size==='half'?50:(parseInt(b.size,10)||100));
+      const opt=(v,cur,label)=>`<option value="${v}"${v===cur?' selected':''}>${label}</option>`;
+      const vid=ytId(b.videoId||'');
+      body=`<div class="blk__body">
+           <input class="cv-text" data-vid="${i}" value="${escAttr(b.videoId||'')}" placeholder="유튜브 URL 또는 영상 ID" style="width:100%">
+           ${vid?`<div style="position:relative;margin-top:8px"><img src="https://i.ytimg.com/vi/${vid}/hqdefault.jpg" style="width:100%;height:auto;max-height:280px;object-fit:contain;border-radius:8px;display:block;background:#000"><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:34px;text-shadow:0 1px 5px #000;pointer-events:none">▶</span></div>`:'<div class="mnote" style="margin-top:8px">유튜브 주소를 넣으면 미리보기가 나옵니다.</div>'}
+           <div class="blk-opts">
+             <label class="blk-opt"><span>크기(%)</span>
+               <select class="blk-sel" data-size="${i}">${[25,33,40,50,60,70,75,80,90,100].map(v=>`<option value="${v}"${v===vpct?' selected':''}>${v}%</option>`).join('')}</select></label>
+             <label class="blk-opt"><span>정렬</span>
+               <select class="blk-sel" data-align="${i}">${opt('left',align,'좌측')}${opt('center',align,'중앙')}${opt('right',align,'우측')}</select></label>
              ${gapOpt}
            </div>
          </div>`;
@@ -1659,6 +1677,7 @@ function scrollBlocksTop(){ const l=$('#blockList'); if(l) l.scrollIntoView({blo
 $$('[data-add]').forEach(btn=>btn.onclick=()=>{
   const t=btn.dataset.add;
   if(t==='image'){ pickMode='about'; openPicker(); return; }
+  if(t==='video'){ pageBlocks().unshift({type:'video',videoId:''}); renderBlocks(); dirty(); scrollBlocksTop(); return; }
   if(t==='list'){ pageBlocks().unshift({type:'list',label:'',items:[{text:'',date:'',place:''}]}); renderBlocks(); dirty(); scrollBlocksTop(); return; }
   pageBlocks().unshift({type:t,text:''}); renderBlocks(); dirty(); scrollBlocksTop();
 });
@@ -1678,6 +1697,7 @@ $('#blockList').addEventListener('input',e=>{
   }
   else if(t.dataset.text!=null){ list[+t.dataset.text].text=t.value; dirty(); }
   else if(t.dataset.cap!=null){ list[+t.dataset.cap].caption=t.value; dirty(); }
+  else if(t.dataset.vid!=null){ list[+t.dataset.vid].videoId=t.value.trim(); dirty(); }   // 유튜브 URL/ID (사이트가 파싱)
 });
 /* a <select> fires change, not input — hung on the wrong event it would never save */
 $('#blockList').addEventListener('change',e=>{
@@ -1694,6 +1714,7 @@ $('#blockList').addEventListener('change',e=>{
   }
   else if(t.dataset.align!=null){ list[+t.dataset.align].align=t.value; dirty(); }
   else if(t.dataset.gap!=null){ list[+t.dataset.gap].gap=t.value; dirty(); }
+  else if(t.dataset.vid!=null){ renderBlocks(); }   // 입력 끝나면 미리보기 갱신
   else if(t.dataset.szlabel!=null){ list[+t.dataset.szlabel].sizeLabel=t.value; dirty(); }
   else if(t.dataset.sztext!=null){ const b2=list[+t.dataset.sztext]; b2.sizeText=t.value; delete b2.size; dirty(); }
   else if(t.dataset.sznote!=null){ list[+t.dataset.sznote].sizeNote=t.value; dirty(); }
@@ -1752,6 +1773,7 @@ $('#save').onclick=async()=>{
     if(cfg.blocks){
       const filled=b=>{
         if(b.type==='image') return !!b.src;
+        if(b.type==='video') return !!(b.videoId||'').trim();
         if(b.type==='list'){
           b.items=(b.items||[]).filter(it=>(it.text||'').trim()||(it.textEn||'').trim()||(it.date||'').trim()||(it.place||'').trim()||(it.note||'').trim());
           return b.items.length>0 || (b.label||'').trim().length>0 || (b.labelEn||'').trim().length>0;
