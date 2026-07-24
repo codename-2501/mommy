@@ -8,8 +8,8 @@
   :root{--bg:#0f0f11;--panel:#17181c;--panel2:#1d1f24;--line:#2a2c33;--ink:#eceae4;--mut:#8a8c94;--acc:#e85c4a;--ok:#3fb56b;--blue:#4a90d9;
     /* 입력필드 전용: 배경은 패널보다 어둡게(파인 느낌), 테두리는 뚜렷하게 — 입력칸과 그 외 영역이 확실히 구분되게 */
     --field-bg:#0a0b0e;--field-line:#484d59;
-    /* 카드/블록 공통 '면' 색 — 배경과 구분하되 대비는 과하지 않게(중간 밝기 웜톤). 위에 얹는 글씨는 어둡게 */
-    --card-face:#bdb7a9;--card-ink:#1f1e1b;--card-mut:#4a473e}
+    /* 카드/블록 공통 '면' 색 — 흰 미색(크림/아이보리). 위에 얹는 글씨는 어둡게 */
+    --card-face:#f3f0e7;--card-ink:#1f1e1b;--card-mut:#4a473e}
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--ink);font:14px/1.5 "Helvetica Neue",Arial,sans-serif;overflow-wrap:break-word;word-break:keep-all}
   /* 한국어는 word-break:keep-all 로 어절(띄어쓰기 단위)을 지켜 줄바꿈한다 — 기본값은 한글을 음절 아무 곳에서나
@@ -35,7 +35,7 @@
   .btn.addmedia{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}   /* 상세 본문의 +이미지/+영상: 글과 확실히 구분되는 버튼 색 */
   .descblock{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px}   /* 상세 설명도 미디어와 같은 '덩어리'로 — 실제 노출 순서 안에 놓인다 */
   /* 순서 뱃지: 순서가 있는 목록의 각 객체 앞에 노출 순번을 붙인다(미디어·상세설명·소개 블록·이력 항목 공통) */
-  .ordbadge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;padding:3px 8px;border-radius:6px;background:var(--acc);color:#fff;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;flex:none;line-height:1.1}   /* 카테고리 뱃지처럼 사각 라운드 */
+  .ordbadge{display:inline-flex;align-items:center;justify-content:center;padding:3px 9px;border-radius:6px;background:var(--acc);color:#fff;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;flex:none;line-height:1.1;text-align:center}   /* 카테고리 뱃지처럼 사각 라운드 · 숫자 중앙 정렬 */
   .btn.ico{display:inline-flex;align-items:center;justify-content:center;padding:8px 10px}
   .btn.ico.active{background:var(--ink);color:#0f0f11;border-color:var(--ink)}   /* 설정 화면일 때 아이콘 활성 표시 */
   @media (max-width:699px){ #save{display:none} }   /* 모바일: 상단 저장 버튼은 숨긴다(플로팅 일괄저장이 대신) */
@@ -487,10 +487,10 @@
     <div class="sbody" style="max-height:78vh;overflow-y:auto;overflow-x:hidden">
       <div style="display:flex;gap:20px;flex-wrap:wrap">
         <div class="ed-thumbcol">
-          <div id="editThumb" style="aspect-ratio:4/3;background:#000;border-radius:8px;overflow:hidden;cursor:pointer;position:relative">
-            <img id="editThumbImg" style="width:100%;height:100%;object-fit:cover">
+          <label class="flab" style="display:block;margin-bottom:6px">대표 이미지</label>
+          <div class="imgpreview" id="editThumb" role="button" tabindex="0" title="클릭해서 대표 이미지 적용" style="width:100%;aspect-ratio:4/3">
+            <img id="editThumbImg"><span class="imgpreview__empty">＋ 이미지 적용</span><span class="imgpreview__change">이미지 변경</span>
           </div>
-          <button class="btn sm" id="editPickImg" style="width:100%;margin-top:8px">대표 이미지 변경</button>
         </div>
         <div class="ed-fieldcol" style="flex:1;min-width:min(280px,100%);display:flex;flex-direction:column;gap:14px">
           <div><label class="flab">위 문구 (번호) · 자동</label>
@@ -963,7 +963,7 @@ function openPicker(){
       else if(pickMode==='og'){ closePicker(); setMetaImage('ogImage','/images/'+name); }
       else {
         cfg.slides[pickTarget].image='/images/'+name; dirty(); closePicker();
-        if($('#editModal').classList.contains('open')){ $('#editThumbImg').src='/images/'+name; }
+        if($('#editModal').classList.contains('open')){ setEditThumb('/images/'+name); }
         else renderSlides();
       }
     };
@@ -1094,7 +1094,7 @@ function showEditPicker(mode){
     im2.addEventListener('load',()=>{ if(im2.naturalWidth){ imageDims[name]=[im2.naturalWidth,im2.naturalHeight]; lb2.textContent=im2.naturalWidth+'×'+im2.naturalHeight+(sz?' · '+sz:''); } },{once:true});
     d.onclick=()=>{
       const src='/images/'+name;
-      if(editPickMode==='thumb'){ cfg.slides[editTarget].image=src; $('#editThumbImg').src=src; }
+      if(editPickMode==='thumb'){ cfg.slides[editTarget].image=src; setEditThumb(src); }
       else { addMediaImage(src); }
       dirty(); hideEditPicker();
     };
@@ -1142,7 +1142,7 @@ function openEditModal(i){
   if(_W==null && _H==null && _HO==null){ const sz=String(s.size||''); const dm=sz.match(/([\d.]+)\s*[×xX]\s*([\d.]+)/); const hm=sz.match(/(\d+)\s*호/); if(dm){_W=dm[1];_H=dm[2];} if(hm)_HO=hm[1]; }
   $('#ed-w').value=_W!=null?_W:''; $('#ed-h').value=_H!=null?_H:''; $('#ed-ho').value=_HO!=null?_HO:'';
   $('#ed-date').value=(s.date||'').slice(0,7);
-  $('#editThumbImg').src=s.image||'';
+  setEditThumb(s.image||'');
   renderMediaList(); hideEditPicker();
   $('#editModal').classList.add('open');
   autoGrowDesc();   // 모달을 연 뒤(보이는 상태) 현재 내용에 맞춰 상세 설명 높이를 맞춘다
@@ -1174,7 +1174,10 @@ function syncSize(){
 }
 ['ed-w','ed-h','ed-ho'].forEach(id=>{ $('#'+id).addEventListener('input',syncSize); });
 // 상세 설명은 이제 순서 목록 안의 지속 노드다 — 타이핑마다 목록을 다시 그리면 커서를 잃으므로 재렌더하지 않는다.
-$('#editPickImg').onclick=$('#editThumb').onclick=()=>showEditPicker('thumb');
+/* 대표 이미지: 박스 자체가 '이미지 적용/변경' 버튼 (사이트 이미지 영역과 동일한 방식) */
+function setEditThumb(src){ const img=$('#editThumbImg'); if(!img)return; img.src=src||''; img.closest('.imgpreview')?.classList.toggle('has-img',!!src); }
+$('#editThumb').onclick=()=>showEditPicker('thumb');
+$('#editThumb').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); showEditPicker('thumb'); } });
 
 /* ---------- images CRUD ---------- */
 function fmtBytes(b){
