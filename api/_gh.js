@@ -59,4 +59,31 @@ function need(res) {
   return res.status(403).json({ error: 'read-only' });
 }
 
-module.exports = { REPO, BRANCH, API, ghGet, ghPut, ghDelete, ghCommits, authed, need };
+// Simple in-memory attempt limiter: slows a single IP hammering the key (esp. a short password).
+// Caveat: Vercel serverless runs many isolated instances and cold-starts reset this map, so it is a
+// speed bump, not a guarantee — a truly robust limit needs an external store (e.g. Upstash Redis).
+const MAX_FAILS = 20, LOCK_MS = 15 * 60 * 1000;   // 20 wrong tries -> locked 15 min
+const attempts = new Map();                       // ip -> { fails, until }
+function ipOf(req) {
+  const xf = String((req.headers && req.headers['x-forwarded-for']) || '');
+  return xf.split(',')[0].trim() || (req.socket && req.socket.remoteAddress) || 'unknown';
+}
+function rateBlocked(req) {
+  const a = attempts.get(ipOf(req));
+  if (a && a.until && a.until > Date.now()) return Math.ceil((a.until - Date.now()) / 1000);
+  return 0;   // 0 = not blocked; otherwise seconds remaining
+}
+function noteAuth(req, ok) {
+  const ip = ipOf(req);
+  if (ok) { attempts.delete(ip); return; }
+  const a = attempts.get(ip) || { fails: 0, until: 0 };
+  a.fails++;
+  if (a.fails >= MAX_FAILS) { a.until = Date.now() + LOCK_MS; a.fails = 0; }
+  attempts.set(ip, a);
+}
+function tooMany(res, secs) {
+  res.setHeader('Retry-After', String(secs));
+  return res.status(429).json({ error: 'too many attempts', retryAfter: secs });
+}
+
+module.exports = { REPO, BRANCH, API, ghGet, ghPut, ghDelete, ghCommits, authed, need, rateBlocked, noteAuth, tooMany };
