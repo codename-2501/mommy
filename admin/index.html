@@ -33,7 +33,7 @@
   .btn.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
   .btn.ghost{background:transparent}
   .btn.addmedia{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}   /* 추가 버튼들 — '큰 글씨' 토글과 같은 강조색(--acc)으로 통일 */
-  .descblock{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px}   /* 상세 설명도 미디어와 같은 '덩어리'로 — 실제 노출 순서 안에 놓인다 */
+  .descblock{background:#2b303b;border:1px solid #3a3f4b;border-radius:10px;padding:10px}   /* 상세 설명 덩어리 — 시트 배경보다 밝게 대비 */
   /* 순서 뱃지: 순서가 있는 목록의 각 객체 앞에 노출 순번을 붙인다(미디어·상세설명·소개 블록·이력 항목 공통) */
   .ordbadge{display:inline-flex;align-items:center;justify-content:center;padding:3px 9px;border-radius:6px;background:var(--acc);color:#fff;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;flex:none;line-height:1.1;text-align:center}   /* 카테고리 뱃지처럼 사각 라운드 · 숫자 중앙 정렬 */
   body.big .ordbadge{font-size:17px;padding:4px 11px;border-radius:7px}   /* 큰글씨모드: 순번 뱃지도 키워 잘 보이게 */
@@ -205,7 +205,7 @@
   .mnote{font-size:11px;color:var(--mut)}
   .mopts{display:flex;gap:6px}
   /* 미디어 행 = 상세설명 블록과 같은 구조: 상단 헤더(순번+유형명+버튼), 그 아래 썸네일+캡션·옵션 */
-  .mrow{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px}
+  .mrow{background:#2b303b;border:1px solid #3a3f4b;border-radius:10px;padding:8px}   /* 미디어 덩어리 — 시트 배경보다 밝게 대비 */
   .mrow__head{display:flex;align-items:center;gap:8px}
   .mrow__content{display:flex;gap:10px;align-items:flex-start;margin-top:8px}
   .mrow__fields{flex:1;min-width:0}
