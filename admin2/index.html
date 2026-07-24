@@ -30,8 +30,10 @@
   #panel.open,#apanel.open{transform:none}
   /* 제목+닫기 헤더 상시 고정 (음수마진 없이 full-width → 우측 잘림 없음) */
   .phead{position:sticky;top:0;z-index:6;background:#141519;display:flex;align-items:center;gap:8px;padding:16px 18px;border-bottom:1px solid #2a2c33}
-  .pbody{padding:16px 18px 22px;display:flex;flex-direction:column;gap:16px;min-width:0}
+  .pbody{padding:16px 18px calc(28px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px;min-width:0}
   .pbody>*{min-width:0;max-width:100%}
+  /* 포커스 시 키보드 위로 스크롤될 여백 */
+  .field input,.field select,.field textarea,.af input,.af select,.af textarea,.aitem input{scroll-margin-bottom:200px;scroll-margin-top:80px}
   /* about block editor */
   .addb{background:#e85c4a;border-color:#e85c4a;color:#fff;font-weight:600}
   .ablk{background:#0a0b0e;border:1px solid #2a2c33;border-radius:10px;overflow:hidden}
@@ -43,7 +45,7 @@
   .ablk__h button:disabled{opacity:.3}
   .ablk__b{padding:12px;display:flex;flex-direction:column;gap:12px}
   .af label{display:block;font-size:18px;color:#a6a8ae;margin-bottom:5px}
-  .af input,.af select,.af textarea{width:100%;background:#0a0b0e;border:1px solid #484d59;color:#eceae4;border-radius:8px;padding:12px 13px;font:inherit}
+  .af input,.af select,.af textarea,.aitem input{width:100%;background:#0a0b0e;border:1px solid #484d59;color:#eceae4;border-radius:8px;padding:12px 13px;font:inherit}
   .af textarea{min-height:96px;resize:vertical}
   .af-row{display:flex;gap:8px}.af-row>.af{flex:1}
   .aitem{display:flex;gap:8px;align-items:flex-start;background:#141519;border:1px solid #2a2c33;border-radius:8px;padding:10px;margin-top:8px}
@@ -90,11 +92,15 @@
   #listwrap .sheet{width:min(620px,100%);max-height:90vh;background:#17181c;border:1px solid #2a2c33;border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
   #listwrap .shd{display:flex;align-items:center;gap:8px;padding:15px 16px;border-bottom:1px solid #2a2c33}
   #listwrap .shd b{flex:1;font-size:22px;font-weight:700}
+  #listwrap .lmode{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #2a2c33;font-size:17px;color:#a6a8ae}
+  #listwrap .lmode .hint{margin-top:2px}
   #listwrap .list{padding:10px;overflow:auto;display:flex;flex-direction:column;gap:8px}
   .lrow{display:flex;align-items:center;gap:12px;background:#0a0b0e;border:1px solid #2a2c33;border-radius:10px;padding:10px 12px}
   .lrow .ord{min-width:36px;height:36px;padding:0 9px;display:inline-flex;align-items:center;justify-content:center;background:#e85c4a;color:#fff;font-weight:700;border-radius:8px;font-size:19px;flex:none}
   .lrow .th{width:76px;height:54px;object-fit:cover;border-radius:6px;background:#000;flex:none}
-  .lrow .tt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;padding:10px 0;font-size:20px}
+  .lrow .linfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;cursor:pointer;padding:6px 0}
+  .lrow .tt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:20px}
+  .lrow .dt{font-size:15px;color:#8a8c94}
   .lrow .mv{display:flex;flex-direction:column;gap:4px;flex:none}
   .lrow .mv button{width:48px;height:32px;padding:0;font-size:16px}
   .lrow .mv button:disabled{opacity:.3;cursor:default}
@@ -108,8 +114,12 @@
   #saveFab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:20;display:none;align-items:center;gap:8px;
            background:#3fb56b;color:#08130c;font-weight:800;border:0;border-radius:999px;padding:16px 26px;font-size:20px;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.45)}
   #saveFab.show{display:inline-flex}
+  /* 편집 FAB — 상세/소개 위에서 편집 패널을 여는 버튼(닫으면 다시 나타남) */
+  #editFab{position:fixed;left:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:20;display:none;align-items:center;gap:8px;
+           background:#e85c4a;color:#fff;font-weight:800;border:0;border-radius:999px;padding:16px 28px;font-size:20px;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.45)}
+  #editFab.show{display:inline-flex}
   @media (max-width:560px){
-    #panel,#apanel{width:100%;top:auto;height:86%;border-left:0;border-top:1px solid #2a2c33;border-radius:16px 16px 0 0;transform:translateY(102%)}
+    #panel,#apanel{width:100%;top:auto;bottom:var(--kb,0px);height:86dvh;max-height:calc(100dvh - var(--kb,0px));border-left:0;border-top:1px solid #2a2c33;border-radius:16px 16px 0 0;transform:translateY(102%)}
     #panel.open,#apanel.open{transform:none}
     #bar b{display:none}
     /* 픽커·목록은 모바일에서 전체 화면 → 뒤 패널과 절대 겹치지 않음 */
@@ -177,14 +187,21 @@
 </div></div>
 
 <div id="listwrap"><div class="sheet">
-  <div class="shd"><b>작품 목록 · 순서 변경</b>
+  <div class="shd"><b>작품 목록</b>
     <button class="btn sm primary" id="listAdd" type="button">+ 슬라이드</button>
     <button class="btn sm" id="listClose" type="button">닫기</button></div>
+  <div class="lmode">
+    <span style="flex:none">정렬 방식:</span>
+    <button class="btn sm" id="modeDate" type="button">날짜순</button>
+    <button class="btn sm" id="modeManual" type="button">수동 순서</button>
+    <span class="hint" id="lmodeHint" style="flex:1 1 100%"></span>
+  </div>
   <div class="list" id="listBody"></div>
 </div></div>
 
 <div id="adminwrap"><div class="ovbar"><b>전체 관리자 · 기존 admin의 모든 기능</b><button class="btn sm" id="adminClose" type="button">✕ 닫기</button></div><iframe id="adminframe" title="admin"></iframe></div>
 
+<button id="editFab" type="button">편집</button>
 <button id="saveFab" type="button">저장하기</button>
 <div id="toast">저장되었습니다</div>
 <script>
@@ -196,7 +213,7 @@
   const api=(url,opts)=>{ opts=Object.assign({},opts); if(String(url).indexOf('/api/')!==-1){ const h=new Headers(opts.headers||{}); const k=getKey(); if(k)h.set('X-Admin-Key',k); opts.headers=h;} return orig(url,opts); };
   async function verify(k){ try{ const r=await orig('/api/auth',{headers:{'X-Admin-Key':k}}); return r.status===200?'ok':(r.status===403?'bad':'unknown'); }catch(e){ return 'unknown'; } }
 
-  let content=null, baseVersion=null, images=[], editMode=false, curId=null, pinned=false, dirty=false, nid=0, dismissedId=null, aboutOpen=false, aboutDismissed=false;
+  let content=null, baseVersion=null, images=[], editMode=false, curId=null, pinned=false, dirty=false, nid=0, aboutOpen=false, routeKind=null, routeId=null;
   const setStatus=(m,c='')=>{ const e=$('#status'); e.textContent=m; e.className=c; };
   const slides=()=>((content&&content.slides)||[]);
   const findSlide=id=>slides().find(s=>String(s.id)===String(id));
@@ -243,27 +260,35 @@
     $('#f-title').value=s.title||''; $('#f-price').value=s.price||''; $('#f-desc').value=s.desc||'';
     renderMedia();
   }
-  function openPanel(){ $('#panel').classList.add('open'); $('#panel').setAttribute('aria-hidden','false'); }
-  function closePanel(){ $('#panel').classList.remove('open'); $('#panel').setAttribute('aria-hidden','true'); pinned=false; curId=null; }
-  function userClose(){ dismissedId=pIdOf(currentPath())||curId; closePanel(); }   // 사용자가 닫은 작품은 같은 작품에선 다시 안 열림
+  function openPanel(){ $('#panel').classList.add('open'); $('#panel').setAttribute('aria-hidden','false'); updateEditFab(); }
+  function closePanel(){ $('#panel').classList.remove('open'); $('#panel').setAttribute('aria-hidden','true'); pinned=false; curId=null; updateEditFab(); }
+  function userClose(){ closePanel(); }   // 닫으면 패널만 내려가고, 편집 버튼이 다시 떠서 재오픈 가능
 
   function setTarget(id){ curId=id; const s=findSlide(id); if(s){ fillPanel(s); openPanel(); setStatus('편집 중: '+(s.title||('#'+id)),''); } }
 
+  // 현재 프론트가 보고 있는 편집 대상(작품/소개)
+  function computeRoute(){
+    const p=currentPath();
+    if(/\/about\/?$/.test(p)){ routeKind='about'; routeId=null; }
+    else { const id=pIdOf(p); if(id&&findSlide(id)){ routeKind='slide'; routeId=id; } else { routeKind=null; routeId=null; } }
+  }
+  function panelAnyOpen(){ return $('#panel').classList.contains('open')||$('#apanel').classList.contains('open'); }
+  function updateEditFab(){
+    const fab=$('#editFab'); if(!fab) return;
+    fab.textContent = routeKind==='about' ? '소개 편집' : '편집';
+    fab.classList.toggle('show', !!(editMode && routeKind && !panelAnyOpen()));
+  }
+  function openEditFromFab(){
+    computeRoute();
+    if(routeKind==='about') openAbout();
+    else if(routeKind==='slide' && routeId){ pinned=false; setTarget(routeId); }
+  }
   function refreshTarget(){
-    if(!editMode){ closePanel(); closeAbout(); dismissedId=null; aboutDismissed=false; return; }
-    if(pinned) return;                          // 목록/생성으로 고정된 슬라이드 편집 중 — 라우트 무시
-    const p=currentPath(), isAbout=/\/about\/?$/.test(p);
-    if(isAbout){                                // 소개 페이지 위 → About 편집 패널
-      if(curId) closePanel(); dismissedId=null;
-      if(!aboutOpen && !aboutDismissed) openAbout();
-      return;
-    }
-    if(aboutOpen) closeAbout(); aboutDismissed=false;
-    const id=pIdOf(p);
-    if(id!==dismissedId) dismissedId=null;      // 다른 작품/목록으로 이동하면 닫힘 상태 해제
-    if(id===curId) return;                      // 이미 그 작품을 보고 있음
-    if(id && id!==dismissedId && findSlide(id)) setTarget(id);
-    else if(!id && $('#panel').classList.contains('open')) closePanel();
+    if(!editMode){ closePanel(); closeAbout(); computeRoute(); updateEditFab(); return; }
+    computeRoute();
+    // 열려 있는 (고정 아님) 작품 패널은 보고 있는 작품을 따라간다. 패널은 자동으로 닫지 않는다(닫기는 사용자만).
+    if($('#panel').classList.contains('open') && !pinned && routeKind==='slide' && routeId && routeId!==curId) setTarget(routeId);
+    updateEditFab();
   }
 
   /* ---- fields ---- */
@@ -304,21 +329,42 @@
   }
 
   /* ---- 작품 목록 (생성 + 순서 변경 + 탭하면 편집) ---- */
+  // 프론트(app.js byDateDesc)와 동일한 날짜 내림차순 — 순서 표시를 사이트와 일치시킨다
+  function byDateDescA(arr){ return arr.slice().sort((a,b)=>{ const da=String(a.date||''),db=String(b.date||''); if(da===db) return 0; if(!da) return 1; if(!db) return -1; return da<db?1:-1; }); }
+  function fmtYM(d){ const m=/(\d{4})-(\d{2})/.exec(String(d||'')); return m?(m[1]+'.'+m[2]):'날짜 없음'; }
+  function metaOrder(){ return (content&&content.meta&&content.meta.order==='manual')?'manual':'date'; }
+  function setOrderMode(mode){
+    if(!content) return; content.meta=content.meta||{};
+    if(mode==='manual'){ content.slides=byDateDescA(slides()); content.meta.order='manual'; }  // 현재 보이는 날짜순에서 시작
+    else { delete content.meta.order; }
+    markDirty(); renderList();
+  }
   function renderList(){
-    const b=$('#listBody'); b.innerHTML=''; const arr=slides();
-    if(!arr.length){ b.innerHTML='<div class="hint" style="padding:14px">아직 작품이 없습니다. + 슬라이드로 추가하세요.</div>'; return; }
-    arr.forEach((s,i)=>{
+    const b=$('#listBody'); if(!b) return; b.innerHTML=''; const src=slides();
+    const manual=metaOrder()==='manual';
+    $('#modeDate').classList.toggle('on',!manual); $('#modeManual').classList.toggle('on',manual);
+    $('#lmodeHint').textContent = manual
+      ? '수동 순서: ▲▼로 정한 순서 그대로 사이트에 노출됩니다(날짜는 라벨).'
+      : '날짜순: 최신 날짜가 먼저 나옵니다. 순서를 바꾸려면 각 작품의 날짜를 바꾸세요.';
+    if(!src.length){ b.innerHTML='<div class="hint" style="padding:14px">아직 작품이 없습니다. + 슬라이드로 추가하세요.</div>'; return; }
+    const disp = manual ? src : byDateDescA(src);
+    disp.forEach((s,i)=>{
       const row=document.createElement('div'); row.className='lrow';
-      row.innerHTML='<span class="ord">'+(i+1)+'</span>'
+      let html='<span class="ord">'+(i+1)+'</span>'
         +(s.image?'<img class="th" src="'+esc(s.image)+'">':'<span class="th"></span>')
-        +'<span class="tt">'+(s.title?esc(s.title):'<i style="color:#8a8c94">제목 없음</i>')+'</span>'
-        +'<span class="mv"><button class="btn sm" data-up type="button" title="위로">▲</button>'
+        +'<span class="linfo"><span class="tt">'+(s.title?esc(s.title):'<i style="color:#8a8c94">제목 없음</i>')+'</span>'
+        +'<span class="dt">'+fmtYM(s.date)+'</span></span>';
+      if(manual) html+='<span class="mv"><button class="btn sm" data-up type="button" title="위로">▲</button>'
         +'<button class="btn sm" data-dn type="button" title="아래로">▼</button></span>';
-      row.querySelector('.tt').onclick=()=>{ pinned=true; dismissedId=null; setTarget(s.id); $('#listwrap').classList.remove('open'); };
-      const up=row.querySelector('[data-up]'), dn=row.querySelector('[data-dn]');
-      if(i===0) up.disabled=true; if(i===arr.length-1) dn.disabled=true;
-      up.onclick=()=>{ arr.splice(i-1,0,arr.splice(i,1)[0]); markDirty(); renderList(); };
-      dn.onclick=()=>{ arr.splice(i+1,0,arr.splice(i,1)[0]); markDirty(); renderList(); };
+      row.innerHTML=html;
+      row.querySelector('.linfo').onclick=()=>{ pinned=true; setTarget(s.id); $('#listwrap').classList.remove('open'); };
+      if(manual){
+        const j=src.indexOf(s);
+        const up=row.querySelector('[data-up]'), dn=row.querySelector('[data-dn]');
+        if(j===0) up.disabled=true; if(j===src.length-1) dn.disabled=true;
+        up.onclick=()=>{ if(j>0){ src.splice(j-1,0,src.splice(j,1)[0]); markDirty(); renderList(); } };
+        dn.onclick=()=>{ if(j<src.length-1){ src.splice(j+1,0,src.splice(j,1)[0]); markDirty(); renderList(); } };
+      }
       b.appendChild(row);
     });
   }
@@ -437,9 +483,9 @@
     aboutArr().push(Object.assign({},D[type])); markDirty(); renderAbout();
     const ap=$('#apanel'); ap.scrollTop=ap.scrollHeight;
   }
-  function openAbout(){ aboutOpen=true; renderAbout(); $('#apanel').classList.add('open'); $('#apanel').setAttribute('aria-hidden','false'); setStatus('소개(About) 편집 중',''); }
-  function closeAbout(){ aboutOpen=false; $('#apanel').classList.remove('open'); $('#apanel').setAttribute('aria-hidden','true'); }
-  function aboutUserClose(){ aboutDismissed=true; closeAbout(); }
+  function openAbout(){ aboutOpen=true; renderAbout(); $('#apanel').classList.add('open'); $('#apanel').setAttribute('aria-hidden','false'); setStatus('소개(About) 편집 중',''); updateEditFab(); }
+  function closeAbout(){ aboutOpen=false; $('#apanel').classList.remove('open'); $('#apanel').setAttribute('aria-hidden','true'); updateEditFab(); }
+  function aboutUserClose(){ closeAbout(); }
 
   /* ---- 삭제 (비밀번호 확인) ---- */
   function delSlide(){
@@ -481,19 +527,28 @@
     editMode=on;
     $('#editToggle').textContent=on?'편집 켜짐':'편집 꺼짐'; $('#editToggle').classList.toggle('on',on);
     $('#openList').style.display=on?'':'none';
-    if(!on){ closePanel(); closeAbout(); $('#listwrap').classList.remove('open'); } else refreshTarget();
-    if(on) setStatus('편집 켜짐 — 작품을 열거나 + 슬라이드','');
+    if(!on){ closePanel(); closeAbout(); $('#listwrap').classList.remove('open'); }
+    refreshTarget();
+    if(on) setStatus('편집 켜짐 — 작품/소개를 열면 편집 버튼이 뜹니다','');
   }
 
   function boot(){
     // 핸들러는 콘텐츠 로드 성공 여부와 무관하게 먼저 배선한다 (로드 실패가 UI 전체를 죽이지 않도록)
     bindField('#f-title','title'); bindField('#f-price','price'); bindField('#f-desc','desc');
     populateDateSelects();
+    // iOS 키보드: 패널이 키보드 위로 올라오게 --kb 를 갱신, 포커스한 입력칸을 화면으로 스크롤
+    const vv=window.visualViewport;
+    if(vv){ const syncKb=()=>{ const kb=Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)); document.documentElement.style.setProperty('--kb', kb+'px'); };
+      vv.addEventListener('resize',syncKb); vv.addEventListener('scroll',syncKb); syncKb(); }
+    document.addEventListener('focusin',e=>{ const t=e.target; if(t&&t.closest&&t.closest('#panel,#apanel')) setTimeout(()=>{ try{ t.scrollIntoView({block:'center',behavior:'smooth'}); }catch(_){ } },120); });
     $('#saveFab').onclick=save;
+    $('#editFab').onclick=openEditFromFab;
     $('#editToggle').onclick=()=>setEdit(!editMode);
     $('#openList').onclick=openList;
     $('#listAdd').onclick=()=>{ addSlide(); $('#listwrap').classList.remove('open'); };
     $('#listClose').onclick=()=>$('#listwrap').classList.remove('open');
+    $('#modeDate').onclick=()=>setOrderMode('date');
+    $('#modeManual').onclick=()=>setOrderMode('manual');
     $('#listwrap').addEventListener('click',e=>{ if(e.target.id==='listwrap') $('#listwrap').classList.remove('open'); });
     $('#panelClose').onclick=userClose;
     $('#delSlide').onclick=delSlide;
