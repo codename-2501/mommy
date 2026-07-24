@@ -32,6 +32,8 @@
   .btn.ghost{background:transparent}
   .btn.addmedia{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}   /* 상세 본문의 +이미지/+영상: 글과 확실히 구분되는 버튼 색 */
   .descblock{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px}   /* 상세 설명도 미디어와 같은 '덩어리'로 — 실제 노출 순서 안에 놓인다 */
+  /* 순서 뱃지: 순서가 있는 목록의 각 객체 앞에 노출 순번을 붙인다(미디어·상세설명·소개 블록·이력 항목 공통) */
+  .ordbadge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--acc);color:#fff;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;flex:none;line-height:1}
   .btn.sm{padding:4px 9px;font-size:12px}
   .btn.danger{color:#ff9a8f;border-color:#5a2c28}
   /* the status text pushed the header past the viewport: let it wrap to its own line */
@@ -169,6 +171,9 @@
   body.big header h1{font-size:18px}
   body.big .tab{font-size:19px;padding:9px 13px;border-radius:10px}
   body.big header .btn{font-size:19px;padding:9px 14px}
+  /* 큰글씨모드: 탭 이름이 길어져도 헤더가 흐트러지지 않게, 탭을 항상 전용 줄(전체폭)로 내린다.
+     1행 = 제목 + 우측 버튼들, 2행 = 탭 전체폭. (스크롤 접힘 상태의 규칙과 동일한 배치) */
+  body.big .tabs{order:6;flex-basis:100%;margin-top:4px}
   body.big .btn{font-size:24px;padding:13px 20px;border-radius:11px}
   body.big .btn.sm{font-size:21px;padding:9px 15px}
   body.big .status{font-size:18px}
@@ -509,13 +514,15 @@
         </div>
         <div id="editMediaList" style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
           <div id="ed-descblock" class="descblock" data-vi="">
-            <div class="flab" style="display:flex;align-items:center;gap:8px">상세 설명
-              <span style="color:var(--mut);font-weight:400;font-size:var(--fs-xs,11px)">— 상세페이지 본문 텍스트</span>
-              <span style="margin-left:auto;display:flex;gap:4px">
+            <div class="flab" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="ordbadge" id="ed-desc-ord"></span>
+              <span style="flex:none">상세 설명</span>
+              <span style="color:var(--mut);font-weight:400;font-size:var(--fs-xs,11px);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">— 상세페이지 본문 텍스트</span>
+              <span style="margin-left:auto;display:flex;gap:4px;flex:none">
                 <button type="button" class="btn sm" data-vact="up" title="위로">↑</button>
                 <button type="button" class="btn sm" data-vact="down" title="아래로">↓</button>
               </span></div>
-            <textarea id="ed-desc" placeholder="작품 설명…" style="width:100%;margin-top:6px;min-height:120px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:inherit;resize:vertical"></textarea>
+            <textarea id="ed-desc" placeholder="작품 설명…" style="width:100%;margin-top:6px;min-height:120px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:inherit;resize:none;overflow:hidden"></textarea>
           </div>
         </div>
         <div class="hint" style="margin-top:10px">이미지·영상과 상세 설명이 <b>여기 보이는 순서 그대로</b> 상세페이지에 세로로 표시됩니다. 순서는 각 항목의 ↑ ↓ 로 바꿉니다. 미디어를 비우면 대표 이미지 1장만 나옵니다.</div>
@@ -1003,7 +1010,7 @@ function mediaRow(m,k,vi){
       ${isVid?'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px">▶</span>':''}
     </div>
     <div style="flex:1;min-width:0">
-      <div class="flab">${isVid?'영상':'이미지'}</div>
+      <div class="flab" style="display:flex;align-items:center;gap:6px"><span class="ordbadge">${vi+1}</span> ${isVid?'영상':'이미지'}</div>
       <input data-mk="${k}" data-mf="caption" value="${escAttr(m.caption)}" placeholder="캡션(선택)" class="mcap" style="width:100%;margin-top:4px">
       <div class="mopts" style="margin-top:5px">${sizeCtrl}${alignCtrl}</div>
     </div>
@@ -1025,7 +1032,7 @@ function renderMediaList(){
   mediaVisual.push({t:'desc'});
   below.forEach(k=>mediaVisual.push({t:'m',k}));
   const nodes=mediaVisual.map((tok,vi)=>{
-    if(tok.t==='desc'){ descBlock.dataset.vi=vi; return descBlock; }   // 지속 노드 — 이동만(재생성 X)
+    if(tok.t==='desc'){ descBlock.dataset.vi=vi; const ob=descBlock.querySelector('#ed-desc-ord'); if(ob) ob.textContent=vi+1; return descBlock; }   // 지속 노드 — 이동만(재생성 X)
     return mediaRow(M[tok.k],tok.k,vi);
   });
   L.replaceChildren(...nodes);
@@ -1109,7 +1116,11 @@ function openEditModal(i){
   $('#editThumbImg').src=s.image||'';
   renderMediaList(); hideEditPicker();
   $('#editModal').classList.add('open');
+  autoGrowDesc();   // 모달을 연 뒤(보이는 상태) 현재 내용에 맞춰 상세 설명 높이를 맞춘다
 }
+/* 상세 설명은 입력값이 늘면 스크롤 대신 칸 자체가 늘어난다(min-height 이하로는 안 줄어듦). */
+function autoGrowDesc(){ const t=$('#ed-desc'); if(!t) return; t.style.height='auto'; t.style.height=Math.max(t.scrollHeight, 120)+'px'; }
+$('#ed-desc').addEventListener('input',autoGrowDesc);
 $('#ed-date').addEventListener('input',e=>{
   if(editTarget==null)return;
   const v=e.target.value; cfg.slides[editTarget].date = v ? v+'-01' : ''; dirty();
@@ -1296,7 +1307,7 @@ function renderBlocks(){
         <button class="btn ghost" data-down="${i}" ${i===list.length-1?'disabled':''}>↓</button>
         <button class="btn ghost danger" data-del="${i}">삭제</button>
       </div>`;
-    const tag=`<div style="flex:none;width:56px;font-size:var(--fs-sm,12px);color:#e7ecf8;font-weight:600;padding-top:8px">${BLOCK_LABEL[b.type]||b.type}</div>`;
+    const tag=`<div style="flex:none;width:56px;padding-top:6px;display:flex;flex-direction:column;gap:5px;align-items:flex-start"><span class="ordbadge">${i+1}</span><span style="font-size:var(--fs-sm,12px);color:#e7ecf8;font-weight:600">${BLOCK_LABEL[b.type]||b.type}</span></div>`;
     /* 아래 여백은 블록 종류를 가리지 않는다 — 글·이미지·이력 모두 같은 컨트롤을 쓴다 */
     const gp=['none','sm','md','lg','xl'].includes(b.gap)?b.gap:'md';
     const gopt=(v,label)=>`<option value="${v}"${v===gp?' selected':''}>${label}</option>`;
@@ -1344,6 +1355,7 @@ function renderBlocks(){
       };
       const rows=items.map((it,j)=>{ const v=cv(it); return `
         <div class="cv-row">
+          <span class="ordbadge" style="align-self:center">${j+1}</span>
           <input class="cv-text" data-li="${i}" data-lj="${j}" data-lk="text" value="${escAttr(v.text)}"
                  placeholder="항목 (예: 프랑스 루브르 아트페어)">
           <input class="cv-text" data-li="${i}" data-lj="${j}" data-lk="textEn" value="${escAttr(it.textEn||'')}"
