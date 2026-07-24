@@ -81,9 +81,9 @@
   /* block editor: only the grip drags, so a textarea keeps its own text selection.
      The row wraps — on a narrow screen the buttons drop under the field instead of
      pushing the whole panel sideways. */
-  .blk{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;background:#262935;
-    border:1px solid #3a3e4b;border-left:3px solid var(--blue);border-radius:10px;padding:12px;
-    box-shadow:0 1px 0 rgba(0,0,0,.35)}   /* 각 섹션(덩어리)을 배경과 확실히 구분 — 더 밝은 면 + 좌측 강조선 */
+  .blk{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;background:#3a3f4c;
+    border:2px solid #d7dae1;border-radius:10px;padding:12px;
+    box-shadow:0 3px 14px rgba(0,0,0,.6)}   /* 덩어리를 배경(거의 검정)과 흑백처럼 강한 대비로 — 밝은 면 + 밝은 테두리 */
   .blk.drag{opacity:.4}
   .blk.over{outline:2px dashed var(--blue)}
   .blk .grip2{flex:none;align-self:stretch;display:flex;align-items:center;padding:0 2px;color:var(--mut);
@@ -269,16 +269,21 @@
   .imgpick__btns{display:flex;gap:6px;flex-wrap:wrap}
   .bgthumb{width:192px;height:120px}
   @media (max-width:560px){ .bgthumb{width:100%;height:auto;aspect-ratio:16/9;max-height:240px} }   /* 좁은 화면: 배경 미리보기를 여백만 빼고 폭을 다 쓴다 */
-  /* 로고/파비콘/OG 미리보기: 빈 영역도 테두리로 보이게 하고, 좁은 화면에선 폭을 다 쓴다 */
-  .imgpreview{position:relative;display:flex;align-items:center;justify-content:center;background:var(--field-bg);border:1px dashed var(--field-line);border-radius:8px;overflow:hidden;flex:none}
+  /* 로고/파비콘/OG 미리보기 = 이미지 적용 버튼 그 자체. 빈 영역엔 '＋ 이미지 적용', 있으면 hover 시 '이미지 변경' */
+  .imgpreview{position:relative;display:flex;align-items:center;justify-content:center;background:var(--field-bg);border:1px dashed var(--field-line);border-radius:8px;overflow:hidden;flex:none;cursor:pointer;transition:border-color .12s,background .12s}
+  .imgpreview:hover,.imgpreview:focus-visible{border-color:#8a8f9c;outline:none}
   .imgpreview img{width:100%;height:100%;object-fit:cover;display:block}
   .imgpreview--logo{width:280px;height:120px;max-width:100%}
   .imgpreview--logo img{object-fit:contain;padding:4px}
   .imgpreview--fav{width:140px;height:140px}
   .imgpreview--og{width:213px;height:120px;max-width:100%}
-  .imgpreview__empty{position:absolute;color:var(--mut);font-size:var(--fs-sm,12px);pointer-events:none}
+  .imgpreview__empty{position:absolute;color:var(--ink);font-size:var(--fs-sm,12px);font-weight:600;pointer-events:none;background:rgba(255,255,255,.06);border:1px solid var(--field-line);padding:8px 14px;border-radius:8px}
+  .imgpreview:hover .imgpreview__empty{background:rgba(255,255,255,.12);border-color:#8a8f9c}
+  .imgpreview__change{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);color:#fff;font-weight:600;font-size:var(--fs-sm,13px);pointer-events:none}
+  .imgpreview.has-img:hover .imgpreview__change{display:flex}
   .imgpreview.has-img{border-style:solid}
   .imgpreview.has-img .imgpreview__empty{display:none}
+  .imgpreview:not(.has-img) .imgpreview__change{display:none}
   .imgpreview:not(.has-img) img{display:none}
   @media (max-width:560px){ .imgpreview,.imgpreview--logo,.imgpreview--og{width:100%;height:auto;aspect-ratio:16/9} .imgpreview--fav{width:100%;aspect-ratio:1;max-width:200px} }
   @media (max-width:560px){ .imgpick{flex-direction:column;align-items:stretch} }
@@ -290,9 +295,9 @@
 <header>
   <h1><span class="hdr-full">LSE GALLERY · </span>관리자</h1>
   <div class="tabs">
-    <div class="tab active" data-view="slides">작품</div>
-    <div class="tab" data-view="images">이미지</div>
-    <div class="tab" data-view="text">페이지</div>
+    <div class="tab active" data-view="slides">작품 관리</div>
+    <div class="tab" data-view="images">이미지 관리</div>
+    <div class="tab" data-view="text">about</div>
     <div class="tab" data-view="site">사이트</div>
   </div>
   <div class="sp"></div>
@@ -372,12 +377,11 @@
       <div style="font-weight:600;margin-bottom:4px">로고 / 워드마크 <span style="color:var(--mut);font-weight:400;font-size:var(--fs-sm,12px)">(인트로·홈 상단)</span></div>
       <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:12px">워드마크 3줄을 편집합니다. 비워두면 기본값(LSE GALLERY)이 표시됩니다.</div>
       <div class="imgpick" style="margin-bottom:12px">
-        <div class="imgpreview imgpreview--logo"><img id="wm-img"><span class="imgpreview__empty">빈 이미지 영역</span></div>
+        <div class="imgpreview imgpreview--logo" id="pickLogo" role="button" tabindex="0" title="클릭해서 이미지 적용"><img id="wm-img"><span class="imgpreview__empty">＋ 이미지 적용</span><span class="imgpreview__change">이미지 변경</span></div>
         <div class="imgpick__body">
-          <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">이미지 로고 (선택) — 넣으면 아래 3줄 대신 이 이미지가 쓰입니다</div>
+          <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">이미지 로고 (선택) — 넣으면 아래 3줄 대신 이 이미지가 쓰입니다. 영역을 눌러 이미지를 적용하세요.</div>
           <div class="imgpick__btns">
             <button class="btn sm danger" id="clearLogo">지움</button>
-            <button class="btn sm" id="pickLogo">이미지 적용</button>
           </div>
         </div>
       </div>
@@ -404,22 +408,20 @@
         <div class="site-row"><span class="site-lab">주소</span><input id="mt-url" placeholder="예: https://lse.pages.dev" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px"></div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px">
           <div class="imgpick">
-            <div class="imgpreview imgpreview--fav"><img id="mt-fav-img"><span class="imgpreview__empty">빈 이미지 영역</span></div>
+            <div class="imgpreview imgpreview--fav" id="pickFavicon" role="button" tabindex="0" title="클릭해서 이미지 적용"><img id="mt-fav-img"><span class="imgpreview__empty">＋ 이미지 적용</span><span class="imgpreview__change">이미지 변경</span></div>
             <div class="imgpick__body">
-              <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">파비콘</div>
+              <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">파비콘 — 영역을 눌러 적용</div>
               <div class="imgpick__btns">
                 <button class="btn sm danger" id="clearFavicon">지움</button>
-                <button class="btn sm" id="pickFavicon">이미지 적용</button>
               </div>
             </div>
           </div>
           <div class="imgpick">
-            <div class="imgpreview imgpreview--og"><img id="mt-og-img"><span class="imgpreview__empty">빈 이미지 영역</span></div>
+            <div class="imgpreview imgpreview--og" id="pickOg" role="button" tabindex="0" title="클릭해서 이미지 적용"><img id="mt-og-img"><span class="imgpreview__empty">＋ 이미지 적용</span><span class="imgpreview__change">이미지 변경</span></div>
             <div class="imgpick__body">
-              <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">공유 썸네일 (OG 이미지)</div>
+              <div style="font-size:var(--fs-sm,12px);color:var(--mut);margin-bottom:6px">공유 썸네일 (OG 이미지) — 영역을 눌러 적용</div>
               <div class="imgpick__btns">
                 <button class="btn sm danger" id="clearOg">지움</button>
-                <button class="btn sm" id="pickOg">이미지 적용</button>
               </div>
             </div>
           </div>
@@ -753,6 +755,8 @@ function renderMetaImages(){
 });
 $('#pickFavicon').onclick=()=>{ pickMode='favicon'; openPicker(); };
 $('#pickOg').onclick=()=>{ pickMode='og'; openPicker(); };
+// 이미지 영역(=적용 버튼)에 키보드(Enter/Space) 지원 — role="button" 이라 클릭과 동일하게 동작하게
+['pickLogo','pickFavicon','pickOg'].forEach(id=>{ const el=$('#'+id); if(el) el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); el.click(); } }); });
 $('#clearFavicon').onclick=()=>{ delete siteMeta().favicon; renderMetaImages(); dirty(); };
 $('#clearOg').onclick=()=>{ delete siteMeta().ogImage; renderMetaImages(); dirty(); };
 function setMetaImage(kind,src){ siteMeta()[kind]=src; renderMetaImages(); dirty(); }
