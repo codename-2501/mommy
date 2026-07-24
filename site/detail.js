@@ -133,7 +133,7 @@ function buildContent(s, i, slides) {
   }
   /* spec rows (admin: 연월 / 제품 규격 / 제품 타입) */
   const when = dated(s);
-  const showPrice = s.priceShow && (s.price || '').trim();
+  const showPrice = (s.price || '').trim();   // 값이 있으면 노출, 비우면 표시 안 함 (다른 필드와 동일)
   if (when || s.size || s.ptype || showPrice) {
     const spec = el('div', 'dt-spec');
     const row = (k, v) => {
@@ -147,7 +147,7 @@ function buildContent(s, i, slides) {
     if (when) row('Date', when);
     if (s.size) row('Size', s.size);
     if (s.ptype) row('Type', s.ptype);
-    if (showPrice) row('Price', s.price.trim());   // admin에서 '상세 페이지에 가격 표시'를 켠 작품만
+    if (showPrice) row('Price', s.price.trim());
     wrap.appendChild(spec);
   }
   const fade = el('div', 'dt-fade');
