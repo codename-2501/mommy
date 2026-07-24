@@ -16,49 +16,87 @@
   .btn:hover{border-color:#4a4d57}
   .btn.primary{background:#e85c4a;border-color:#e85c4a;color:#fff;font-weight:600}
   .btn.on{background:#3fb56b;border-color:#3fb56b;color:#08130c;font-weight:700}
-  #status{font-size:12px;color:#8a8c94;margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .btn.danger{border-color:#7a2f2a;color:#f0a99f}
+  .btn.sm{padding:6px 10px;font-size:12px}
+  #status{font-size:12px;color:#8a8c94;margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40vw}
   #status.ok{color:#3fb56b} #status.err{color:#e85c4a}
   #frame{position:fixed;top:54px;left:0;right:0;bottom:0;width:100%;height:calc(100% - 54px);border:0;background:#fff}
-  #panel{position:fixed;top:54px;right:0;bottom:0;width:min(420px,92vw);z-index:9;background:#141519;border-left:1px solid #2a2c33;
+  #panel{position:fixed;top:54px;right:0;bottom:0;width:min(430px,94vw);z-index:9;background:#141519;border-left:1px solid #2a2c33;
          transform:translateX(102%);transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;gap:12px;padding:16px;overflow:auto;overscroll-behavior:contain}
   #panel.open{transform:none}
-  #panel h2{font-size:15px;font-weight:700}
-  #panel h2 span{color:#8a8c94;font-weight:400;font-size:12px}
+  .phead{display:flex;align-items:center;gap:8px}
+  .phead h2{font-size:15px;font-weight:700;flex:1;min-width:0}
+  .phead h2 span{color:#8a8c94;font-weight:400;font-size:12px}
   .field label{display:block;font-size:12px;color:#8a8c94;margin-bottom:4px}
   .field input,.field textarea{width:100%;background:#0a0b0e;border:1px solid #484d59;color:#eceae4;border-radius:8px;padding:10px 12px;font:inherit;resize:vertical}
   .field textarea{min-height:120px}
+  .cover{position:relative;width:100%;aspect-ratio:4/3;background:#0a0b0e;border:1px dashed #484d59;border-radius:8px;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .cover img{width:100%;height:100%;object-fit:cover;display:none}
+  .cover.has img{display:block}
+  .cover .empty{color:#eceae4;font-weight:600;font-size:13px;background:rgba(255,255,255,.06);border:1px solid #484d59;padding:8px 14px;border-radius:8px}
+  .cover.has .empty{display:none}
+  .cover:hover{border-color:#8a8f9c}
   .hint{font-size:12px;color:#8a8c94;line-height:1.5}
+  .row{display:flex;gap:8px;align-items:center}
+  /* gate */
   #gate{position:fixed;inset:0;z-index:100;background:#0f0f11;display:flex;align-items:center;justify-content:center;padding:24px}
   #gate .card{width:min(400px,100%);background:#17181c;border:1px solid #2a2c33;border-radius:14px;padding:24px;text-align:center}
   #gate input{width:100%;box-sizing:border-box;background:#0a0b0e;border:1px solid #484d59;color:#eceae4;border-radius:10px;padding:12px 14px;font-size:16px}
   #gate .go{width:100%;margin-top:10px;background:#e85c4a;border:0;color:#fff;font-weight:700;border-radius:10px;padding:12px;font-size:16px;cursor:pointer}
   #gate .err{color:#e85c4a;font-size:13px;min-height:18px;margin:8px 0 4px}
-  #toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,12px);z-index:20;background:#3fb56b;color:#08130c;font-weight:700;
+  /* image picker */
+  #picker{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:16px}
+  #picker.open{display:flex}
+  #picker .sheet{width:min(880px,100%);max-height:86vh;background:#17181c;border:1px solid #2a2c33;border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
+  #picker .shd{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #2a2c33}
+  #picker .shd b{flex:1}
+  #picker .grid{padding:14px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+  #picker .tile{aspect-ratio:1;background:#000;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent}
+  #picker .tile:hover{border-color:#e85c4a}
+  #picker .tile img{width:100%;height:100%;object-fit:cover;display:block}
+  #toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,12px);z-index:40;background:#3fb56b;color:#08130c;font-weight:700;
          padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
   #toast.show{opacity:1;transform:translate(-50%,0)}
   @media (max-width:560px){
-    #panel{width:100%;top:auto;height:64%;border-left:0;border-top:1px solid #2a2c33;border-radius:16px 16px 0 0;transform:translateY(102%)}
+    #panel{width:100%;top:auto;height:70%;border-left:0;border-top:1px solid #2a2c33;border-radius:16px 16px 0 0;transform:translateY(102%)}
     #panel.open{transform:none}
     #bar b span{display:none}
+    #status{max-width:34vw}
   }
 </style>
 </head>
 <body>
 <div id="bar">
-  <b>ADMIN2 <span>· 인컨텍스트 편집 (프로토타입)</span></b>
+  <b>ADMIN2 <span>· 인컨텍스트 편집</span></b>
   <button class="btn" id="editToggle" type="button">편집 꺼짐</button>
+  <button class="btn" id="addSlide" type="button" style="display:none">+ 슬라이드</button>
   <button class="btn primary" id="saveBtn" type="button" style="display:none">저장</button>
   <span id="status">불러오는 중…</span>
 </div>
 <iframe id="frame" src="/" title="site"></iframe>
+
 <div id="panel" aria-hidden="true">
-  <h2>작품 편집 <span id="p-sub"></span></h2>
+  <div class="phead">
+    <h2>작품 편집 <span id="p-sub"></span></h2>
+    <button class="btn sm" id="panelClose" type="button" title="편집 닫기">✕ 닫기</button>
+  </div>
+  <div class="field"><label>대표 이미지 (눌러서 선택/변경)</label>
+    <div class="cover" id="f-cover"><img id="f-cover-img"><span class="empty">＋ 이미지 적용</span></div></div>
+  <div class="field"><label>날짜 (타임라인 연·월)</label><input id="f-date" type="month" style="color-scheme:dark"></div>
   <div class="field"><label>상세 제목 (클릭 시 제목)</label><input id="f-title" placeholder="작품 제목"></div>
   <div class="field"><label>가격 (입력하면 상세에 노출, 비우면 숨김)</label><input id="f-price" placeholder="예: 3,000,000원 · 문의"></div>
   <div class="field"><label>상세 설명</label><textarea id="f-desc" placeholder="작품 설명…"></textarea></div>
-  <div class="hint">프론트에서 작품을 열면 이 패널로 바로 고칠 수 있습니다. 저장하면 공개 사이트에 반영됩니다(배포 ~30초 뒤).<br>
-    이미지·순서·소개 블록·이미지 라이브러리 등 나머지 작업은 기존 <b>/admin</b>에서 하세요.</div>
+  <div class="row" style="margin-top:2px">
+    <button class="btn danger sm" id="delSlide" type="button">이 작품 삭제</button>
+    <span class="hint" style="flex:1">이미지 여러 장·순서·소개 블록 등은 <b>/admin</b>에서.</span>
+  </div>
 </div>
+
+<div id="picker"><div class="sheet">
+  <div class="shd"><b>대표 이미지 선택</b><button class="btn sm" id="pickClose" type="button">닫기</button></div>
+  <div class="grid" id="pickGrid"></div>
+</div></div>
+
 <div id="toast">저장되었습니다</div>
 <script>
 (function(){
@@ -69,10 +107,13 @@
   const api=(url,opts)=>{ opts=Object.assign({},opts); if(String(url).indexOf('/api/')!==-1){ const h=new Headers(opts.headers||{}); const k=getKey(); if(k)h.set('X-Admin-Key',k); opts.headers=h;} return orig(url,opts); };
   async function verify(k){ try{ const r=await orig('/api/auth',{headers:{'X-Admin-Key':k}}); return r.status===200?'ok':(r.status===403?'bad':'unknown'); }catch(e){ return 'unknown'; } }
 
-  let content=null, baseVersion=null, editMode=false, curId=null, dirty=false;
+  let content=null, baseVersion=null, images=[], editMode=false, curId=null, pinned=false, dirty=false, nid=0;
   const setStatus=(m,c='')=>{ const e=$('#status'); e.textContent=m; e.className=c; };
+  const slides=()=>((content&&content.slides)||[]);
+  const findSlide=id=>slides().find(s=>String(s.id)===String(id));
+  const markDirty=()=>{ dirty=true; $('#saveBtn').style.display=''; setStatus('저장되지 않은 변경 있음','err'); };
 
-  /* ---- login gate (틀리거나 비우면 통과 불가; 서버 /api/auth 검증) ---- */
+  /* ---- login gate ---- */
   function showGate(msg){
     let g=document.getElementById('gate');
     if(!g){
@@ -93,44 +134,78 @@
     if(msg) g.querySelector('#g-err').textContent=msg;
   }
 
-  async function loadContent(){
-    content=await orig('/api/content?t='+Date.now()).then(r=>r.json());
-    baseVersion=content._version||null; delete content._version;
-    setStatus((content.slides||[]).length+'개 작품 · 프론트에서 작품을 여세요','');
+  async function loadAll(){
+    const [c,im]=await Promise.all([
+      orig('/api/content?t='+Date.now()).then(r=>r.json()),
+      orig('/api/images?t='+Date.now()).then(r=>r.json()).catch(()=>({images:[]})),
+    ]);
+    content=c; baseVersion=content._version||null; delete content._version; images=im.images||[];
   }
 
-  /* ---- 현재 프론트가 보고 있는 작품 id (iframe /p/<id>) ---- */
-  function currentWorkId(){
-    try{ const p=$('#frame').contentWindow.location.pathname||''; return p.indexOf('/p/')===0 ? decodeURIComponent(p.slice(3)) : null; }
-    catch(e){ return null; }
-  }
-  function findSlide(id){ return (content&&content.slides||[]).find(s=>String(s.id)===String(id)); }
+  /* ---- 현재 편집 대상 ---- */
+  function currentWorkId(){ try{ const p=$('#frame').contentWindow.location.pathname||''; return p.indexOf('/p/')===0 ? decodeURIComponent(p.slice(3)) : null; }catch(e){ return null; } }
 
-  function openPanel(s){
+  function fillPanel(s){
     $('#p-sub').textContent = s.id ? ('#'+s.id) : '';
-    $('#f-title').value = s.title||'';
-    $('#f-price').value = s.price||'';
-    $('#f-desc').value = s.desc||'';
-    $('#panel').classList.add('open'); $('#panel').setAttribute('aria-hidden','false');
+    const cover=$('#f-cover'); $('#f-cover-img').src=s.image||''; cover.classList.toggle('has',!!(s.image||'').trim());
+    $('#f-date').value=(s.date||'').slice(0,7);
+    $('#f-title').value=s.title||''; $('#f-price').value=s.price||''; $('#f-desc').value=s.desc||'';
   }
-  function closePanel(){ $('#panel').classList.remove('open'); $('#panel').setAttribute('aria-hidden','true'); }
+  function openPanel(){ $('#panel').classList.add('open'); $('#panel').setAttribute('aria-hidden','false'); }
+  function closePanel(){ $('#panel').classList.remove('open'); $('#panel').setAttribute('aria-hidden','true'); pinned=false; curId=null; }
+
+  function setTarget(id){ curId=id; const s=findSlide(id); if(s){ fillPanel(s); openPanel(); setStatus('편집 중: '+(s.title||('#'+id)),''); } }
 
   function refreshTarget(){
-    if(!editMode){ closePanel(); return; }
+    if(!editMode){ if($('#panel').classList.contains('open')) closePanel(); return; }
+    if(pinned) return;                         // + 슬라이드나 목록에서 고른 대상은 iframe 이동으로 바뀌지 않는다
     const id=currentWorkId();
-    if(id!==curId){ curId=id; const s=id&&findSlide(id); if(s) openPanel(s); else closePanel(); }
-    if(editMode && curId){ const s=findSlide(curId); setStatus(s?('편집 중: '+(s.title||('#'+curId))):'이 작품을 찾지 못했습니다','' ); }
-    else if(editMode){ setStatus('작품을 열면 편집 패널이 뜹니다',''); }
+    if(id!==curId){ if(id&&findSlide(id)) setTarget(id); else closePanel(); }
   }
 
-  /* 필드 → 로컬 content 반영 */
-  function bindField(sel,key){ $(sel).addEventListener('input',e=>{ const s=curId&&findSlide(curId); if(!s)return; s[key]=e.target.value; dirty=true; $('#saveBtn').style.display=''; setStatus('저장되지 않은 변경 있음','err'); }); }
+  /* ---- fields ---- */
+  function bindField(sel,key){ $(sel).addEventListener('input',e=>{ const s=findSlide(curId); if(!s)return; s[key]=e.target.value; markDirty(); }); }
+  $('#f-date').addEventListener('input',e=>{ const s=findSlide(curId); if(!s)return; s.date=e.target.value?e.target.value+'-01':''; markDirty(); });
+
+  /* ---- 대표 이미지 픽커 ---- */
+  function openPicker(){
+    const g=$('#pickGrid'); g.innerHTML='';
+    images.forEach(name=>{ const t=document.createElement('div'); t.className='tile'; t.innerHTML='<img loading="lazy" src="/images/'+name+'">';
+      t.onclick=()=>{ const s=findSlide(curId); if(s){ s.image='/images/'+name; fillPanel(s); markDirty(); } $('#picker').classList.remove('open'); };
+      g.appendChild(t); });
+    $('#picker').classList.add('open');
+  }
+  $('#f-cover').onclick=()=>{ if(curId) openPicker(); };
+  $('#pickClose').onclick=()=>$('#picker').classList.remove('open');
+  $('#picker').addEventListener('click',e=>{ if(e.target.id==='picker') $('#picker').classList.remove('open'); });
+
+  /* ---- 슬라이드 추가 (최상단, 날짜=최신+1개월) ---- */
+  function addSlide(){
+    let maxY=0,maxM=0;
+    slides().forEach(s=>{ const m=/(\d{4})-(\d{2})/.exec(String(s.date||'')); if(m){const y=+m[1],mo=+m[2]; if(y>maxY||(y===maxY&&mo>maxM)){maxY=y;maxM=mo;} } });
+    let ym; if(maxY){ let ny=maxY,nm=maxM+1; if(nm>12){nm=1;ny++;} ym=ny+'-'+String(nm).padStart(2,'0')+'-01'; }
+    else { const n=new Date(); ym=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01'; }
+    const s={id:'n'+Date.now()+'_'+(nid++),image:'',bottom:'Inspire',date:ym};
+    slides().unshift(s);
+    pinned=true; setTarget(s.id); markDirty();
+    setStatus('새 작품 — 이미지·제목을 넣고 저장하세요','');
+  }
+
+  /* ---- 삭제 (비밀번호 확인) ---- */
+  function delSlide(){
+    const s=findSlide(curId); if(!s) return;
+    if(!confirm('이 작품을 삭제할까요? ('+(s.title||('#'+curId))+')')) return;
+    const v=prompt('삭제하려면 관리자 비밀번호를 입력하세요'); if(v===null) return;
+    if(v.trim()!==getKey()){ alert('비밀번호가 일치하지 않아 취소했습니다.'); return; }
+    const i=slides().findIndex(x=>String(x.id)===String(curId)); if(i>=0) slides().splice(i,1);
+    closePanel(); markDirty(); setStatus('삭제됨 — 저장하면 반영','ok');
+  }
 
   async function save(){
-    if(!dirty){ return; }
+    if(!dirty) return;
     setStatus('저장 중…','');
-    const payload=Object.assign({},content,{_version:baseVersion});
     try{
+      const payload=Object.assign({},content,{_version:baseVersion});
       const r=await api('/api/content',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json());
       if(r.error){ setStatus('저장 실패: '+r.error,'err'); return; }
       baseVersion=r.version||null; dirty=false; $('#saveBtn').style.display='none';
@@ -141,23 +216,25 @@
 
   function setEdit(on){
     editMode=on;
-    $('#editToggle').textContent = on?'편집 켜짐':'편집 꺼짐';
-    $('#editToggle').classList.toggle('on', on);
-    refreshTarget();
+    $('#editToggle').textContent=on?'편집 켜짐':'편집 꺼짐'; $('#editToggle').classList.toggle('on',on);
+    $('#addSlide').style.display=on?'':'none';
+    if(!on) closePanel(); else refreshTarget();
+    if(on) setStatus('편집 켜짐 — 작품을 열거나 + 슬라이드','');
   }
 
   function boot(){
-    loadContent().then(()=>{
+    loadAll().then(()=>{
       bindField('#f-title','title'); bindField('#f-price','price'); bindField('#f-desc','desc');
       $('#editToggle').onclick=()=>setEdit(!editMode);
+      $('#addSlide').onclick=addSlide;
       $('#saveBtn').onclick=save;
-      /* iframe 이 SPA 라 URL 이 바뀌어도 load 이벤트가 안 뜬다 — 주소를 짧게 폴링해 현재 작품을 따라간다 */
+      $('#panelClose').onclick=closePanel;
+      $('#delSlide').onclick=delSlide;
       setInterval(refreshTarget,500);
-      setStatus((content.slides||[]).length+'개 작품 · 편집을 켜고 작품을 여세요','');
+      setStatus(slides().length+'개 작품 · 편집을 켜세요','');
     }).catch(e=>setStatus('불러오기 실패: '+e.message,'err'));
   }
 
-  /* 진입: 저장된 키가 있으면 검증, 없으면 게이트 */
   (async()=>{
     const k=getKey();
     if(!k){ showGate(); return; }
