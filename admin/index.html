@@ -19,11 +19,11 @@
      from phone to desktop on one layout — no second set of rules to keep in sync */
   header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
     padding:12px clamp(12px,3vw,20px);
-    background:rgba(15,15,17,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
-    transition:padding .2s ease,gap .2s ease}
-  header h1{font-size:13px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;transition:font-size .2s ease}
+    background:rgba(15,15,17,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  /* 크기(패딩·폰트)는 스크롤 진행도 --hp 로 직접 구동하므로 전환을 걸지 않는다(스크롤을 그대로 따라간다) */
+  header h1{font-size:13px;letter-spacing:.18em;text-transform:uppercase;font-weight:700}
   .tabs{display:flex;gap:4px;flex-wrap:wrap}
-  .tab{padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--mut);font-weight:500;border:1px solid transparent;transition:padding .2s ease,font-size .2s ease,background .12s,color .12s}
+  .tab{padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--mut);font-weight:500;border:1px solid transparent;transition:background .12s,color .12s}
   .tab:hover{color:var(--ink);background:rgba(255,255,255,.06)}
   .tab.active{background:var(--ink);color:#0f0f11;border-color:var(--ink);font-weight:700}   /* 선택 탭은 밝은 면+어두운 글씨로 확실히 구분 */
   .sp{flex:1 1 0;min-width:0}
@@ -81,17 +81,19 @@
   .rowbtns .danger{order:-1;margin-right:auto}
 
   /* 선택 일괄수정 모달: 상단 컨트롤(고정) + 카드(이미지+제목) 그리드 */
-  .bulk-ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:0;background:var(--panel);padding:6px 0 10px;z-index:5;border-bottom:1px solid var(--line)}
+  .bulk-ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:0;background:var(--panel);padding:14px 0 10px;z-index:5;border-bottom:1px solid var(--line)}
   .bulk-allbox{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm,13px);cursor:pointer;white-space:nowrap;color:var(--ink)}
   .bulk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr));gap:10px}
   .bulk-card{display:flex;flex-direction:column;gap:6px;background:var(--card-face);color:var(--card-ink);border:2px solid transparent;border-radius:10px;padding:8px;cursor:pointer;position:relative}
   .bulk-card:has(.bulk-chk:checked){border-color:var(--acc)}
   /* 커스텀 체크박스: 어두운 썸네일 위에서도 보이게 흰 테두리 + 반투명 바탕, 체크 시 강조색 + 체크마크 */
-  .bulk-chk{appearance:none;-webkit-appearance:none;position:absolute;top:10px;left:10px;width:24px;height:24px;border:2px solid #fff;border-radius:7px;
+  .bulk-chk{appearance:none;-webkit-appearance:none;position:absolute;top:10px;left:10px;width:24px;height:24px;border:2px solid #fff;border-radius:50%;
     background:rgba(0,0,0,.5);box-shadow:0 1px 4px rgba(0,0,0,.5);cursor:pointer;z-index:1;display:grid;place-content:center;transition:background .12s,border-color .12s}
   .bulk-chk:checked{background:var(--acc);border-color:#fff}
   .bulk-chk:checked::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
-  #bulkAll{appearance:none;-webkit-appearance:none;width:22px;height:22px;border:2px solid var(--mut);border-radius:6px;background:var(--field-bg);cursor:pointer;display:grid;place-content:center;flex:none}
+  /* body.big input 규칙(padding·radius)이 체크박스를 덮으므로 더 높은 특이도로 원형·정사이즈 강제 */
+  .bulk-card .bulk-chk{padding:0;border-radius:50%;width:24px;height:24px}
+  #bulkAll{appearance:none;-webkit-appearance:none;width:22px;height:22px;padding:0;border:2px solid var(--mut);border-radius:50%;background:var(--field-bg);cursor:pointer;display:grid;place-content:center;flex:none}
   #bulkAll:checked{background:var(--acc);border-color:var(--acc)}
   #bulkAll:checked::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
   .bulk-thumb{aspect-ratio:4/3;background:#000;border-radius:6px;overflow:hidden}
@@ -170,7 +172,9 @@
   #editPickerWrap{z-index:70}   /* 편집 모달(60) 위에 뜨는 이미지 선택 팝업 */
   .modal.open{display:flex}
   .sheet{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(900px,96vw);max-height:86vh;display:flex;flex-direction:column}
-  .sheet .shead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .sheet .shead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .sheet .shead > strong{flex:none}   /* 제목은 줄어들거나 밀리지 않는다 */
+  .shead-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}   /* 정렬·업로드·닫기는 한 묶음으로 우측에 붙고, 좁으면 함께 아래로 */
   .sheet .sbody{padding:16px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}   /* 모달 안 스크롤이 끝에 닿아도 뒤 화면으로 넘어가지 않게(scroll chaining 차단) */
   /* 모달이 열리면 뒤 화면 스크롤을 잠근다 — 모바일에서 편집 모달을 열었을 때 배경이 딸려 스크롤되던 것 방지 */
   body:has(.modal.open){overflow:hidden}
@@ -207,9 +211,11 @@
   body.big{font-size:24px;--fs-sm:20px;--fs-xs:20px}
   /* 헤더는 조작·네비 영역이라 본문(24px)만큼 키우면 폰에서 여러 줄로 접혀 화면 절반을 먹는다.
      헤더 요소만 19px 로 두고 여백을 줄여 줄 수를 관리한다(본문·입력·편집 버튼은 24px 그대로). */
-  body.big header h1{font-size:18px}
-  body.big .tab{font-size:19px;padding:9px 13px;border-radius:10px}
-  body.big header .btn{font-size:19px;padding:9px 14px}
+  /* 스크롤 진행도 --hp(0~1)에 비례해 헤더 크기를 점진적으로 줄인다(확 접히지 않고 스크롤 따라 서서히) */
+  body.big header{padding-top:calc(12px - 6px * var(--hp, 0));padding-bottom:calc(12px - 6px * var(--hp, 0))}
+  body.big header h1{font-size:calc(18px - 3px * var(--hp, 0))}
+  body.big .tab{font-size:calc(19px - 3px * var(--hp, 0));padding:calc(9px - 3px * var(--hp, 0)) calc(13px - 2px * var(--hp, 0));border-radius:10px}
+  body.big header .btn{font-size:calc(19px - 3px * var(--hp, 0));padding:calc(9px - 2px * var(--hp, 0)) calc(14px - 2px * var(--hp, 0))}
   /* 큰글씨모드: 탭 이름이 길어져도 헤더가 흐트러지지 않게, 탭을 항상 전용 줄(전체폭)로 내린다.
      1행 = 제목 + 우측 버튼들, 2행 = 탭 전체폭. (스크롤 접힘 상태의 규칙과 동일한 배치) */
   body.big .tabs{order:6;flex-basis:100%;margin-top:4px}
@@ -262,10 +268,7 @@
   /* 스크롤하면 상단 헤더를 컴팩트하게 접는다 — 큰 글씨에서 헤더가 화면을 크게 차지하므로(약 27%) 스크롤
      시 자리를 내준다. 탭·버튼은 그대로 두고 크기·여백만 줄이므로 스크롤 중에도 모든 조작이 유지된다.
      transition 은 각 요소에 걸려 있어 부드럽게 접히고 펴진다. 큰 글씨에서만 적용(일반 모드 헤더는 이미 작다). */
-  body.big.scrolled header{padding-top:6px;padding-bottom:6px;gap:7px}
-  body.big.scrolled header h1{font-size:15px}
-  body.big.scrolled .tab{padding:6px 11px;font-size:16px}
-  body.big.scrolled header .btn{padding:7px 12px;font-size:16px}   /* 헤더 버튼만 — 툴바(+슬라이드~일괄변경)는 스크롤해도 그대로 */
+  body.big.scrolled header{gap:7px}   /* 크기(패딩·폰트)는 --hp 로 점진 축소되므로, 접힘 상태에선 레이아웃 재배치만 담당 */
   /* 접혔을 때: status(개수·상태)를 탭과 같은 줄 오른쪽 빈 공간으로 올린다(탭이 줄을 다 안 채우므로 자리 충분) */
   body.big .statusbar .status{font-size:16px}
   /* 접힌 헤더: 로고를 '관리자'로 줄이고(앞부분 감춤) 사이트 열기를 그 오른쪽에 붙인다. 탭은 아래 한 줄로 내려
@@ -368,8 +371,7 @@
     <input type="search" id="qSlide" placeholder="번호·문구·제목·내용 검색">
     <span class="count" id="countSlide"></span>
     <span class="sp"></span>
-    <button class="btn ghost sm" id="moreToggle" aria-expanded="false" title="가끔 쓰는 도구">기타 도구</button>
-    <button class="btn ghost moretool" id="openBulk" style="display:none">선택 일괄수정…</button>
+    <button class="btn ghost" id="openBulk">일괄변경</button>
   </div>
   <div class="hint" id="orderHint" style="padding:0 clamp(12px,3vw,20px);margin:10px 0 0"></div>
   <main><div class="grid" id="slideGrid"></div></main>
@@ -498,7 +500,8 @@
 <!-- image picker modal -->
 <div class="modal" id="picker">
   <div class="sheet">
-    <div class="shead"><strong>이미지 선택</strong><div class="sp"></div>
+    <div class="shead"><strong>이미지 선택</strong>
+      <div class="shead-tools">
       <select id="pickSort" title="정렬" style="background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:6px;padding:5px 8px;font-size:var(--fs-sm,12px)">
         <option value="date-desc">업로드 최신순</option>
         <option value="date-asc">업로드 오래된순</option>
@@ -508,9 +511,9 @@
         <option value="dim-asc">해상도 작은순</option>
         <option value="name">이름순</option>
       </select>
-      <label class="btn ghost sm" style="position:relative;overflow:hidden">업로드
+      <label class="btn addmedia sm" style="position:relative;overflow:hidden">+ 업로드
         <input type="file" id="pickUpload" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
-      <button class="btn ghost sm" id="pickClose">닫기</button></div>
+      <button class="btn ghost sm" id="pickClose">닫기</button></div></div>
     <div class="sbody"><div class="picker" id="pickGrid"></div></div>
   </div>
 </div>
@@ -566,19 +569,17 @@
           <button class="btn sm addmedia" id="editAddVid">+ 영상(유튜브)</button>
         </div>
         <div id="editMediaList" style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
-          <div id="ed-descblock" class="descblock" data-vi="" style="display:flex;gap:10px;align-items:flex-start">
-            <div style="flex:1;min-width:0">
-              <div class="flab" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                <span class="ordbadge" id="ed-desc-ord"></span>
-                <span style="flex:none">상세 설명</span>
-                <span style="color:var(--mut);font-weight:400;font-size:var(--fs-xs,11px);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">— 상세페이지 본문 텍스트</span>
+          <div id="ed-descblock" class="descblock" data-vi="">
+            <div class="flab" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="ordbadge" id="ed-desc-ord"></span>
+              <span style="flex:none">상세 설명</span>
+              <span style="color:var(--mut);font-weight:400;font-size:var(--fs-xs,11px);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">— 상세페이지 본문 텍스트</span>
+              <div class="rowbtns" style="margin-left:auto">
+                <button type="button" class="btn sm" data-vact="up" title="위로">↑</button>
+                <button type="button" class="btn sm" data-vact="down" title="아래로">↓</button>
               </div>
-              <textarea id="ed-desc" placeholder="작품 설명…" style="width:100%;margin-top:6px;min-height:120px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:inherit;resize:none;overflow:hidden"></textarea>
             </div>
-            <div class="rowbtns">
-              <button type="button" class="btn sm" data-vact="up" title="위로">↑</button>
-              <button type="button" class="btn sm" data-vact="down" title="아래로">↓</button>
-            </div>
+            <textarea id="ed-desc" placeholder="작품 설명…" style="width:100%;margin-top:6px;min-height:120px;background:var(--field-bg);border:1px solid var(--field-line);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:inherit;resize:none;overflow:hidden"></textarea>
           </div>
         </div>
         <div class="hint" style="margin-top:10px">이미지·영상과 상세 설명이 <b>여기 보이는 순서 그대로</b> 상세페이지에 세로로 표시됩니다. 순서는 각 항목의 ↑ ↓ 로 바꿉니다. 미디어를 비우면 대표 이미지 1장만 나옵니다.</div>
@@ -591,9 +592,11 @@
      내용이 하단으로 넘쳤다). 편집 모달보다 위(z-index 70)에 뜨고, 시트 안에서 스크롤된다. -->
 <div class="modal" id="editPickerWrap">
   <div class="sheet">
-    <div class="shead"><strong id="editPickerTitle">이미지 선택</strong><div class="sp"></div>
-      <label class="btn sm addmedia" style="position:relative;overflow:hidden">+ 업로드<input type="file" id="editPickUpload" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
-      <button class="btn sm" id="editPickerCancel">닫기</button></div>
+    <div class="shead"><strong id="editPickerTitle">이미지 선택</strong>
+      <div class="shead-tools">
+        <label class="btn sm addmedia" style="position:relative;overflow:hidden">+ 업로드<input type="file" id="editPickUpload" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
+        <button class="btn sm" id="editPickerCancel">닫기</button>
+      </div></div>
     <div class="sbody"><div id="editPickerGrid" class="picker"></div></div>
   </div>
 </div>
@@ -603,7 +606,7 @@
   <div class="sheet">
     <div class="shead"><strong>선택 일괄수정</strong><span id="bulkCount" style="color:var(--mut);font-size:var(--fs-sm,12px);margin-left:8px"></span><div class="sp"></div>
       <button class="btn ghost sm" id="bulkClose">닫기</button></div>
-    <div class="sbody" style="max-height:80vh;overflow-y:auto;overflow-x:hidden">
+    <div class="sbody" style="max-height:80vh;overflow-y:auto;overflow-x:hidden;padding-top:0">
       <div class="bulk-ctrl">
         <label class="bulk-allbox"><input type="checkbox" id="bulkAll"> 전체 선택</label>
         <select id="bulkField" class="blk-sel">
@@ -961,15 +964,6 @@ $('#addSlide').onclick=()=>{
   openEditModal(0, true);   // 빈 슬라이드가 생기자마자 '슬라이드 생성' 화면을 띄운다(입력 없이 닫으면 자동 삭제)
 };
 $('#qSlide').addEventListener('input',renderSlides);
-/* 가끔 쓰는 도구는 평소 접어두고, '기타 도구'를 눌렀을 때만 펼친다 */
-$('#moreToggle').onclick=()=>{
-  const t=$('#moreToggle'); const tools=$$('.moretool');
-  const show=tools.length && tools[0].style.display==='none';
-  tools.forEach(el=>el.style.display=show?'':'none');
-  t.setAttribute('aria-expanded', show?'true':'false');
-  t.textContent=show?'기타 도구 닫기':'기타 도구';
-};
-
 /* ---------- 선택 일괄수정 (카드 체크 → 한 필드 일괄 적용) ---------- */
 const BULK_FIELD_LABEL={category:'카테고리',ptype:'제품 타입',bottom:'아래 문구'};
 function renderBulkList(){
@@ -1146,7 +1140,7 @@ function mediaRow(m,k,vi){
       <input data-mk="${k}" data-mf="caption" value="${escAttr(m.caption)}" placeholder="캡션(선택)" class="mcap" style="width:100%;margin-top:4px">
       <div class="mopts" style="margin-top:5px">${sizeCtrl}${alignCtrl}</div>
     </div>
-    <div class="rowbtns">
+    <div class="rowbtns" style="align-self:flex-start">
       <button type="button" class="btn sm" data-vact="up" data-mk="${k}">↑</button>
       <button type="button" class="btn sm" data-vact="down" data-mk="${k}">↓</button>
       <button type="button" class="btn sm danger" data-mact="del" data-mk="${k}">삭제</button>
@@ -1761,7 +1755,13 @@ window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.
 /* 스크롤하면 body.scrolled 를 켜 헤더를 컴팩트하게 접는다(CSS 가 크기·여백만 줄인다). 살짝만 내려도 접히고,
    맨 위로 돌아오면 다시 펴진다. passive 리스너라 스크롤 성능에 영향 없다. */
 (function(){
-  const upd=()=>document.body.classList.toggle('scrolled', (window.scrollY||document.documentElement.scrollTop||0) > 16);
+  const RANGE=64;   // 이 스크롤량(px)에 걸쳐 헤더 크기가 점진적으로 줄어든다
+  const upd=()=>{
+    const y=window.scrollY||document.documentElement.scrollTop||0;
+    const hp=Math.max(0,Math.min(1,y/RANGE));
+    document.body.style.setProperty('--hp',hp.toFixed(3));   // 크기(패딩·폰트)는 이 값에 비례해 축소
+    document.body.classList.toggle('scrolled', y>RANGE*0.55); // 로고 축약·탭 줄내림 등 레이아웃 재배치는 중간쯤에서
+  };
   window.addEventListener('scroll', upd, {passive:true}); upd();
 })();
 
