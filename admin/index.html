@@ -1184,10 +1184,21 @@ function serializeVisual(V){
   V.forEach(tok=>{ if(tok.t==='desc'){ seen=true; return; } const m=M[tok.k]; if(seen) delete m.pos; else m.pos=0; arr.push(m); });
   cfg.slides[mediaTarget].media=arr;
 }
+/* 순서변경 후에도 방금 누른 화살표가 화면의 같은 자리에 오게 스크롤을 보정한다 — 모바일에서 스크롤 없이 연속으로 누를 수 있다 */
+function keepBtnUnderFinger(container, before, after){
+  const y0 = before ? before.getBoundingClientRect().top : null;
+  const nb = after && after();
+  if(y0!=null && nb && container){ container.scrollTop += nb.getBoundingClientRect().top - y0; }
+}
 function moveVisual(vi,dir){
   const j=vi+dir; if(j<0||j>=mediaVisual.length) return;
+  const vact=dir<0?'up':'down';
+  const clicked=document.querySelector(`#editMediaList [data-vi="${vi}"] [data-vact="${vact}"]`);
+  const cont=$('#editMediaList').closest('.sbody');
+  const y0=clicked?clicked.getBoundingClientRect().top:null;
   const V=mediaVisual.slice(); [V[vi],V[j]]=[V[j],V[vi]];
   serializeVisual(V); renderMediaList(); dirty();
+  if(y0!=null && cont){ const nb=document.querySelector(`#editMediaList [data-vi="${j}"] [data-vact="${vact}"]`); if(nb) cont.scrollTop += nb.getBoundingClientRect().top - y0; }
 }
 function addMediaImage(src){ slideMedia(mediaTarget).push({type:'image',src:src,caption:'',align:'center',pos:0}); renderMediaList(); dirty(); }
 
@@ -1692,22 +1703,24 @@ $('#blockList').addEventListener('click',e=>{
   const list=pageBlocks();
   const swap=(arr,a,c)=>{ [arr[a],arr[c]]=[arr[c],arr[a]]; };
 
+  const cont=document.scrollingElement||document.documentElement;   // 소개 화면은 페이지(윈도우) 스크롤
   // 이력 블록 안의 항목 조작 (블록 자체가 아니라 items 를 다룬다)
   const li=b.dataset.ladd ?? b.dataset.ldel ?? b.dataset.lup ?? b.dataset.ldown;
   if(li!=null){
     const items=list[+li].items, j=+b.dataset.lj;
-    if(b.dataset.ladd!=null) items.unshift({text:'',date:'',place:''});   // 새 항목은 맨 위(버튼 바로 아래)
-    else if(b.dataset.ldel!=null) items.splice(j,1);
-    else if(b.dataset.lup!=null) swap(items,j,j-1);
-    else if(b.dataset.ldown!=null) swap(items,j,j+1);
-    renderBlocks(); dirty(); return;
+    if(b.dataset.ladd!=null){ items.unshift({text:'',date:'',place:''}); renderBlocks(); dirty(); return; }   // 새 항목은 맨 위
+    if(b.dataset.ldel!=null){ items.splice(j,1); renderBlocks(); dirty(); return; }
+    const lup=b.dataset.lup!=null, nj=lup?j-1:j+1;   // 순서변경: 방금 누른 화살표가 화면 같은 자리에 오게 스크롤 보정
+    keepBtnUnderFinger(cont, b, ()=>{ swap(items,j,nj); renderBlocks(); dirty(); return document.querySelector(`#blockList [data-${lup?'lup':'ldown'}="${li}"][data-lj="${nj}"]`); });
+    return;
   }
 
-  if(b.dataset.del!=null) list.splice(+b.dataset.del,1);
-  else if(b.dataset.up!=null) swap(list,+b.dataset.up,+b.dataset.up-1);
-  else if(b.dataset.down!=null) swap(list,+b.dataset.down,+b.dataset.down+1);
-  else return;
-  renderBlocks(); dirty();
+  if(b.dataset.del!=null){ list.splice(+b.dataset.del,1); renderBlocks(); dirty(); return; }
+  if(b.dataset.up!=null || b.dataset.down!=null){
+    const up=b.dataset.up!=null, i=+(up?b.dataset.up:b.dataset.down), ni=up?i-1:i+1;
+    keepBtnUnderFinger(cont, b, ()=>{ swap(list,i,ni); renderBlocks(); dirty(); return document.querySelector(`#blockList [data-${up?'up':'down'}="${ni}"]`); });
+    return;
+  }
 });
 function escHtml(v){return (v==null?'':String(v)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function escAttr(v){return escHtml(v).replace(/"/g,'&quot;');}
